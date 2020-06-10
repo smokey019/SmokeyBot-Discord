@@ -51,11 +51,11 @@ async function getGuildSettings(guild_id: number | string) {
       if (rows.length > 0) {
         return rows[0];
       } else {
-        return false;
+        return null;
       }
     })
     .catch((err: any) => {
-      logger(err);
+      logger.error(err);
       throw err;
     });
 }
@@ -73,7 +73,7 @@ async function putGuildSettings(message: any) {
     })
     .then(() => logger(`Created new guild settings for ${message.guild.name}.`))
     .catch((err) => {
-      logger(err);
+      logger.error(err);
       throw err;
     });
 }
@@ -91,43 +91,24 @@ async function parseMessage(message: Message) {
     message.guild != null ? await cacheClient.get(message.guild.id) : undefined;
 
   if (cache == null) {
-    if (!do_not_cache.includes(message.guild.id)) {
-      do_not_cache.push(message.guild.id);
+    if (!do_not_cache.includes(message.guild?.id)) {
+      do_not_cache.push(message.guild?.id);
 
       const settings = await getGuildSettings(message.guild.id);
 
-      if (!settings) {
-        var newSettings = await database.insert('guild_settings', {
-          guild_id: message.guild.id,
-          smokemon_enabled: 0,
-        });
-
-        if (newSettings) {
-          console.log(`Created new guild settings for ${message.guild.name}.`);
-        }
+      if (settings == null) {
+        putGuildSettings(message);
       } else {
-        var tmp = {
-          account: message.guild.id,
-          tweet: {},
-          twitter: 'summit1g',
-          twitch: 'summit1g',
-          time: timestamp - 300,
-          settings: settings,
+        cacheClient.set(message.guild.id, {
           monster_spawn: {
             current_spawn: undefined,
-            last_spawn_time: timestamp,
             last_spawn: undefined,
-            msg: undefined,
+            last_spawn_time: timestamp - 600,
+            msg: message,
           },
-        };
-
-        var success = cache_.set(message.guild.id, tmp);
-
-        if (success) {
-          console.log(`Added channel ${message.guild.name} to the cache.`);
-
-          return;
-        }
+          settings: settings,
+          time: timestamp,
+        });
       }
     }
   } else {

@@ -14,9 +14,12 @@ export interface ICache {
     msg?: Message;
   };
   settings: {
-    specific_channel: string;
+    id: number;
+    guild_id: number;
+    smokemon_enabled: number;
+    specific_channe: string;
   };
-  time?: number
+  time?: number;
 }
 
 export const cacheClient = new Keyv<ICache>();
