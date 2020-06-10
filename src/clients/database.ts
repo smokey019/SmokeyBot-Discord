@@ -13,6 +13,7 @@ export const databaseClient = knex({
     password: getConfigValue('DB_PASSWORD'),
     user: getConfigValue('DB_USER'),
   },
+  pool: { min: 0, max: 7 },
   log: {
     debug: logger.debug,
     deprecate: logger.trace,

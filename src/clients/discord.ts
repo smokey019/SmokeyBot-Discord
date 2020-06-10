@@ -1,9 +1,16 @@
 import { Client, Message } from 'discord.js';
 import { getLogger } from './logger';
 import { cacheClient } from './cache';
+import {
+  IGuildSettings,
+  IMonsterDB,
+  IUserSettings,
+  databaseClient,
+} from './database';
 
 const logger = getLogger('DiscordClient');
 let rateLimited = false;
+let do_not_cache: any[];
 
 export const discordClient = new Client({ retryLimit: 5 });
 
@@ -30,6 +37,47 @@ discordClient.on('message', async (message) => {
   }
 });
 
+/**
+ * Pulls guild settings from database.
+ *
+ * @param guild_id
+ */
+async function getGuildSettings(guild_id: number | string) {
+  databaseClient
+    .from('guild_settings')
+    .select()
+    .where('guild_id', guild_id)
+    .then((rows: any[]) => {
+      if (rows.length > 0) {
+        return rows[0];
+      } else {
+        return false;
+      }
+    })
+    .catch((err: any) => {
+      logger(err);
+      throw err;
+    });
+}
+
+/**
+ * Inserts new GuildSettings into database.
+ *
+ * @param guild_id
+ */
+async function putGuildSettings(message: any) {
+  databaseClient('guild_settings')
+    .insert({
+      guild_id: message.guild.id,
+      smokemon_enabled: 0,
+    })
+    .then(() => logger(`Created new guild settings for ${message.guild.name}.`))
+    .catch((err) => {
+      logger(err);
+      throw err;
+    });
+}
+
 async function parseMessage(message: Message) {
   let to_be_deleted = '';
   let embed = null;
@@ -43,12 +91,10 @@ async function parseMessage(message: Message) {
     message.guild != null ? await cacheClient.get(message.guild.id) : undefined;
 
   if (cache == null) {
-    if (!cached_users.includes(message.guild.id)) {
-      cached_users.push(message.guild.id);
+    if (!do_not_cache.includes(message.guild.id)) {
+      do_not_cache.push(message.guild.id);
 
-      var settings = await database.get('guild_settings', '*', {
-        guild_id: message.guild.id,
-      });
+      const settings = await getGuildSettings(message.guild.id);
 
       if (!settings) {
         var newSettings = await database.insert('guild_settings', {
