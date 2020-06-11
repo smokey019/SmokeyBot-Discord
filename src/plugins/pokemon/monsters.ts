@@ -3,7 +3,7 @@ import { getRndInteger } from '../../utils';
 
 export type IMonster = typeof monsters[0];
 
-const extras = 30;
+const extras = 35;
 
 for (let index = 0; index < extras; index++) {
   // bulba
@@ -73,9 +73,7 @@ for (let index = 0; index < extras; index++) {
   monsters.push(monsters[426]);
   // Seismitoad
   monsters.push(monsters[536]);
-  monsters.push(monsters[536]);
   // Krokorok
-  monsters.push(monsters[552]);
   monsters.push(monsters[552]);
   // Gothita
   monsters.push(monsters[573]);
@@ -89,7 +87,6 @@ for (let index = 0; index < extras; index++) {
   monsters.push(monsters[65]);
   // Ledyba
   monsters.push(monsters[164]);
-  monsters.push(monsters[164]);
   // Vulpix
   monsters.push(monsters[36]);
   monsters.push(monsters[36]);
@@ -102,7 +99,6 @@ for (let index = 0; index < extras; index++) {
   monsters.push(monsters[62]);
   monsters.push(monsters[62]);
   // Mareep
-  monsters.push(monsters[178]);
   monsters.push(monsters[178]);
   // Jynx
   monsters.push(monsters[123]);
@@ -118,12 +114,71 @@ for (let index = 0; index < extras; index++) {
   monsters.push(monsters[68]);
   // Machamp
   monsters.push(monsters[67]);
-  monsters.push(monsters[67]);
   // Geodude
   monsters.push(monsters[73]);
   monsters.push(monsters[73]);
   // Munchlax
   monsters.push(monsters[445]);
+  // Chatot
+  monsters.push(monsters[440]);
+  // Klink
+  monsters.push(monsters[598]);
+  // Eelektrik
+  monsters.push(monsters[602]);
+  // Pancham
+  monsters.push(monsters[673]);
+  // Aurorus
+  monsters.push(monsters[698]);
+  // Kabutops
+  monsters.push(monsters[140]);
+  // Gothita
+  monsters.push(monsters[573]);
+  // Arrokuda
+  monsters.push(monsters[845]);
+  // Exeggcute
+  monsters.push(monsters[101]);
+  // Minun
+  monsters.push(monsters[311]);
+  // Electivire
+  monsters.push(monsters[465]);
+  // Dragonair
+  monsters.push(monsters[147]);
+  // Dusknoir
+  monsters.push(monsters[476]);
+  // Elekid
+  monsters.push(monsters[238]);
+  // Drakloak
+  monsters.push(monsters[885]);
+  // Surskit
+  monsters.push(monsters[282]);
+  // Victreebel
+  monsters.push(monsters[70]);
+  // Dewgong
+  monsters.push(monsters[86]);
+  monsters.push(monsters[86]);
+  monsters.push(monsters[86]);
+  // Galvantula
+  monsters.push(monsters[595]);
+  // Tropius
+  monsters.push(monsters[356]);
+  // Farfetch'd
+  monsters.push(monsters[82]);
+  // Rolycoly
+  monsters.push(monsters[836]);
+  // Aggron
+  monsters.push(monsters[305]);
+  // Salazzle
+  monsters.push(monsters[757]);
+  // Doduo
+  monsters.push(monsters[83]);
+  monsters.push(monsters[83]);
+  monsters.push(monsters[83]);
+  // Diglett
+  monsters.push(monsters[49]);
+  monsters.push(monsters[49]);
+  monsters.push(monsters[49]);
+  // Corviknight
+  monsters.push(monsters[822]);
 }
 
 export function getAllMonsters(): IMonster[] {
