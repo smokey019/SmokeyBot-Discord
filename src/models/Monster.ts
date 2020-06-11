@@ -17,4 +17,5 @@ export interface IMonsterModel {
   shiny: 0 | 1;
   mega: 0;
   captured_at: number;
+  released?: 0 | 1;
 }

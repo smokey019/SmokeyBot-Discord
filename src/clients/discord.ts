@@ -7,10 +7,11 @@ import { monsterInfo, monsterInfoLatest } from '../plugins/pokemon/info';
 import { getCurrentTime, getRndInteger } from '../utils';
 import { spawnMonster } from '../plugins/pokemon/spawn-monster';
 import { catchMonster } from '../plugins/pokemon/catch-monster';
+import { releaseMonster } from '../plugins/pokemon/release-monster';
 
 const logger = getLogger('DiscordClient');
 let rateLimited = false;
-let do_not_cache = [];
+const do_not_cache = [];
 
 export const discordClient = new Client({ retryLimit: 5 });
 
@@ -133,6 +134,19 @@ async function parseMessage(message: Message) {
         ) {
           catchMonster(message, cache);
         }
+      } else if (
+        message.content.match(/~release/i) &&
+        channel_name == cache.settings.specific_channel
+      ) {
+        cache.time = getCurrentTime();
+
+        cacheClient.set(message.guild.id, {
+          ...cache,
+          time: getCurrentTime(),
+        });
+
+        console.log("we're here");
+        releaseMonster(message);
       } else if (timestamp - cache.time < 3) {
         if (
           (message.content.match(/~release/i) &&

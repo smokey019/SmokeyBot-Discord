@@ -21,7 +21,10 @@ export async function checkMonsters(message: Message): Promise<void> {
 
   const pokemon = await databaseClient<IMonsterModel>(MonsterTable)
     .select()
-    .where('uid', message.author.id);
+    .where({
+      uid: message.author.id,
+      released: 0,
+    });
 
   if (pokemon.length > 0) {
     const monsters = getAllMonsters();
