@@ -56,6 +56,8 @@ export async function spawnMonster(
 
   // TODO: This is using a private API or trying to call a function
   // that does not exist. Consider refactoring.
+  //
+  // ? it's a usage of line #25
   await (monsterChannel as any)
     .send(embed)
     .then(() => {
@@ -66,7 +68,7 @@ export async function spawnMonster(
         cacheClient.set(message.guild.id, cache);
 
         logger.debug(
-          `${message.guild.name} - Monster Spawned! - ${monster.name}`,
+          `${message.guild.name} - Monster Spawned! - ${monster.name.english}`,
         );
       }
 

@@ -83,18 +83,19 @@ export async function catchMonster(
 
     const monster: IMonsterModel = {
       monster_id: currentSpawn.id,
-      hp: getRndInteger(1, 31),
-      attack: getRndInteger(1, 31),
-      defense: getRndInteger(1, 31),
-      sp_attack: getRndInteger(1, 31),
-      sp_defense: getRndInteger(1, 31),
-      speed: getRndInteger(1, 31),
+      hp: getRndInteger(getRndInteger(1, 5), 31),
+      attack: getRndInteger(getRndInteger(1, 5), 31),
+      defense: getRndInteger(getRndInteger(1, 5), 31),
+      sp_attack: getRndInteger(getRndInteger(1, 5), 31),
+      sp_defense: getRndInteger(getRndInteger(1, 5), 31),
+      speed: getRndInteger(getRndInteger(1, 5), 31),
       nature: getRandomNature(),
       experience: level * 1250,
       level: level,
       uid: message.author.id,
       shiny: shiny,
       mega: 0,
+      captured_at: timestamp,
     };
 
     const averageIV = (
@@ -108,27 +109,18 @@ export async function catchMonster(
       100
     ).toFixed(2);
 
-    logger.debug(
-      `${message.guild?.name} - ${message.author.username} | Calculated monster stats, inserting to DB~`,
-    );
-
     try {
-      const insertMonster = await databaseClient<IMonsterModel>(MonsterTable)
-        .insert(monster)
-        .returning('monster_id');
-
-      logger.debug(
-        `${message.guild?.name} - ${message.author.username} | Successfully inserted into DB, updating user~`,
-      );
+      const insertMonster = await databaseClient<IMonsterModel>(
+        MonsterTable,
+      ).insert(monster);
 
       const updateUser = await databaseClient<IMonsterUserModel>(
         MonsterUserTable,
       )
         .where({ uid: message.author.id })
-        .update({ latest_monster: insertMonster[0] })
-        .returning('uid');
+        .update({ latest_monster: insertMonster[0] });
 
-      if (!updateUser[0]) {
+      if (!updateUser) {
         logger.debug(
           `${message.guild?.name} - ${message.author.username} | Couldn't update user, insert to user DB~`,
         );
@@ -139,7 +131,7 @@ export async function catchMonster(
           uid: message.author.id,
         });
 
-        console.log(`Successfully inserted user ${message.author.username}`);
+        logger.info(`Successfully inserted user ${message.author.username}`);
       }
 
       if (shiny == 1) {

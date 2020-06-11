@@ -1,6 +1,7 @@
-export const MonsterTable = 'smokemon_monsters'
+export const MonsterTable = 'smokemon_monsters';
 
 export interface IMonsterModel {
+  id?: number;
   monster_id: number;
   hp: number;
   attack: number;
@@ -15,4 +16,5 @@ export interface IMonsterModel {
   uid: string;
   shiny: 0 | 1;
   mega: 0;
+  captured_at: number;
 }

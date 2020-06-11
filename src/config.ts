@@ -5,12 +5,14 @@ interface IConfig {
   DB_HOST?: string;
   DB_PASSWORD?: string;
   DB_USER?: string;
-  DISCORD_TOKEN?: string
-  LOG_LEVEL?: string
-  TWITTER_CONSUMER_KEY?: string
-  TWITTER_CONSUMER_SECRET?: string
-  TWITTER_ACCESS_TOKEN_KEY?: string
-  TWITTER_ACCESS_TOKEN_SECRET?: string
+  DISCORD_TOKEN?: string;
+  LOG_LEVEL?: string;
+  TWITTER_CONSUMER_KEY?: string;
+  TWITTER_CONSUMER_SECRET?: string;
+  TWITTER_ACCESS_TOKEN_KEY?: string;
+  TWITTER_ACCESS_TOKEN_SECRET?: string;
+  SPAWN_TIME_MIN?: string;
+  SPAWN_TIME_MAX?: string;
 }
 
 const config = dotenv.config({

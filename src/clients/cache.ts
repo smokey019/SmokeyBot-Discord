@@ -17,7 +17,7 @@ export interface ICache {
     id: number;
     guild_id: number;
     smokemon_enabled: number;
-    specific_channe: string;
+    specific_channel: string;
   };
   time?: number;
 }
