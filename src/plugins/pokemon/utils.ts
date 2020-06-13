@@ -8,7 +8,7 @@ import { getRndInteger } from '../../utils';
  * This is called a [Magic Number](https://en.wikipedia.org/wiki/Magic_number_(programming)#Unnamed_numerical_constants).
  */
 export function rollLevel(): number {
-  return getRndInteger(1, 47)
+  return getRndInteger(1, 47);
 }
 
 /**
@@ -26,3 +26,5 @@ export function rollLevel(): number {
 export function rollShiny(): 0 | 1 {
   return getRndInteger(1, 4096) >= 4096 ? 1 : 0;
 }
+
+export const img_monster_ball = `https://cdn.discordapp.com/attachments/550103813587992586/721256683665621092/pokeball2.png`;

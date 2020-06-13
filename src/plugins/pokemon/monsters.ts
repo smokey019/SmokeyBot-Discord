@@ -3,7 +3,45 @@ import { getRndInteger } from '../../utils';
 
 export type IMonster = typeof monsters[0];
 
-const extras = 35;
+const extras = 60;
+const originalMonsters = monsters;
+const Gens = {
+  one: [],
+  two: [],
+  three: [],
+  four: [],
+  five: [],
+  six: [],
+  seven: [],
+};
+
+for (let index = 0; index < 150; index++) {
+  Gens.one.push(monsters[index]);
+}
+
+for (let index = 151; index < 250; index++) {
+  Gens.two.push(monsters[index]);
+}
+
+for (let index = 251; index < 385; index++) {
+  Gens.three.push(monsters[index]);
+}
+
+for (let index = 386; index < 492; index++) {
+  Gens.four.push(monsters[index]);
+}
+
+for (let index = 493; index < 648; index++) {
+  Gens.five.push(monsters[index]);
+}
+
+for (let index = 649; index < 720; index++) {
+  Gens.six.push(monsters[index]);
+}
+
+for (let index = 721; index < 806; index++) {
+  Gens.seven.push(monsters[index]);
+}
 
 for (let index = 0; index < extras; index++) {
   // bulba
@@ -85,8 +123,6 @@ for (let index = 0; index < extras; index++) {
   // Machop
   monsters.push(monsters[65]);
   monsters.push(monsters[65]);
-  // Ledyba
-  monsters.push(monsters[164]);
   // Vulpix
   monsters.push(monsters[36]);
   monsters.push(monsters[36]);
@@ -179,10 +215,61 @@ for (let index = 0; index < extras; index++) {
   monsters.push(monsters[49]);
   // Corviknight
   monsters.push(monsters[822]);
+  // Carkol
+  monsters.push(monsters[837]);
+  // Chewtle
+  monsters.push(monsters[832]);
+  // Drednaw
+  monsters.push(monsters[833]);
+  // Skwovet
+  monsters.push(monsters[818]);
+  // Salandit
+  monsters.push(monsters[756]);
+  monsters.push(monsters[756]);
+  // Avalugg
+  monsters.push(monsters[712]);
+  // Heliolisk
+  monsters.push(monsters[694]);
+  // Espurr
+  monsters.push(monsters[676]);
+  // Ferroseed
+  monsters.push(monsters[596]);
+  // Tirtouga
+  monsters.push(monsters[563]);
+  // Boldore
+  monsters.push(monsters[524]);
+  // Gigalith
+  monsters.push(monsters[525]);
+  // Riolu
+  monsters.push(monsters[446]);
+  // Shinx
+  monsters.push(monsters[402]);
+  // Luxio
+  monsters.push(monsters[403]);
+  // Luxray
+  monsters.push(monsters[404]);
+  // Unown
+  monsters.push(monsters[200]);
+  // Ampharos
+  monsters.push(monsters[180]);
+  // Togepi
+  monsters.push(monsters[174]);
+  // Tangela
+  monsters.push(monsters[113]);
+  // Grimer
+  monsters.push(monsters[87]);
+  // Charizard
+  monsters.push(monsters[5]);
 }
+
+console.log(`Monsters length: ${monsters.length}.`);
 
 export function getAllMonsters(): IMonster[] {
   return monsters;
+}
+
+export function getPokedex(): IMonster[] {
+  return originalMonsters;
 }
 
 export function getMonsterByIndex(): IMonster | undefined {

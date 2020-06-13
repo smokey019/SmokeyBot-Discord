@@ -19,6 +19,10 @@ export async function checkMonsters(message: Message): Promise<void> {
     }..`,
   );
 
+  const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
+
+  const sort = [splitMsg[1], splitMsg[2]];
+
   const pokemon = await databaseClient<IMonsterModel>(MonsterTable)
     .select()
     .where({
@@ -34,6 +38,8 @@ export async function checkMonsters(message: Message): Promise<void> {
     logger.debug(`Successfully fetched! Compiling..`);
 
     message_contents.push(`**Total ${theWord()}**: ${pokemon.length}\n`);
+
+    const temp_monsters = [];
 
     pokemon.forEach((element: IMonsterModel) => {
       if (element.shiny) {
@@ -53,11 +59,68 @@ export async function checkMonsters(message: Message): Promise<void> {
         100
       ).toFixed(2);
 
-      message_contents.push(
-        `**${element.id}** - **${
-          monsters[element.monster_id - 1].name.english
-        }${shiny}** - **Level ${element.level}** - **Avg IV ${averageIV}%**`,
-      );
+      const tmpMsg = `**${element.id}** - **${
+        monsters[element.monster_id - 1].name.english
+      }${shiny}** - **Level ${element.level}** - **Avg IV ${averageIV}%**`;
+
+      temp_monsters.push({
+        id: element.id,
+        name: monsters[element.monster_id - 1].name.english,
+        shiny: shiny,
+        level: element.level,
+        iv: averageIV,
+        msg: tmpMsg,
+      });
+    });
+
+    if (sort[0] == 'iv' && sort[1] == 'high') {
+      temp_monsters.sort(function(a, b) {
+        return b.iv - a.iv;
+      });
+    } else if (sort[0] == 'iv' && sort[1] == 'low') {
+      temp_monsters.sort(function(a, b) {
+        return a.iv - b.iv;
+      });
+    } else if (sort[0] == 'level' && sort[1] == 'low') {
+      temp_monsters.sort(function(a, b) {
+        return a.level - b.level;
+      });
+    } else if (sort[0] == 'level' && sort[1] == 'high') {
+      temp_monsters.sort(function(a, b) {
+        return b.level - a.level;
+      });
+    } else if (sort[0] == 'id' && sort[1] == 'high') {
+      temp_monsters.sort(function(a, b) {
+        return b.id - a.id;
+      });
+    } else if (sort[0] == 'id' && sort[1] == 'low') {
+      temp_monsters.sort(function(a, b) {
+        return a.id - b.id;
+      });
+    } else if (sort[0] == 'shiny' && sort[1] == '+') {
+      temp_monsters.sort(function(a, b) {
+        return b.shiny - a.shiny;
+      });
+    } else if (sort[0] == 'shiny' && sort[1] == '-') {
+      temp_monsters.sort(function(a, b) {
+        return a.shiny - b.shiny;
+      });
+    } else if (sort[0] == 'name' && sort[1] == 'desc') {
+      temp_monsters.sort(function(a, b) {
+        return b.name - a.name;
+      });
+    } else if (sort[0] == 'name' && sort[1] == 'asc') {
+      temp_monsters.sort(function(a, b) {
+        return a.name - b.name;
+      });
+    } else {
+      temp_monsters.sort(function(a, b) {
+        return b.id - a.id;
+      });
+    }
+
+    temp_monsters.forEach((element) => {
+      message_contents.push(element.msg);
     });
 
     if (message_contents.length > 30) {

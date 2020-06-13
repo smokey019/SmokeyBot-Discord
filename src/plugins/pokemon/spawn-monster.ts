@@ -67,8 +67,8 @@ export async function spawnMonster(
       if (message.guild) {
         cacheClient.set(message.guild.id, cache);
 
-        logger.debug(
-          `${message.guild.name} - Monster Spawned! | ${monster.name.english} | ${monster.name.japanese} | ${monster.name.french} | ${monster.name.chinese}`,
+        logger.info(
+          `${message.guild.name} - Monster Spawned! | ${monster.name.english} - ${monster.name.japanese} - ${monster.name.french} - ${monster.name.chinese}`,
         );
       }
 

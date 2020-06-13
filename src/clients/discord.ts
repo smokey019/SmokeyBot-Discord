@@ -3,11 +3,16 @@ import { getLogger } from './logger';
 import { cacheClient } from './cache';
 import { getGuildSettings, putGuildSettings } from './database';
 import { checkMonsters } from '../plugins/pokemon/check-monsters';
-import { monsterInfo, monsterInfoLatest } from '../plugins/pokemon/info';
+import {
+  monsterInfo,
+  monsterInfoLatest,
+  monsterDex,
+} from '../plugins/pokemon/info';
 import { getCurrentTime, getRndInteger } from '../utils';
 import { spawnMonster } from '../plugins/pokemon/spawn-monster';
 import { catchMonster } from '../plugins/pokemon/catch-monster';
 import { releaseMonster } from '../plugins/pokemon/release-monster';
+import { toggleSmokeMon } from '../plugins/pokemon/options';
 
 const logger = getLogger('DiscordClient');
 let rateLimited = false;
@@ -16,7 +21,7 @@ const do_not_cache = [];
 export const discordClient = new Client({ retryLimit: 5 });
 
 discordClient.on('ready', () => {
-  logger.debug('Ready');
+  logger.info('Ready');
 });
 
 discordClient.on('rateLimit', (error) => {
@@ -84,14 +89,59 @@ async function parseMessage(message: Message) {
             })
           : undefined;
 
-        logger.debug(`Initialized cache for ${message.guild.name}.`);
+        logger.info(`Initialized cache for ${message.guild.name}.`);
       }
     }
   } else {
+    if (timestamp - cache.time > 3) {
+      const splitMsg = message.content.split(' ') || message.content;
+
+      if (
+        message.content.match(/~smokemon (enable|disable)/i) &&
+        splitMsg[0].toLowerCase() == '~smokemon'
+      ) {
+        if (
+          (splitMsg[1].toLowerCase() == 'enable' &&
+            !cache.settings.smokemon_enabled) ||
+          (splitMsg[1].toLowerCase() == 'disable' &&
+            cache.settings.smokemon_enabled)
+        ) {
+          toggleSmokeMon(message, cache);
+        }
+      }
+    }
+
     if (cache.settings.smokemon_enabled) {
+      const splitMsg = message.content.split(' ') || message.content;
+
+      if (
+        cache.monster_spawn.current_spawn &&
+        message.content.match(/~catch/i) &&
+        splitMsg[0].toLowerCase() == '~catch' &&
+        channel_name == cache.settings.specific_channel &&
+        splitMsg.length > 1
+      ) {
+        catchMonster(message, cache);
+      }
+
       if (timestamp - cache.time > 3) {
         if (
-          message.content.toLowerCase() == '~pokemon' &&
+          message.content.match(/~dex/i) &&
+          splitMsg[0].toLowerCase() == '~dex' &&
+          channel_name == cache.settings.specific_channel &&
+          splitMsg.length > 1
+        ) {
+          cache.time = getCurrentTime();
+
+          cacheClient.set(message.guild.id, {
+            ...cache,
+            time: getCurrentTime(),
+          });
+
+          monsterDex(message);
+        }
+        if (
+          splitMsg[0].toLowerCase() == '~pokemon' &&
           channel_name == cache.settings.specific_channel
         ) {
           cache.time = getCurrentTime();
@@ -102,8 +152,11 @@ async function parseMessage(message: Message) {
           });
 
           checkMonsters(message);
-        } else if (
+        }
+
+        if (
           message.content.match(/~info (\d+)/i) &&
+          splitMsg[0] == '~info' &&
           message.content.toLowerCase() != '~info latest' &&
           channel_name == cache.settings.specific_channel
         ) {
@@ -115,8 +168,11 @@ async function parseMessage(message: Message) {
           });
 
           monsterInfo(message);
-        } else if (
+        }
+
+        if (
           message.content.match(/~info latest/i) &&
+          splitMsg[0].toLowerCase() == '~info' &&
           channel_name == cache.settings.specific_channel
         ) {
           cache.time = getCurrentTime();
@@ -127,27 +183,25 @@ async function parseMessage(message: Message) {
           });
 
           monsterInfoLatest(message);
-        } else if (
-          cache.monster_spawn.current_spawn &&
-          message.content.match(/~catch/i) &&
+        }
+
+        if (
+          message.content.match(/~release/i) &&
+          splitMsg[0].toLowerCase() == '~release' &&
           channel_name == cache.settings.specific_channel
         ) {
-          catchMonster(message, cache);
+          cache.time = getCurrentTime();
+
+          cacheClient.set(message.guild.id, {
+            ...cache,
+            time: getCurrentTime(),
+          });
+
+          releaseMonster(message);
         }
-      } else if (
-        message.content.match(/~release/i) &&
-        channel_name == cache.settings.specific_channel
-      ) {
-        cache.time = getCurrentTime();
+      }
 
-        cacheClient.set(message.guild.id, {
-          ...cache,
-          time: getCurrentTime(),
-        });
-
-        console.log("we're here");
-        releaseMonster(message);
-      } else if (timestamp - cache.time < 3) {
+      if (timestamp - cache.time < 3) {
         if (
           (message.content.match(/~release/i) &&
             channel_name == cache.settings.specific_channel) ||
@@ -161,7 +215,7 @@ async function parseMessage(message: Message) {
         }
       }
 
-      const spawn_timer = getRndInteger(30, 1200);
+      const spawn_timer = getRndInteger(getRndInteger(30, 120), 2400);
 
       if (timestamp - cache.monster_spawn.last_spawn_time > spawn_timer) {
         spawnMonster(message, cache);

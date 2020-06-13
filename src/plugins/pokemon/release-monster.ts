@@ -13,9 +13,7 @@ export async function releaseMonster(message: Message): Promise<void> {
 
   if (tmpMsg.length > 1) {
     if (tmpMsg[1].toString().match(',')) {
-      const multi_dump = tmpMsg[1].split(',');
-
-      console.log(multi_dump);
+      const multi_dump = tmpMsg[1].replace(' ', '').split(',');
 
       if (multi_dump.length < 10) {
         multi_dump.forEach(async (element) => {
@@ -26,11 +24,18 @@ export async function releaseMonster(message: Message): Promise<void> {
           if (
             to_release &&
             !to_release[0].released &&
-            to_release[0].uid == message.author.id
+            to_release[0].uid == message.author.id &&
+            !to_release[0].released
           ) {
-            databaseClient<IMonsterModel>(MonsterTable)
+            const released_monster = await databaseClient<IMonsterModel>(
+              MonsterTable,
+            )
               .where('id', to_release[0].id)
               .update({ released: 1 });
+
+            if (released_monster) {
+              logger.debug(`Successfully released a monster.`);
+            }
           }
         });
 
@@ -54,7 +59,8 @@ export async function releaseMonster(message: Message): Promise<void> {
       if (
         to_release &&
         !to_release[0].released &&
-        to_release[0].uid == message.author.id
+        to_release[0].uid == message.author.id &&
+        !to_release[0].released
       ) {
         const monsters = getAllMonsters();
 

@@ -83,12 +83,12 @@ export async function catchMonster(
 
     const monster: IMonsterModel = {
       monster_id: currentSpawn.id,
-      hp: getRndInteger(getRndInteger(1, 5), 31),
-      attack: getRndInteger(getRndInteger(1, 5), 31),
-      defense: getRndInteger(getRndInteger(1, 5), 31),
-      sp_attack: getRndInteger(getRndInteger(1, 5), 31),
-      sp_defense: getRndInteger(getRndInteger(1, 5), 31),
-      speed: getRndInteger(getRndInteger(1, 5), 31),
+      hp: getRndInteger(getRndInteger(1, 3), 31),
+      attack: getRndInteger(getRndInteger(1, 3), 31),
+      defense: getRndInteger(getRndInteger(1, 3), 31),
+      sp_attack: getRndInteger(getRndInteger(1, 3), 31),
+      sp_defense: getRndInteger(getRndInteger(1, 3), 31),
+      speed: getRndInteger(getRndInteger(1, 3), 31),
       nature: getRandomNature(),
       experience: level * 1250,
       level: level,
@@ -140,7 +140,7 @@ export async function catchMonster(
           `POGGERS! You caught a *SHINY* level ${level} ${currentSpawn.name.english}! Avg IV: ${averageIV}% - ID: ${insertMonster[0]} - Added to Pokédex.`,
         );
 
-        logger.debug(
+        logger.info(
           `${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
         );
       } else {
@@ -148,7 +148,7 @@ export async function catchMonster(
           `YOINK! You caught a level ${level} ${currentSpawn.name.english}! Avg IV: ${averageIV}% - ID: ${insertMonster[0]} - Added to Pokédex.`,
         );
 
-        logger.debug(
+        logger.info(
           `${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
         );
       }

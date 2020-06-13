@@ -2,13 +2,14 @@ import { Message, MessageEmbed } from 'discord.js';
 
 import { format_number } from '../../utils';
 // import { getLogger } from '../../clients/logger';
-import { getAllMonsters } from './monsters';
+import { getAllMonsters, getPokedex } from './monsters';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import {
   databaseClient,
   IUserSettings,
   UserSettingsTable,
 } from '../../clients/database';
+import { img_monster_ball } from './utils';
 
 // const logger = getLogger('Pokemon');
 
@@ -85,11 +86,18 @@ export async function monsterInfoLatest(message: Message): Promise<void> {
 
       if (tmpMonster[0].shiny) {
         const embed = new MessageEmbed()
-          .setTitle(
+          /*.setTitle(
             `**Level ${tmpMonster[0].level} ${monster.name.english} <:star:719087649536606208>**`,
+          )*/
+          .setAuthor(
+            `Level ${tmpMonster[0].level} ${monster.name.english} *SHINY`,
+            img_monster_ball,
+            `https://bulbapedia.bulbagarden.net/wiki/${monster.name.english}_(Pokémon)`,
           )
-          .setColor(0xff0000)
-          .setImage(`https://bot.smokey.gg/pokemon/images/gif/${tmpID}.gif`)
+          .setColor(0xf1912b)
+          .setImage(
+            `https://bot.smokey.gg/pokemon/images/gif/${tmpID}_shiny.gif`,
+          )
           // .setImage(`https://www.serebii.net/Shiny/SWSH/${tmpID}.png`)
           // .setImage(`https://bot.smokey.gg/pokemon/images/hd/${tmpID}.png`)
           .setThumbnail(
@@ -115,7 +123,12 @@ export async function monsterInfoLatest(message: Message): Promise<void> {
           .catch(console.error);
       } else {
         const embed = new MessageEmbed() // .setThumbnail(`https://bot.smokey.gg/pokemon/images/sprites/${tmpID}MS.png`)
-          .setTitle(`**Level ${tmpMonster[0].level} ${monster.name.english}**`)
+          // .setTitle(`**Level ${tmpMonster[0].level} ${monster.name.english}**`)
+          .setAuthor(
+            `Level ${tmpMonster[0].level} ${monster.name.english}`,
+            img_monster_ball,
+            `https://bulbapedia.bulbagarden.net/wiki/${monster.name.english}_(Pokémon)`,
+          )
           .setColor(0xff0000)
           .setThumbnail(`https://bot.smokey.gg/pokemon/images/gif/${tmpID}.gif`)
           .setImage(`https://bot.smokey.gg/pokemon/images/hd/${tmpID}.png`)
@@ -211,11 +224,14 @@ export async function monsterInfo(message: Message): Promise<void> {
 
     if (tmpMonster[0].shiny) {
       const embed = new MessageEmbed()
-        .setTitle(
-          `**Level ${tmpMonster[0].level} ${monster.name.english} <:star:719087649536606208>**`,
+
+        .setAuthor(
+          `Level ${tmpMonster[0].level}  ${monster.name.english} *SHINY`,
+          img_monster_ball,
+          `https://bulbapedia.bulbagarden.net/wiki/${monster.name.english}_(Pokémon)`,
         )
-        .setColor(0xff0000)
-        .setImage(`https://bot.smokey.gg/pokemon/images/gif/${tmpID}.gif`)
+        .setColor(0xf1912b)
+        .setImage(`https://bot.smokey.gg/pokemon/images/gif/${tmpID}_shiny.gif`)
         // .setImage(`https://www.serebii.net/Shiny/SWSH/${tmpID}.png`)
         // .setImage(`https://bot.smokey.gg/pokemon/images/hd/${tmpID}.png`)
         .setThumbnail(
@@ -241,7 +257,12 @@ export async function monsterInfo(message: Message): Promise<void> {
         .catch(console.error);
     } else {
       const embed = new MessageEmbed() // .setThumbnail(`https://bot.smokey.gg/pokemon/images/sprites/${tmpID}MS.png`)
-        .setTitle(`**Level ${tmpMonster[0].level} ${monster.name.english}**`)
+        .setAuthor(
+          `Level ${tmpMonster[0].level} ${monster.name.english}`,
+          img_monster_ball,
+          `https://bulbapedia.bulbagarden.net/wiki/${monster.name.english}_(Pokémon)`,
+        )
+        // .setTitle(`**Level ${tmpMonster[0].level} ${monster.name.english}**`)
         .setColor(0xff0000)
         .setThumbnail(`https://bot.smokey.gg/pokemon/images/gif/${tmpID}.gif`)
         .setImage(`https://bot.smokey.gg/pokemon/images/hd/${tmpID}.png`)
@@ -263,5 +284,78 @@ export async function monsterInfo(message: Message): Promise<void> {
         })
         .catch(console.error);
     }
+  }
+}
+
+/**
+ * Get a specific Monster's information.
+ * @param id
+ */
+export async function monsterDex(message: Message): Promise<void> {
+  const tmpSplit = message.content.split(' ');
+
+  const monsters = getPokedex();
+
+  let tempMonster = undefined;
+
+  monsters.forEach(async (element) => {
+    if (element.name.english.toLowerCase() == tmpSplit[1].toLowerCase()) {
+      tempMonster = element;
+    }
+  });
+
+  if (tempMonster) {
+    const monster_types = tempMonster.type.join(' | ');
+
+    const tmpID = `${tempMonster.id}`.padStart(3, '0');
+
+    const monster_stats = {
+      hp: tempMonster.base.HP,
+      attack: tempMonster.base.Attack,
+      defense: tempMonster.base.Defense,
+      sp_attack: tempMonster.base['Sp. Attack'],
+      sp_defense: tempMonster.base['Sp. Defense'],
+      speed: tempMonster.base.Speed,
+    };
+
+    /* future shiny stuff
+    let thumbnail = ``;
+    let image = ``;
+
+    // shiny
+    if (tmpSplit[2] == '+'){
+      thumbnail = ``;
+      image = ``;
+    }else{
+      // not shiny
+      thumbnail = ``;
+      image = ``;
+    }*/
+
+    const embed = new MessageEmbed()
+      .setAuthor(
+        '#' + tmpID + ' - ' + tempMonster.name.english,
+        img_monster_ball,
+        `https://bulbapedia.bulbagarden.net/wiki/${tempMonster.name.english}_(Pokémon)`,
+      )
+      .setColor(0x12bca4)
+      .setThumbnail(`https://bot.smokey.gg/pokemon/images/gif/${tmpID}.gif`)
+      .setImage(`https://bot.smokey.gg/pokemon/images/hd/${tmpID}.png`)
+      .setDescription(`**Type(s)**: ${monster_types}
+
+    **Base Stats**
+
+    **HP**: ${monster_stats.hp}
+    **Attack**: ${monster_stats.attack}
+    **Defense**: ${monster_stats.defense}
+    **Sp. Atk**: ${monster_stats.sp_attack}
+    **Sp. Def**: ${monster_stats.sp_defense}
+    **Speed**: ${monster_stats.speed}`);
+    await message.channel
+      .send(embed)
+      .then((message) => {
+        return message;
+      })
+      .catch(console.error);
   }
 }
