@@ -7,6 +7,7 @@ import { IMonster } from '../plugins/pokemon/monsters';
 const logger = getLogger('Cache');
 
 export interface ICache {
+  tweet: [];
   monster_spawn: {
     current_spawn?: IMonster;
     last_spawn?: IMonster;
@@ -15,7 +16,7 @@ export interface ICache {
   };
   settings: {
     id: number;
-    guild_id: number;
+    guild_id: number | string;
     smokemon_enabled: number;
     specific_channel: string;
   };

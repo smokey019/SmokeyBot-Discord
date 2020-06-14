@@ -1,7 +1,7 @@
 import { Client, Message, TextChannel } from 'discord.js';
 import { getLogger } from './logger';
-import { cacheClient } from './cache';
-import { getGuildSettings, putGuildSettings } from './database';
+import { cacheClient, ICache } from './cache';
+import { getGuildSettings, putGuildSettings, IGuildSettings } from './database';
 import { checkMonsters } from '../plugins/pokemon/check-monsters';
 import {
   monsterInfo,
@@ -13,6 +13,10 @@ import { spawnMonster } from '../plugins/pokemon/spawn-monster';
 import { catchMonster } from '../plugins/pokemon/catch-monster';
 import { releaseMonster } from '../plugins/pokemon/release-monster';
 import { toggleSmokeMon } from '../plugins/pokemon/options';
+import {
+  sync_smokemotes,
+  sync_ffz_emotes,
+} from '../plugins/smokeybot/smokeybot';
 
 const logger = getLogger('DiscordClient');
 let rateLimited = false;
@@ -56,14 +60,14 @@ async function parseMessage(message: Message) {
     return;
   }
 
-  const cache: any =
+  const cache: ICache =
     message.guild != null ? await cacheClient.get(message.guild.id) : undefined;
 
   if (cache == null) {
     if (!do_not_cache.includes(message.guild?.id)) {
       do_not_cache.push(message.guild?.id);
 
-      const settings: any =
+      const settings: IGuildSettings =
         message.guild != null
           ? await getGuildSettings(message.guild.id)
           : undefined;
@@ -73,6 +77,7 @@ async function parseMessage(message: Message) {
       } else {
         message.guild != null
           ? cacheClient.set(message.guild.id, {
+              tweet: [],
               monster_spawn: {
                 current_spawn: undefined,
                 last_spawn: undefined,
@@ -106,8 +111,50 @@ async function parseMessage(message: Message) {
           (splitMsg[1].toLowerCase() == 'disable' &&
             cache.settings.smokemon_enabled)
         ) {
+          cache.time = getCurrentTime();
+
+          cacheClient.set(message.guild.id, {
+            ...cache,
+            time: getCurrentTime(),
+          });
+
           toggleSmokeMon(message, cache);
         }
+      }
+
+      if (splitMsg[0].toLowerCase() == '~sync-emotes-smokemotes') {
+        cache.time = getCurrentTime();
+
+        cacheClient.set(message.guild.id, {
+          ...cache,
+          time: getCurrentTime(),
+        });
+
+        sync_smokemotes(message);
+      }
+
+      if (splitMsg[0].toLowerCase() == '~sync-emotes-ffz') {
+        cache.time = getCurrentTime();
+
+        cacheClient.set(message.guild.id, {
+          ...cache,
+          time: getCurrentTime(),
+        });
+
+        sync_ffz_emotes(message);
+      }
+
+      if (splitMsg[0].toLowerCase() == '~invite') {
+        cache.time = getCurrentTime();
+
+        cacheClient.set(message.guild.id, {
+          ...cache,
+          time: getCurrentTime(),
+        });
+
+        message.reply(
+          `here is Smokey's Discord Bot invite link: https://discordapp.com/oauth2/authorize?client_id=458710213122457600&scope=bot&permissions=8`,
+        );
       }
     }
 

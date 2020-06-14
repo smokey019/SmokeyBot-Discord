@@ -882,8 +882,8 @@
     "images": {
       "normal": "https://i.imgur.com/1FKD5NG.png",
       "shiny": "https://i.imgur.com/FezAeor.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://i.imgur.com/2sDZWCE.gif",
+      "gif-shiny": "https://i.imgur.com/uBTMboZ.gif"
     },
     "base": {
       "HP": 38,
@@ -904,10 +904,10 @@
     },
     "type": ["Fire"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/Nn5ttay.png",
+      "shiny": "https://i.imgur.com/4Cm3Llj.png",
+      "gif": "https://i.imgur.com/d6iV4Jl.gif",
+      "gif-shiny": "https://i.imgur.com/yXzIID5.gif"
     },
     "base": {
       "HP": 73,
@@ -928,10 +928,10 @@
     },
     "type": ["Normal", "Fairy"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/u8UNz4a.png",
+      "shiny": "https://i.imgur.com/B2DMQop.png",
+      "gif": "https://i.imgur.com/sutAKDk.gif",
+      "gif-shiny": "https://i.imgur.com/qeJNwx5.gif"
     },
     "base": {
       "HP": 115,
@@ -952,10 +952,10 @@
     },
     "type": ["Normal", "Fairy"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/hjfpWuW.png",
+      "shiny": "https://i.imgur.com/kACdvcl.png",
+      "gif": "https://i.imgur.com/z25bdH8.gif",
+      "gif-shiny": "https://i.imgur.com/9jrNfkG.gif"
     },
     "base": {
       "HP": 140,
@@ -976,10 +976,10 @@
     },
     "type": ["Poison", "Flying"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/omicbc5.png",
+      "shiny": "https://i.imgur.com/8yggkGp.png",
+      "gif": "https://i.imgur.com/r87ANlg.gif",
+      "gif-shiny": "https://i.imgur.com/hmbIC7B.gif"
     },
     "base": {
       "HP": 40,
@@ -1000,10 +1000,10 @@
     },
     "type": ["Poison", "Flying"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/XTRuVZb.png",
+      "shiny": "https://i.imgur.com/woTzbA3.png",
+      "gif": "https://i.imgur.com/zPXX7uU.gif",
+      "gif-shiny": "https://i.imgur.com/nBftTCm.gif"
     },
     "base": {
       "HP": 75,
@@ -1024,10 +1024,10 @@
     },
     "type": ["Grass", "Poison"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/rohFOVY.png",
+      "shiny": "https://i.imgur.com/CKWIIbk.png",
+      "gif": "https://i.imgur.com/tNdJpvh.gif",
+      "gif-shiny": "https://i.imgur.com/BM7gm1G.gif"
     },
     "base": {
       "HP": 45,
@@ -1048,10 +1048,10 @@
     },
     "type": ["Grass", "Poison"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/Zn0EJkz.png",
+      "shiny": "https://i.imgur.com/uhwtsUT.png",
+      "gif": "https://i.imgur.com/tcGNpin.gif",
+      "gif-shiny": "https://i.imgur.com/jceDB38.gif"
     },
     "base": {
       "HP": 60,
@@ -1072,10 +1072,10 @@
     },
     "type": ["Grass", "Poison"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/kDXmRFh.png",
+      "shiny": "https://i.imgur.com/zVbilKj.png",
+      "gif": "https://i.imgur.com/yIZD8of.gif",
+      "gif-shiny": "https://i.imgur.com/rUp8UCd.gif"
     },
     "base": {
       "HP": 75,
@@ -1096,10 +1096,10 @@
     },
     "type": ["Bug", "Grass"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/VYAy35Z.png",
+      "shiny": "https://i.imgur.com/BgVNxbI.png",
+      "gif": "https://i.imgur.com/TmV5NcI.gif",
+      "gif-shiny": "https://i.imgur.com/Wywv5oQ.gif"
     },
     "base": {
       "HP": 35,
@@ -1120,10 +1120,10 @@
     },
     "type": ["Bug", "Grass"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/opnElF6.png",
+      "shiny": "https://i.imgur.com/MbTSKDy.png",
+      "gif": "https://i.imgur.com/tU7fQqw.gif",
+      "gif-shiny": "https://i.imgur.com/U1RMr5s.gif"
     },
     "base": {
       "HP": 60,
@@ -1144,10 +1144,10 @@
     },
     "type": ["Bug", "Poison"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/Rn5wsNm.png",
+      "shiny": "https://i.imgur.com/nNCk6cw.png",
+      "gif": "https://i.imgur.com/vwf6ga8.gif",
+      "gif-shiny": "https://i.imgur.com/3G3G8sM.gif"
     },
     "base": {
       "HP": 60,
@@ -1168,10 +1168,10 @@
     },
     "type": ["Bug", "Poison"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/y53ZKf5.png",
+      "shiny": "https://i.imgur.com/mbjMDNK.png",
+      "gif": "https://i.imgur.com/00pjLQk.gif",
+      "gif-shiny": "https://i.imgur.com/yZSG3C5.gif"
     },
     "base": {
       "HP": 70,
@@ -1192,10 +1192,10 @@
     },
     "type": ["Ground"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/nx28VD3.png",
+      "shiny": "https://i.imgur.com/OGUuJsp.png",
+      "gif": "https://i.imgur.com/DohTNaV.gif",
+      "gif-shiny": "https://i.imgur.com/hffsFNG.gif"
     },
     "base": {
       "HP": 10,
@@ -1216,10 +1216,10 @@
     },
     "type": ["Ground"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/UzD6Mpp.png",
+      "shiny": "https://i.imgur.com/BvrLxHy.png",
+      "gif": "https://i.imgur.com/CPmhDE4.gif",
+      "gif-shiny": "https://i.imgur.com/KfDhlcA.gif"
     },
     "base": {
       "HP": 35,
@@ -1240,10 +1240,10 @@
     },
     "type": ["Normal"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/pYrxomv.png",
+      "shiny": "https://i.imgur.com/YKTgAnw.png",
+      "gif": "https://i.imgur.com/Ll4j4CC.gif",
+      "gif-shiny": "https://i.imgur.com/N9LtrT6.gif"
     },
     "base": {
       "HP": 40,
@@ -1264,10 +1264,10 @@
     },
     "type": ["Normal"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/o1485i6.png",
+      "shiny": "https://i.imgur.com/X0LPAWD.png",
+      "gif": "https://i.imgur.com/SUW3uDS.gif",
+      "gif-shiny": "https://i.imgur.com/SFM1yyX.gif"
     },
     "base": {
       "HP": 65,
@@ -1288,10 +1288,10 @@
     },
     "type": ["Water"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/g3tGEqq.png",
+      "shiny": "https://i.imgur.com/l7MRngY.png",
+      "gif": "https://i.imgur.com/cNIdmAX.gif",
+      "gif-shiny": "https://i.imgur.com/6xHSNIf.gif"
     },
     "base": {
       "HP": 50,
@@ -1312,10 +1312,10 @@
     },
     "type": ["Water"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/gWIAbpS.png",
+      "shiny": "https://i.imgur.com/NXOC4fm.png",
+      "gif": "https://i.imgur.com/gqqSk9u.gif",
+      "gif-shiny": "https://i.imgur.com/YpuIcS9.gif"
     },
     "base": {
       "HP": 80,
@@ -1336,10 +1336,10 @@
     },
     "type": ["Fighting"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/tM0ozNR.png",
+      "shiny": "https://i.imgur.com/FdHUoUl.png",
+      "gif": "https://i.imgur.com/l8yT54H.gif",
+      "gif-shiny": "https://i.imgur.com/1ztq9MQ.gif"
     },
     "base": {
       "HP": 40,
@@ -1360,10 +1360,10 @@
     },
     "type": ["Fighting"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/0sl5rjG.png",
+      "shiny": "https://i.imgur.com/2W8NoP9.png",
+      "gif": "https://i.imgur.com/G0CN8Eh.gif",
+      "gif-shiny": "https://i.imgur.com/2JOoFqI.gif"
     },
     "base": {
       "HP": 65,
@@ -1384,10 +1384,10 @@
     },
     "type": ["Fire"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/fMNYXnc.png",
+      "shiny": "https://i.imgur.com/42sEYk6.png",
+      "gif": "https://i.imgur.com/Ro3dm7w.gif",
+      "gif-shiny": "https://i.imgur.com/PgCsICo.gif"
     },
     "base": {
       "HP": 55,
@@ -1408,10 +1408,10 @@
     },
     "type": ["Fire"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/uUtoxSO.png",
+      "shiny": "https://i.imgur.com/y8pqSVO.png",
+      "gif": "https://i.imgur.com/BSM6uqn.gif",
+      "gif-shiny": "https://i.imgur.com/uweHI8q.gif"
     },
     "base": {
       "HP": 90,
@@ -1432,10 +1432,10 @@
     },
     "type": ["Water"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/tBb0XRs.png",
+      "shiny": "https://i.imgur.com/g2Hj9y8.png",
+      "gif": "https://i.imgur.com/V6E6298.gif",
+      "gif-shiny": "https://i.imgur.com/ZLe5KQQ.gif"
     },
     "base": {
       "HP": 40,
@@ -1456,10 +1456,10 @@
     },
     "type": ["Water"],
     "images": {
-      "normal": "",
-      "shiny": "",
-      "gif": "",
-      "gif-shiny": ""
+      "normal": "https://i.imgur.com/kZC3iwH.png",
+      "shiny": "https://i.imgur.com/X4PiJVe.png",
+      "gif": "https://i.imgur.com/NH2xMKf.gif",
+      "gif-shiny": "https://i.imgur.com/IS4cUD4.gif"
     },
     "base": {
       "HP": 65,
@@ -1480,8 +1480,8 @@
     },
     "type": ["Water", "Fighting"],
     "images": {
-      "normal": "",
-      "shiny": "",
+      "normal": "https://i.imgur.com/x6REaaX.png",
+      "shiny": "https://i.imgur.com/JhFodnW.png",
       "gif": "",
       "gif-shiny": ""
     },
