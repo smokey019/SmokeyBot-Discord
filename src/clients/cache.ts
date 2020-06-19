@@ -24,5 +24,7 @@ export interface ICache {
 }
 
 export const cacheClient = new Keyv<ICache>();
+export const xp_cache = new Keyv();
 
 cacheClient.on('error', (error) => logger.error(error));
+xp_cache.on('error', (error) => logger.error(error));

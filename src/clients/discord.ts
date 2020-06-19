@@ -2,13 +2,18 @@ import { Client, Message, TextChannel } from 'discord.js';
 import { getLogger } from './logger';
 import { cacheClient, ICache } from './cache';
 import { getGuildSettings, putGuildSettings, IGuildSettings } from './database';
-import { checkMonsters } from '../plugins/pokemon/check-monsters';
+import {
+  checkMonsters,
+  checkFavorites,
+} from '../plugins/pokemon/check-monsters';
 import {
   monsterInfo,
   monsterInfoLatest,
   monsterDex,
+  userDex,
+  currentMonsterInfo,
 } from '../plugins/pokemon/info';
-import { getCurrentTime, getRndInteger } from '../utils';
+import { getCurrentTime, getRndInteger, theWord } from '../utils';
 import { spawnMonster } from '../plugins/pokemon/spawn-monster';
 import { catchMonster } from '../plugins/pokemon/catch-monster';
 import { releaseMonster } from '../plugins/pokemon/release-monster';
@@ -17,6 +22,12 @@ import {
   sync_smokemotes,
   sync_ffz_emotes,
 } from '../plugins/smokeybot/smokeybot';
+import { checkExpGain } from '../plugins/pokemon/exp-gain';
+import {
+  selectMonster,
+  setFavorite,
+  unFavorite,
+} from '../plugins/pokemon/monsters';
 
 const logger = getLogger('DiscordClient');
 let rateLimited = false;
@@ -117,8 +128,14 @@ async function parseMessage(message: Message) {
             ...cache,
             time: getCurrentTime(),
           });
-
-          toggleSmokeMon(message, cache);
+          if (!toggleSmokeMon(message, cache)) {
+            message.reply(
+              'There was an error. You might not have permission to do this.',
+            );
+            logger.info(
+              `${message.author.username} is improperly trying to enable smokemon in ${message.guild.name} - ${message.guild.id}`,
+            );
+          }
         }
       }
 
@@ -160,6 +177,18 @@ async function parseMessage(message: Message) {
 
     if (cache.settings.smokemon_enabled) {
       const splitMsg = message.content.split(' ') || message.content;
+
+      if (
+        message.content.match(/~unique/i) &&
+        splitMsg[0].toLowerCase() == '~unique'
+      ) {
+        const tempdex = await userDex(message);
+        message.reply(
+          `You have ${
+            tempdex.length
+          } total unique ${theWord()} in your Pokédex.`,
+        );
+      }
 
       if (
         cache.monster_spawn.current_spawn &&
@@ -233,6 +262,22 @@ async function parseMessage(message: Message) {
         }
 
         if (
+          message.content.match(/~info/i) &&
+          splitMsg[0].toLowerCase() == '~info' &&
+          splitMsg.length == 1 &&
+          channel_name == cache.settings.specific_channel
+        ) {
+          cache.time = getCurrentTime();
+
+          cacheClient.set(message.guild.id, {
+            ...cache,
+            time: getCurrentTime(),
+          });
+
+          currentMonsterInfo(message);
+        }
+
+        if (
           message.content.match(/~release/i) &&
           splitMsg[0].toLowerCase() == '~release' &&
           channel_name == cache.settings.specific_channel
@@ -246,6 +291,68 @@ async function parseMessage(message: Message) {
 
           releaseMonster(message);
         }
+
+        if (
+          message.content.match(/~select/i) &&
+          splitMsg[0].toLowerCase() == '~select' &&
+          channel_name == cache.settings.specific_channel
+        ) {
+          cache.time = getCurrentTime();
+
+          cacheClient.set(message.guild.id, {
+            ...cache,
+            time: getCurrentTime(),
+          });
+
+          selectMonster(message);
+        }
+
+        if (
+          message.content.match(/~favorites/i) &&
+          splitMsg[0].toLowerCase() == '~favorites' &&
+          channel_name == cache.settings.specific_channel
+        ) {
+          cache.time = getCurrentTime();
+
+          cacheClient.set(message.guild.id, {
+            ...cache,
+            time: getCurrentTime(),
+          });
+
+          checkFavorites(message);
+        }
+
+        if (
+          message.content.match(/~favorite/i) &&
+          splitMsg[0].toLowerCase() == '~favorite' &&
+          channel_name == cache.settings.specific_channel
+        ) {
+          cache.time = getCurrentTime();
+
+          cacheClient.set(message.guild.id, {
+            ...cache,
+            time: getCurrentTime(),
+          });
+
+          setFavorite(message);
+        }
+
+        if (
+          message.content.match(/~unfavorite/i) &&
+          splitMsg[0].toLowerCase() == '~unfavorite' &&
+          channel_name == cache.settings.specific_channel
+        ) {
+          cache.time = getCurrentTime();
+
+          cacheClient.set(message.guild.id, {
+            ...cache,
+            time: getCurrentTime(),
+          });
+
+          unFavorite(message);
+        }
+
+        checkExpGain(message);
       }
 
       if (timestamp - cache.time < 3) {

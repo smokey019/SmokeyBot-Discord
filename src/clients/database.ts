@@ -43,11 +43,7 @@ export async function getMonsterUser(uid: number | string): Promise<any> {
     .select()
     .where('uid', uid);
 
-  if (!user_settings) {
-    /*const insertUser = await databaseClient<IUserSettings>(UserSettingsTable)
-        .insert({})
-        .returning('id');*/
-  }
+  return user_settings[0];
 }
 
 /**

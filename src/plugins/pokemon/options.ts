@@ -47,6 +47,9 @@ export async function toggleSmokeMon(
 
         return true;
       } else {
+        logger.error(
+          `Couldn't update settings for guild ${message.guild.name} - ${message.guild.id}.`,
+        );
         return false;
       }
     }
@@ -75,6 +78,9 @@ export async function toggleSmokeMon(
       }
     }
   } else {
+    logger.debug(
+      `Not enough parameters for smokemon toggle in ${message.guild.name} | ${message.guild.id}.`,
+    );
     return false;
   }
 }

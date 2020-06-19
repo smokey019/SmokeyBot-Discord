@@ -18,4 +18,5 @@ export interface IMonsterModel {
   mega: 0;
   captured_at: number;
   released?: 0 | 1;
+  favorite?: 0 | 1;
 }

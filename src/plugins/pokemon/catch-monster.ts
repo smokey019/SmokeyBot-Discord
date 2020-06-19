@@ -3,12 +3,13 @@ import { Message } from 'discord.js';
 import { getCurrentTime, getRndInteger } from '../../utils';
 import { getLogger } from '../../clients/logger';
 import { ICache, cacheClient } from '../../clients/cache';
-import { IMonster } from './monsters';
 import { getRandomNature } from './natures';
 import { rollShiny, rollLevel } from './utils';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { databaseClient } from '../../clients/database';
 import { MonsterUserTable, IMonsterUserModel } from '../../models/MonsterUser';
+import { userDex } from './info';
+import { IMonsterDex } from './monsters';
 
 const logger = getLogger('Pokemon');
 
@@ -19,7 +20,7 @@ const logger = getLogger('Pokemon');
  * @param messageContent
  * @param currentSpawn
  */
-function monsterMatchesPrevious(messageContent: string, { name }: IMonster) {
+function monsterMatchesPrevious(messageContent: string, { name }: IMonsterDex) {
   return (
     messageContent ==
       `~catch ${name.english.toLowerCase().replace(/♂|♀/g, '')}` ||
@@ -96,6 +97,7 @@ export async function catchMonster(
       shiny: shiny,
       mega: 0,
       captured_at: timestamp,
+      favorite: 0,
     };
 
     const averageIV = (
@@ -110,6 +112,8 @@ export async function catchMonster(
     ).toFixed(2);
 
     try {
+      const dex = await userDex(message);
+
       const insertMonster = await databaseClient<IMonsterModel>(
         MonsterTable,
       ).insert(monster);
@@ -134,24 +138,31 @@ export async function catchMonster(
         logger.info(`Successfully inserted user ${message.author.username}`);
       }
 
-      if (shiny == 1) {
-        // TODO: Implement https://www.npmjs.com/package/i18next or another template string library so the verbiage isn't inlined.
-        message.reply(
-          `POGGERS! You caught a *SHINY* level ${level} ${currentSpawn.name.english}! Avg IV: ${averageIV}% - ID: ${insertMonster[0]} - Added to Pokédex.`,
-        );
+      let response = ``;
 
+      if (shiny == 1 && !dex.includes(currentSpawn.id)) {
+        response = `POGGERS! You caught a *SHINY* level ${level} ${currentSpawn.name.english}! Avg IV: ${averageIV}% - ID: ${insertMonster[0]} - Added to Pokédex.`;
         logger.info(
           `${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
         );
-      } else {
-        message.reply(
-          `YOINK! You caught a level ${level} ${currentSpawn.name.english}! Avg IV: ${averageIV}% - ID: ${insertMonster[0]} - Added to Pokédex.`,
-        );
-
+      } else if (shiny == 0 && !dex.includes(currentSpawn.id)) {
+        response = `YOINK! You caught a level ${level} ${currentSpawn.name.english}! Avg IV: ${averageIV}% - ID: ${insertMonster[0]} - Added to Pokédex.`;
         logger.info(
           `${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
         );
+      } else if (shiny == 0 && dex.includes(currentSpawn.id)) {
+        response = `YOINK! You caught a level ${level} ${currentSpawn.name.english}! Avg IV: ${averageIV}% - ID: ${insertMonster[0]}.`;
+        logger.info(
+          `${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
+        );
+      } else if (shiny == 1 && dex.includes(currentSpawn.id)) {
+        response = `POGGERS! You caught a *SHINY* level ${level} ${currentSpawn.name.english}! Avg IV: ${averageIV}% - ID: ${insertMonster[0]}.`;
+        logger.info(
+          `${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
+        );
       }
+
+      message.reply(response);
     } catch (error) {
       logger.error(error);
     }

@@ -1,7 +1,7 @@
 import { Message } from 'discord.js';
 import { databaseClient } from '../../clients/database';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
-import { getAllMonsters } from './monsters';
+import { findMonsterByID } from './monsters';
 import { getLogger } from '../../clients/logger';
 
 const logger = getLogger('Pokemon');
@@ -15,11 +15,13 @@ export async function releaseMonster(message: Message): Promise<void> {
     if (tmpMsg[1].toString().match(',')) {
       const multi_dump = tmpMsg[1].replace(' ', '').split(',');
 
-      if (multi_dump.length < 10) {
+      if (multi_dump.length < 35) {
         multi_dump.forEach(async (element) => {
           const to_release = await databaseClient<IMonsterModel>(MonsterTable)
             .select()
             .where('id', element);
+
+          if (!to_release[0]) return;
 
           if (
             to_release &&
@@ -62,7 +64,7 @@ export async function releaseMonster(message: Message): Promise<void> {
         to_release[0].uid == message.author.id &&
         !to_release[0].released
       ) {
-        const monsters = getAllMonsters();
+        const monster = findMonsterByID(to_release[0].monster_id);
 
         const released_monster = await databaseClient<IMonsterModel>(
           MonsterTable,
@@ -73,9 +75,7 @@ export async function releaseMonster(message: Message): Promise<void> {
         if (released_monster) {
           message
             .reply(
-              `Successfully released your monster. Goodbye ${
-                monsters[to_release[0].monster_id - 1].name.english
-              } :(`,
+              `Successfully released your monster. Goodbye ${monster.name.english} :(`,
             )
             .then(() => {
               logger.info(

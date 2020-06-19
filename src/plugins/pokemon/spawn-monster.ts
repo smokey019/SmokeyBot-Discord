@@ -2,7 +2,7 @@ import { Message, MessageEmbed } from 'discord.js';
 
 import { getLogger } from '../../clients/logger';
 import { cacheClient, ICache } from '../../clients/cache';
-import { getRandomMonster } from './monsters';
+import { getRandomMonster, IMonster } from './monsters';
 import { getCurrentTime } from '../../utils';
 
 const logger = getLogger('Pokemon');
@@ -42,14 +42,27 @@ export async function spawnMonster(
     },
   });
 
-  const monster = getRandomMonster();
-  const tmpID = `${monster.id}`.padStart(3, '0');
+  let monster: IMonster = getRandomMonster();
+  while (
+    !monster.name.english ||
+    monster.id < 0 ||
+    monster.id > 890 ||
+    monster.forme ||
+    !monster.images
+  ) {
+    logger.debug('Invalid monster found.');
+    console.log(monster);
+    monster = getRandomMonster();
+  }
+
+  // const tmpID = `${monster.id}`.padStart(3, '0');
+  // const img = `https://bot.smokey.gg/pokemon/images/hd/${tmpID}.png`;
 
   const embed = new MessageEmbed({
     color: 0x00bc8c,
     description: 'Type ~catch <Pokémon> to try and catch it!',
     image: {
-      url: `https://bot.smokey.gg/pokemon/images/hd/${tmpID}.png`,
+      url: monster.images.normal,
     },
     title: 'A wild Pokémon has appeared!',
   });
@@ -68,7 +81,7 @@ export async function spawnMonster(
         cacheClient.set(message.guild.id, cache);
 
         logger.info(
-          `${message.guild.name} - Monster Spawned! | ${monster.name.english} - ${monster.name.japanese} - ${monster.name.french} - ${monster.name.chinese}`,
+          `${message.guild.name} - Monster Spawned! | ${monster.name.english}`,
         );
       }
 

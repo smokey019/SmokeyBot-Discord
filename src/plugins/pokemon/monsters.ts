@@ -1,10 +1,64 @@
-import monsters from './data/pokedex.json';
 import { getRndInteger } from '../../utils';
+import PokeDex from './data/pokedex.json';
+import { getLogger } from '../../clients/logger';
+import { databaseClient } from '../../clients/database';
+import { IMonsterModel, MonsterTable } from '../../models/Monster';
+import { Message } from 'discord.js';
+import { MonsterUserTable, IMonsterUserModel } from '../../models/MonsterUser';
 
-export type IMonster = typeof monsters[0];
+const logger = getLogger('Pokemon');
 
-const extras = 60;
-const originalMonsters = monsters;
+const MonsterPool: Array<IMonsterDex> = [];
+
+export type IMonster = typeof PokeDex[0];
+
+export interface IMonsterDex {
+  id: number;
+  name: {
+    english: string;
+    japanese: string;
+    chinese: string;
+    french: string;
+  };
+  baseSpecies?: string;
+  baseForme?: string;
+  forme?: string;
+  type: Array<string>;
+  gender?: string;
+  genderRatio?: {
+    M: number;
+    F: number;
+  };
+  baseStats: {
+    hp: number;
+    atk: number;
+    def: number;
+    spa: number;
+    spd: number;
+    spe: number;
+  };
+  abilities?: any;
+  heightm: number;
+  weightkg: number;
+  color: string;
+  prevo?: string;
+  evoType?: string;
+  evoMove?: string;
+  evos?: Array<string>;
+  evoLevel?: number;
+  eggGroups?: Array<string>;
+  images?: {
+    normal: string;
+    shiny: string;
+    gif: string;
+    'gif-shiny': string;
+  };
+  otherFormes?: Array<string>;
+  formeOrder?: Array<string>;
+  requiredItem?: string;
+  isGigantamax?: string;
+}
+
 const Gens = {
   one: [],
   two: [],
@@ -13,269 +67,315 @@ const Gens = {
   five: [],
   six: [],
   seven: [],
+  eight: [],
 };
 
-for (let index = 0; index < 150; index++) {
-  Gens.one.push(monsters[index]);
+PokeDex.forEach((element) => {
+  if (!element.forme) {
+    MonsterPool.push(element);
+  }
+
+  if (element.id < 152) {
+    Gens.one.push(element);
+  }
+
+  if (element.id < 252 && element.id > 151) {
+    Gens.two.push(element);
+  }
+
+  if (element.id < 387 && element.id > 252) {
+    Gens.three.push(element);
+  }
+
+  if (element.id < 494 && element.id > 386) {
+    Gens.four.push(element);
+  }
+
+  if (element.id < 650 && element.id > 493) {
+    Gens.five.push(element);
+  }
+
+  if (element.id < 722 && element.id > 649) {
+    Gens.six.push(element);
+  }
+
+  if (element.id < 810 && element.id > 721) {
+    Gens.seven.push(element);
+  }
+
+  if (element.id < 891 && element.id > 809) {
+    Gens.eight.push(element);
+  }
+});
+
+for (let index = 0; index < 75; index++) {
+  MonsterPool.push(findMonsterByID(1));
+  MonsterPool.push(findMonsterByID(2));
+  MonsterPool.push(findMonsterByID(3));
+
+  MonsterPool.push(findMonsterByID(4));
+  MonsterPool.push(findMonsterByID(5));
+  MonsterPool.push(findMonsterByID(6));
+
+  MonsterPool.push(findMonsterByID(7));
+  MonsterPool.push(findMonsterByID(8));
+  MonsterPool.push(findMonsterByID(9));
+
+  MonsterPool.push(findMonsterByID(746));
+  MonsterPool.push(findMonsterByID(765));
+  MonsterPool.push(findMonsterByID(745));
+
+  MonsterPool.push(findMonsterByID(821));
+  MonsterPool.push(findMonsterByID(822));
+  MonsterPool.push(findMonsterByID(823));
+
+  MonsterPool.push(findMonsterByID(861));
+  MonsterPool.push(findMonsterByID(862));
+  MonsterPool.push(findMonsterByID(866));
+
+  MonsterPool.push(findMonsterByID(390));
+  MonsterPool.push(findMonsterByID(391));
+  MonsterPool.push(findMonsterByID(392));
+
+  MonsterPool.push(findMonsterByID(479));
+  MonsterPool.push(findMonsterByID(526));
+  MonsterPool.push(findMonsterByID(565));
+
+  MonsterPool.push(findMonsterByID(201));
+
+  MonsterPool.push(findMonsterByID(258));
+  MonsterPool.push(findMonsterByID(259));
+  MonsterPool.push(findMonsterByID(260));
+
+  MonsterPool.push(findMonsterByID(351));
+  MonsterPool.push(findMonsterByID(352));
+  MonsterPool.push(findMonsterByID(355));
+
+  MonsterPool.push(findMonsterByID(94));
+  MonsterPool.push(findMonsterByID(106));
+  MonsterPool.push(findMonsterByID(107));
+
+  MonsterPool.push(findMonsterByID(109));
+  MonsterPool.push(findMonsterByID(112));
+  MonsterPool.push(findMonsterByID(115));
+
+  MonsterPool.push(findMonsterByID(122));
+  MonsterPool.push(findMonsterByID(123));
+  MonsterPool.push(findMonsterByID(124));
+
+  MonsterPool.push(findMonsterByID(131));
+  MonsterPool.push(findMonsterByID(137));
+  MonsterPool.push(findMonsterByID(115));
+
+  MonsterPool.push(findMonsterByID(17));
+  MonsterPool.push(findMonsterByID(421));
+  MonsterPool.push(findMonsterByID(24));
+  MonsterPool.push(findMonsterByID(137));
+  MonsterPool.push(findMonsterByID(163));
+  MonsterPool.push(findMonsterByID(523));
+  MonsterPool.push(findMonsterByID(574));
+  MonsterPool.push(findMonsterByID(521));
+  MonsterPool.push(findMonsterByID(353));
+  MonsterPool.push(findMonsterByID(469));
+  MonsterPool.push(findMonsterByID(317));
+  MonsterPool.push(findMonsterByID(81));
+  MonsterPool.push(findMonsterByID(764));
+  MonsterPool.push(findMonsterByID(587));
+  MonsterPool.push(findMonsterByID(409));
+  MonsterPool.push(findMonsterByID(763));
+  MonsterPool.push(findMonsterByID(85));
+  MonsterPool.push(findMonsterByID(241));
+  MonsterPool.push(findMonsterByID(253));
+  MonsterPool.push(findMonsterByID(297));
+  MonsterPool.push(findMonsterByID(214));
+  MonsterPool.push(findMonsterByID(161));
+  MonsterPool.push(findMonsterByID(269));
+  MonsterPool.push(findMonsterByID(539));
+  MonsterPool.push(findMonsterByID(817));
+  MonsterPool.push(findMonsterByID(129));
+  MonsterPool.push(findMonsterByID(472));
+  MonsterPool.push(findMonsterByID(185));
+  MonsterPool.push(findMonsterByID(886));
+  MonsterPool.push(findMonsterByID(314));
+  MonsterPool.push(findMonsterByID(16));
+  MonsterPool.push(findMonsterByID(254));
+  MonsterPool.push(findMonsterByID(692));
+  MonsterPool.push(findMonsterByID(176));
+  MonsterPool.push(findMonsterByID(462));
+  MonsterPool.push(findMonsterByID(21));
+  MonsterPool.push(findMonsterByID(387));
+  MonsterPool.push(findMonsterByID(579));
+  MonsterPool.push(findMonsterByID(63));
+  MonsterPool.push(findMonsterByID(93));
+  MonsterPool.push(findMonsterByID(140));
+  MonsterPool.push(findMonsterByID(191));
+  MonsterPool.push(findMonsterByID(325));
+  MonsterPool.push(findMonsterByID(461));
+  MonsterPool.push(findMonsterByID(366));
+  MonsterPool.push(findMonsterByID(65));
+  MonsterPool.push(findMonsterByID(84));
+  MonsterPool.push(findMonsterByID(679));
+  MonsterPool.push(findMonsterByID(678));
+  MonsterPool.push(findMonsterByID(328));
+  MonsterPool.push(findMonsterByID(352));
+  MonsterPool.push(findMonsterByID(38));
+  MonsterPool.push(findMonsterByID(159));
+  MonsterPool.push(findMonsterByID(273));
+  MonsterPool.push(findMonsterByID(877));
+  MonsterPool.push(findMonsterByID(419));
+  MonsterPool.push(findMonsterByID(860));
+  MonsterPool.push(findMonsterByID(766));
+  MonsterPool.push(findMonsterByID(362));
+  MonsterPool.push(findMonsterByID(132));
+  MonsterPool.push(findMonsterByID(838));
+  MonsterPool.push(findMonsterByID(23));
+  MonsterPool.push(findMonsterByID(11));
+  MonsterPool.push(findMonsterByID(835));
+  MonsterPool.push(findMonsterByID(88));
+  MonsterPool.push(findMonsterByID(48));
+  MonsterPool.push(findMonsterByID(519));
+  MonsterPool.push(findMonsterByID(305));
+  MonsterPool.push(findMonsterByID(626));
+  MonsterPool.push(findMonsterByID(477));
+  MonsterPool.push(findMonsterByID(557));
+  MonsterPool.push(findMonsterByID(340));
+  MonsterPool.push(findMonsterByID(451));
+  MonsterPool.push(findMonsterByID(425));
+  MonsterPool.push(findMonsterByID(544));
+  MonsterPool.push(findMonsterByID(42));
+  MonsterPool.push(findMonsterByID(602));
+  MonsterPool.push(findMonsterByID(205));
+  MonsterPool.push(findMonsterByID(312));
+  MonsterPool.push(findMonsterByID(113));
+  MonsterPool.push(findMonsterByID(262));
+  MonsterPool.push(findMonsterByID(335));
+  MonsterPool.push(findMonsterByID(709));
+  MonsterPool.push(findMonsterByID(412));
+  MonsterPool.push(findMonsterByID(324));
+  MonsterPool.push(findMonsterByID(103));
+  MonsterPool.push(findMonsterByID(100));
+  MonsterPool.push(findMonsterByID(320));
+  MonsterPool.push(findMonsterByID(219));
+  MonsterPool.push(findMonsterByID(834));
+  MonsterPool.push(findMonsterByID(207));
+  MonsterPool.push(findMonsterByID(357));
+  MonsterPool.push(findMonsterByID(414));
+  MonsterPool.push(findMonsterByID(301));
+  MonsterPool.push(findMonsterByID(596));
+  MonsterPool.push(findMonsterByID(139));
+  MonsterPool.push(findMonsterByID(102));
+  MonsterPool.push(findMonsterByID(865));
+  MonsterPool.push(findMonsterByID(400));
+  MonsterPool.push(findMonsterByID(828));
+  MonsterPool.push(findMonsterByID(467));
+  MonsterPool.push(findMonsterByID(673));
+  MonsterPool.push(findMonsterByID(83));
+  MonsterPool.push(findMonsterByID(474));
+  MonsterPool.push(findMonsterByID(175));
+  MonsterPool.push(findMonsterByID(95));
 }
 
-for (let index = 151; index < 250; index++) {
-  Gens.two.push(monsters[index]);
+export function getAllMonsters(): IMonsterDex[] {
+  return MonsterPool;
 }
 
-for (let index = 251; index < 385; index++) {
-  Gens.three.push(monsters[index]);
+export function getPokedex(): IMonsterDex[] {
+  return PokeDex;
 }
 
-for (let index = 386; index < 492; index++) {
-  Gens.four.push(monsters[index]);
+export function getMonsterByIndex(): IMonsterDex | undefined {
+  return PokeDex[0];
 }
 
-for (let index = 493; index < 648; index++) {
-  Gens.five.push(monsters[index]);
+export function getRandomMonster(): IMonsterDex {
+  return MonsterPool[getRndInteger(0, MonsterPool.length - 1)];
 }
 
-for (let index = 649; index < 720; index++) {
-  Gens.six.push(monsters[index]);
+export function findMonsterByID(id: number): any {
+  for (let index = 0; index < PokeDex.length; index++) {
+    if (PokeDex[index].id == id) {
+      return PokeDex[index];
+    }
+  }
 }
 
-for (let index = 721; index < 806; index++) {
-  Gens.seven.push(monsters[index]);
+export async function findMonsterByName(name: string): Promise<any> {
+  PokeDex.forEach(async (element) => {
+    if (element.name.english?.toLowerCase() == name.toLowerCase()) {
+      return element;
+    }
+  });
+
+  /*for (let index = 0; index < PokeDex.length; index++) {
+    console.log(typeof PokeDex[index].name);
+    if (PokeDex[index].name.english.toString().toLowerCase() == name.toString().toLowerCase()){
+      return PokeDex[index];
+    }
+  }*/
 }
 
-for (let index = 0; index < extras; index++) {
-  // bulba
-  monsters.push(monsters[0]);
-  // char
-  monsters.push(monsters[3]);
-  // squirtle
-  monsters.push(monsters[6]);
-  // pidgey
-  monsters.push(monsters[15]);
-  monsters.push(monsters[15]);
-  // Pidgeotto
-  monsters.push(monsters[16]);
-  monsters.push(monsters[16]);
-  // rattata
-  monsters.push(monsters[18]);
-  monsters.push(monsters[18]);
-  monsters.push(monsters[18]);
-  // spearow
-  monsters.push(monsters[20]);
-  // Ekans
-  monsters.push(monsters[22]);
-  // Pikachu
-  monsters.push(monsters[24]);
-  // Nidoran♀
-  monsters.push(monsters[28]);
-  monsters.push(monsters[28]);
-  // Nidoran♂
-  monsters.push(monsters[31]);
-  monsters.push(monsters[31]);
-  // Arcanine
-  monsters.push(monsters[58]);
-  // Poliwag
-  monsters.push(monsters[59]);
-  // Magikarp
-  monsters.push(monsters[128]);
-  monsters.push(monsters[128]);
-  // Eevee
-  monsters.push(monsters[132]);
-  monsters.push(monsters[132]);
-  // Chikorita
-  monsters.push(monsters[151]);
-  // Cyndaquil
-  monsters.push(monsters[154]);
-  // Totodile
-  monsters.push(monsters[157]);
-  // Sentret
-  monsters.push(monsters[160]);
-  monsters.push(monsters[160]);
-  // Hoothoot
-  monsters.push(monsters[162]);
-  // Poochyena
-  monsters.push(monsters[260]);
-  monsters.push(monsters[260]);
-  // Zigzagoon
-  monsters.push(monsters[262]);
-  monsters.push(monsters[262]);
-  monsters.push(monsters[262]);
-  // Wurmple
-  monsters.push(monsters[264]);
-  monsters.push(monsters[264]);
-  // Turtwig
-  monsters.push(monsters[386]);
-  monsters.push(monsters[386]);
-  // Buneary
-  monsters.push(monsters[426]);
-  monsters.push(monsters[426]);
-  // Seismitoad
-  monsters.push(monsters[536]);
-  // Krokorok
-  monsters.push(monsters[552]);
-  // Gothita
-  monsters.push(monsters[573]);
-  // Voltorb
-  monsters.push(monsters[99]);
-  monsters.push(monsters[99]);
-  // Krabby
-  monsters.push(monsters[97]);
-  // Machop
-  monsters.push(monsters[65]);
-  monsters.push(monsters[65]);
-  // Vulpix
-  monsters.push(monsters[36]);
-  monsters.push(monsters[36]);
-  // Ninetails
-  monsters.push(monsters[37]);
-  // Swablu
-  monsters.push(monsters[332]);
-  monsters.push(monsters[332]);
-  // Abra
-  monsters.push(monsters[62]);
-  monsters.push(monsters[62]);
-  // Mareep
-  monsters.push(monsters[178]);
-  // Jynx
-  monsters.push(monsters[123]);
-  // Oddish
-  monsters.push(monsters[42]);
-  // Heracross
-  monsters.push(monsters[213]);
-  // Gastly
-  monsters.push(monsters[92]);
-  monsters.push(monsters[92]);
-  monsters.push(monsters[92]);
-  // Bellsprout
-  monsters.push(monsters[68]);
-  // Machamp
-  monsters.push(monsters[67]);
-  // Geodude
-  monsters.push(monsters[73]);
-  monsters.push(monsters[73]);
-  // Munchlax
-  monsters.push(monsters[445]);
-  // Chatot
-  monsters.push(monsters[440]);
-  // Klink
-  monsters.push(monsters[598]);
-  // Eelektrik
-  monsters.push(monsters[602]);
-  // Pancham
-  monsters.push(monsters[673]);
-  // Aurorus
-  monsters.push(monsters[698]);
-  // Kabutops
-  monsters.push(monsters[140]);
-  // Gothita
-  monsters.push(monsters[573]);
-  // Arrokuda
-  monsters.push(monsters[845]);
-  // Exeggcute
-  monsters.push(monsters[101]);
-  // Minun
-  monsters.push(monsters[311]);
-  // Electivire
-  monsters.push(monsters[465]);
-  // Dragonair
-  monsters.push(monsters[147]);
-  // Dusknoir
-  monsters.push(monsters[476]);
-  // Elekid
-  monsters.push(monsters[238]);
-  // Drakloak
-  monsters.push(monsters[885]);
-  // Surskit
-  monsters.push(monsters[282]);
-  // Victreebel
-  monsters.push(monsters[70]);
-  // Dewgong
-  monsters.push(monsters[86]);
-  monsters.push(monsters[86]);
-  monsters.push(monsters[86]);
-  // Galvantula
-  monsters.push(monsters[595]);
-  // Tropius
-  monsters.push(monsters[356]);
-  // Farfetch'd
-  monsters.push(monsters[82]);
-  // Rolycoly
-  monsters.push(monsters[836]);
-  // Aggron
-  monsters.push(monsters[305]);
-  // Salazzle
-  monsters.push(monsters[757]);
-  // Doduo
-  monsters.push(monsters[83]);
-  monsters.push(monsters[83]);
-  monsters.push(monsters[83]);
-  // Diglett
-  monsters.push(monsters[49]);
-  monsters.push(monsters[49]);
-  monsters.push(monsters[49]);
-  // Corviknight
-  monsters.push(monsters[822]);
-  // Carkol
-  monsters.push(monsters[837]);
-  // Chewtle
-  monsters.push(monsters[832]);
-  // Drednaw
-  monsters.push(monsters[833]);
-  // Skwovet
-  monsters.push(monsters[818]);
-  // Salandit
-  monsters.push(monsters[756]);
-  monsters.push(monsters[756]);
-  // Avalugg
-  monsters.push(monsters[712]);
-  // Heliolisk
-  monsters.push(monsters[694]);
-  // Espurr
-  monsters.push(monsters[676]);
-  // Ferroseed
-  monsters.push(monsters[596]);
-  // Tirtouga
-  monsters.push(monsters[563]);
-  // Boldore
-  monsters.push(monsters[524]);
-  // Gigalith
-  monsters.push(monsters[525]);
-  // Riolu
-  monsters.push(monsters[446]);
-  // Shinx
-  monsters.push(monsters[402]);
-  // Luxio
-  monsters.push(monsters[403]);
-  // Luxray
-  monsters.push(monsters[404]);
-  // Unown
-  monsters.push(monsters[200]);
-  // Ampharos
-  monsters.push(monsters[180]);
-  // Togepi
-  monsters.push(monsters[174]);
-  // Tangela
-  monsters.push(monsters[113]);
-  // Grimer
-  monsters.push(monsters[87]);
-  // Charizard
-  monsters.push(monsters[5]);
+export async function getUserMonster(
+  monster_id: string | number,
+): Promise<IMonsterModel> {
+  const db_monster = await databaseClient<IMonsterModel>(MonsterTable)
+    .select()
+    .where('id', monster_id);
+
+  if (db_monster) {
+    return db_monster[0];
+  } else {
+    return undefined;
+  }
 }
 
-console.log(`Monsters length: ${monsters.length}.`);
+export async function selectMonster(message: Message): Promise<any> {
+  const splitMsg = message.content.split(' ');
 
-export function getAllMonsters(): IMonster[] {
-  return monsters;
+  const monster: IMonsterModel = await getUserMonster(splitMsg[1]);
+
+  if (monster && message.author.id == monster.uid) {
+    const updateUser = await databaseClient<IMonsterUserModel>(MonsterUserTable)
+      .where({ uid: message.author.id })
+      .update({ current_monster: parseInt(splitMsg[1]) });
+
+    if (updateUser) {
+      message.reply(`selected your new monster :)`);
+    }
+  }
 }
 
-export function getPokedex(): IMonster[] {
-  return originalMonsters;
+export async function setFavorite(message: Message): Promise<any> {
+  const splitMsg = message.content.split(' ');
+
+  const monster: IMonsterModel = await getUserMonster(splitMsg[1]);
+
+  if (monster && message.author.id == monster.uid) {
+    const updatedMonster = await databaseClient<IMonsterModel>(MonsterTable)
+      .where('id', monster.id)
+      .update({ favorite: 1 });
+
+    if (updatedMonster) {
+      message.reply(`favorited monster id ${monster.id}!`);
+    }
+  }
 }
 
-export function getMonsterByIndex(): IMonster | undefined {
-  return monsters[0];
+export async function unFavorite(message: Message): Promise<any> {
+  const splitMsg = message.content.split(' ');
+
+  const monster: IMonsterModel = await getUserMonster(splitMsg[1]);
+
+  if (monster && message.author.id == monster.uid) {
+    const updatedMonster = await databaseClient<IMonsterModel>(MonsterTable)
+      .where('id', monster.id)
+      .update({ favorite: 0 });
+
+    if (updatedMonster) {
+      message.reply(`unfavorited monster id ${monster.id}!`);
+    }
+  }
 }
 
-export function getRandomMonster(): IMonster {
-  return monsters[getRndInteger(0, monsters.length - 1)];
-}
+logger.info(`Total MonsterPool: ${getAllMonsters().length}.`);
+logger.info(`Total Monsters: ${PokeDex.length}.`);
+logger.info(`Random Monster: ${getRandomMonster().name.english}.`);
