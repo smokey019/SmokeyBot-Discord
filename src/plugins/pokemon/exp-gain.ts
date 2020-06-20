@@ -35,7 +35,7 @@ export async function checkExpGain(message: Message): Promise<any> {
         await xp_cache.set(cacheKey, getCurrentTime());
         const updateExp = await databaseClient(MonsterTable)
           .where({ id: user.current_monster })
-          .increment('experience', getRndInteger(25, 420));
+          .increment('experience', getRndInteger(50, 620));
         if (updateExp && monster && monster.level < 100) {
           logger.info(
             `User ${message.author.username} gained XP in ${message.guild.name}.`,
@@ -55,53 +55,53 @@ export async function checkExpGain(message: Message): Promise<any> {
                 `User ${message.author.username}'s Monster ${monster.id} - ${monster_dex.name.english} has leveled up to ${monster.level}!`,
               );
             }
-          }
 
-          if (monster_dex.evos) {
-            console.log('evo:', monster_dex.evos[0]);
-            const allMonsters = getAllMonsters();
+            if (monster_dex.evos) {
+              console.log('evo:', monster_dex.evos[0]);
+              const allMonsters = getAllMonsters();
 
-            let evolve = undefined;
-            allMonsters.forEach(async (element) => {
-              if (!element.forme) {
-                if (
-                  element.name.english.toLowerCase() ==
-                  monster_dex.evos[0].toLowerCase()
-                ) {
-                  evolve = element;
+              let evolve = undefined;
+              allMonsters.forEach(async (element) => {
+                if (!element.forme) {
+                  if (
+                    element.name.english.toLowerCase() ==
+                    monster_dex.evos[0].toLowerCase()
+                  ) {
+                    evolve = element;
+                  }
                 }
-              }
-            });
-            const tmpID = `${evolve.id}`.padStart(3, '0');
-            const img = `https://bot.smokey.gg/pokemon/images/hd/${tmpID}.png`;
+              });
+              const tmpID = `${evolve.id}`.padStart(3, '0');
+              const img = `https://bot.smokey.gg/pokemon/images/hd/${tmpID}.png`;
 
-            if (evolve.evoLevel) {
-              if (monster.level >= evolve.evoLevel) {
-                const updateMonster = await databaseClient<IMonsterModel>(
-                  MonsterTable,
-                )
-                  .where({ id: monster.id })
-                  .update({ monster_id: evolve.id });
+              if (evolve.evoLevel) {
+                if (monster.level >= evolve.evoLevel) {
+                  const updateMonster = await databaseClient<IMonsterModel>(
+                    MonsterTable,
+                  )
+                    .where({ id: monster.id })
+                    .update({ monster_id: evolve.id });
 
-                if (updateMonster) {
-                  const embed = new MessageEmbed({
-                    color: 0x00bc8c,
-                    description: `Nice! **${monster_dex.name.english}** has evolved into **${evolve.name.english}**!`,
-                    image: {
-                      url: img,
-                    },
-                    thumbnail: {
-                      url: monster_dex.images.normal,
-                    },
-                    title: `${message.author.username}'s ${monster_dex.name.english} is evolving!`,
-                  });
+                  if (updateMonster) {
+                    const embed = new MessageEmbed({
+                      color: 0x00bc8c,
+                      description: `Nice! **${monster_dex.name.english}** has evolved into **${evolve.name.english}**!`,
+                      image: {
+                        url: img,
+                      },
+                      thumbnail: {
+                        url: monster_dex.images.normal,
+                      },
+                      title: `${message.author.username}'s ${monster_dex.name.english} is evolving!`,
+                    });
 
-                  await message.channel
-                    .send(embed)
-                    .then(() => {
-                      return;
-                    })
-                    .catch(console.error);
+                    await message.channel
+                      .send(embed)
+                      .then(() => {
+                        return;
+                      })
+                      .catch(console.error);
+                  }
                 }
               }
             }

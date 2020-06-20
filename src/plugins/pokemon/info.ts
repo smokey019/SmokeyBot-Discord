@@ -1,8 +1,8 @@
 import { Message, MessageEmbed } from 'discord.js';
 
 import { format_number } from '../../utils';
-import { getLogger } from '../../clients/logger';
-import { getPokedex, findMonsterByID, findMonsterByName } from './monsters';
+//import { getLogger } from '../../clients/logger';
+import { findMonsterByID, findMonsterByName } from './monsters';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import {
   databaseClient,
@@ -13,7 +13,7 @@ import {
 import { img_monster_ball } from './utils';
 import { IMonsterUserModel } from '../../models/MonsterUser';
 
-const logger = getLogger('Pokemon-Info');
+//const logger = getLogger('Pokemon-Info');
 
 export async function monsterEmbed(
   monster_db: IMonsterModel,
@@ -85,7 +85,9 @@ export async function monsterEmbed(
       .setAuthor(
         `Level ${monster_db.level} ${monster.name.english} ⭐${favorite}`,
         img_monster_ball,
-        `https://bulbapedia.bulbagarden.net/wiki/${monster.name.english}_(Pokémon)`,
+        `https://bulbapedia.bulbagarden.net/wiki/${encodeURIComponent(
+          monster.name.english,
+        )}_(Pokémon)`,
       )
       .setColor(0xf1912b)
       .setImage(img)
@@ -111,14 +113,16 @@ export async function monsterEmbed(
       .then((message) => {
         return message;
       })
-      .catch(logger.error);
+      .catch(console.error);
   } else if (!monster.forme && !monster_db.shiny) {
     const img = monster.images.normal;
     const embed = new MessageEmbed()
       .setAuthor(
         `Level ${monster_db.level} ${monster.name.english}${favorite}`,
         img_monster_ball,
-        `https://bulbapedia.bulbagarden.net/wiki/${monster.name.english}_(Pokémon)`,
+        `https://bulbapedia.bulbagarden.net/wiki/${encodeURIComponent(
+          monster.name.english,
+        )}_(Pokémon)`,
       )
       .setColor(0xff0000)
       .setThumbnail(`https://bot.smokey.gg/pokemon/images/gif/${tmpID}.gif`)
@@ -141,7 +145,7 @@ export async function monsterEmbed(
       .then((message) => {
         return message;
       })
-      .catch(logger.error);
+      .catch(console.error);
   }
 }
 
@@ -278,7 +282,6 @@ export async function userDex(message: Message): Promise<Array<string>> {
     .select()
     .where({
       uid: message.author.id,
-      released: 0,
     });
 
   if (pokemon.length > 0) {

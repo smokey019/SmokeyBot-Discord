@@ -8,7 +8,7 @@ import { getRndInteger } from '../../utils';
  * This is called a [Magic Number](https://en.wikipedia.org/wiki/Magic_number_(programming)#Unnamed_numerical_constants).
  */
 export function rollLevel(): number {
-  return getRndInteger(1, 47);
+  return getRndInteger(1, 59);
 }
 
 /**

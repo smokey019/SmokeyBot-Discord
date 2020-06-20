@@ -4486,7 +4486,13 @@
     "color": "Brown",
     "eggGroups": ["Flying", "Field"],
     "otherFormes": ["Farfetch'd-Galar"],
-    "formeOrder": ["Farfetch'd", "Farfetch'd-Galar"]
+    "formeOrder": ["Farfetch'd", "Farfetch'd-Galar"],
+    "images": {
+      "normal": "https://i.imgur.com/YOjsLdL.png",
+      "shiny": "https://i.imgur.com/4Mol7kl.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__083__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_083__xy.gif"
+    }
   },
   {
     "id": 83,
@@ -16969,7 +16975,7 @@
     "otherFormes": ["Rayquaza-Mega"],
     "formeOrder": ["Rayquaza", "Rayquaza-Mega"],
     "images": {
-      "normal": "https://i.imgur.com/QoibGCU.png",
+      "normal": "https://i.imgur.com/zyo2VMd.png",
       "shiny": "https://i.imgur.com/iTpprPi.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__384__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_384__xy.gif"
@@ -33428,8 +33434,8 @@
     "images": {
       "normal": "https://i.imgur.com/W8bEoEL.png",
       "shiny": "https://i.imgur.com/L86LtgS.png",
-      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__772__xy.gif",
-      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_772__xy.gif"
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__772__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_772__sm.gif"
     }
   },
   {
@@ -33501,8 +33507,8 @@
     "images": {
       "normal": "https://i.imgur.com/MH5AZsS.png",
       "shiny": "https://i.imgur.com/YFWSJQ7.png",
-      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__773__xy.gif",
-      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_773__xy.gif"
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__773__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_773__sm.gif"
     }
   },
   {

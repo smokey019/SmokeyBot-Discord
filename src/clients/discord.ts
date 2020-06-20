@@ -179,18 +179,6 @@ async function parseMessage(message: Message) {
       const splitMsg = message.content.split(' ') || message.content;
 
       if (
-        message.content.match(/~unique/i) &&
-        splitMsg[0].toLowerCase() == '~unique'
-      ) {
-        const tempdex = await userDex(message);
-        message.reply(
-          `You have ${
-            tempdex.length
-          } total unique ${theWord()} in your Pokédex.`,
-        );
-      }
-
-      if (
         cache.monster_spawn.current_spawn &&
         message.content.match(/~catch/i) &&
         splitMsg[0].toLowerCase() == '~catch' &&
@@ -201,6 +189,18 @@ async function parseMessage(message: Message) {
       }
 
       if (timestamp - cache.time > 3) {
+        if (
+          message.content.match(/~unique/i) &&
+          splitMsg[0].toLowerCase() == '~unique'
+        ) {
+          const tempdex = await userDex(message);
+          message.reply(
+            `You have ${
+              tempdex.length
+            } total unique ${theWord()} in your Pokédex.`,
+          );
+        }
+
         if (
           message.content.match(/~dex/i) &&
           splitMsg[0].toLowerCase() == '~dex' &&

@@ -9,6 +9,7 @@ import { MonsterUserTable, IMonsterUserModel } from '../../models/MonsterUser';
 const logger = getLogger('Pokemon');
 
 const MonsterPool: Array<IMonsterDex> = [];
+const MonsterDex: Array<IMonsterDex> = [];
 
 export type IMonster = typeof PokeDex[0];
 
@@ -73,6 +74,9 @@ const Gens = {
 PokeDex.forEach((element) => {
   if (!element.forme) {
     MonsterPool.push(element);
+  }
+  if (!element.forme && element.name.english) {
+    MonsterDex.push(element);
   }
 
   if (element.id < 152) {
@@ -280,11 +284,11 @@ export function getAllMonsters(): IMonsterDex[] {
 }
 
 export function getPokedex(): IMonsterDex[] {
-  return PokeDex;
+  return MonsterDex;
 }
 
 export function getMonsterByIndex(): IMonsterDex | undefined {
-  return PokeDex[0];
+  return MonsterDex[0];
 }
 
 export function getRandomMonster(): IMonsterDex {
@@ -292,19 +296,22 @@ export function getRandomMonster(): IMonsterDex {
 }
 
 export function findMonsterByID(id: number): any {
-  for (let index = 0; index < PokeDex.length; index++) {
-    if (PokeDex[index].id == id) {
-      return PokeDex[index];
+  for (let index = 0; index < MonsterDex.length; index++) {
+    if (MonsterDex[index].id == id) {
+      return MonsterDex[index];
     }
   }
 }
 
 export async function findMonsterByName(name: string): Promise<any> {
-  PokeDex.forEach(async (element) => {
-    if (element.name.english?.toLowerCase() == name.toLowerCase()) {
-      return element;
+  let monster = undefined;
+  MonsterDex.forEach(async (element) => {
+    if (element.name.english.toLowerCase() == name.toLowerCase()) {
+      monster = element;
     }
   });
+
+  return monster;
 
   /*for (let index = 0; index < PokeDex.length; index++) {
     console.log(typeof PokeDex[index].name);
@@ -377,5 +384,5 @@ export async function unFavorite(message: Message): Promise<any> {
 }
 
 logger.info(`Total MonsterPool: ${getAllMonsters().length}.`);
-logger.info(`Total Monsters: ${PokeDex.length}.`);
+logger.info(`Total Monsters: ${MonsterDex.length}.`);
 logger.info(`Random Monster: ${getRandomMonster().name.english}.`);
