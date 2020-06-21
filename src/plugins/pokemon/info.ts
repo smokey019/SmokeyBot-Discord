@@ -1,6 +1,6 @@
 import { Message, MessageEmbed } from 'discord.js';
 
-import { format_number } from '../../utils';
+import { format_number, explode } from '../../utils';
 //import { getLogger } from '../../clients/logger';
 import { findMonsterByID, findMonsterByName } from './monsters';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
@@ -19,6 +19,10 @@ export async function monsterEmbed(
   monster_db: IMonsterModel,
   message: Message,
 ): Promise<any> {
+  if (!monster_db) {
+    return;
+  }
+
   const monster = findMonsterByID(monster_db.monster_id);
 
   const monster_types = monster.type.join(' | ');
@@ -85,9 +89,7 @@ export async function monsterEmbed(
       .setAuthor(
         `Level ${monster_db.level} ${monster.name.english} ⭐${favorite}`,
         img_monster_ball,
-        `https://bulbapedia.bulbagarden.net/wiki/${encodeURIComponent(
-          monster.name.english,
-        )}_(Pokémon)`,
+        `https://pokemondb.net/pokedex/${monster.id}`,
       )
       .setColor(0xf1912b)
       .setImage(img)
@@ -120,9 +122,7 @@ export async function monsterEmbed(
       .setAuthor(
         `Level ${monster_db.level} ${monster.name.english}${favorite}`,
         img_monster_ball,
-        `https://bulbapedia.bulbagarden.net/wiki/${encodeURIComponent(
-          monster.name.english,
-        )}_(Pokémon)`,
+        `https://pokemondb.net/pokedex/${monster.id}`,
       )
       .setColor(0xff0000)
       .setThumbnail(`https://bot.smokey.gg/pokemon/images/gif/${tmpID}.gif`)
@@ -212,7 +212,9 @@ export async function currentMonsterInfo(message: Message): Promise<void> {
  * @param id
  */
 export async function monsterDex(message: Message): Promise<void> {
-  const tmpSplit = message.content.split(' ');
+  const tmpSplit = explode(message.content, ' ', 2);
+
+  console.log(tmpSplit);
 
   const tempMonster = await findMonsterByName(tmpSplit[1].toLowerCase());
 
@@ -250,7 +252,7 @@ export async function monsterDex(message: Message): Promise<void> {
       .setAuthor(
         '#' + tmpID + ' - ' + tempMonster.name.english,
         img_monster_ball,
-        `https://bulbapedia.bulbagarden.net/wiki/${tempMonster.name.english}_(Pokémon)`,
+        `https://pokemondb.net/pokedex/${tempMonster.id}`,
       )
       .setColor(0x12bca4)
       .setThumbnail(tempMonster.images.gif)

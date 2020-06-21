@@ -26,8 +26,7 @@ export async function releaseMonster(message: Message): Promise<void> {
           if (
             to_release &&
             !to_release[0].released &&
-            to_release[0].uid == message.author.id &&
-            !to_release[0].released
+            to_release[0].uid == message.author.id
           ) {
             const released_monster = await databaseClient<IMonsterModel>(
               MonsterTable,
@@ -97,5 +96,41 @@ export async function releaseMonster(message: Message): Promise<void> {
         return;
       })
       .catch(console.error);
+  }
+}
+
+export async function recoverMonster(message: Message): Promise<void> {
+  const tmpMsg = message.content.split(' ');
+
+  if (tmpMsg.length > 1) {
+    const to_release = await databaseClient<IMonsterModel>(MonsterTable)
+      .select()
+      .where('id', tmpMsg[1]);
+
+    if (
+      to_release &&
+      to_release[0].released &&
+      to_release[0].uid == message.author.id
+    ) {
+      const monster = findMonsterByID(to_release[0].monster_id);
+
+      const released_monster = await databaseClient<IMonsterModel>(MonsterTable)
+        .where('id', to_release[0].id)
+        .update({ released: 0 });
+
+      if (released_monster) {
+        message
+          .reply(
+            `Successfully recovered your monster. Welcome back **${monster.name.english}**!`,
+          )
+          .then(() => {
+            logger.info(
+              `${message.author.username} Successfully recovered **${monster.name.english}**!`,
+            );
+            return;
+          })
+          .catch(console.error);
+      }
+    }
   }
 }

@@ -5,6 +5,16 @@ import { databaseClient } from '../../clients/database';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { Message } from 'discord.js';
 import { MonsterUserTable, IMonsterUserModel } from '../../models/MonsterUser';
+import {
+  GenerationOne,
+  GenerationTwo,
+  GenerationThree,
+  GenerationFour,
+  GenerationFive,
+  GenerationSix,
+  GenerationSeven,
+  GenerationEight,
+} from './pokemon-list';
 
 const logger = getLogger('Pokemon');
 
@@ -71,6 +81,15 @@ const Gens = {
   eight: [],
 };
 
+Gens.one = GenerationOne;
+Gens.two = GenerationTwo;
+Gens.three = GenerationThree;
+Gens.four = GenerationFour;
+Gens.five = GenerationFive;
+Gens.six = GenerationSix;
+Gens.seven = GenerationSeven;
+Gens.eight = GenerationEight;
+
 PokeDex.forEach((element) => {
   if (!element.forme) {
     MonsterPool.push(element);
@@ -79,7 +98,7 @@ PokeDex.forEach((element) => {
     MonsterDex.push(element);
   }
 
-  if (element.id < 152) {
+  /*if (element.id < 152) {
     Gens.one.push(element);
   }
 
@@ -109,174 +128,41 @@ PokeDex.forEach((element) => {
 
   if (element.id < 891 && element.id > 809) {
     Gens.eight.push(element);
-  }
+  }*/
 });
 
 for (let index = 0; index < 75; index++) {
-  MonsterPool.push(findMonsterByID(1));
-  MonsterPool.push(findMonsterByID(2));
-  MonsterPool.push(findMonsterByID(3));
+  Gens.one.forEach((element) => {
+    MonsterPool.push(findMonsterByID(element));
+  });
 
-  MonsterPool.push(findMonsterByID(4));
-  MonsterPool.push(findMonsterByID(5));
-  MonsterPool.push(findMonsterByID(6));
+  Gens.two.forEach((element) => {
+    MonsterPool.push(findMonsterByID(element));
+  });
 
-  MonsterPool.push(findMonsterByID(7));
-  MonsterPool.push(findMonsterByID(8));
-  MonsterPool.push(findMonsterByID(9));
+  Gens.three.forEach((element) => {
+    MonsterPool.push(findMonsterByID(element));
+  });
 
-  MonsterPool.push(findMonsterByID(746));
-  MonsterPool.push(findMonsterByID(765));
-  MonsterPool.push(findMonsterByID(745));
+  Gens.four.forEach((element) => {
+    MonsterPool.push(findMonsterByID(element));
+  });
 
-  MonsterPool.push(findMonsterByID(821));
-  MonsterPool.push(findMonsterByID(822));
-  MonsterPool.push(findMonsterByID(823));
+  Gens.five.forEach((element) => {
+    MonsterPool.push(findMonsterByID(element));
+  });
 
-  MonsterPool.push(findMonsterByID(861));
-  MonsterPool.push(findMonsterByID(862));
-  MonsterPool.push(findMonsterByID(866));
+  Gens.six.forEach((element) => {
+    MonsterPool.push(findMonsterByID(element));
+  });
 
-  MonsterPool.push(findMonsterByID(390));
-  MonsterPool.push(findMonsterByID(391));
-  MonsterPool.push(findMonsterByID(392));
+  Gens.seven.forEach((element) => {
+    MonsterPool.push(findMonsterByID(element));
+  });
 
-  MonsterPool.push(findMonsterByID(479));
-  MonsterPool.push(findMonsterByID(526));
-  MonsterPool.push(findMonsterByID(565));
-
-  MonsterPool.push(findMonsterByID(201));
-
-  MonsterPool.push(findMonsterByID(258));
-  MonsterPool.push(findMonsterByID(259));
-  MonsterPool.push(findMonsterByID(260));
-
-  MonsterPool.push(findMonsterByID(351));
-  MonsterPool.push(findMonsterByID(352));
-  MonsterPool.push(findMonsterByID(355));
-
-  MonsterPool.push(findMonsterByID(94));
-  MonsterPool.push(findMonsterByID(106));
-  MonsterPool.push(findMonsterByID(107));
-
-  MonsterPool.push(findMonsterByID(109));
-  MonsterPool.push(findMonsterByID(112));
-  MonsterPool.push(findMonsterByID(115));
-
-  MonsterPool.push(findMonsterByID(122));
-  MonsterPool.push(findMonsterByID(123));
-  MonsterPool.push(findMonsterByID(124));
-
-  MonsterPool.push(findMonsterByID(131));
-  MonsterPool.push(findMonsterByID(137));
-  MonsterPool.push(findMonsterByID(115));
-
-  MonsterPool.push(findMonsterByID(17));
-  MonsterPool.push(findMonsterByID(421));
-  MonsterPool.push(findMonsterByID(24));
-  MonsterPool.push(findMonsterByID(137));
-  MonsterPool.push(findMonsterByID(163));
-  MonsterPool.push(findMonsterByID(523));
-  MonsterPool.push(findMonsterByID(574));
-  MonsterPool.push(findMonsterByID(521));
-  MonsterPool.push(findMonsterByID(353));
-  MonsterPool.push(findMonsterByID(469));
-  MonsterPool.push(findMonsterByID(317));
-  MonsterPool.push(findMonsterByID(81));
-  MonsterPool.push(findMonsterByID(764));
-  MonsterPool.push(findMonsterByID(587));
-  MonsterPool.push(findMonsterByID(409));
-  MonsterPool.push(findMonsterByID(763));
-  MonsterPool.push(findMonsterByID(85));
-  MonsterPool.push(findMonsterByID(241));
-  MonsterPool.push(findMonsterByID(253));
-  MonsterPool.push(findMonsterByID(297));
-  MonsterPool.push(findMonsterByID(214));
-  MonsterPool.push(findMonsterByID(161));
-  MonsterPool.push(findMonsterByID(269));
-  MonsterPool.push(findMonsterByID(539));
-  MonsterPool.push(findMonsterByID(817));
-  MonsterPool.push(findMonsterByID(129));
-  MonsterPool.push(findMonsterByID(472));
-  MonsterPool.push(findMonsterByID(185));
-  MonsterPool.push(findMonsterByID(886));
-  MonsterPool.push(findMonsterByID(314));
-  MonsterPool.push(findMonsterByID(16));
-  MonsterPool.push(findMonsterByID(254));
-  MonsterPool.push(findMonsterByID(692));
-  MonsterPool.push(findMonsterByID(176));
-  MonsterPool.push(findMonsterByID(462));
-  MonsterPool.push(findMonsterByID(21));
-  MonsterPool.push(findMonsterByID(387));
-  MonsterPool.push(findMonsterByID(579));
-  MonsterPool.push(findMonsterByID(63));
-  MonsterPool.push(findMonsterByID(93));
-  MonsterPool.push(findMonsterByID(140));
-  MonsterPool.push(findMonsterByID(191));
-  MonsterPool.push(findMonsterByID(325));
-  MonsterPool.push(findMonsterByID(461));
-  MonsterPool.push(findMonsterByID(366));
-  MonsterPool.push(findMonsterByID(65));
-  MonsterPool.push(findMonsterByID(84));
-  MonsterPool.push(findMonsterByID(679));
-  MonsterPool.push(findMonsterByID(678));
-  MonsterPool.push(findMonsterByID(328));
-  MonsterPool.push(findMonsterByID(352));
-  MonsterPool.push(findMonsterByID(38));
-  MonsterPool.push(findMonsterByID(159));
-  MonsterPool.push(findMonsterByID(273));
-  MonsterPool.push(findMonsterByID(877));
-  MonsterPool.push(findMonsterByID(419));
-  MonsterPool.push(findMonsterByID(860));
-  MonsterPool.push(findMonsterByID(766));
-  MonsterPool.push(findMonsterByID(362));
-  MonsterPool.push(findMonsterByID(132));
-  MonsterPool.push(findMonsterByID(838));
-  MonsterPool.push(findMonsterByID(23));
-  MonsterPool.push(findMonsterByID(11));
-  MonsterPool.push(findMonsterByID(835));
-  MonsterPool.push(findMonsterByID(88));
-  MonsterPool.push(findMonsterByID(48));
-  MonsterPool.push(findMonsterByID(519));
-  MonsterPool.push(findMonsterByID(305));
-  MonsterPool.push(findMonsterByID(626));
-  MonsterPool.push(findMonsterByID(477));
-  MonsterPool.push(findMonsterByID(557));
-  MonsterPool.push(findMonsterByID(340));
-  MonsterPool.push(findMonsterByID(451));
-  MonsterPool.push(findMonsterByID(425));
-  MonsterPool.push(findMonsterByID(544));
-  MonsterPool.push(findMonsterByID(42));
-  MonsterPool.push(findMonsterByID(602));
-  MonsterPool.push(findMonsterByID(205));
-  MonsterPool.push(findMonsterByID(312));
-  MonsterPool.push(findMonsterByID(113));
-  MonsterPool.push(findMonsterByID(262));
-  MonsterPool.push(findMonsterByID(335));
-  MonsterPool.push(findMonsterByID(709));
-  MonsterPool.push(findMonsterByID(412));
-  MonsterPool.push(findMonsterByID(324));
-  MonsterPool.push(findMonsterByID(103));
-  MonsterPool.push(findMonsterByID(100));
-  MonsterPool.push(findMonsterByID(320));
-  MonsterPool.push(findMonsterByID(219));
-  MonsterPool.push(findMonsterByID(834));
-  MonsterPool.push(findMonsterByID(207));
-  MonsterPool.push(findMonsterByID(357));
-  MonsterPool.push(findMonsterByID(414));
-  MonsterPool.push(findMonsterByID(301));
-  MonsterPool.push(findMonsterByID(596));
-  MonsterPool.push(findMonsterByID(139));
-  MonsterPool.push(findMonsterByID(102));
-  MonsterPool.push(findMonsterByID(865));
-  MonsterPool.push(findMonsterByID(400));
-  MonsterPool.push(findMonsterByID(828));
-  MonsterPool.push(findMonsterByID(467));
-  MonsterPool.push(findMonsterByID(673));
-  MonsterPool.push(findMonsterByID(83));
-  MonsterPool.push(findMonsterByID(474));
-  MonsterPool.push(findMonsterByID(175));
-  MonsterPool.push(findMonsterByID(95));
+  Gens.eight.forEach((element) => {
+    MonsterPool.push(findMonsterByID(element));
+  });
 }
 
 export function getAllMonsters(): IMonsterDex[] {

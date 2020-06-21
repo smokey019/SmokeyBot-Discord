@@ -24,3 +24,15 @@ export const jsonFetch = (url: string): Promise<unknown> =>
   fetch(url, {
     method: 'GET',
   }).then(async (res) => res.json());
+
+export function explode(
+  string: string,
+  separator: string,
+  limit: number,
+): Array<string> {
+  const array = string.split(separator);
+  if (limit !== undefined && array.length >= limit) {
+    array.push(array.splice(limit - 1).join(separator));
+  }
+  return array;
+}

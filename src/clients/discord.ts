@@ -16,7 +16,10 @@ import {
 import { getCurrentTime, getRndInteger, theWord } from '../utils';
 import { spawnMonster } from '../plugins/pokemon/spawn-monster';
 import { catchMonster } from '../plugins/pokemon/catch-monster';
-import { releaseMonster } from '../plugins/pokemon/release-monster';
+import {
+  releaseMonster,
+  recoverMonster,
+} from '../plugins/pokemon/release-monster';
 import { toggleSmokeMon } from '../plugins/pokemon/options';
 import {
   sync_smokemotes,
@@ -290,6 +293,21 @@ async function parseMessage(message: Message) {
           });
 
           releaseMonster(message);
+        }
+
+        if (
+          message.content.match(/~recover/i) &&
+          splitMsg[0].toLowerCase() == '~recover' &&
+          channel_name == cache.settings.specific_channel
+        ) {
+          cache.time = getCurrentTime();
+
+          cacheClient.set(message.guild.id, {
+            ...cache,
+            time: getCurrentTime(),
+          });
+
+          recoverMonster(message);
         }
 
         if (

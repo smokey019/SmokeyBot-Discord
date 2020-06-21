@@ -141,22 +141,22 @@ export async function catchMonster(
       let response = ``;
 
       if (shiny == 1 && !dex.includes(currentSpawn.id)) {
-        response = `POGGERS! You caught a ⭐__***SHINY***__⭐ level __${level}__ __${currentSpawn.name.english}__! Avg IV: __${averageIV}__% - ID: __${insertMonster[0]}__ - Added to Pokédex.`;
+        response = `POGGERS! You caught a ⭐__***SHINY***__⭐ level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}** - Added to Pokédex.`;
         logger.info(
           `${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
         );
       } else if (shiny == 0 && !dex.includes(currentSpawn.id)) {
-        response = `YOINK! You caught a level __${level}__ __${currentSpawn.name.english}__! Avg IV: __${averageIV}__% - ID: __${insertMonster[0]}__ - Added to Pokédex.`;
+        response = `YOINK! You caught a level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}** - Added to Pokédex.`;
         logger.info(
           `${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
         );
       } else if (shiny == 0 && dex.includes(currentSpawn.id)) {
-        response = `YOINK! You caught a level __${level}__ __${currentSpawn.name.english}__! Avg IV: __${averageIV}__% - ID: __${insertMonster[0]}__.`;
+        response = `YOINK! You caught a level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}**.`;
         logger.info(
           `${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
         );
       } else if (shiny == 1 && dex.includes(currentSpawn.id)) {
-        response = `POGGERS! You caught a ⭐__***SHINY***__⭐ level __${level}__ __${currentSpawn.name.english}__! Avg IV: __${averageIV}__% - ID: __${insertMonster[0]}__.`;
+        response = `POGGERS! You caught a ⭐__***SHINY***__⭐ level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}**.`;
         logger.info(
           `${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
         );
