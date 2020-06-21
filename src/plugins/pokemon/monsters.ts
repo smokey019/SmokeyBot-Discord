@@ -94,7 +94,7 @@ PokeDex.forEach((element) => {
   if (!element.forme) {
     MonsterPool.push(element);
   }
-  if (!element.forme && element.name.english) {
+  if (!element.forme && element.name.english && element.images) {
     MonsterDex.push(element);
   }
 

@@ -984,7 +984,7 @@
     }
   },
   {
-    "id": 19,
+    "id": 19.1,
     "name": {
       "english": "Rattata-Alola",
       "japanese": "",
@@ -1015,8 +1015,8 @@
     "images": {
       "normal": "https://i.imgur.com/xzbGty4.png",
       "shiny": "https://i.imgur.com/5DRx8jN.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__019-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_019-alola__sm.gif"
     }
   },
   {
@@ -1057,7 +1057,7 @@
     }
   },
   {
-    "id": 20,
+    "id": 20.1,
     "name": {
       "english": "Raticate-Alola",
       "japanese": "",
@@ -1089,41 +1089,8 @@
     "images": {
       "normal": "https://i.imgur.com/tHvyxqn.png",
       "shiny": "https://i.imgur.com/hXBrkSX.png",
-      "gif": "",
-      "gif-shiny": ""
-    }
-  },
-  {
-    "id": 20,
-    "name": {
-      "english": "Raticate-Alola-Totem",
-      "japanese": "",
-      "chinese": "",
-      "french": ""
-    },
-    "baseSpecies": "Raticate",
-    "forme": "Alola-Totem",
-    "type": ["Dark", "Normal"],
-    "baseStats": {
-      "hp": 75,
-      "atk": 71,
-      "def": 70,
-      "spa": 40,
-      "spd": 80,
-      "spe": 77
-    },
-    "abilities": {
-      "0": "Thick Fat"
-    },
-    "heightm": 1.4,
-    "weightkg": 105,
-    "color": "Black",
-    "eggGroups": ["Field"],
-    "images": {
-      "normal": "https://i.imgur.com/tHvyxqn.png",
-      "shiny": "https://i.imgur.com/hXBrkSX.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__020-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_020-alola__sm.gif"
     }
   },
   {
@@ -1696,7 +1663,7 @@
     "gen": 7
   },
   {
-    "id": 25,
+    "id": 25.1,
     "name": {
       "english": "Pikachu-Alola",
       "japanese": "",
@@ -1850,7 +1817,7 @@
     }
   },
   {
-    "id": 26,
+    "id": 26.1,
     "name": {
       "english": "Raichu-Alola",
       "japanese": "",
@@ -1881,8 +1848,8 @@
     "images": {
       "normal": "https://i.imgur.com/unxpnxh.png",
       "shiny": "https://i.imgur.com/wZweSnw.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__026-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_026-alola__sm.gif"
     }
   },
   {
@@ -1921,7 +1888,7 @@
     }
   },
   {
-    "id": 27,
+    "id": 27.1,
     "name": {
       "english": "Sandshrew-Alola",
       "japanese": "",
@@ -1951,8 +1918,8 @@
     "images": {
       "normal": "https://i.imgur.com/URwBWZ5.png",
       "shiny": "https://i.imgur.com/Q4mfdm9.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__027-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_027-alola__sm.gif"
     }
   },
   {
@@ -1992,7 +1959,7 @@
     }
   },
   {
-    "id": 28,
+    "id": 28.1,
     "name": {
       "english": "Sandslash-Alola",
       "japanese": "",
@@ -2024,8 +1991,8 @@
     "images": {
       "normal": "https://i.imgur.com/DKDORs0.png",
       "shiny": "https://i.imgur.com/ghxRMwT.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__028-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_028-alola__sm.gif"
     }
   },
   {
@@ -2354,7 +2321,7 @@
     }
   },
   {
-    "id": 37,
+    "id": 37.1,
     "name": {
       "english": "Vulpix-Alola",
       "japanese": "",
@@ -2388,8 +2355,8 @@
     "images": {
       "normal": "https://i.imgur.com/GcKfJl4.png",
       "shiny": "https://i.imgur.com/47WdQmV.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__037-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_037-alola__sm.gif"
     }
   },
   {
@@ -2434,7 +2401,7 @@
     }
   },
   {
-    "id": 38,
+    "id": 38.1,
     "name": {
       "english": "Ninetales-Alola",
       "japanese": "",
@@ -2470,8 +2437,8 @@
     "images": {
       "normal": "https://i.imgur.com/EC5528M.png",
       "shiny": "https://i.imgur.com/wtjimHH.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__038-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_038-alola__sm.gif"
     }
   },
   {
@@ -2900,7 +2867,7 @@
     }
   },
   {
-    "id": 50,
+    "id": 50.1,
     "name": {
       "english": "Diglett-Alola",
       "japanese": "",
@@ -2931,8 +2898,8 @@
     "images": {
       "normal": "https://i.imgur.com/lPkN4lm.png",
       "shiny": "https://i.imgur.com/ACtyTHM.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__050-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_050-alola__sm.gif"
     }
   },
   {
@@ -2973,7 +2940,7 @@
     }
   },
   {
-    "id": 51,
+    "id": 51.1,
     "name": {
       "english": "Dugtrio-Alola",
       "japanese": "",
@@ -3005,8 +2972,8 @@
     "images": {
       "normal": "https://i.imgur.com/gDQrKwJ.png",
       "shiny": "https://i.imgur.com/mCCUtCD.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__051-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_051-alola__sm.gif"
     }
   },
   {
@@ -3046,7 +3013,7 @@
     }
   },
   {
-    "id": 52,
+    "id": 52.1,
     "name": {
       "english": "Meowth-Alola",
       "japanese": "",
@@ -3077,12 +3044,12 @@
     "images": {
       "normal": "https://i.imgur.com/HXIuYdP.png",
       "shiny": "https://i.imgur.com/qnt88CA.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__052-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_052-alola__sm.gif"
     }
   },
   {
-    "id": 52,
+    "id": 52.2,
     "name": {
       "english": "Meowth-Galar",
       "japanese": "",
@@ -3185,7 +3152,7 @@
     }
   },
   {
-    "id": 53,
+    "id": 53.1,
     "name": {
       "english": "Persian-Alola",
       "japanese": "",
@@ -3217,8 +3184,8 @@
     "images": {
       "normal": "https://i.imgur.com/8nS7qeX.png",
       "shiny": "https://i.imgur.com/8ElyATL.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__053-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_053-alola__sm.gif"
     }
   },
   {
@@ -4062,7 +4029,7 @@
     }
   },
   {
-    "id": 74,
+    "id": 74.1,
     "name": {
       "english": "Geodude-Alola",
       "japanese": "",
@@ -4093,8 +4060,8 @@
     "images": {
       "normal": "https://i.imgur.com/pDBXRAU.png",
       "shiny": "https://i.imgur.com/20s0WTy.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__074-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_074-alola__sm.gif"
     }
   },
   {
@@ -4136,7 +4103,7 @@
     }
   },
   {
-    "id": 75,
+    "id": 75.1,
     "name": {
       "english": "Graveler-Alola",
       "japanese": "",
@@ -4169,8 +4136,8 @@
     "images": {
       "normal": "https://i.imgur.com/f65cknj.png",
       "shiny": "https://i.imgur.com/hWqL9e7.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__075-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_075-alola__sm.gif"
     }
   },
   {
@@ -4211,7 +4178,7 @@
     }
   },
   {
-    "id": 76,
+    "id": 76.1,
     "name": {
       "english": "Golem-Alola",
       "japanese": "",
@@ -4243,8 +4210,8 @@
     "images": {
       "normal": "https://i.imgur.com/uxrfB5d.png",
       "shiny": "https://i.imgur.com/8kyPuUz.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__076-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_076-alola__sm.gif"
     }
   },
   {
@@ -4284,7 +4251,7 @@
     }
   },
   {
-    "id": 77,
+    "id": 77.2,
     "name": {
       "english": "Ponyta-Galar",
       "japanese": "",
@@ -4357,7 +4324,7 @@
     }
   },
   {
-    "id": 78,
+    "id": 78.2,
     "name": {
       "english": "Rapidash-Galar",
       "japanese": "",
@@ -4430,7 +4397,7 @@
     }
   },
   {
-    "id": 79,
+    "id": 79.2,
     "name": {
       "english": "Slowpoke-Galar",
       "japanese": "",
@@ -4637,7 +4604,7 @@
     }
   },
   {
-    "id": 83,
+    "id": 83.2,
     "name": {
       "english": "Farfetch'd-Galar",
       "japanese": "",
@@ -4846,7 +4813,7 @@
     }
   },
   {
-    "id": 88,
+    "id": 88.1,
     "name": {
       "english": "Grimer-Alola",
       "japanese": "",
@@ -4877,8 +4844,8 @@
     "images": {
       "normal": "https://i.imgur.com/1BqHg9A.png",
       "shiny": "https://i.imgur.com/culPobp.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__088-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_088-alola__sm.gif"
     }
   },
   {
@@ -4919,7 +4886,7 @@
     }
   },
   {
-    "id": 89,
+    "id": 89.1,
     "name": {
       "english": "Muk-Alola",
       "japanese": "",
@@ -4951,8 +4918,8 @@
     "images": {
       "normal": "https://i.imgur.com/wZCZ14q.png",
       "shiny": "https://i.imgur.com/9DWjCiw.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__089-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_089-alola__sm.gif"
     }
   },
   {
@@ -5534,7 +5501,7 @@
     }
   },
   {
-    "id": 103,
+    "id": 103.1,
     "name": {
       "english": "Exeggutor-Alola",
       "japanese": "",
@@ -5566,8 +5533,8 @@
     "images": {
       "normal": "https://i.imgur.com/M13QYqt.png",
       "shiny": "https://i.imgur.com/ssDKplY.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__103-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_103-alola__sm.gif"
     }
   },
   {
@@ -5642,7 +5609,7 @@
     }
   },
   {
-    "id": 105,
+    "id": 105.1,
     "name": {
       "english": "Marowak-Alola",
       "japanese": "",
@@ -5674,41 +5641,8 @@
     "images": {
       "normal": "https://i.imgur.com/jecl7eW.png",
       "shiny": "https://i.imgur.com/u0ZlmF1.png",
-      "gif": "",
-      "gif-shiny": ""
-    }
-  },
-  {
-    "id": 105,
-    "name": {
-      "english": "Marowak-Alola-Totem",
-      "japanese": "",
-      "chinese": "",
-      "french": ""
-    },
-    "baseSpecies": "Marowak",
-    "forme": "Alola-Totem",
-    "type": ["Fire", "Ghost"],
-    "baseStats": {
-      "hp": 60,
-      "atk": 80,
-      "def": 110,
-      "spa": 50,
-      "spd": 80,
-      "spe": 45
-    },
-    "abilities": {
-      "0": "Rock Head"
-    },
-    "heightm": 1.7,
-    "weightkg": 98,
-    "color": "Purple",
-    "eggGroups": ["Monster"],
-    "images": {
-      "normal": "https://i.imgur.com/jecl7eW.png",
-      "shiny": "https://i.imgur.com/u0ZlmF1.png",
-      "gif": "",
-      "gif-shiny": ""
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_7/3ani__105-alola__sm.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_7_shiny/3ani_-S_105-alola__sm.gif"
     }
   },
   {
@@ -5891,7 +5825,7 @@
     }
   },
   {
-    "id": 110,
+    "id": 110.2,
     "name": {
       "english": "Weezing-Galar",
       "japanese": "",
@@ -6393,7 +6327,7 @@
     }
   },
   {
-    "id": 122,
+    "id": 122.2,
     "name": {
       "english": "Mr. Mime-Galar",
       "japanese": "",
@@ -10549,7 +10483,7 @@
     }
   },
   {
-    "id": 222,
+    "id": 222.2,
     "name": {
       "english": "Corsola-Galar",
       "japanese": "",
@@ -12228,7 +12162,7 @@
     }
   },
   {
-    "id": 263,
+    "id": 263.2,
     "name": {
       "english": "Zigzagoon-Galar",
       "japanese": "",
@@ -12301,7 +12235,7 @@
     }
   },
   {
-    "id": 264,
+    "id": 264.2,
     "name": {
       "english": "Linoone-Galar",
       "japanese": "",
@@ -24449,7 +24383,7 @@
     }
   },
   {
-    "id": 554,
+    "id": 554.2,
     "name": {
       "english": "Darumaka-Galar",
       "japanese": "",
@@ -24559,7 +24493,7 @@
     "battleOnly": "Darmanitan"
   },
   {
-    "id": 555,
+    "id": 555.2,
     "name": {
       "english": "Darmanitan-Galar",
       "japanese": "",
@@ -24869,7 +24803,7 @@
     }
   },
   {
-    "id": 562,
+    "id": 562.2,
     "name": {
       "english": "Yamask-Galar",
       "japanese": "",
@@ -26919,7 +26853,7 @@
     }
   },
   {
-    "id": 618,
+    "id": 618.2,
     "name": {
       "english": "Stunfisk-Galar",
       "japanese": "",

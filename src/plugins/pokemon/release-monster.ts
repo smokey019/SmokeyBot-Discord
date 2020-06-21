@@ -3,17 +3,24 @@ import { databaseClient } from '../../clients/database';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { findMonsterByID } from './monsters';
 import { getLogger } from '../../clients/logger';
+import { explode } from '../../utils';
 
 const logger = getLogger('Pokemon');
 
 export async function releaseMonster(message: Message): Promise<void> {
-  const tmpMsg = message.content.split(' ');
+  const tmpMsg = explode(message.content, ' ', 2);
 
   console.log(tmpMsg);
 
   if (tmpMsg.length > 1) {
-    if (tmpMsg[1].toString().match(',')) {
-      const multi_dump = tmpMsg[1].replace(' ', '').split(',');
+    if (tmpMsg[1].toString().match(',') || tmpMsg[1].toString().match(' ')) {
+      let multi_dump = [];
+
+      if (tmpMsg[1].toString().match(',')) {
+        multi_dump = tmpMsg[1].replace(' ', '').split(',');
+      } else if (tmpMsg[1].toString().match(' ')) {
+        multi_dump = tmpMsg[1].replace(',', '').split(' ');
+      }
 
       if (multi_dump.length < 35) {
         multi_dump.forEach(async (element) => {

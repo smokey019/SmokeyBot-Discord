@@ -43,6 +43,7 @@ export async function checkMonsters(message: Message): Promise<void> {
 
     pokemon.forEach((element: IMonsterModel) => {
       const monster = findMonsterByID(element.monster_id);
+      if (!monster) return;
 
       if (element.shiny) {
         shiny = ' ⭐';
