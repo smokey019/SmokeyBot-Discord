@@ -94,74 +94,72 @@ PokeDex.forEach((element) => {
   if (!element.forme) {
     MonsterPool.push(element);
   }
-  if (!element.forme && element.name.english && element.images) {
+  if (
+    !element.forme &&
+    element.name.english &&
+    element.images &&
+    element.id >= 0 &&
+    element.id <= 890
+  ) {
     MonsterDex.push(element);
   }
-
-  /*if (element.id < 152) {
-    Gens.one.push(element);
-  }
-
-  if (element.id < 252 && element.id > 151) {
-    Gens.two.push(element);
-  }
-
-  if (element.id < 387 && element.id > 252) {
-    Gens.three.push(element);
-  }
-
-  if (element.id < 494 && element.id > 386) {
-    Gens.four.push(element);
-  }
-
-  if (element.id < 650 && element.id > 493) {
-    Gens.five.push(element);
-  }
-
-  if (element.id < 722 && element.id > 649) {
-    Gens.six.push(element);
-  }
-
-  if (element.id < 810 && element.id > 721) {
-    Gens.seven.push(element);
-  }
-
-  if (element.id < 891 && element.id > 809) {
-    Gens.eight.push(element);
-  }*/
 });
-
+let mon = undefined;
 for (let index = 0; index < 75; index++) {
   Gens.one.forEach((element) => {
-    MonsterPool.push(findMonsterByID(element));
+    mon = findMonsterByID(element);
+    if (mon) {
+      MonsterPool.push(mon);
+    }
   });
 
   Gens.two.forEach((element) => {
-    MonsterPool.push(findMonsterByID(element));
+    mon = findMonsterByID(element);
+    if (mon) {
+      MonsterPool.push(mon);
+    }
   });
 
   Gens.three.forEach((element) => {
-    MonsterPool.push(findMonsterByID(element));
+    mon = findMonsterByID(element);
+    if (mon) {
+      MonsterPool.push(mon);
+    }
   });
 
   Gens.four.forEach((element) => {
-    MonsterPool.push(findMonsterByID(element));
+    mon = findMonsterByID(element);
+    if (mon) {
+      MonsterPool.push(mon);
+    }
   });
 
   Gens.five.forEach((element) => {
-    MonsterPool.push(findMonsterByID(element));
+    mon = findMonsterByID(element);
+    if (mon) {
+      MonsterPool.push(mon);
+    }
   });
 
   Gens.six.forEach((element) => {
-    MonsterPool.push(findMonsterByID(element));
+    mon = findMonsterByID(element);
+    if (mon) {
+      MonsterPool.push(mon);
+    }
   });
 
   Gens.seven.forEach((element) => {
-    MonsterPool.push(findMonsterByID(element));
+    mon = findMonsterByID(element);
+    if (mon) {
+      MonsterPool.push(mon);
+    }
   });
 
   Gens.eight.forEach((element) => {
-    MonsterPool.push(findMonsterByID(element));
+    mon = findMonsterByID(element);
+    if (mon) {
+      MonsterPool.push(mon);
+    }
   });
 }
 

@@ -33,10 +33,11 @@ export async function checkExpGain(message: Message): Promise<any> {
         );
         const monster_dex: IMonsterDex = findMonsterByID(monster.monster_id);
         await xp_cache.set(cacheKey, getCurrentTime());
+        if (!monster || monster.level >= 100) return;
         const updateExp = await databaseClient(MonsterTable)
           .where({ id: user.current_monster })
           .increment('experience', getRndInteger(50, 620));
-        if (updateExp && monster && monster.level < 100) {
+        if (updateExp) {
           logger.info(
             `User ${message.author.username} gained XP in ${message.guild.name}.`,
           );
@@ -57,7 +58,6 @@ export async function checkExpGain(message: Message): Promise<any> {
             }
 
             if (monster_dex.evos) {
-              console.log('evo:', monster_dex.evos[0]);
               const allMonsters = getAllMonsters();
 
               let evolve = undefined;
@@ -71,8 +71,6 @@ export async function checkExpGain(message: Message): Promise<any> {
                   }
                 }
               });
-              const tmpID = `${evolve.id}`.padStart(3, '0');
-              const img = `https://bot.smokey.gg/pokemon/images/hd/${tmpID}.png`;
 
               if (evolve.evoLevel) {
                 if (monster.level >= evolve.evoLevel) {
@@ -87,10 +85,10 @@ export async function checkExpGain(message: Message): Promise<any> {
                       color: 0x00bc8c,
                       description: `Nice! **${monster_dex.name.english}** has evolved into **${evolve.name.english}**!`,
                       image: {
-                        url: img,
+                        url: evolve.images.normal,
                       },
                       thumbnail: {
-                        url: monster_dex.images.normal,
+                        url: monster_dex.images.gif,
                       },
                       title: `${message.author.username}'s ${monster_dex.name.english} is evolving!`,
                     });

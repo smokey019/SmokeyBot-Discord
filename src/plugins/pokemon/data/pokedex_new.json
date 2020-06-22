@@ -36892,10 +36892,10 @@
     "evos": ["Coalossal"],
     "eggGroups": ["Mineral"],
     "images": {
-      "normal": "https://i.imgur.com/66MEQGy.png",
+      "normal": "https://i.imgur.com/M9RpDco.png",
       "shiny": "https://i.imgur.com/G6lAIT9.png",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/838.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/838_shiny.gif"
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__838__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_838__xy.gif"
     }
   },
   {
@@ -36929,10 +36929,10 @@
     "otherFormes": ["Coalossal-Gmax"],
     "formeOrder": ["Coalossal", "Coalossal-Gmax"],
     "images": {
-      "normal": "https://i.imgur.com/66MEQGy.png",
+      "normal": "https://i.imgur.com/LHWsJnA.png",
       "shiny": "https://i.imgur.com/NTVAnoe.png",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/839.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/839_shiny.gif"
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__839__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_839__xy.gif"
     }
   },
   {
