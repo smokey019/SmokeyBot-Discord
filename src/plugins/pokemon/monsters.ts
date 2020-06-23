@@ -105,7 +105,7 @@ PokeDex.forEach((element) => {
   }
 });
 let mon = undefined;
-for (let index = 0; index < 75; index++) {
+for (let index = 0; index < 150; index++) {
   Gens.one.forEach((element) => {
     mon = findMonsterByID(element);
     if (mon) {

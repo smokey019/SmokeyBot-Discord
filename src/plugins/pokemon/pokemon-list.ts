@@ -729,8 +729,6 @@ export const GenerationSeven = [
   769,
   770,
   771,
-  772,
-  773,
   774,
   775,
   776,
@@ -742,8 +740,6 @@ export const GenerationSeven = [
   782,
   783,
   784,
-  799,
-  797,
 ];
 export const GenerationEight = [
   810,
