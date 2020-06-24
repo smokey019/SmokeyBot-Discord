@@ -1,6 +1,6 @@
 import { Message, MessageEmbed } from 'discord.js';
 
-import { theWord } from '../../utils';
+import { theWord, chunk } from '../../utils';
 import { getLogger } from '../../clients/logger';
 import { findMonsterByID } from './monsters';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
@@ -130,8 +130,21 @@ export async function checkMonsters(message: Message): Promise<void> {
       message_contents.push(element.msg);
     });
 
+    let all_monsters = [];
+
     if (message_contents.length > 30) {
-      message_contents = message_contents.slice(0, 31);
+      all_monsters = chunk(message_contents, 30);
+
+      if (splitMsg.length == 4 && all_monsters.length > 1) {
+        const page = parseInt(splitMsg[3]) - 1;
+
+        if (all_monsters[page]) {
+          message_contents = all_monsters[page];
+        }
+      } else {
+        message_contents = all_monsters[0];
+        //message_contents = message_contents.slice(0, 31);
+      }
     }
 
     const new_msg = message_contents.join('\n');
@@ -288,8 +301,21 @@ export async function checkFavorites(message: Message): Promise<void> {
       message_contents.push(element.msg);
     });
 
+    let all_monsters = [];
+
     if (message_contents.length > 30) {
-      message_contents = message_contents.slice(0, 31);
+      all_monsters = chunk(message_contents, 30);
+
+      if (splitMsg.length == 4 && all_monsters.length > 1) {
+        const page = parseInt(splitMsg[3]) - 1;
+
+        if (all_monsters[page]) {
+          message_contents = all_monsters[page];
+        }
+      } else {
+        message_contents = all_monsters[0];
+        //message_contents = message_contents.slice(0, 31);
+      }
     }
 
     const new_msg = message_contents.join('\n');

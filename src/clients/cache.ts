@@ -2,15 +2,15 @@ import { Message } from 'discord.js';
 import Keyv from 'keyv';
 
 import { getLogger } from './logger';
-import { IMonster } from '../plugins/pokemon/monsters';
+import { IMonsterDex } from '../plugins/pokemon/monsters';
 
 const logger = getLogger('Cache');
 
 export interface ICache {
   tweet: [];
   monster_spawn: {
-    current_spawn?: IMonster;
-    last_spawn?: IMonster;
+    current_spawn?: IMonsterDex;
+    last_spawn?: IMonsterDex;
     last_spawn_time?: number;
     msg?: Message;
   };

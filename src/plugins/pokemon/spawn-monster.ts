@@ -2,7 +2,7 @@ import { Message, MessageEmbed } from 'discord.js';
 
 import { getLogger } from '../../clients/logger';
 import { cacheClient, ICache } from '../../clients/cache';
-import { getRandomMonster, IMonster } from './monsters';
+import { getRandomMonster, IMonsterDex } from './monsters';
 import { getCurrentTime } from '../../utils';
 
 const logger = getLogger('Pokemon');
@@ -42,7 +42,7 @@ export async function spawnMonster(
     },
   });
 
-  let monster: IMonster = getRandomMonster();
+  let monster: IMonsterDex = getRandomMonster();
   while (
     !monster.name.english ||
     monster.id < 0 ||

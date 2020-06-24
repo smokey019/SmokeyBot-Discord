@@ -79,6 +79,8 @@ const Gens = {
   six: [],
   seven: [],
   eight: [],
+  galar: [],
+  alola: [],
 };
 
 Gens.one = GenerationOne;
@@ -93,6 +95,12 @@ Gens.eight = GenerationEight;
 PokeDex.forEach((element) => {
   if (!element.forme) {
     MonsterPool.push(element);
+  }
+  if (element.region == 'Alola') {
+    Gens.alola.push(element);
+  }
+  if (element.region == 'Galar') {
+    Gens.galar.push(element);
   }
   if (
     !element.forme &&
@@ -162,6 +170,18 @@ for (let index = 0; index < 150; index++) {
     }
   });
 }
+
+Gens.alola.forEach((element) => {
+  for (let index = 0; index < 50; index++) {
+    MonsterPool.push(element);
+  }
+});
+
+Gens.galar.forEach((element) => {
+  for (let index = 0; index < 50; index++) {
+    MonsterPool.push(element);
+  }
+});
 
 export function getAllMonsters(): IMonsterDex[] {
   return MonsterPool;

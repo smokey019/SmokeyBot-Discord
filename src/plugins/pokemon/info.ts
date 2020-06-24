@@ -212,9 +212,7 @@ export async function currentMonsterInfo(message: Message): Promise<void> {
  * @param id
  */
 export async function monsterDex(message: Message): Promise<void> {
-  const tmpSplit = explode(message.content, ' ', 2);
-
-  console.log(tmpSplit);
+  const tmpSplit = explode(message.content, ' ', 3);
 
   const tempMonster = await findMonsterByName(tmpSplit[1].toLowerCase());
 
@@ -232,21 +230,30 @@ export async function monsterDex(message: Message): Promise<void> {
       speed: tempMonster.baseStats.spe,
     };
 
-    /* future shiny stuff
     let thumbnail = ``;
     let image = ``;
 
-    // shiny
-    if (tmpSplit[2] == '+'){
-      thumbnail = ``;
-      image = ``;
-    }else{
-      // not shiny
-      thumbnail = ``;
-      image = ``;
-    }*/
-
-    const img = tempMonster.images.normal;
+    if (tempMonster.region || tempMonster.forme) {
+      // shiny
+      if (tmpSplit[2] == '--shiny') {
+        thumbnail = tempMonster.images['gif-shiny'];
+        image = tempMonster.images.shiny;
+      } else {
+        // not shiny
+        thumbnail = tempMonster.images.gif;
+        image = tempMonster.images.normal;
+      }
+    } else {
+      // shiny
+      if (tmpSplit[2] == '--shiny') {
+        thumbnail = `https://bot.smokey.gg/pokemon/images/gif/${tmpID}_shiny.gif`;
+        image = tempMonster.images.shiny;
+      } else {
+        // not shiny
+        thumbnail = `https://bot.smokey.gg/pokemon/images/gif/${tmpID}.gif`;
+        image = tempMonster.images.normal;
+      }
+    }
 
     const embed = new MessageEmbed()
       .setAuthor(
@@ -255,8 +262,8 @@ export async function monsterDex(message: Message): Promise<void> {
         `https://pokemondb.net/pokedex/${tempMonster.id}`,
       )
       .setColor(0x12bca4)
-      .setThumbnail(tempMonster.images.gif)
-      .setImage(img).setDescription(`**Type(s)**: ${monster_types}
+      .setThumbnail(thumbnail)
+      .setImage(image).setDescription(`**Type(s)**: ${monster_types}
 
       **National №**: ${tmpID}
 
@@ -277,7 +284,7 @@ export async function monsterDex(message: Message): Promise<void> {
   }
 }
 
-export async function userDex(message: Message): Promise<Array<string>> {
+export async function userDex(message: Message): Promise<Array<any>> {
   const dex = [];
 
   const pokemon = await databaseClient<IMonsterModel>(MonsterTable)
