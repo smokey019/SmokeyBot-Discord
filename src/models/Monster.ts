@@ -19,4 +19,5 @@ export interface IMonsterModel {
   captured_at: number;
   released?: 0 | 1;
   favorite?: 0 | 1;
+  held_item?: number;
 }

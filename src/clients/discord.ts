@@ -92,7 +92,7 @@ async function parseMessage(message: Message) {
     if (cache.settings.smokemon_enabled) {
       monsterParser(message, cache);
 
-      const spawn_timer = getRndInteger(getRndInteger(30, 120), 2400);
+      const spawn_timer = getRndInteger(getRndInteger(30, 120), 1200);
 
       if (timestamp - cache.monster_spawn.last_spawn_time > spawn_timer) {
         spawnMonster(message, cache);

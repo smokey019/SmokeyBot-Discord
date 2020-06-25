@@ -207,7 +207,7 @@ export function findMonsterByID(id: number): any {
   }
 }
 
-export async function findMonsterByName(name: string): Promise<any> {
+export function findMonsterByName(name: string): IMonsterDex {
   let monster = undefined;
   MonsterDex.forEach(async (element) => {
     if (element.name.english.toLowerCase() == name.toLowerCase()) {
@@ -216,13 +216,6 @@ export async function findMonsterByName(name: string): Promise<any> {
   });
 
   return monster;
-
-  /*for (let index = 0; index < PokeDex.length; index++) {
-    console.log(typeof PokeDex[index].name);
-    if (PokeDex[index].name.english.toString().toLowerCase() == name.toString().toLowerCase()){
-      return PokeDex[index];
-    }
-  }*/
 }
 
 export async function getUserMonster(
