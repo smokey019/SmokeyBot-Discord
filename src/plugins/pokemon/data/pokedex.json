@@ -1300,7 +1300,7 @@
     }
   },
   {
-    "id": 25,
+    "id": 25.3,
     "name": {
       "english": "Detective Pikachu",
       "japanese": "",
@@ -6861,7 +6861,7 @@
     "otherFormes": ["Eevee-Starter", "Eevee-Gmax"],
     "formeOrder": ["Eevee", "Eevee-Starter", "Eevee-Gmax"],
     "images": {
-      "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721986770157174855/133.png",
+      "normal": "https://i.imgur.com/2NxSws2.png",
       "shiny": "https://i.imgur.com/JhomfqJ.png",
       "gif": "",
       "gif-shiny": ""
@@ -7588,8 +7588,8 @@
     "evoLevel": 55,
     "eggGroups": ["Water 1", "Dragon"],
     "images": {
-      "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721988887031054386/149.png",
-      "shiny": "https://i.imgur.com/3uBnhxR.png",
+      "normal": "https://i.imgur.com/SaVKdJh.png",
+      "shiny": "https://i.imgur.com/HOig48c.png",
       "gif": "",
       "gif-shiny": ""
     }
@@ -8136,7 +8136,7 @@
     "evoLevel": 15,
     "eggGroups": ["Field"],
     "images": {
-      "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989019906474035/162.png",
+      "normal": "https://i.imgur.com/IcfXv5n.png",
       "shiny": "https://i.imgur.com/J1QHg6k.png",
       "gif": "",
       "gif-shiny": ""

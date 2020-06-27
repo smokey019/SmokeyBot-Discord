@@ -7,8 +7,8 @@ import { getRndInteger } from '../../utils';
  * Consider placing `47` in a config somewhere so it's easier to tweak.
  * This is called a [Magic Number](https://en.wikipedia.org/wiki/Magic_number_(programming)#Unnamed_numerical_constants).
  */
-export function rollLevel(): number {
-  return getRndInteger(1, 59);
+export function rollLevel(min: number, max: number): number {
+  return getRndInteger(min, max);
 }
 
 /**

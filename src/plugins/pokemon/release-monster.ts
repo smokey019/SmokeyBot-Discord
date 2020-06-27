@@ -10,8 +10,6 @@ const logger = getLogger('Pokemon');
 export async function releaseMonster(message: Message): Promise<void> {
   const tmpMsg = explode(message.content, ' ', 2);
 
-  console.log(tmpMsg);
-
   if (tmpMsg.length > 1) {
     if (tmpMsg[1].toString().match(',') || tmpMsg[1].toString().match(' ')) {
       let multi_dump = [];
@@ -49,7 +47,7 @@ export async function releaseMonster(message: Message): Promise<void> {
 
         message
           .reply(
-            `Attempting to release ${multi_dump.length} monsters.. Good luck little guys :(`,
+            `Attempting to release **${multi_dump.length}** monsters.. Good luck little guys :(`,
           )
           .then(() => {
             logger.info(
@@ -81,11 +79,11 @@ export async function releaseMonster(message: Message): Promise<void> {
         if (released_monster) {
           message
             .reply(
-              `Successfully released your monster. Goodbye ${monster.name.english} :(`,
+              `Successfully released your monster. Goodbye **${monster.name.english}** :(`,
             )
             .then(() => {
               logger.info(
-                `${message.author.username} Successfully released your monster. :(`,
+                `${message.author.username} Successfully released monster. :(`,
               );
               return;
             })

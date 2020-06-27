@@ -14,6 +14,7 @@ import { releaseMonster, recoverMonster } from './release-monster';
 import { selectMonster, setFavorite, unFavorite } from './monsters';
 import { checkExpGain } from './exp-gain';
 import { getLogger } from '../../clients/logger';
+import { parseTrade } from './trading';
 
 const logger = getLogger('Pokemon');
 
@@ -45,6 +46,22 @@ export async function monsterParser(
       message.reply(
         `You have ${tempdex.length} total unique ${theWord()} in your Pokédex.`,
       );
+    }
+
+    if (
+      message.content.match(/~trade/i) &&
+      splitMsg[0].toLowerCase() == '~trade' &&
+      channel_name == cache.settings.specific_channel &&
+      splitMsg.length > 1
+    ) {
+      cache.time = getCurrentTime();
+
+      cacheClient.set(message.guild.id, {
+        ...cache,
+        time: getCurrentTime(),
+      });
+
+      parseTrade(message);
     }
 
     if (

@@ -78,13 +78,23 @@ export async function monsterEmbed(
     100;
 
   let favorite = ``;
-
   if (monster_db.favorite) {
     favorite = ' 💟';
   }
 
+  let released = ``;
+  if (monster_db.released) {
+    released = '\n***RELEASED***\n\n';
+  }
+
   if (monster_db.shiny) {
     const img = monster.images.shiny;
+    let thumbnail = ``;
+    if (monster.id > 809) {
+      thumbnail = `https://img.pokemondb.net/sprites/home/shiny/${monster.name.english.toLowerCase()}.png`;
+    } else {
+      thumbnail = `https://bot.smokey.gg/pokemon/images/gif/${tmpID}_shiny.gif`;
+    }
     const embed = new MessageEmbed()
       .setAuthor(
         `Level ${monster_db.level} ${monster.name.english} ⭐${favorite}`,
@@ -93,9 +103,7 @@ export async function monsterEmbed(
       )
       .setColor(0xf1912b)
       .setImage(img)
-      .setThumbnail(
-        `https://bot.smokey.gg/pokemon/images/gif/${tmpID}_shiny.gif`,
-      ).setDescription(`⭐ __**SHINY**__ ⭐\n
+      .setThumbnail(thumbnail).setDescription(`⭐ __**SHINY**__ ⭐\n${released}
     **National №**: ${tmpID}
     **ID**: ${monster_db.id}
     **Exp**: ${format_number(monster_db.experience)} / ${format_number(
@@ -118,6 +126,12 @@ export async function monsterEmbed(
       .catch(console.error);
   } else if (!monster.forme && !monster_db.shiny) {
     const img = monster.images.normal;
+    let thumbnail = ``;
+    if (monster.id > 809) {
+      thumbnail = `https://img.pokemondb.net/sprites/home/normal/${monster.name.english.toLowerCase()}.png`;
+    } else {
+      thumbnail = `https://bot.smokey.gg/pokemon/images/gif/${tmpID}.gif`;
+    }
     const embed = new MessageEmbed()
       .setAuthor(
         `Level ${monster_db.level} ${monster.name.english}${favorite}`,
@@ -125,8 +139,8 @@ export async function monsterEmbed(
         `https://pokemondb.net/pokedex/${monster.id}`,
       )
       .setColor(0xff0000)
-      .setThumbnail(`https://bot.smokey.gg/pokemon/images/gif/${tmpID}.gif`)
-      .setImage(img).setDescription(`**ID**: ${monster_db.id}
+      .setThumbnail(thumbnail)
+      .setImage(img).setDescription(`${released}**ID**: ${monster_db.id}
     **National №**: ${tmpID}
     **Exp**: ${format_number(monster_db.experience)} / ${format_number(
       next_level_xp,
@@ -214,7 +228,7 @@ export async function currentMonsterInfo(message: Message): Promise<void> {
 export async function monsterDex(message: Message): Promise<void> {
   const tmpSplit = explode(message.content, ' ', 3);
 
-  const tempMonster = await findMonsterByName(tmpSplit[1].toLowerCase());
+  const tempMonster = findMonsterByName(tmpSplit[1].toLowerCase());
 
   if (tempMonster) {
     const monster_types = tempMonster.type.join(' | ');

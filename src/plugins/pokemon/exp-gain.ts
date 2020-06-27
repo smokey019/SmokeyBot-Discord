@@ -57,7 +57,7 @@ export async function checkExpGain(message: Message): Promise<any> {
               );
             }
 
-            if (monster_dex.evos) {
+            if (monster_dex.evos && monster.held_item != 229) {
               const allMonsters = getAllMonsters();
 
               let evolve = undefined;
@@ -81,14 +81,20 @@ export async function checkExpGain(message: Message): Promise<any> {
                     .update({ monster_id: evolve.id });
 
                   if (updateMonster) {
+                    let imgs = [];
+                    if (monster.shiny) {
+                      imgs = [evolve.images.shiny, monster_dex.images.shiny];
+                    } else {
+                      imgs = [evolve.images.normal, monster_dex.images.normal];
+                    }
                     const embed = new MessageEmbed({
                       color: 0x00bc8c,
                       description: `Nice! **${monster_dex.name.english}** has evolved into **${evolve.name.english}**!`,
                       image: {
-                        url: evolve.images.normal,
+                        url: imgs[0],
                       },
                       thumbnail: {
-                        url: monster_dex.images.gif,
+                        url: imgs[1],
                       },
                       title: `${message.author.username}'s ${monster_dex.name.english} is evolving!`,
                     });

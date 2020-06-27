@@ -34,6 +34,7 @@ export interface IMonsterDex {
   baseSpecies?: string;
   baseForme?: string;
   forme?: string;
+  region?: string;
   type: Array<string>;
   gender?: string;
   genderRatio?: {

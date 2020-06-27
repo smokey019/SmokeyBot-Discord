@@ -6,7 +6,7 @@ import { ICache, cacheClient } from '../../clients/cache';
 import { getRandomNature } from './natures';
 import { rollShiny, rollLevel } from './utils';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
-import { databaseClient } from '../../clients/database';
+import { databaseClient, getMonsterUser } from '../../clients/database';
 import { MonsterUserTable, IMonsterUserModel } from '../../models/MonsterUser';
 import { userDex } from './info';
 import { IMonsterDex } from './monsters';
@@ -65,9 +65,16 @@ export async function catchMonster(
       `${message.guild?.name} - ${message.author.username} | Starting catch~`,
     );
 
-    const level = rollLevel();
+    let level = 0;
+
     const shiny = rollShiny();
     const currentSpawn = cache.monster_spawn.current_spawn;
+
+    if (currentSpawn.evoLevel) {
+      level = rollLevel(currentSpawn.evoLevel, 60);
+    } else {
+      level = rollLevel(1, 49);
+    }
 
     cache.monster_spawn.last_spawn = cache.monster_spawn.current_spawn;
     cache.monster_spawn.current_spawn = undefined;
@@ -122,7 +129,9 @@ export async function catchMonster(
         MonsterUserTable,
       )
         .where({ uid: message.author.id })
-        .update({ latest_monster: insertMonster[0] });
+        .update({ latest_monster: insertMonster[0] })
+        .increment('currency', 10)
+        .increment('streak', 1);
 
       if (!updateUser) {
         logger.debug(
@@ -138,31 +147,50 @@ export async function catchMonster(
         logger.info(`Successfully inserted user ${message.author.username}`);
       }
 
-      let response = ``;
+      if (insertMonster) {
+        let response = ``;
 
-      if (shiny == 1 && !dex.includes(currentSpawn.id)) {
-        response = `POGGERS! You caught a ⭐__***SHINY***__⭐ level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}** - Added to Pokédex.`;
-        logger.info(
-          `${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
-        );
-      } else if (shiny == 0 && !dex.includes(currentSpawn.id)) {
-        response = `YOINK! You caught a level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}** - Added to Pokédex.`;
-        logger.info(
-          `${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
-        );
-      } else if (shiny == 0 && dex.includes(currentSpawn.id)) {
-        response = `YOINK! You caught a level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}**.`;
-        logger.info(
-          `${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
-        );
-      } else if (shiny == 1 && dex.includes(currentSpawn.id)) {
-        response = `POGGERS! You caught a ⭐__***SHINY***__⭐ level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}**.`;
-        logger.info(
-          `${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
-        );
+        if (shiny == 1 && !dex.includes(currentSpawn.id)) {
+          response = `POGGERS! You caught a ⭐__***SHINY***__⭐ level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}** - Added to Pokédex.`;
+          logger.info(
+            `${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
+          );
+          await databaseClient<IMonsterUserModel>(MonsterUserTable)
+            .where({ uid: message.author.id })
+            .increment('currency', 1000);
+        } else if (shiny == 0 && !dex.includes(currentSpawn.id)) {
+          response = `YOINK! You caught a level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}** - Added to Pokédex.`;
+          logger.info(
+            `${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
+          );
+          await databaseClient<IMonsterUserModel>(MonsterUserTable)
+            .where({ uid: message.author.id })
+            .increment('currency', 100);
+        } else if (shiny == 0 && dex.includes(currentSpawn.id)) {
+          response = `YOINK! You caught a level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}**.`;
+          logger.info(
+            `${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
+          );
+        } else if (shiny == 1 && dex.includes(currentSpawn.id)) {
+          response = `POGGERS! You caught a ⭐__***SHINY***__⭐ level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}**.`;
+          logger.info(
+            `${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
+          );
+        }
+
+        const user = await getMonsterUser(message.author.id);
+
+        if (user) {
+          if (user.streak == 10) {
+            await databaseClient<IMonsterUserModel>(MonsterUserTable)
+              .where({ uid: message.author.id })
+              .update({ streak: 0 })
+              .increment('currency', 250);
+          }
+        }
+
+        message.reply(response);
       }
-
-      message.reply(response);
     } catch (error) {
       logger.error(error);
     }

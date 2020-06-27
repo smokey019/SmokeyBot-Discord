@@ -6,12 +6,12 @@
     }
   },
   {
+    "id": 1,
     "name": {
       "japanese": "マスターボール",
       "english": "Master Ball",
       "chinese": "大师球"
-    },
-    "id": 1
+    }
   },
   {
     "id": 2,
