@@ -55,6 +55,7 @@ export interface IMonsterDex {
   color: string;
   prevo?: string;
   evoType?: string;
+  evoItem?: string;
   evoMove?: string;
   evos?: Array<string>;
   evoLevel?: number;

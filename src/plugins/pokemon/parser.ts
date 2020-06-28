@@ -9,12 +9,17 @@ import {
   currentMonsterInfo,
 } from './info';
 import { theWord, getCurrentTime } from '../../utils';
-import { checkMonsters, checkFavorites } from './check-monsters';
+import {
+  checkMonsters,
+  checkFavorites,
+  searchMonsters,
+} from './check-monsters';
 import { releaseMonster, recoverMonster } from './release-monster';
 import { selectMonster, setFavorite, unFavorite } from './monsters';
 import { checkExpGain } from './exp-gain';
 import { getLogger } from '../../clients/logger';
 import { parseTrade } from './trading';
+import { parseItems, msgBalance } from './items';
 
 const logger = getLogger('Pokemon');
 
@@ -49,6 +54,46 @@ export async function monsterParser(
     }
 
     if (
+      (message.content.match(/~bal/i) &&
+        splitMsg[0].toLowerCase() == '~bal' &&
+        channel_name == cache.settings.specific_channel) ||
+      (message.content.match(/~balance/i) &&
+        splitMsg[0].toLowerCase() == '~balance' &&
+        channel_name == cache.settings.specific_channel) ||
+      (message.content.match(/~currency/i) &&
+        splitMsg[0].toLowerCase() == '~currency' &&
+        channel_name == cache.settings.specific_channel) ||
+      (message.content.match(/~bank/i) &&
+        splitMsg[0].toLowerCase() == '~bank' &&
+        channel_name == cache.settings.specific_channel)
+    ) {
+      cache.time = getCurrentTime();
+
+      cacheClient.set(message.guild.id, {
+        ...cache,
+        time: getCurrentTime(),
+      });
+
+      msgBalance(message);
+    }
+
+    if (
+      message.content.match(/~item/i) &&
+      splitMsg[0].toLowerCase() == '~item' &&
+      channel_name == cache.settings.specific_channel &&
+      splitMsg.length > 1
+    ) {
+      cache.time = getCurrentTime();
+
+      cacheClient.set(message.guild.id, {
+        ...cache,
+        time: getCurrentTime(),
+      });
+
+      parseItems(message);
+    }
+
+    if (
       message.content.match(/~trade/i) &&
       splitMsg[0].toLowerCase() == '~trade' &&
       channel_name == cache.settings.specific_channel &&
@@ -78,6 +123,22 @@ export async function monsterParser(
       });
 
       monsterDex(message);
+    }
+
+    if (
+      message.content.match(/~search/i) &&
+      splitMsg[0].toLowerCase() == '~search' &&
+      channel_name == cache.settings.specific_channel &&
+      splitMsg.length > 1
+    ) {
+      cache.time = getCurrentTime();
+
+      cacheClient.set(message.guild.id, {
+        ...cache,
+        time: getCurrentTime(),
+      });
+
+      searchMonsters(message);
     }
     if (
       splitMsg[0].toLowerCase() == '~pokemon' &&

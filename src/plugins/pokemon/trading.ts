@@ -11,6 +11,7 @@ import {
   getUserMonster,
 } from './monsters';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
+import { checkItemEvolution } from './items';
 
 const logger = getLogger('Pokemon-Trade');
 
@@ -101,7 +102,7 @@ export async function checkEvolves(
 
       if (evolution) {
         if (evolution.evoType) {
-          if (evolution.evoType == 'trade') {
+          if (evolution.evoType == 'trade' && !evolution.evoItem) {
             const updateMonster = await databaseClient<IMonsterModel>(
               MonsterTable,
             )
@@ -136,6 +137,8 @@ export async function checkEvolves(
             } else {
               return false;
             }
+          } else if (evolution.evoType == 'trade' && evolution.evoItem) {
+            checkItemEvolution(db_monster[0], message, true);
           } else {
             return false;
           }

@@ -1,6 +1,6 @@
 import { Message, MessageEmbed } from 'discord.js';
 
-import { format_number, explode } from '../../utils';
+import { format_number } from '../../utils';
 //import { getLogger } from '../../clients/logger';
 import { findMonsterByID, findMonsterByName } from './monsters';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
@@ -12,6 +12,7 @@ import {
 } from '../../clients/database';
 import { img_monster_ball } from './utils';
 import { IMonsterUserModel } from '../../models/MonsterUser';
+import { COLOR_GREEN } from '../../colors';
 
 //const logger = getLogger('Pokemon-Info');
 
@@ -32,6 +33,10 @@ export async function monsterEmbed(
   const monster_nature = monster_db.nature;
 
   const next_level_xp = monster_db.level * 1250 + 1250;
+
+  const count = format_number(
+    await monsterCount(monster.id, message.author.id),
+  );
 
   const monster_stats = {
     hp: Math.round(
@@ -104,19 +109,24 @@ export async function monsterEmbed(
       .setColor(0xf1912b)
       .setImage(img)
       .setThumbnail(thumbnail).setDescription(`⭐ __**SHINY**__ ⭐\n${released}
-    **National №**: ${tmpID}
+
     **ID**: ${monster_db.id}
+    **National №**: ${tmpID}
+    **Dex Count**: ${count}
+
     **Exp**: ${format_number(monster_db.experience)} / ${format_number(
       next_level_xp,
     )}
     **Type**: ${monster_types}
     **Nature**: ${monster_nature}
+
     **HP**: ${monster_stats.hp} - IV: ${monster_db.hp}/31
     **Attack**: ${monster_stats.attack} - IV: ${monster_db.attack}/31
     **Defense**: ${monster_stats.defense} - IV: ${monster_db.defense}/31
     **Sp. Atk**: ${monster_stats.sp_attack} - IV: ${monster_db.sp_attack}/31
     **Sp. Def**: ${monster_stats.sp_defense} - IV: ${monster_db.sp_defense}/31
     **Speed**: ${monster_stats.speed} - IV: ${monster_db.speed}/31\n
+
     **Total IV %**: ${iv_avg.toFixed(2)}%`);
     await message.channel
       .send(embed)
@@ -138,21 +148,25 @@ export async function monsterEmbed(
         img_monster_ball,
         `https://pokemondb.net/pokedex/${monster.id}`,
       )
-      .setColor(0xff0000)
+      .setColor(COLOR_GREEN)
       .setThumbnail(thumbnail)
       .setImage(img).setDescription(`${released}**ID**: ${monster_db.id}
     **National №**: ${tmpID}
+    **Dex Count**: ${count}
+
     **Exp**: ${format_number(monster_db.experience)} / ${format_number(
       next_level_xp,
     )}
     **Type**: ${monster_types}
     **Nature**: ${monster_nature}
+
     **HP**: ${monster_stats.hp} - IV: ${monster_db.hp}/31
     **Attack**: ${monster_stats.attack} - IV: ${monster_db.attack}/31
     **Defense**: ${monster_stats.defense} - IV: ${monster_db.defense}/31
     **Sp. Atk**: ${monster_stats.sp_attack} - IV: ${monster_db.sp_attack}/31
     **Sp. Def**: ${monster_stats.sp_defense} - IV: ${monster_db.sp_defense}/31
     **Speed**: ${monster_stats.speed} - IV: ${monster_db.speed}/31\n
+
     **Total IV %**: ${iv_avg.toFixed(2)}%`);
     await message.channel
       .send(embed)
@@ -223,12 +237,19 @@ export async function currentMonsterInfo(message: Message): Promise<void> {
 
 /**
  * Get a specific Monster's information.
- * @param id
+ * @param message
  */
 export async function monsterDex(message: Message): Promise<void> {
-  const tmpSplit = explode(message.content, ' ', 3);
+  const tmpSplit = message.content.split(' ');
+  let tempMonster = undefined;
 
-  const tempMonster = findMonsterByName(tmpSplit[1].toLowerCase());
+  if (tmpSplit.length >= 3 && !tmpSplit[2].match(/shiny/i)) {
+    tempMonster = findMonsterByName(
+      tmpSplit[1].toLowerCase() + ' ' + tmpSplit[2].toLowerCase(),
+    );
+  } else {
+    tempMonster = findMonsterByName(tmpSplit[1].toLowerCase());
+  }
 
   if (tempMonster) {
     const monster_types = tempMonster.type.join(' | ');
@@ -246,10 +267,13 @@ export async function monsterDex(message: Message): Promise<void> {
 
     let thumbnail = ``;
     let image = ``;
+    const count = format_number(
+      await monsterCount(tempMonster.id, message.author.id),
+    );
 
     if (tempMonster.region || tempMonster.forme) {
       // shiny
-      if (tmpSplit[2] == '--shiny') {
+      if (tmpSplit[tmpSplit.length - 1] == '--shiny') {
         thumbnail = tempMonster.images['gif-shiny'];
         image = tempMonster.images.shiny;
       } else {
@@ -259,7 +283,7 @@ export async function monsterDex(message: Message): Promise<void> {
       }
     } else {
       // shiny
-      if (tmpSplit[2] == '--shiny') {
+      if (tmpSplit[tmpSplit.length - 1] == '--shiny') {
         thumbnail = `https://bot.smokey.gg/pokemon/images/gif/${tmpID}_shiny.gif`;
         image = tempMonster.images.shiny;
       } else {
@@ -280,6 +304,7 @@ export async function monsterDex(message: Message): Promise<void> {
       .setImage(image).setDescription(`**Type(s)**: ${monster_types}
 
       **National №**: ${tmpID}
+      **Dex Count**: ${count}
 
     **Base Stats**
 
@@ -296,6 +321,17 @@ export async function monsterDex(message: Message): Promise<void> {
       })
       .catch(console.error);
   }
+}
+
+export async function monsterCount(id: number, uid: string): Promise<number> {
+  const pokemon = await databaseClient<IMonsterModel>(MonsterTable)
+    .select()
+    .where({
+      monster_id: id,
+      uid: uid,
+    });
+
+  return pokemon.length;
 }
 
 export async function userDex(message: Message): Promise<Array<any>> {
