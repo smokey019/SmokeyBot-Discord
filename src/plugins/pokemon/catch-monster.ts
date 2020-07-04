@@ -10,6 +10,7 @@ import { databaseClient, getMonsterUser } from '../../clients/database';
 import { MonsterUserTable, IMonsterUserModel } from '../../models/MonsterUser';
 import { userDex } from './info';
 import { IMonsterDex } from './monsters';
+import { prefix_regex } from './parser';
 
 const logger = getLogger('Pokemon');
 
@@ -22,14 +23,20 @@ const logger = getLogger('Pokemon');
  */
 function monsterMatchesPrevious(messageContent: string, { name }: IMonsterDex) {
   return (
-    messageContent ==
-      `~catch ${name.english.toLowerCase().replace(/♂|♀/g, '')}` ||
-    messageContent ==
-      `~キャッチ ${name.japanese.toLowerCase().replace(/♂|♀/g, '')}` ||
-    messageContent ==
-      `~抓住 ${name.chinese.toLowerCase().replace(/♂|♀/g, '')}` ||
-    messageContent ==
-      `~capture ${name.french.toLowerCase().replace(/♂|♀/g, '')}`
+    messageContent.match(
+      prefix_regex(`catch ${name.english.toLowerCase().replace(/♂|♀/g, '')}`),
+    ) ||
+    messageContent.match(
+      prefix_regex(
+        `キャッチ ${name.japanese.toLowerCase().replace(/♂|♀/g, '')}`,
+      ),
+    ) ||
+    messageContent.match(
+      prefix_regex(`抓住 ${name.chinese.toLowerCase().replace(/♂|♀/g, '')}`),
+    ) ||
+    messageContent.match(
+      prefix_regex(`capture ${name.french.toLowerCase().replace(/♂|♀/g, '')}`),
+    )
   );
 }
 
@@ -101,6 +108,7 @@ export async function catchMonster(
       experience: level * 1250,
       level: level,
       uid: message.author.id,
+      original_uid: message.author.id,
       shiny: shiny,
       mega: 0,
       captured_at: timestamp,

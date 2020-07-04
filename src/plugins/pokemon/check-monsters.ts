@@ -5,6 +5,7 @@ import { getLogger } from '../../clients/logger';
 import { findMonsterByID, IMonsterDex } from './monsters';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { databaseClient } from '../../clients/database';
+import { COLOR_GREEN, COLOR_WHITE } from '../../colors';
 
 const logger = getLogger('Pokemon');
 
@@ -132,18 +133,17 @@ export async function checkMonsters(message: Message): Promise<void> {
 
     let all_monsters = [];
 
-    if (message_contents.length > 30) {
-      all_monsters = chunk(message_contents, 30);
+    if (message_contents.length > 20) {
+      all_monsters = chunk(message_contents, 20);
 
       if (splitMsg.length == 4 && all_monsters.length > 1) {
-        const page = parseInt(splitMsg[3]) - 1;
+        const page = parseInt(splitMsg[splitMsg.length - 1]) - 1;
 
         if (all_monsters[page]) {
           message_contents = all_monsters[page];
         }
       } else {
         message_contents = all_monsters[0];
-        //message_contents = message_contents.slice(0, 31);
       }
     }
 
@@ -154,13 +154,13 @@ export async function checkMonsters(message: Message): Promise<void> {
         `${message.author.username}'s Pokémon`,
         message.author.avatarURL()?.toString(),
       )
-      .setColor(0xff0000)
+      .setColor(COLOR_GREEN)
       .setDescription(new_msg);
     await message.channel
       .send(embed)
       .then((message) => {
         logger.debug(
-          `Sent ${theWord()} for ${message.author.username} in ${
+          `Sent ${theWord()} for ${message.author.tag} in ${
             message.guild?.name
           }!`,
         );
@@ -183,7 +183,7 @@ export async function checkMonsters(message: Message): Promise<void> {
  */
 export async function checkFavorites(message: Message): Promise<void> {
   logger.debug(
-    `Fetching Favorite ${theWord()} for ${message.author.username} in ${
+    `Fetching Favorite ${theWord()} for ${message.author.tag} in ${
       message.guild?.name
     }..`,
   );
@@ -303,18 +303,17 @@ export async function checkFavorites(message: Message): Promise<void> {
 
     let all_monsters = [];
 
-    if (message_contents.length > 30) {
-      all_monsters = chunk(message_contents, 30);
+    if (message_contents.length > 20) {
+      all_monsters = chunk(message_contents, 20);
 
       if (splitMsg.length == 4 && all_monsters.length > 1) {
-        const page = parseInt(splitMsg[3]) - 1;
+        const page = parseInt(splitMsg[splitMsg.length - 1]) - 1;
 
         if (all_monsters[page]) {
           message_contents = all_monsters[page];
         }
       } else {
         message_contents = all_monsters[0];
-        //message_contents = message_contents.slice(0, 31);
       }
     }
 
@@ -325,16 +324,12 @@ export async function checkFavorites(message: Message): Promise<void> {
         `${message.author.username}'s Pokémon`,
         message.author.avatarURL()?.toString(),
       )
-      .setColor(0xff0000)
+      .setColor(COLOR_WHITE)
       .setDescription(new_msg);
     await message.channel
       .send(embed)
       .then((message) => {
-        logger.debug(
-          `Sent ${theWord()} for ${message.author.username} in ${
-            message.guild?.name
-          }!`,
-        );
+        logger.debug(`Sent favorites in ${message.guild?.name}!`);
       })
       .catch(console.error);
   } else {
@@ -371,11 +366,15 @@ export async function searchMonsters(message: Message): Promise<void> {
     let favorite = '';
 
     const temp_monsters = [];
-    const search = new RegExp(splitMsg[1], 'i');
 
     pokemon.forEach((element: IMonsterModel) => {
       const monster: IMonsterDex = findMonsterByID(element.monster_id);
-      if (!monster || !monster.name.english.match(search)) return;
+      if (
+        !monster ||
+        monster.name.english.toLowerCase().replace(/♂|♀/g, '') !=
+          splitMsg[1].toLowerCase()
+      )
+        return;
 
       if (element.shiny) {
         shiny = ' ⭐';
@@ -400,7 +399,7 @@ export async function searchMonsters(message: Message): Promise<void> {
         100
       ).toFixed(2);
 
-      const tmpMsg = `**${element.id}** - **${monster.name.english}${shiny}**${favorite} - **Level ${element.level}** - **Avg IV ${averageIV}%**`;
+      const tmpMsg = `**${element.id}** - **${monster.name.english}${shiny}**${favorite} - **LVL ${element.level}** - **IV ${averageIV}%**`;
 
       temp_monsters.push({
         id: element.id,
@@ -462,42 +461,61 @@ export async function searchMonsters(message: Message): Promise<void> {
       message_contents.push(element.msg);
     });
 
-    let all_monsters = [];
+    if (message_contents.length > 10) {
+      let all_monsters = [];
 
-    if (message_contents.length > 30) {
-      all_monsters = chunk(message_contents, 30);
+      all_monsters = chunk(message_contents, 10);
 
-      if (splitMsg.length == 4 && all_monsters.length > 1) {
-        const page = parseInt(splitMsg[3]) - 1;
+      if (splitMsg.length > 4 && all_monsters.length > 1) {
+        const page = parseInt(splitMsg[splitMsg.length - 1]) - 1;
 
         if (all_monsters[page]) {
           message_contents = all_monsters[page];
         }
       } else {
         message_contents = all_monsters[0];
-        //message_contents = message_contents.slice(0, 31);
       }
+
+      const new_msg = message_contents.join('\n');
+
+      const embed = new MessageEmbed()
+        .setAuthor(
+          `${message.author.username}'s Pokémon`,
+          message.author.avatarURL()?.toString(),
+        )
+        .setColor(0xff0000)
+        .setDescription(new_msg);
+      await message.channel
+        .send(embed)
+        .then(() => {
+          logger.debug(
+            `Sent ${theWord()} for ${message.author.username} in ${
+              message.guild?.name
+            }!`,
+          );
+        })
+        .catch(console.error);
+    } else {
+      const new_msg = message_contents.join('\n');
+
+      const embed = new MessageEmbed()
+        .setAuthor(
+          `${message.author.username}'s Pokémon`,
+          message.author.avatarURL()?.toString(),
+        )
+        .setColor(0xff0000)
+        .setDescription(new_msg);
+      await message.channel
+        .send(embed)
+        .then(() => {
+          logger.debug(
+            `Sent ${theWord()} for ${message.author.username} in ${
+              message.guild?.name
+            }!`,
+          );
+        })
+        .catch(console.error);
     }
-
-    const new_msg = message_contents.join('\n');
-
-    const embed = new MessageEmbed()
-      .setAuthor(
-        `${message.author.username}'s Pokémon`,
-        message.author.avatarURL()?.toString(),
-      )
-      .setColor(0xff0000)
-      .setDescription(new_msg);
-    await message.channel
-      .send(embed)
-      .then((message) => {
-        logger.debug(
-          `Sent ${theWord()} for ${message.author.username} in ${
-            message.guild?.name
-          }!`,
-        );
-      })
-      .catch(console.error);
   } else {
     message
       .reply(`You don't have any monsters in your Pokédex. :(`)

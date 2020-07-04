@@ -4,6 +4,7 @@ import { getLogger } from '../../clients/logger';
 import { cacheClient, ICache } from '../../clients/cache';
 import { getRandomMonster, IMonsterDex } from './monsters';
 import { getCurrentTime } from '../../utils';
+import { COLOR_PURPLE } from '../../colors';
 
 const logger = getLogger('Pokemon');
 
@@ -59,7 +60,7 @@ export async function spawnMonster(
   // const img = `https://bot.smokey.gg/pokemon/images/hd/${tmpID}.png`;
 
   const embed = new MessageEmbed({
-    color: 0x00bc8c,
+    color: monster.color || COLOR_PURPLE,
     description: 'Type ~catch <Pokémon> to try and catch it!',
     image: {
       url: monster.images.normal,

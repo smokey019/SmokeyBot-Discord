@@ -82,9 +82,7 @@ export async function releaseMonster(message: Message): Promise<void> {
               `Successfully released your monster. Goodbye **${monster.name.english}** :(`,
             )
             .then(() => {
-              logger.info(
-                `${message.author.username} Successfully released monster. :(`,
-              );
+              logger.trace(`Successfully released monster. :(`);
               return;
             })
             .catch(console.error);

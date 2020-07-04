@@ -23,6 +23,11 @@ import { parseItems, msgBalance } from './items';
 
 const logger = getLogger('Pokemon');
 
+export const prefixes = ['!', '~', 'p!'];
+export function prefix_regex(command: string): RegExp {
+  return RegExp('(' + prefixes.join('|') + ')' + command, 'i');
+}
+
 export async function monsterParser(
   message: Message,
   cache: ICache,
@@ -30,12 +35,12 @@ export async function monsterParser(
   const timestamp = getCurrentTime();
 
   const channel_name = (message.channel as TextChannel).name;
-  const splitMsg = message.content.split(' ') || message.content;
+  const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
+  const command = splitMsg[0];
 
   if (
     cache.monster_spawn.current_spawn &&
-    message.content.match(/~catch/i) &&
-    splitMsg[0].toLowerCase() == '~catch' &&
+    command.match(prefix_regex('catch')) &&
     channel_name == cache.settings.specific_channel &&
     splitMsg.length > 1
   ) {
@@ -43,10 +48,7 @@ export async function monsterParser(
   }
 
   if (timestamp - cache.time > 3) {
-    if (
-      message.content.match(/~unique/i) &&
-      splitMsg[0].toLowerCase() == '~unique'
-    ) {
+    if (command.match(prefix_regex('unique'))) {
       const tempdex = await userDex(message);
       message.reply(
         `You have ${tempdex.length} total unique ${theWord()} in your Pokédex.`,
@@ -54,17 +56,13 @@ export async function monsterParser(
     }
 
     if (
-      (message.content.match(/~bal/i) &&
-        splitMsg[0].toLowerCase() == '~bal' &&
+      (command.match(prefix_regex('bal')) &&
         channel_name == cache.settings.specific_channel) ||
-      (message.content.match(/~balance/i) &&
-        splitMsg[0].toLowerCase() == '~balance' &&
+      (command.match(prefix_regex('balance')) &&
         channel_name == cache.settings.specific_channel) ||
-      (message.content.match(/~currency/i) &&
-        splitMsg[0].toLowerCase() == '~currency' &&
+      (command.match(prefix_regex('currency')) &&
         channel_name == cache.settings.specific_channel) ||
-      (message.content.match(/~bank/i) &&
-        splitMsg[0].toLowerCase() == '~bank' &&
+      (command.match(prefix_regex('bank')) &&
         channel_name == cache.settings.specific_channel)
     ) {
       cache.time = getCurrentTime();
@@ -78,8 +76,7 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(/~item/i) &&
-      splitMsg[0].toLowerCase() == '~item' &&
+      command.match(prefix_regex('item')) &&
       channel_name == cache.settings.specific_channel &&
       splitMsg.length > 1
     ) {
@@ -94,8 +91,7 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(/~trade/i) &&
-      splitMsg[0].toLowerCase() == '~trade' &&
+      command.match(prefix_regex('trade')) &&
       channel_name == cache.settings.specific_channel &&
       splitMsg.length > 1
     ) {
@@ -110,8 +106,7 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(/~dex/i) &&
-      splitMsg[0].toLowerCase() == '~dex' &&
+      command.match(prefix_regex('dex')) &&
       channel_name == cache.settings.specific_channel &&
       splitMsg.length > 1
     ) {
@@ -126,8 +121,7 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(/~search/i) &&
-      splitMsg[0].toLowerCase() == '~search' &&
+      command.match(prefix_regex('search')) &&
       channel_name == cache.settings.specific_channel &&
       splitMsg.length > 1
     ) {
@@ -141,7 +135,7 @@ export async function monsterParser(
       searchMonsters(message);
     }
     if (
-      splitMsg[0].toLowerCase() == '~pokemon' &&
+      command.match(prefix_regex('pokemon')) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -155,9 +149,8 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(/~info (\d+)/i) &&
-      splitMsg[0] == '~info' &&
-      message.content.toLowerCase() != '~info latest' &&
+      message.content.match(prefix_regex('info (\\d+)')) &&
+      !message.content.match(/info latest/i) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -171,8 +164,7 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(/~info latest/i) &&
-      splitMsg[0].toLowerCase() == '~info' &&
+      message.content.match(prefix_regex('info latest')) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -186,8 +178,7 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(/~info/i) &&
-      splitMsg[0].toLowerCase() == '~info' &&
+      command.match(prefix_regex('info')) &&
       splitMsg.length == 1 &&
       channel_name == cache.settings.specific_channel
     ) {
@@ -202,8 +193,7 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(/~release/i) &&
-      splitMsg[0].toLowerCase() == '~release' &&
+      command.match(prefix_regex('release')) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -217,8 +207,7 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(/~recover/i) &&
-      splitMsg[0].toLowerCase() == '~recover' &&
+      command.match(prefix_regex('recover')) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -232,8 +221,7 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(/~select/i) &&
-      splitMsg[0].toLowerCase() == '~select' &&
+      command.match(prefix_regex('select')) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -247,8 +235,7 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(/~favorites/i) &&
-      splitMsg[0].toLowerCase() == '~favorites' &&
+      command.match(prefix_regex('favorites')) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -262,8 +249,7 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(/~favorite/i) &&
-      splitMsg[0].toLowerCase() == '~favorite' &&
+      command.match(prefix_regex('favorite')) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -277,8 +263,7 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(/~unfavorite/i) &&
-      splitMsg[0].toLowerCase() == '~unfavorite' &&
+      command.match(prefix_regex('unfavorite')) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -296,11 +281,11 @@ export async function monsterParser(
 
   if (timestamp - cache.time < 3) {
     if (
-      (message.content.match(/~release/i) &&
+      (command.match(prefix_regex('release')) &&
         channel_name == cache.settings.specific_channel) ||
-      (message.content.match(/~pokemon/i) &&
+      (command.match(prefix_regex('pokemon')) &&
         channel_name == cache.settings.specific_channel) ||
-      (message.content.match(/~info/i) &&
+      (command.match(prefix_regex('info')) &&
         channel_name == cache.settings.specific_channel)
     ) {
       logger.debug(`${message.guild.name} - Cooldown present.`);

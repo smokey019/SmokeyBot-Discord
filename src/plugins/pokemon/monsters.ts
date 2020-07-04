@@ -105,17 +105,16 @@ PokeDex.forEach((element) => {
     Gens.galar.push(element);
   }
   if (
-    !element.forme &&
     element.name.english &&
     element.images &&
     element.id >= 0 &&
-    element.id <= 890
+    element.id <= 893
   ) {
     MonsterDex.push(element);
   }
 });
 let mon = undefined;
-for (let index = 0; index < 150; index++) {
+for (let index = 0; index < 125; index++) {
   Gens.one.forEach((element) => {
     mon = findMonsterByID(element);
     if (mon) {
@@ -212,7 +211,10 @@ export function findMonsterByID(id: number): any {
 export function findMonsterByName(name: string): IMonsterDex {
   let monster = undefined;
   MonsterDex.forEach(async (element) => {
-    if (element.name.english.toLowerCase() == name.toLowerCase()) {
+    if (
+      element.name.english.toLowerCase().replace(/♂|♀/g, '') ==
+      name.toLowerCase()
+    ) {
       monster = element;
     }
   });
@@ -238,6 +240,7 @@ export async function selectMonster(message: Message): Promise<any> {
   const splitMsg = message.content.split(' ');
 
   const monster: IMonsterModel = await getUserMonster(splitMsg[1]);
+  const dex = findMonsterByID(monster.monster_id);
 
   if (monster && message.author.id == monster.uid) {
     const updateUser = await databaseClient<IMonsterUserModel>(MonsterUserTable)
@@ -245,7 +248,7 @@ export async function selectMonster(message: Message): Promise<any> {
       .update({ current_monster: parseInt(splitMsg[1]) });
 
     if (updateUser) {
-      message.reply(`selected your new monster :)`);
+      message.reply(`selected ${dex.name.english}!`);
     }
   }
 }

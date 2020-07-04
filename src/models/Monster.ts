@@ -14,6 +14,7 @@ export interface IMonsterModel {
   level: number;
   /** Discord ID of the User that caught the monster. */
   uid: string;
+  original_uid: string;
   shiny: 0 | 1;
   mega: 0;
   captured_at: number;
