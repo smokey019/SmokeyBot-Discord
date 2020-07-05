@@ -1,13 +1,17 @@
 [
   {
+    "id": 0,
+    "name": {
+      "english": "None"
+    }
+  },
+  {
     "id": 1,
     "name": {
       "japanese": "マスターボール",
       "english": "Master Ball",
       "chinese": "大师球"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 2,
@@ -15,9 +19,7 @@
       "japanese": "ハイパーボール",
       "english": "Ultra Ball",
       "chinese": "高级球"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 3,
@@ -25,9 +27,7 @@
       "english": "Great Ball",
       "japanese": "スーパーボール",
       "chinese": "超级球"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 4,
@@ -35,9 +35,7 @@
       "japanese": "モンスターボール",
       "english": "Poké Ball",
       "chinese": "精灵球"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -45,9 +43,7 @@
       "japanese": "サファリボール",
       "chinese": "狩猎球"
     },
-    "id": 5,
-    "price": 1000,
-    "limit": 0
+    "id": 5
   },
   {
     "name": {
@@ -55,9 +51,7 @@
       "english": "Net Ball",
       "chinese": "捕网球"
     },
-    "id": 6,
-    "price": 1000,
-    "limit": 0
+    "id": 6
   },
   {
     "id": 7,
@@ -65,9 +59,7 @@
       "english": "Dive Ball",
       "japanese": "ダイブボール",
       "chinese": "潜水球"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 8,
@@ -75,9 +67,7 @@
       "english": "Nest Ball",
       "japanese": "ネストボール",
       "chinese": "巢穴球"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 9,
@@ -85,9 +75,7 @@
       "japanese": "リピートボール",
       "english": "Repeat Ball",
       "chinese": "重复球"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 10,
@@ -95,9 +83,7 @@
       "chinese": "计时球",
       "japanese": "タイマーボール",
       "english": "Timer Ball"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -105,9 +91,7 @@
       "english": "Luxury Ball",
       "japanese": "ゴージャスボール"
     },
-    "id": 11,
-    "price": 1000,
-    "limit": 0
+    "id": 11
   },
   {
     "name": {
@@ -115,9 +99,7 @@
       "english": "Premier Ball",
       "chinese": "纪念球"
     },
-    "id": 12,
-    "price": 1000,
-    "limit": 0
+    "id": 12
   },
   {
     "name": {
@@ -125,9 +107,7 @@
       "japanese": "ダークボール",
       "chinese": "黑暗球"
     },
-    "id": 13,
-    "price": 1000,
-    "limit": 0
+    "id": 13
   },
   {
     "name": {
@@ -135,9 +115,7 @@
       "english": "Heal Ball",
       "japanese": "ヒールボール"
     },
-    "id": 14,
-    "price": 1000,
-    "limit": 0
+    "id": 14
   },
   {
     "id": 15,
@@ -145,9 +123,7 @@
       "chinese": "先机球",
       "english": "Quick Ball",
       "japanese": "クイックボール"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -155,9 +131,7 @@
       "japanese": "プレジャスボール",
       "chinese": "贵重球"
     },
-    "id": 16,
-    "price": 1000,
-    "limit": 0
+    "id": 16
   },
   {
     "id": 17,
@@ -165,9 +139,7 @@
       "japanese": "キズぐすり",
       "english": "Potion",
       "chinese": "伤药"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -175,9 +147,7 @@
       "japanese": "どくけし",
       "english": "Antidote"
     },
-    "id": 18,
-    "price": 1000,
-    "limit": 0
+    "id": 18
   },
   {
     "id": 19,
@@ -185,9 +155,7 @@
       "japanese": "やけどなおし",
       "english": "Burn Heal",
       "chinese": "灼伤药"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 20,
@@ -195,9 +163,7 @@
       "chinese": "解冻药",
       "japanese": "こおりなおし",
       "english": "Ice Heal"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 21,
@@ -205,9 +171,7 @@
       "english": "Awakening",
       "japanese": "ねむけざまし",
       "chinese": "解眠药"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -215,9 +179,7 @@
       "japanese": "まひなおし",
       "chinese": "解麻药"
     },
-    "id": 22,
-    "price": 1000,
-    "limit": 0
+    "id": 22
   },
   {
     "name": {
@@ -225,9 +187,7 @@
       "english": "Full Restore",
       "chinese": "全复药"
     },
-    "id": 23,
-    "price": 1000,
-    "limit": 0
+    "id": 23
   },
   {
     "id": 24,
@@ -235,9 +195,7 @@
       "japanese": "まんたんのくすり",
       "english": "Max Potion",
       "chinese": "全满药"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 25,
@@ -245,9 +203,7 @@
       "chinese": "厉害伤药",
       "japanese": "すごいキズぐすり",
       "english": "Hyper Potion"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -255,9 +211,7 @@
       "japanese": "いいキズぐすり",
       "chinese": "好伤药"
     },
-    "id": 26,
-    "price": 1000,
-    "limit": 0
+    "id": 26
   },
   {
     "name": {
@@ -265,9 +219,7 @@
       "english": "Full Heal",
       "chinese": "万灵药"
     },
-    "id": 27,
-    "price": 1000,
-    "limit": 0
+    "id": 27
   },
   {
     "id": 28,
@@ -275,9 +227,7 @@
       "japanese": "げんきのかけら",
       "english": "Revive",
       "chinese": "活力碎片"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 29,
@@ -285,9 +235,7 @@
       "japanese": "げんきのかたまり",
       "english": "Max Revive",
       "chinese": "活力块"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 30,
@@ -295,9 +243,7 @@
       "english": "Fresh Water",
       "japanese": "おいしいみず",
       "chinese": "美味之水"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -305,9 +251,7 @@
       "japanese": "サイコソーダ",
       "english": "Soda Pop"
     },
-    "id": 31,
-    "price": 1000,
-    "limit": 0
+    "id": 31
   },
   {
     "id": 32,
@@ -315,9 +259,7 @@
       "japanese": "ミックスオレ",
       "english": "Lemonade",
       "chinese": "果汁牛奶"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 33,
@@ -325,9 +267,7 @@
       "english": "Moomoo Milk",
       "japanese": "モーモーミルク",
       "chinese": "哞哞鲜奶"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 34,
@@ -335,9 +275,7 @@
       "chinese": "元气粉",
       "english": "Energy Powder",
       "japanese": "ちからのこな"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 35,
@@ -345,9 +283,7 @@
       "japanese": "ちからのねっこ",
       "english": "Energy Root",
       "chinese": "元气根"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -355,9 +291,7 @@
       "english": "Heal Powder",
       "chinese": "万能粉"
     },
-    "id": 36,
-    "price": 1000,
-    "limit": 0
+    "id": 36
   },
   {
     "name": {
@@ -365,9 +299,7 @@
       "english": "Revival Herb",
       "chinese": "复活草"
     },
-    "id": 37,
-    "price": 1000,
-    "limit": 0
+    "id": 37
   },
   {
     "id": 38,
@@ -375,9 +307,7 @@
       "chinese": "ＰＰ单项小补剂",
       "english": "Ether",
       "japanese": "ピーピーエイド"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 39,
@@ -385,9 +315,7 @@
       "english": "Max Ether",
       "japanese": "ピーピーリカバー",
       "chinese": "ＰＰ单项全补剂"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -395,9 +323,7 @@
       "english": "Elixir",
       "japanese": "ピーピーエイダー"
     },
-    "id": 40,
-    "price": 1000,
-    "limit": 0
+    "id": 40
   },
   {
     "id": 41,
@@ -405,9 +331,7 @@
       "chinese": "ＰＰ多项全补剂",
       "japanese": "ピーピーマックス",
       "english": "Max Elixir"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 42,
@@ -415,9 +339,7 @@
       "chinese": "釜炎仙贝",
       "japanese": "フエンせんべい",
       "english": "Lava Cookie"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -425,9 +347,7 @@
       "english": "Berry Juice",
       "japanese": "きのみジュース"
     },
-    "id": 43,
-    "price": 1000,
-    "limit": 0
+    "id": 43
   },
   {
     "id": 44,
@@ -435,9 +355,7 @@
       "chinese": "圣灰",
       "japanese": "せいなるはい",
       "english": "Sacred Ash"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -445,9 +363,7 @@
       "english": "HP Up",
       "chinese": "ＨＰ增强剂"
     },
-    "id": 45,
-    "price": 1000,
-    "limit": 0
+    "id": 45
   },
   {
     "name": {
@@ -455,9 +371,7 @@
       "japanese": "タウリン",
       "chinese": "攻击增强剂"
     },
-    "id": 46,
-    "price": 1000,
-    "limit": 0
+    "id": 46
   },
   {
     "name": {
@@ -465,9 +379,7 @@
       "japanese": "ブロムヘキシン",
       "chinese": "防御增强剂"
     },
-    "id": 47,
-    "price": 1000,
-    "limit": 0
+    "id": 47
   },
   {
     "name": {
@@ -475,9 +387,7 @@
       "english": "Carbos",
       "chinese": "速度增强剂"
     },
-    "id": 48,
-    "price": 1000,
-    "limit": 0
+    "id": 48
   },
   {
     "name": {
@@ -485,9 +395,7 @@
       "japanese": "リゾチウム",
       "english": "Calcium"
     },
-    "id": 49,
-    "price": 1000,
-    "limit": 0
+    "id": 49
   },
   {
     "id": 50,
@@ -495,9 +403,7 @@
       "chinese": "神奇糖果",
       "english": "Rare Candy",
       "japanese": "ふしぎなアメ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 51,
@@ -505,9 +411,7 @@
       "chinese": "ＰＰ提升剂",
       "english": "PP Up",
       "japanese": "ポイントアップ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -515,9 +419,7 @@
       "english": "Zinc",
       "japanese": "キトサン"
     },
-    "id": 52,
-    "price": 1000,
-    "limit": 0
+    "id": 52
   },
   {
     "name": {
@@ -525,9 +427,7 @@
       "japanese": "ポイントマックス",
       "chinese": "ＰＰ极限提升剂"
     },
-    "id": 53,
-    "price": 1000,
-    "limit": 0
+    "id": 53
   },
   {
     "name": {
@@ -535,9 +435,7 @@
       "english": "Old Gateau",
       "japanese": "もりのヨウカン"
     },
-    "id": 54,
-    "price": 1000,
-    "limit": 0
+    "id": 54
   },
   {
     "name": {
@@ -545,9 +443,7 @@
       "japanese": "エフェクトガード",
       "english": "Guard Spec."
     },
-    "id": 55,
-    "price": 1000,
-    "limit": 0
+    "id": 55
   },
   {
     "id": 56,
@@ -555,9 +451,7 @@
       "chinese": "要害攻击",
       "japanese": "クリティカット",
       "english": "Dire Hit"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 57,
@@ -565,9 +459,7 @@
       "chinese": "力量强化",
       "japanese": "プラスパワー",
       "english": "X Attack"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -575,9 +467,7 @@
       "japanese": "ディフェンダー",
       "english": "X Defense"
     },
-    "id": 58,
-    "price": 1000,
-    "limit": 0
+    "id": 58
   },
   {
     "id": 59,
@@ -585,9 +475,7 @@
       "chinese": "速度强化",
       "japanese": "スピーダー",
       "english": "X Speed"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -595,9 +483,7 @@
       "english": "X Accuracy",
       "chinese": "命中强化"
     },
-    "id": 60,
-    "price": 1000,
-    "limit": 0
+    "id": 60
   },
   {
     "name": {
@@ -605,9 +491,7 @@
       "english": "X Sp. Atk",
       "japanese": "スペシャルアップ"
     },
-    "id": 61,
-    "price": 1000,
-    "limit": 0
+    "id": 61
   },
   {
     "id": 62,
@@ -615,9 +499,7 @@
       "english": "X Sp. Def",
       "japanese": "スペシャルガード",
       "chinese": "特防强化"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 63,
@@ -625,9 +507,7 @@
       "chinese": "皮皮玩偶",
       "english": "Poké Doll",
       "japanese": "ピッピにんぎょう"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -635,9 +515,7 @@
       "english": "Fluffy Tail",
       "japanese": "エネコのシッポ"
     },
-    "id": 64,
-    "price": 1000,
-    "limit": 0
+    "id": 64
   },
   {
     "name": {
@@ -645,9 +523,7 @@
       "english": "Blue Flute",
       "chinese": "蓝色玻璃哨"
     },
-    "id": 65,
-    "price": 1000,
-    "limit": 0
+    "id": 65
   },
   {
     "id": 66,
@@ -655,9 +531,7 @@
       "chinese": "黄色玻璃哨",
       "japanese": "きいろビードロ",
       "english": "Yellow Flute"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -665,9 +539,7 @@
       "japanese": "あかいビードロ",
       "chinese": "红色玻璃哨"
     },
-    "id": 67,
-    "price": 1000,
-    "limit": 0
+    "id": 67
   },
   {
     "id": 68,
@@ -675,9 +547,7 @@
       "chinese": "黑色玻璃哨",
       "japanese": "くろいビードロ",
       "english": "Black Flute"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -685,9 +555,7 @@
       "english": "White Flute",
       "japanese": "しろいビードロ"
     },
-    "id": 69,
-    "price": 1000,
-    "limit": 0
+    "id": 69
   },
   {
     "id": 70,
@@ -695,9 +563,7 @@
       "japanese": "あさせのしお",
       "english": "Shoal Salt",
       "chinese": "浅滩海盐"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 71,
@@ -705,9 +571,7 @@
       "chinese": "浅滩贝壳",
       "english": "Shoal Shell",
       "japanese": "あさせのかいがら"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -715,9 +579,7 @@
       "japanese": "あかいかけら",
       "english": "Red Shard"
     },
-    "id": 72,
-    "price": 1000,
-    "limit": 0
+    "id": 72
   },
   {
     "name": {
@@ -725,9 +587,7 @@
       "english": "Blue Shard",
       "chinese": "蓝色碎片"
     },
-    "id": 73,
-    "price": 1000,
-    "limit": 0
+    "id": 73
   },
   {
     "name": {
@@ -735,9 +595,7 @@
       "english": "Yellow Shard",
       "chinese": "黄色碎片"
     },
-    "id": 74,
-    "price": 1000,
-    "limit": 0
+    "id": 74
   },
   {
     "name": {
@@ -745,9 +603,7 @@
       "japanese": "みどりのかけら",
       "chinese": "绿色碎片"
     },
-    "id": 75,
-    "price": 1000,
-    "limit": 0
+    "id": 75
   },
   {
     "id": 76,
@@ -755,9 +611,7 @@
       "chinese": "白银喷雾",
       "english": "Super Repel",
       "japanese": "シルバースプレー"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -765,9 +619,7 @@
       "japanese": "ゴールドスプレー",
       "chinese": "黄金喷雾"
     },
-    "id": 77,
-    "price": 1000,
-    "limit": 0
+    "id": 77
   },
   {
     "id": 78,
@@ -775,9 +627,7 @@
       "chinese": "离洞绳",
       "japanese": "あなぬけのヒモ",
       "english": "Escape Rope"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -785,9 +635,7 @@
       "japanese": "むしよけスプレー",
       "chinese": "除虫喷雾"
     },
-    "id": 79,
-    "price": 1000,
-    "limit": 0
+    "id": 79
   },
   {
     "name": {
@@ -795,9 +643,7 @@
       "english": "Sun Stone",
       "japanese": "たいようのいし"
     },
-    "id": 80,
-    "price": 1000,
-    "limit": 0
+    "id": 80
   },
   {
     "name": {
@@ -805,9 +651,7 @@
       "english": "Moon Stone",
       "chinese": "月之石"
     },
-    "id": 81,
-    "price": 1000,
-    "limit": 0
+    "id": 81
   },
   {
     "id": 82,
@@ -815,9 +659,7 @@
       "japanese": "ほのおのいし",
       "english": "Fire Stone",
       "chinese": "火之石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -825,9 +667,7 @@
       "japanese": "かみなりのいし",
       "chinese": "雷之石"
     },
-    "id": 83,
-    "price": 1000,
-    "limit": 0
+    "id": 83
   },
   {
     "name": {
@@ -835,9 +675,7 @@
       "japanese": "みずのいし",
       "english": "Water Stone"
     },
-    "id": 84,
-    "price": 1000,
-    "limit": 0
+    "id": 84
   },
   {
     "id": 85,
@@ -845,9 +683,7 @@
       "chinese": "叶之石",
       "english": "Leaf Stone",
       "japanese": "リーフのいし"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 86,
@@ -855,9 +691,7 @@
       "japanese": "ちいさなキノコ",
       "english": "Tiny Mushroom",
       "chinese": "小蘑菇"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -865,9 +699,7 @@
       "english": "Big Mushroom",
       "chinese": "大蘑菇"
     },
-    "id": 87,
-    "price": 1000,
-    "limit": 0
+    "id": 87
   },
   {
     "id": 88,
@@ -875,9 +707,7 @@
       "chinese": "珍珠",
       "english": "Pearl",
       "japanese": "しんじゅ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -885,9 +715,7 @@
       "english": "Big Pearl",
       "chinese": "大珍珠"
     },
-    "id": 89,
-    "price": 1000,
-    "limit": 0
+    "id": 89
   },
   {
     "id": 90,
@@ -895,9 +723,7 @@
       "chinese": "星星沙子",
       "english": "Stardust",
       "japanese": "ほしのすな"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 91,
@@ -905,9 +731,7 @@
       "chinese": "星星碎片",
       "english": "Star Piece",
       "japanese": "ほしのかけら"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -915,9 +739,7 @@
       "japanese": "きんのたま",
       "english": "Nugget"
     },
-    "id": 92,
-    "price": 1000,
-    "limit": 0
+    "id": 92
   },
   {
     "id": 93,
@@ -925,9 +747,7 @@
       "chinese": "心之鳞片",
       "japanese": "ハートのウロコ",
       "english": "Heart Scale"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 94,
@@ -935,9 +755,7 @@
       "chinese": "甜甜蜜",
       "english": "Honey",
       "japanese": "あまいミツ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 95,
@@ -945,9 +763,7 @@
       "chinese": "速速肥",
       "japanese": "すくすくこやし",
       "english": "Growth Mulch"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -955,9 +771,7 @@
       "japanese": "じめじめこやし",
       "english": "Damp Mulch"
     },
-    "id": 96,
-    "price": 1000,
-    "limit": 0
+    "id": 96
   },
   {
     "id": 97,
@@ -965,9 +779,7 @@
       "chinese": "久久肥",
       "japanese": "ながながこやし",
       "english": "Stable Mulch"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 98,
@@ -975,9 +787,7 @@
       "chinese": "粘粘肥",
       "japanese": "ねばねばこやし",
       "english": "Gooey Mulch"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 99,
@@ -985,9 +795,7 @@
       "chinese": "根状化石",
       "english": "Root Fossil",
       "japanese": "ねっこのカセキ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -995,9 +803,7 @@
       "japanese": "ツメのカセキ",
       "chinese": "爪子化石"
     },
-    "id": 100,
-    "price": 1000,
-    "limit": 0
+    "id": 100
   },
   {
     "id": 101,
@@ -1005,9 +811,7 @@
       "english": "Helix Fossil",
       "japanese": "かいのカセキ",
       "chinese": "贝壳化石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1015,9 +819,7 @@
       "english": "Dome Fossil",
       "japanese": "こうらのカセキ"
     },
-    "id": 102,
-    "price": 1000,
-    "limit": 0
+    "id": 102
   },
   {
     "name": {
@@ -1025,9 +827,7 @@
       "english": "Old Amber",
       "chinese": "秘密琥珀"
     },
-    "id": 103,
-    "price": 1000,
-    "limit": 0
+    "id": 103
   },
   {
     "id": 104,
@@ -1035,9 +835,7 @@
       "chinese": "盾甲化石",
       "english": "Armor Fossil",
       "japanese": "たてのカセキ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1045,9 +843,7 @@
       "english": "Skull Fossil",
       "japanese": "ずがいのカセキ"
     },
-    "id": 105,
-    "price": 1000,
-    "limit": 0
+    "id": 105
   },
   {
     "name": {
@@ -1055,9 +851,7 @@
       "english": "Rare Bone",
       "chinese": "贵重骨头"
     },
-    "id": 106,
-    "price": 1000,
-    "limit": 0
+    "id": 106
   },
   {
     "name": {
@@ -1065,9 +859,7 @@
       "japanese": "ひかりのいし",
       "english": "Shiny Stone"
     },
-    "id": 107,
-    "price": 1000,
-    "limit": 0
+    "id": 107
   },
   {
     "id": 108,
@@ -1075,9 +867,7 @@
       "english": "Dusk Stone",
       "japanese": "やみのいし",
       "chinese": "暗之石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 109,
@@ -1085,9 +875,7 @@
       "japanese": "めざめいし",
       "english": "Dawn Stone",
       "chinese": "觉醒之石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 110,
@@ -1095,9 +883,7 @@
       "english": "Oval Stone",
       "japanese": "まんまるいし",
       "chinese": "浑圆之石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 111,
@@ -1105,9 +891,7 @@
       "japanese": "かなめいし",
       "english": "Odd Keystone",
       "chinese": "楔石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1115,9 +899,7 @@
       "japanese": "はっきんだま",
       "chinese": "白金宝珠"
     },
-    "id": 112,
-    "price": 1000,
-    "limit": 0
+    "id": 112
   },
   {
     "id": 116,
@@ -1125,9 +907,7 @@
       "english": "Douse Drive",
       "japanese": "アクアカセット",
       "chinese": "水流卡带"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1135,9 +915,7 @@
       "english": "Shock Drive",
       "japanese": "イナズマカセット"
     },
-    "id": 117,
-    "price": 1000,
-    "limit": 0
+    "id": 117
   },
   {
     "id": 118,
@@ -1145,9 +923,7 @@
       "chinese": "火焰卡带",
       "japanese": "ブレイズカセット",
       "english": "Burn Drive"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 119,
@@ -1155,9 +931,7 @@
       "chinese": "冰冻卡带",
       "english": "Chill Drive",
       "japanese": "フリーズカセット"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1165,9 +939,7 @@
       "japanese": "ハートスイーツ",
       "chinese": "心形甜点"
     },
-    "id": 134,
-    "price": 1000,
-    "limit": 0
+    "id": 134
   },
   {
     "name": {
@@ -1175,9 +947,7 @@
       "english": "Adamant Orb",
       "japanese": "こんごうだま"
     },
-    "id": 135,
-    "price": 1000,
-    "limit": 0
+    "id": 135
   },
   {
     "id": 136,
@@ -1185,9 +955,7 @@
       "chinese": "白玉宝珠",
       "japanese": "しらたま",
       "english": "Lustrous Orb"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 137,
@@ -1195,9 +963,7 @@
       "japanese": "はじめてメール",
       "english": "Greet Mail",
       "chinese": "初次邮件"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 138,
@@ -1205,9 +971,7 @@
       "chinese": "喜爱邮件",
       "japanese": "だいすきメール",
       "english": "Favored Mail"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 139,
@@ -1215,9 +979,7 @@
       "chinese": "邀请邮件",
       "english": "RSVP Mail",
       "japanese": "おさそいメール"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 140,
@@ -1225,9 +987,7 @@
       "japanese": "かんしゃメール",
       "english": "Thanks Mail",
       "chinese": "感谢邮件"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 141,
@@ -1235,9 +995,7 @@
       "chinese": "询问邮件",
       "english": "Inquiry Mail",
       "japanese": "しつもんメール"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 142,
@@ -1245,9 +1003,7 @@
       "chinese": "推荐邮件",
       "english": "Like Mail",
       "japanese": "おすすめメール"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 143,
@@ -1255,9 +1011,7 @@
       "chinese": "回复邮件",
       "japanese": "おかえしメール",
       "english": "Reply Mail"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1265,9 +1019,7 @@
       "english": "Bridge Mail S",
       "chinese": "桥梁邮件Ｓ"
     },
-    "id": 144,
-    "price": 1000,
-    "limit": 0
+    "id": 144
   },
   {
     "name": {
@@ -1275,9 +1027,7 @@
       "japanese": "ブリッジメールＨ",
       "chinese": "桥梁邮件Ｈ"
     },
-    "id": 145,
-    "price": 1000,
-    "limit": 0
+    "id": 145
   },
   {
     "name": {
@@ -1285,9 +1035,7 @@
       "english": "Bridge Mail T",
       "chinese": "桥梁邮件Ｃ"
     },
-    "id": 146,
-    "price": 1000,
-    "limit": 0
+    "id": 146
   },
   {
     "id": 147,
@@ -1295,9 +1043,7 @@
       "chinese": "桥梁邮件Ｖ",
       "english": "Bridge Mail V",
       "japanese": "ブリッジメールＶ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1305,9 +1051,7 @@
       "english": "Bridge Mail M",
       "japanese": "ブリッジメールＷ"
     },
-    "id": 148,
-    "price": 1000,
-    "limit": 0
+    "id": 148
   },
   {
     "name": {
@@ -1315,9 +1059,7 @@
       "english": "Cheri Berry",
       "japanese": "クラボのみ"
     },
-    "id": 149,
-    "price": 1000,
-    "limit": 0
+    "id": 149
   },
   {
     "name": {
@@ -1325,9 +1067,7 @@
       "english": "Chesto Berry",
       "chinese": "零余果"
     },
-    "id": 150,
-    "price": 1000,
-    "limit": 0
+    "id": 150
   },
   {
     "name": {
@@ -1335,9 +1075,7 @@
       "english": "Pecha Berry",
       "japanese": "モモンのみ"
     },
-    "id": 151,
-    "price": 1000,
-    "limit": 0
+    "id": 151
   },
   {
     "name": {
@@ -1345,9 +1083,7 @@
       "japanese": "チーゴのみ",
       "english": "Rawst Berry"
     },
-    "id": 152,
-    "price": 1000,
-    "limit": 0
+    "id": 152
   },
   {
     "id": 153,
@@ -1355,9 +1091,7 @@
       "chinese": "利木果",
       "english": "Aspear Berry",
       "japanese": "ナナシのみ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1365,9 +1099,7 @@
       "japanese": "ヒメリのみ",
       "chinese": "苹野果"
     },
-    "id": 154,
-    "price": 1000,
-    "limit": 0
+    "id": 154
   },
   {
     "id": 155,
@@ -1375,9 +1107,7 @@
       "chinese": "橙橙果",
       "japanese": "オレンのみ",
       "english": "Oran Berry"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 156,
@@ -1385,9 +1115,7 @@
       "english": "Persim Berry",
       "japanese": "キーのみ",
       "chinese": "柿仔果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1395,9 +1123,7 @@
       "english": "Lum Berry",
       "chinese": "木子果"
     },
-    "id": 157,
-    "price": 1000,
-    "limit": 0
+    "id": 157
   },
   {
     "name": {
@@ -1405,9 +1131,7 @@
       "english": "Sitrus Berry",
       "japanese": "オボンのみ"
     },
-    "id": 158,
-    "price": 1000,
-    "limit": 0
+    "id": 158
   },
   {
     "name": {
@@ -1415,9 +1139,7 @@
       "japanese": "フィラのみ",
       "chinese": "勿花果"
     },
-    "id": 159,
-    "price": 1000,
-    "limit": 0
+    "id": 159
   },
   {
     "id": 160,
@@ -1425,9 +1147,7 @@
       "chinese": "异奇果",
       "japanese": "ウイのみ",
       "english": "Wiki Berry"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 161,
@@ -1435,9 +1155,7 @@
       "japanese": "マゴのみ",
       "english": "Mago Berry",
       "chinese": "芒芒果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 162,
@@ -1445,9 +1163,7 @@
       "chinese": "乐芭果",
       "japanese": "バンジのみ",
       "english": "Aguav Berry"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1455,9 +1171,7 @@
       "japanese": "イアのみ",
       "chinese": "芭亚果"
     },
-    "id": 163,
-    "price": 1000,
-    "limit": 0
+    "id": 163
   },
   {
     "id": 164,
@@ -1465,9 +1179,7 @@
       "chinese": "蔓莓果",
       "japanese": "ズリのみ",
       "english": "Razz Berry"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 165,
@@ -1475,9 +1187,7 @@
       "japanese": "ブリーのみ",
       "english": "Bluk Berry",
       "chinese": "墨莓果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1485,9 +1195,7 @@
       "english": "Nanab Berry",
       "japanese": "ナナのみ"
     },
-    "id": 166,
-    "price": 1000,
-    "limit": 0
+    "id": 166
   },
   {
     "id": 167,
@@ -1495,9 +1203,7 @@
       "english": "Wepear Berry",
       "japanese": "セシナのみ",
       "chinese": "西梨果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 168,
@@ -1505,9 +1211,7 @@
       "chinese": "凰梨果",
       "japanese": "パイルのみ",
       "english": "Pinap Berry"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 169,
@@ -1515,9 +1219,7 @@
       "english": "Pomeg Berry",
       "japanese": "ザロクのみ",
       "chinese": "榴石果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1525,9 +1227,7 @@
       "english": "Kelpsy Berry",
       "japanese": "ネコブのみ"
     },
-    "id": 170,
-    "price": 1000,
-    "limit": 0
+    "id": 170
   },
   {
     "id": 171,
@@ -1535,9 +1235,7 @@
       "english": "Qualot Berry",
       "japanese": "タポルのみ",
       "chinese": "比巴果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 172,
@@ -1545,9 +1243,7 @@
       "japanese": "ロメのみ",
       "english": "Hondew Berry",
       "chinese": "哈密果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 173,
@@ -1555,9 +1251,7 @@
       "chinese": "萄葡果",
       "english": "Grepa Berry",
       "japanese": "ウブのみ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1565,9 +1259,7 @@
       "japanese": "マトマのみ",
       "chinese": "茄番果"
     },
-    "id": 174,
-    "price": 1000,
-    "limit": 0
+    "id": 174
   },
   {
     "name": {
@@ -1575,9 +1267,7 @@
       "japanese": "モコシのみ",
       "chinese": "玉黍果"
     },
-    "id": 175,
-    "price": 1000,
-    "limit": 0
+    "id": 175
   },
   {
     "id": 176,
@@ -1585,9 +1275,7 @@
       "chinese": "岳竹果",
       "japanese": "ゴスのみ",
       "english": "Magost Berry"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 177,
@@ -1595,9 +1283,7 @@
       "chinese": "茸丹果",
       "japanese": "ラブタのみ",
       "english": "Rabuta Berry"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1605,9 +1291,7 @@
       "english": "Nomel Berry",
       "japanese": "ノメルのみ"
     },
-    "id": 178,
-    "price": 1000,
-    "limit": 0
+    "id": 178
   },
   {
     "id": 179,
@@ -1615,9 +1299,7 @@
       "english": "Spelon Berry",
       "japanese": "ノワキのみ",
       "chinese": "刺角果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1625,9 +1307,7 @@
       "english": "Pamtre Berry",
       "japanese": "シーヤのみ"
     },
-    "id": 180,
-    "price": 1000,
-    "limit": 0
+    "id": 180
   },
   {
     "name": {
@@ -1635,9 +1315,7 @@
       "english": "Watmel Berry",
       "japanese": "カイスのみ"
     },
-    "id": 181,
-    "price": 1000,
-    "limit": 0
+    "id": 181
   },
   {
     "id": 182,
@@ -1645,9 +1323,7 @@
       "chinese": "金枕果",
       "japanese": "ドリのみ",
       "english": "Durin Berry"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 183,
@@ -1655,9 +1331,7 @@
       "chinese": "靛莓果",
       "english": "Belue Berry",
       "japanese": "ベリブのみ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1665,9 +1339,7 @@
       "japanese": "オッカのみ",
       "english": "Occa Berry"
     },
-    "id": 184,
-    "price": 1000,
-    "limit": 0
+    "id": 184
   },
   {
     "id": 185,
@@ -1675,9 +1347,7 @@
       "japanese": "イトケのみ",
       "english": "Passho Berry",
       "chinese": "千香果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 186,
@@ -1685,9 +1355,7 @@
       "chinese": "独木果",
       "japanese": "ソクノのみ",
       "english": "Wacan Berry"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 187,
@@ -1695,9 +1363,7 @@
       "japanese": "リンドのみ",
       "english": "Rindo Berry",
       "chinese": "罗子果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1705,9 +1371,7 @@
       "english": "Yache Berry",
       "chinese": "番荔果"
     },
-    "id": 188,
-    "price": 1000,
-    "limit": 0
+    "id": 188
   },
   {
     "id": 189,
@@ -1715,9 +1379,7 @@
       "japanese": "ヨプのみ",
       "english": "Chople Berry",
       "chinese": "莲蒲果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 190,
@@ -1725,9 +1387,7 @@
       "japanese": "ビアーのみ",
       "english": "Kebia Berry",
       "chinese": "通通果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 191,
@@ -1735,9 +1395,7 @@
       "chinese": "腰木果",
       "english": "Shuca Berry",
       "japanese": "シュカのみ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1745,9 +1403,7 @@
       "japanese": "バコウのみ",
       "english": "Coba Berry"
     },
-    "id": 192,
-    "price": 1000,
-    "limit": 0
+    "id": 192
   },
   {
     "id": 193,
@@ -1755,9 +1411,7 @@
       "chinese": "福禄果",
       "japanese": "ウタンのみ",
       "english": "Payapa Berry"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 194,
@@ -1765,9 +1419,7 @@
       "chinese": "扁樱果",
       "english": "Tanga Berry",
       "japanese": "タンガのみ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1775,9 +1427,7 @@
       "english": "Charti Berry",
       "chinese": "草蚕果"
     },
-    "id": 195,
-    "price": 1000,
-    "limit": 0
+    "id": 195
   },
   {
     "id": 196,
@@ -1785,9 +1435,7 @@
       "chinese": "佛柑果",
       "japanese": "カシブのみ",
       "english": "Kasib Berry"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1795,9 +1443,7 @@
       "japanese": "ハバンのみ",
       "chinese": "莓榴果"
     },
-    "id": 197,
-    "price": 1000,
-    "limit": 0
+    "id": 197
   },
   {
     "name": {
@@ -1805,9 +1451,7 @@
       "japanese": "ナモのみ",
       "english": "Colbur Berry"
     },
-    "id": 198,
-    "price": 1000,
-    "limit": 0
+    "id": 198
   },
   {
     "id": 199,
@@ -1815,9 +1459,7 @@
       "japanese": "リリバのみ",
       "english": "Babiri Berry",
       "chinese": "霹霹果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 200,
@@ -1825,9 +1467,7 @@
       "chinese": "燈漿果",
       "japanese": "ホズのみ",
       "english": "Chilan Berry"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 201,
@@ -1835,9 +1475,7 @@
       "chinese": "枝荔果",
       "english": "Liechi Berry",
       "japanese": "チイラのみ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1845,9 +1483,7 @@
       "japanese": "リュガのみ",
       "chinese": "龙睛果"
     },
-    "id": 202,
-    "price": 1000,
-    "limit": 0
+    "id": 202
   },
   {
     "name": {
@@ -1855,9 +1491,7 @@
       "english": "Salac Berry",
       "japanese": "カムラのみ"
     },
-    "id": 203,
-    "price": 1000,
-    "limit": 0
+    "id": 203
   },
   {
     "id": 204,
@@ -1865,9 +1499,7 @@
       "english": "Petaya Berry",
       "japanese": "ヤタピのみ",
       "chinese": "龙火果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 205,
@@ -1875,9 +1507,7 @@
       "chinese": "杏仔果",
       "japanese": "ズアのみ",
       "english": "Apicot Berry"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1885,9 +1515,7 @@
       "japanese": "サンのみ",
       "english": "Lansat Berry"
     },
-    "id": 206,
-    "price": 1000,
-    "limit": 0
+    "id": 206
   },
   {
     "name": {
@@ -1895,9 +1523,7 @@
       "english": "Starf Berry",
       "chinese": "星桃果"
     },
-    "id": 207,
-    "price": 1000,
-    "limit": 0
+    "id": 207
   },
   {
     "id": 208,
@@ -1905,9 +1531,7 @@
       "chinese": "谜芝果",
       "english": "Enigma Berry",
       "japanese": "ナゾのみ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1915,9 +1539,7 @@
       "english": "Micle Berry",
       "japanese": "ミクルのみ"
     },
-    "id": 209,
-    "price": 1000,
-    "limit": 0
+    "id": 209
   },
   {
     "id": 210,
@@ -1925,9 +1547,7 @@
       "japanese": "イバンのみ",
       "english": "Custap Berry",
       "chinese": "释陀果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 211,
@@ -1935,9 +1555,7 @@
       "japanese": "ジャポのみ",
       "english": "Jaboca Berry",
       "chinese": "嘉珍果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 212,
@@ -1945,9 +1563,7 @@
       "chinese": "雾莲果",
       "japanese": "レンブのみ",
       "english": "Rowap Berry"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 213,
@@ -1955,9 +1571,7 @@
       "chinese": "光粉",
       "japanese": "ひかりのこな",
       "english": "Bright Powder"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 214,
@@ -1965,9 +1579,7 @@
       "chinese": "白色香草",
       "english": "White Herb",
       "japanese": "しろいハーブ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -1975,9 +1587,7 @@
       "japanese": "きょうせいギプス",
       "chinese": "强制锻炼器"
     },
-    "id": 215,
-    "price": 1000,
-    "limit": 0
+    "id": 215
   },
   {
     "id": 216,
@@ -1985,9 +1595,7 @@
       "chinese": "学习装置",
       "japanese": "がくしゅうそうち",
       "english": "Exp. Share"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 217,
@@ -1995,9 +1603,7 @@
       "chinese": "先制之爪",
       "english": "Quick Claw",
       "japanese": "せんせいのツメ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2005,9 +1611,7 @@
       "japanese": "やすらぎのすず",
       "chinese": "安抚之铃"
     },
-    "id": 218,
-    "price": 1000,
-    "limit": 0
+    "id": 218
   },
   {
     "name": {
@@ -2015,9 +1619,7 @@
       "english": "Mental Herb",
       "chinese": "心灵香草"
     },
-    "id": 219,
-    "price": 1000,
-    "limit": 0
+    "id": 219
   },
   {
     "id": 220,
@@ -2025,9 +1627,7 @@
       "japanese": "こだわりハチマキ",
       "english": "Choice Band",
       "chinese": "讲究头带"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 221,
@@ -2035,9 +1635,7 @@
       "chinese": "王者之证",
       "english": "King's Rock",
       "japanese": "おうじゃのしるし"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2045,9 +1643,7 @@
       "english": "Silver Powder",
       "japanese": "ぎんのこな"
     },
-    "id": 222,
-    "price": 1000,
-    "limit": 0
+    "id": 222
   },
   {
     "id": 223,
@@ -2055,9 +1651,7 @@
       "english": "Amulet Coin",
       "japanese": "おまもりこばん",
       "chinese": "护符金币"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2065,9 +1659,7 @@
       "japanese": "きよめのおふだ",
       "english": "Cleanse Tag"
     },
-    "id": 224,
-    "price": 1000,
-    "limit": 0
+    "id": 224
   },
   {
     "name": {
@@ -2075,9 +1667,7 @@
       "english": "Soul Dew",
       "chinese": "心之水滴"
     },
-    "id": 225,
-    "price": 1000,
-    "limit": 0
+    "id": 225
   },
   {
     "id": 226,
@@ -2085,9 +1675,7 @@
       "english": "Deep Sea Tooth",
       "japanese": "しんかいのキバ",
       "chinese": "深海之牙"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2095,9 +1683,7 @@
       "japanese": "しんかいのウロコ",
       "chinese": "深海鳞片"
     },
-    "id": 227,
-    "price": 1000,
-    "limit": 0
+    "id": 227
   },
   {
     "name": {
@@ -2105,9 +1691,7 @@
       "english": "Smoke Ball",
       "japanese": "けむりだま"
     },
-    "id": 228,
-    "price": 1000,
-    "limit": 0
+    "id": 228
   },
   {
     "id": 229,
@@ -2115,9 +1699,7 @@
       "chinese": "不变之石",
       "english": "Everstone",
       "japanese": "かわらずのいし"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 230,
@@ -2125,9 +1707,7 @@
       "japanese": "きあいのハチマキ",
       "english": "Focus Band",
       "chinese": "气势头带"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 231,
@@ -2135,9 +1715,7 @@
       "english": "Lucky Egg",
       "japanese": "しあわせタマゴ",
       "chinese": "幸运蛋"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 232,
@@ -2145,9 +1723,7 @@
       "english": "Scope Lens",
       "japanese": "ピントレンズ",
       "chinese": "焦点镜"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 233,
@@ -2155,9 +1731,7 @@
       "chinese": "金属膜",
       "english": "Metal Coat",
       "japanese": "メタルコート"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 234,
@@ -2165,9 +1739,7 @@
       "japanese": "たべのこし",
       "english": "Leftovers",
       "chinese": "吃剩的东西"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2175,9 +1747,7 @@
       "english": "Dragon Scale",
       "chinese": "龙之鳞片"
     },
-    "id": 235,
-    "price": 1000,
-    "limit": 0
+    "id": 235
   },
   {
     "name": {
@@ -2185,9 +1755,7 @@
       "japanese": "でんきだま",
       "chinese": "电气球"
     },
-    "id": 236,
-    "price": 1000,
-    "limit": 0
+    "id": 236
   },
   {
     "id": 237,
@@ -2195,9 +1763,7 @@
       "chinese": "柔软沙子",
       "english": "Soft Sand",
       "japanese": "やわらかいすな"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 238,
@@ -2205,9 +1771,7 @@
       "chinese": "硬石头",
       "english": "Hard Stone",
       "japanese": "かたいいし"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2215,9 +1779,7 @@
       "english": "Miracle Seed",
       "chinese": "奇迹种子"
     },
-    "id": 239,
-    "price": 1000,
-    "limit": 0
+    "id": 239
   },
   {
     "id": 240,
@@ -2225,9 +1787,7 @@
       "english": "Black Glasses",
       "japanese": "くろいメガネ",
       "chinese": "黑色眼镜"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 241,
@@ -2235,9 +1795,7 @@
       "chinese": "黑带",
       "japanese": "くろおび",
       "english": "Black Belt"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2245,9 +1803,7 @@
       "japanese": "じしゃく",
       "chinese": "磁铁"
     },
-    "id": 242,
-    "price": 1000,
-    "limit": 0
+    "id": 242
   },
   {
     "id": 243,
@@ -2255,9 +1811,7 @@
       "english": "Mystic Water",
       "japanese": "しんぴのしずく",
       "chinese": "神秘水滴"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 244,
@@ -2265,9 +1819,7 @@
       "chinese": "锐利鸟嘴",
       "english": "Sharp Beak",
       "japanese": "するどいくちばし"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2275,9 +1827,7 @@
       "english": "Poison Barb",
       "chinese": "毒针"
     },
-    "id": 245,
-    "price": 1000,
-    "limit": 0
+    "id": 245
   },
   {
     "id": 246,
@@ -2285,9 +1835,7 @@
       "japanese": "とけないこおり",
       "english": "Never-Melt Ice",
       "chinese": "不融冰"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2295,9 +1843,7 @@
       "japanese": "のろいのおふだ",
       "english": "Spell Tag"
     },
-    "id": 247,
-    "price": 1000,
-    "limit": 0
+    "id": 247
   },
   {
     "name": {
@@ -2305,9 +1851,7 @@
       "english": "Twisted Spoon",
       "chinese": "弯曲的汤匙"
     },
-    "id": 248,
-    "price": 1000,
-    "limit": 0
+    "id": 248
   },
   {
     "name": {
@@ -2315,9 +1859,7 @@
       "japanese": "もくたん",
       "chinese": "木炭"
     },
-    "id": 249,
-    "price": 1000,
-    "limit": 0
+    "id": 249
   },
   {
     "id": 250,
@@ -2325,9 +1867,7 @@
       "chinese": "龙之牙",
       "japanese": "りゅうのキバ",
       "english": "Dragon Fang"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2335,9 +1875,7 @@
       "english": "Silk Scarf",
       "japanese": "シルクのスカーフ"
     },
-    "id": 251,
-    "price": 1000,
-    "limit": 0
+    "id": 251
   },
   {
     "id": 252,
@@ -2345,9 +1883,7 @@
       "japanese": "アップグレード",
       "english": "Up-Grade",
       "chinese": "升級資料升级数据"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 253,
@@ -2355,9 +1891,7 @@
       "chinese": "贝壳之铃",
       "english": "Shell Bell",
       "japanese": "かいがらのすず"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2365,9 +1899,7 @@
       "english": "Sea Incense",
       "japanese": "うしおのおこう"
     },
-    "id": 254,
-    "price": 1000,
-    "limit": 0
+    "id": 254
   },
   {
     "id": 255,
@@ -2375,9 +1907,7 @@
       "japanese": "のんきのおこう",
       "english": "Lax Incense",
       "chinese": "悠闲薰香"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 256,
@@ -2385,9 +1915,7 @@
       "english": "Lucky Punch",
       "japanese": "ラッキーパンチ",
       "chinese": "吉利拳"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2395,9 +1923,7 @@
       "english": "Metal Powder",
       "chinese": "金属粉"
     },
-    "id": 257,
-    "price": 1000,
-    "limit": 0
+    "id": 257
   },
   {
     "id": 258,
@@ -2405,9 +1931,7 @@
       "chinese": "粗骨头",
       "japanese": "ふといホネ",
       "english": "Thick Club"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2415,9 +1939,7 @@
       "japanese": "ながねぎ",
       "english": "Stick"
     },
-    "id": 259,
-    "price": 1000,
-    "limit": 0
+    "id": 259
   },
   {
     "id": 260,
@@ -2425,9 +1947,7 @@
       "chinese": "红色头巾",
       "japanese": "あかいバンダナ",
       "english": "Red Scarf"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2435,9 +1955,7 @@
       "japanese": "あおいバンダナ",
       "chinese": "蓝色头巾"
     },
-    "id": 261,
-    "price": 1000,
-    "limit": 0
+    "id": 261
   },
   {
     "name": {
@@ -2445,9 +1963,7 @@
       "japanese": "ピンクのバンダナ",
       "chinese": "粉红头巾"
     },
-    "id": 262,
-    "price": 1000,
-    "limit": 0
+    "id": 262
   },
   {
     "id": 263,
@@ -2455,9 +1971,7 @@
       "japanese": "みどりのバンダナ",
       "english": "Green Scarf",
       "chinese": "绿色头巾"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2465,9 +1979,7 @@
       "english": "Yellow Scarf",
       "chinese": "黄色头巾"
     },
-    "id": 264,
-    "price": 1000,
-    "limit": 0
+    "id": 264
   },
   {
     "id": 265,
@@ -2475,9 +1987,7 @@
       "chinese": "广角镜",
       "japanese": "こうかくレンズ",
       "english": "Wide Lens"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2485,9 +1995,7 @@
       "english": "Muscle Band",
       "chinese": "力量头带"
     },
-    "id": 266,
-    "price": 1000,
-    "limit": 0
+    "id": 266
   },
   {
     "id": 267,
@@ -2495,9 +2003,7 @@
       "japanese": "ものしりメガネ",
       "english": "Wise Glasses",
       "chinese": "博识眼镜"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2505,9 +2011,7 @@
       "japanese": "たつじんのおび",
       "chinese": "达人带"
     },
-    "id": 268,
-    "price": 1000,
-    "limit": 0
+    "id": 268
   },
   {
     "name": {
@@ -2515,9 +2019,7 @@
       "english": "Light Clay",
       "chinese": "光之黏土"
     },
-    "id": 269,
-    "price": 1000,
-    "limit": 0
+    "id": 269
   },
   {
     "name": {
@@ -2525,9 +2027,7 @@
       "english": "Life Orb",
       "japanese": "いのちのたま"
     },
-    "id": 270,
-    "price": 1000,
-    "limit": 0
+    "id": 270
   },
   {
     "id": 271,
@@ -2535,9 +2035,7 @@
       "japanese": "パワフルハーブ",
       "english": "Power Herb",
       "chinese": "强力香草"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 272,
@@ -2545,9 +2043,7 @@
       "chinese": "剧毒宝珠",
       "japanese": "どくどくだま",
       "english": "Toxic Orb"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2555,9 +2051,7 @@
       "japanese": "かえんだま",
       "english": "Flame Orb"
     },
-    "id": 273,
-    "price": 1000,
-    "limit": 0
+    "id": 273
   },
   {
     "name": {
@@ -2565,9 +2059,7 @@
       "japanese": "スピードパウダー",
       "chinese": "速度粉"
     },
-    "id": 274,
-    "price": 1000,
-    "limit": 0
+    "id": 274
   },
   {
     "id": 275,
@@ -2575,9 +2067,7 @@
       "chinese": "气势披带",
       "english": "Focus Sash",
       "japanese": "きあいのタスキ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2585,9 +2075,7 @@
       "english": "Zoom Lens",
       "japanese": "フォーカスレンズ"
     },
-    "id": 276,
-    "price": 1000,
-    "limit": 0
+    "id": 276
   },
   {
     "id": 277,
@@ -2595,9 +2083,7 @@
       "english": "Metronome",
       "japanese": "メトロノーム",
       "chinese": "节拍器"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 278,
@@ -2605,9 +2091,7 @@
       "chinese": "黑色铁球",
       "english": "Iron Ball",
       "japanese": "くろいてっきゅう"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2615,9 +2099,7 @@
       "english": "Lagging Tail",
       "japanese": "こうこうのしっぽ"
     },
-    "id": 279,
-    "price": 1000,
-    "limit": 0
+    "id": 279
   },
   {
     "id": 280,
@@ -2625,9 +2107,7 @@
       "chinese": "红线",
       "english": "Destiny Knot",
       "japanese": "あかいいと"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 281,
@@ -2635,9 +2115,7 @@
       "english": "Black Sludge",
       "japanese": "くろいヘドロ",
       "chinese": "黑色污泥"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2645,9 +2123,7 @@
       "japanese": "つめたいいわ",
       "english": "Icy Rock"
     },
-    "id": 282,
-    "price": 1000,
-    "limit": 0
+    "id": 282
   },
   {
     "id": 283,
@@ -2655,9 +2131,7 @@
       "chinese": "沙沙岩石",
       "japanese": "さらさらいわ",
       "english": "Smooth Rock"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2665,9 +2139,7 @@
       "english": "Heat Rock",
       "chinese": "炽热岩石"
     },
-    "id": 284,
-    "price": 1000,
-    "limit": 0
+    "id": 284
   },
   {
     "id": 285,
@@ -2675,9 +2147,7 @@
       "chinese": "潮湿岩石",
       "japanese": "しめったいわ",
       "english": "Damp Rock"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2685,9 +2155,7 @@
       "japanese": "ねばりのかぎづめ",
       "english": "Grip Claw"
     },
-    "id": 286,
-    "price": 1000,
-    "limit": 0
+    "id": 286
   },
   {
     "id": 287,
@@ -2695,9 +2163,7 @@
       "japanese": "こだわりスカーフ",
       "english": "Choice Scarf",
       "chinese": "讲究围巾"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2705,9 +2171,7 @@
       "japanese": "くっつきバリ",
       "english": "Sticky Barb"
     },
-    "id": 288,
-    "price": 1000,
-    "limit": 0
+    "id": 288
   },
   {
     "name": {
@@ -2715,9 +2179,7 @@
       "japanese": "パワーリスト",
       "english": "Power Bracer"
     },
-    "id": 289,
-    "price": 1000,
-    "limit": 0
+    "id": 289
   },
   {
     "name": {
@@ -2725,9 +2187,7 @@
       "japanese": "パワーベルト",
       "english": "Power Belt"
     },
-    "id": 290,
-    "price": 1000,
-    "limit": 0
+    "id": 290
   },
   {
     "name": {
@@ -2735,9 +2195,7 @@
       "english": "Power Lens",
       "chinese": "力量镜"
     },
-    "id": 291,
-    "price": 1000,
-    "limit": 0
+    "id": 291
   },
   {
     "id": 292,
@@ -2745,9 +2203,7 @@
       "chinese": "力量束带",
       "japanese": "パワーバンド",
       "english": "Power Band"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 293,
@@ -2755,9 +2211,7 @@
       "chinese": "力量护踝",
       "japanese": "パワーアンクル",
       "english": "Power Anklet"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 294,
@@ -2765,9 +2219,7 @@
       "japanese": "パワーウエイト",
       "english": "Power Weight",
       "chinese": "力量负重"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 295,
@@ -2775,9 +2227,7 @@
       "japanese": "きれいなぬけがら",
       "english": "Shed Shell",
       "chinese": "美丽空壳"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2785,9 +2235,7 @@
       "english": "Big Root",
       "chinese": "大根茎"
     },
-    "id": 296,
-    "price": 1000,
-    "limit": 0
+    "id": 296
   },
   {
     "id": 297,
@@ -2795,9 +2243,7 @@
       "english": "Choice Specs",
       "japanese": "こだわりメガネ",
       "chinese": "讲究眼镜"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 298,
@@ -2805,9 +2251,7 @@
       "japanese": "ひのたまプレート",
       "english": "Flame Plate",
       "chinese": "火球石板"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 299,
@@ -2815,9 +2259,7 @@
       "english": "Splash Plate",
       "japanese": "しずくプレート",
       "chinese": "水滴石板"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2825,9 +2267,7 @@
       "english": "Zap Plate",
       "japanese": "いかずちプレート"
     },
-    "id": 300,
-    "price": 1000,
-    "limit": 0
+    "id": 300
   },
   {
     "id": 301,
@@ -2835,9 +2275,7 @@
       "english": "Meadow Plate",
       "japanese": "みどりのプレート",
       "chinese": "碧绿石板"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 302,
@@ -2845,9 +2283,7 @@
       "chinese": "冰柱石板",
       "english": "Icicle Plate",
       "japanese": "つららのプレート"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2855,9 +2291,7 @@
       "english": "Fist Plate",
       "japanese": "こぶしのプレート"
     },
-    "id": 303,
-    "price": 1000,
-    "limit": 0
+    "id": 303
   },
   {
     "name": {
@@ -2865,9 +2299,7 @@
       "japanese": "もうどくプレート",
       "chinese": "剧毒石板"
     },
-    "id": 304,
-    "price": 1000,
-    "limit": 0
+    "id": 304
   },
   {
     "name": {
@@ -2875,9 +2307,7 @@
       "english": "Earth Plate",
       "chinese": "大地石板"
     },
-    "id": 305,
-    "price": 1000,
-    "limit": 0
+    "id": 305
   },
   {
     "name": {
@@ -2885,9 +2315,7 @@
       "english": "Sky Plate",
       "chinese": "蓝天石板"
     },
-    "id": 306,
-    "price": 1000,
-    "limit": 0
+    "id": 306
   },
   {
     "name": {
@@ -2895,9 +2323,7 @@
       "english": "Mind Plate",
       "japanese": "ふしぎのプレート"
     },
-    "id": 307,
-    "price": 1000,
-    "limit": 0
+    "id": 307
   },
   {
     "id": 308,
@@ -2905,9 +2331,7 @@
       "chinese": "玉虫石板",
       "japanese": "たまむしプレート",
       "english": "Insect Plate"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2915,9 +2339,7 @@
       "english": "Stone Plate",
       "chinese": "岩石石板"
     },
-    "id": 309,
-    "price": 1000,
-    "limit": 0
+    "id": 309
   },
   {
     "name": {
@@ -2925,9 +2347,7 @@
       "english": "Spooky Plate",
       "chinese": "妖怪石板"
     },
-    "id": 310,
-    "price": 1000,
-    "limit": 0
+    "id": 310
   },
   {
     "name": {
@@ -2935,9 +2355,7 @@
       "japanese": "りゅうのプレート",
       "chinese": "龙之石板"
     },
-    "id": 311,
-    "price": 1000,
-    "limit": 0
+    "id": 311
   },
   {
     "name": {
@@ -2945,9 +2363,7 @@
       "japanese": "こわもてプレート",
       "english": "Dread Plate"
     },
-    "id": 312,
-    "price": 1000,
-    "limit": 0
+    "id": 312
   },
   {
     "name": {
@@ -2955,9 +2371,7 @@
       "english": "Iron Plate",
       "japanese": "こうてつプレート"
     },
-    "id": 313,
-    "price": 1000,
-    "limit": 0
+    "id": 313
   },
   {
     "id": 314,
@@ -2965,9 +2379,7 @@
       "chinese": "奇异薰香",
       "japanese": "あやしいおこう",
       "english": "Odd Incense"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -2975,9 +2387,7 @@
       "english": "Rock Incense",
       "japanese": "がんせきおこう"
     },
-    "id": 315,
-    "price": 1000,
-    "limit": 0
+    "id": 315
   },
   {
     "name": {
@@ -2985,9 +2395,7 @@
       "english": "Full Incense",
       "japanese": "まんぷくおこう"
     },
-    "id": 316,
-    "price": 1000,
-    "limit": 0
+    "id": 316
   },
   {
     "name": {
@@ -2995,9 +2403,7 @@
       "english": "Wave Incense",
       "japanese": "さざなみのおこう"
     },
-    "id": 317,
-    "price": 1000,
-    "limit": 0
+    "id": 317
   },
   {
     "name": {
@@ -3005,9 +2411,7 @@
       "japanese": "おはなのおこう",
       "chinese": "花朵薰香"
     },
-    "id": 318,
-    "price": 1000,
-    "limit": 0
+    "id": 318
   },
   {
     "id": 319,
@@ -3015,9 +2419,7 @@
       "chinese": "幸运薰香",
       "japanese": "こううんのおこう",
       "english": "Luck Incense"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3025,9 +2427,7 @@
       "english": "Pure Incense",
       "japanese": "きよめのおこう"
     },
-    "id": 320,
-    "price": 1000,
-    "limit": 0
+    "id": 320
   },
   {
     "id": 321,
@@ -3035,9 +2435,7 @@
       "chinese": "护具",
       "japanese": "プロテクター",
       "english": "Protector"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3045,9 +2443,7 @@
       "english": "Electirizer",
       "japanese": "エレキブースター"
     },
-    "id": 322,
-    "price": 1000,
-    "limit": 0
+    "id": 322
   },
   {
     "name": {
@@ -3055,9 +2451,7 @@
       "english": "Magmarizer",
       "japanese": "マグマブースター"
     },
-    "id": 323,
-    "price": 1000,
-    "limit": 0
+    "id": 323
   },
   {
     "name": {
@@ -3065,9 +2459,7 @@
       "english": "Dubious Disc",
       "chinese": "可疑补丁"
     },
-    "id": 324,
-    "price": 1000,
-    "limit": 0
+    "id": 324
   },
   {
     "name": {
@@ -3075,9 +2467,7 @@
       "japanese": "れいかいのぬの",
       "english": "Reaper Cloth"
     },
-    "id": 325,
-    "price": 1000,
-    "limit": 0
+    "id": 325
   },
   {
     "id": 326,
@@ -3085,9 +2475,7 @@
       "chinese": "锐利之爪",
       "japanese": "するどいツメ",
       "english": "Razor Claw"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 327,
@@ -3095,9 +2483,7 @@
       "english": "Razor Fang",
       "japanese": "するどいキバ",
       "chinese": "锐利之牙"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3105,9 +2491,7 @@
       "japanese": "わざマシン01",
       "english": "TM01"
     },
-    "id": 328,
-    "price": 1000,
-    "limit": 0
+    "id": 328
   },
   {
     "name": {
@@ -3115,9 +2499,7 @@
       "japanese": "わざマシン02",
       "chinese": "招式学习器02"
     },
-    "id": 329,
-    "price": 1000,
-    "limit": 0
+    "id": 329
   },
   {
     "id": 330,
@@ -3125,9 +2507,7 @@
       "chinese": "招式学习器03",
       "japanese": "わざマシン03",
       "english": "TM03"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3135,9 +2515,7 @@
       "english": "TM04",
       "japanese": "わざマシン04"
     },
-    "id": 331,
-    "price": 1000,
-    "limit": 0
+    "id": 331
   },
   {
     "id": 332,
@@ -3145,9 +2523,7 @@
       "chinese": "招式学习器05",
       "japanese": "わざマシン05",
       "english": "TM05"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 333,
@@ -3155,9 +2531,7 @@
       "chinese": "招式学习器06",
       "japanese": "わざマシン06",
       "english": "TM06"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3165,9 +2539,7 @@
       "japanese": "わざマシン07",
       "chinese": "招式学习器07"
     },
-    "id": 334,
-    "price": 1000,
-    "limit": 0
+    "id": 334
   },
   {
     "name": {
@@ -3175,9 +2547,7 @@
       "japanese": "わざマシン08",
       "english": "TM08"
     },
-    "id": 335,
-    "price": 1000,
-    "limit": 0
+    "id": 335
   },
   {
     "id": 336,
@@ -3185,9 +2555,7 @@
       "japanese": "わざマシン09",
       "english": "TM09",
       "chinese": "招式学习器09"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3195,9 +2563,7 @@
       "japanese": "わざマシン10",
       "chinese": "招式学习器10"
     },
-    "id": 337,
-    "price": 1000,
-    "limit": 0
+    "id": 337
   },
   {
     "name": {
@@ -3205,9 +2571,7 @@
       "english": "TM11",
       "japanese": "わざマシン11"
     },
-    "id": 338,
-    "price": 1000,
-    "limit": 0
+    "id": 338
   },
   {
     "name": {
@@ -3215,9 +2579,7 @@
       "english": "TM12",
       "chinese": "招式学习器12"
     },
-    "id": 339,
-    "price": 1000,
-    "limit": 0
+    "id": 339
   },
   {
     "name": {
@@ -3225,9 +2587,7 @@
       "japanese": "わざマシン13",
       "english": "TM13"
     },
-    "id": 340,
-    "price": 1000,
-    "limit": 0
+    "id": 340
   },
   {
     "name": {
@@ -3235,9 +2595,7 @@
       "japanese": "わざマシン14",
       "chinese": "招式学习器14"
     },
-    "id": 341,
-    "price": 1000,
-    "limit": 0
+    "id": 341
   },
   {
     "name": {
@@ -3245,9 +2603,7 @@
       "english": "TM15",
       "chinese": "招式学习器15"
     },
-    "id": 342,
-    "price": 1000,
-    "limit": 0
+    "id": 342
   },
   {
     "name": {
@@ -3255,9 +2611,7 @@
       "japanese": "わざマシン16",
       "english": "TM16"
     },
-    "id": 343,
-    "price": 1000,
-    "limit": 0
+    "id": 343
   },
   {
     "name": {
@@ -3265,9 +2619,7 @@
       "english": "TM17",
       "japanese": "わざマシン17"
     },
-    "id": 344,
-    "price": 1000,
-    "limit": 0
+    "id": 344
   },
   {
     "id": 345,
@@ -3275,9 +2627,7 @@
       "english": "TM18",
       "japanese": "わざマシン18",
       "chinese": "招式学习器18"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 346,
@@ -3285,9 +2635,7 @@
       "english": "TM19",
       "japanese": "わざマシン19",
       "chinese": "招式学习器19"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 347,
@@ -3295,9 +2643,7 @@
       "japanese": "わざマシン20",
       "english": "TM20",
       "chinese": "招式学习器20"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3305,9 +2651,7 @@
       "japanese": "わざマシン21",
       "chinese": "招式学习器21"
     },
-    "id": 348,
-    "price": 1000,
-    "limit": 0
+    "id": 348
   },
   {
     "id": 349,
@@ -3315,9 +2659,7 @@
       "english": "TM22",
       "japanese": "わざマシン22",
       "chinese": "招式学习器22"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 350,
@@ -3325,9 +2667,7 @@
       "chinese": "招式学习器23",
       "english": "TM23",
       "japanese": "わざマシン23"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 351,
@@ -3335,9 +2675,7 @@
       "english": "TM24",
       "japanese": "わざマシン24",
       "chinese": "招式学习器24"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3345,9 +2683,7 @@
       "japanese": "わざマシン25",
       "chinese": "招式学习器25"
     },
-    "id": 352,
-    "price": 1000,
-    "limit": 0
+    "id": 352
   },
   {
     "id": 353,
@@ -3355,9 +2691,7 @@
       "chinese": "招式学习器26",
       "japanese": "わざマシン26",
       "english": "TM26"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3365,9 +2699,7 @@
       "english": "TM27",
       "japanese": "わざマシン27"
     },
-    "id": 354,
-    "price": 1000,
-    "limit": 0
+    "id": 354
   },
   {
     "id": 355,
@@ -3375,9 +2707,7 @@
       "english": "TM28",
       "japanese": "わざマシン28",
       "chinese": "招式学习器28"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 356,
@@ -3385,9 +2715,7 @@
       "english": "TM29",
       "japanese": "わざマシン29",
       "chinese": "招式学习器29"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3395,9 +2723,7 @@
       "english": "TM30",
       "japanese": "わざマシン30"
     },
-    "id": 357,
-    "price": 1000,
-    "limit": 0
+    "id": 357
   },
   {
     "id": 358,
@@ -3405,9 +2731,7 @@
       "japanese": "わざマシン31",
       "english": "TM31",
       "chinese": "招式学习器31"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3415,9 +2739,7 @@
       "english": "TM32",
       "japanese": "わざマシン32"
     },
-    "id": 359,
-    "price": 1000,
-    "limit": 0
+    "id": 359
   },
   {
     "name": {
@@ -3425,9 +2747,7 @@
       "english": "TM33",
       "chinese": "招式学习器33"
     },
-    "id": 360,
-    "price": 1000,
-    "limit": 0
+    "id": 360
   },
   {
     "name": {
@@ -3435,9 +2755,7 @@
       "english": "TM34",
       "chinese": "招式学习器34"
     },
-    "id": 361,
-    "price": 1000,
-    "limit": 0
+    "id": 361
   },
   {
     "id": 362,
@@ -3445,9 +2763,7 @@
       "chinese": "招式学习器35",
       "english": "TM35",
       "japanese": "わざマシン35"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 363,
@@ -3455,9 +2771,7 @@
       "chinese": "招式学习器36",
       "english": "TM36",
       "japanese": "わざマシン36"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3465,9 +2779,7 @@
       "japanese": "わざマシン37",
       "english": "TM37"
     },
-    "id": 364,
-    "price": 1000,
-    "limit": 0
+    "id": 364
   },
   {
     "id": 365,
@@ -3475,9 +2787,7 @@
       "english": "TM38",
       "japanese": "わざマシン38",
       "chinese": "招式学习器38"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3485,9 +2795,7 @@
       "english": "TM39",
       "chinese": "招式学习器39"
     },
-    "id": 366,
-    "price": 1000,
-    "limit": 0
+    "id": 366
   },
   {
     "name": {
@@ -3495,9 +2803,7 @@
       "japanese": "わざマシン40",
       "chinese": "招式学习器40"
     },
-    "id": 367,
-    "price": 1000,
-    "limit": 0
+    "id": 367
   },
   {
     "id": 368,
@@ -3505,9 +2811,7 @@
       "chinese": "招式学习器41",
       "japanese": "わざマシン41",
       "english": "TM41"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3515,9 +2819,7 @@
       "japanese": "わざマシン42",
       "english": "TM42"
     },
-    "id": 369,
-    "price": 1000,
-    "limit": 0
+    "id": 369
   },
   {
     "id": 370,
@@ -3525,9 +2827,7 @@
       "chinese": "招式学习器43",
       "english": "TM43",
       "japanese": "わざマシン43"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 371,
@@ -3535,9 +2835,7 @@
       "english": "TM44",
       "japanese": "わざマシン44",
       "chinese": "招式学习器44"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3545,9 +2843,7 @@
       "english": "TM45",
       "japanese": "わざマシン45"
     },
-    "id": 372,
-    "price": 1000,
-    "limit": 0
+    "id": 372
   },
   {
     "name": {
@@ -3555,9 +2851,7 @@
       "english": "TM46",
       "chinese": "招式学习器46"
     },
-    "id": 373,
-    "price": 1000,
-    "limit": 0
+    "id": 373
   },
   {
     "id": 374,
@@ -3565,9 +2859,7 @@
       "chinese": "招式学习器47",
       "english": "TM47",
       "japanese": "わざマシン47"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3575,9 +2867,7 @@
       "english": "TM48",
       "chinese": "招式学习器48"
     },
-    "id": 375,
-    "price": 1000,
-    "limit": 0
+    "id": 375
   },
   {
     "id": 376,
@@ -3585,9 +2875,7 @@
       "japanese": "わざマシン49",
       "english": "TM49",
       "chinese": "招式学习器49"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3595,9 +2883,7 @@
       "english": "TM50",
       "chinese": "招式学习器50"
     },
-    "id": 377,
-    "price": 1000,
-    "limit": 0
+    "id": 377
   },
   {
     "name": {
@@ -3605,9 +2891,7 @@
       "english": "TM51",
       "japanese": "わざマシン51"
     },
-    "id": 378,
-    "price": 1000,
-    "limit": 0
+    "id": 378
   },
   {
     "id": 379,
@@ -3615,9 +2899,7 @@
       "chinese": "招式学习器52",
       "japanese": "わざマシン52",
       "english": "TM52"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 380,
@@ -3625,9 +2907,7 @@
       "english": "TM53",
       "japanese": "わざマシン53",
       "chinese": "招式学习器53"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3635,9 +2915,7 @@
       "english": "TM54",
       "japanese": "わざマシン54"
     },
-    "id": 381,
-    "price": 1000,
-    "limit": 0
+    "id": 381
   },
   {
     "id": 382,
@@ -3645,9 +2923,7 @@
       "japanese": "わざマシン55",
       "english": "TM55",
       "chinese": "招式学习器55"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3655,9 +2931,7 @@
       "japanese": "わざマシン56",
       "chinese": "招式学习器56"
     },
-    "id": 383,
-    "price": 1000,
-    "limit": 0
+    "id": 383
   },
   {
     "name": {
@@ -3665,9 +2939,7 @@
       "japanese": "わざマシン57",
       "english": "TM57"
     },
-    "id": 384,
-    "price": 1000,
-    "limit": 0
+    "id": 384
   },
   {
     "id": 385,
@@ -3675,9 +2947,7 @@
       "japanese": "わざマシン58",
       "english": "TM58",
       "chinese": "招式学习器58"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3685,9 +2955,7 @@
       "english": "TM59",
       "chinese": "招式学习器59"
     },
-    "id": 386,
-    "price": 1000,
-    "limit": 0
+    "id": 386
   },
   {
     "id": 387,
@@ -3695,9 +2963,7 @@
       "english": "TM60",
       "japanese": "わざマシン60",
       "chinese": "招式学习器60"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 388,
@@ -3705,9 +2971,7 @@
       "japanese": "わざマシン61",
       "english": "TM61",
       "chinese": "招式学习器61"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3715,9 +2979,7 @@
       "english": "TM62",
       "japanese": "わざマシン62"
     },
-    "id": 389,
-    "price": 1000,
-    "limit": 0
+    "id": 389
   },
   {
     "name": {
@@ -3725,9 +2987,7 @@
       "japanese": "わざマシン63",
       "chinese": "招式学习器63"
     },
-    "id": 390,
-    "price": 1000,
-    "limit": 0
+    "id": 390
   },
   {
     "name": {
@@ -3735,9 +2995,7 @@
       "english": "TM64",
       "japanese": "わざマシン64"
     },
-    "id": 391,
-    "price": 1000,
-    "limit": 0
+    "id": 391
   },
   {
     "name": {
@@ -3745,9 +3003,7 @@
       "english": "TM65",
       "chinese": "招式学习器65"
     },
-    "id": 392,
-    "price": 1000,
-    "limit": 0
+    "id": 392
   },
   {
     "id": 393,
@@ -3755,9 +3011,7 @@
       "chinese": "招式学习器66",
       "japanese": "わざマシン66",
       "english": "TM66"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3765,9 +3019,7 @@
       "english": "TM67",
       "chinese": "招式学习器67"
     },
-    "id": 394,
-    "price": 1000,
-    "limit": 0
+    "id": 394
   },
   {
     "id": 395,
@@ -3775,9 +3027,7 @@
       "chinese": "招式学习器68",
       "japanese": "わざマシン68",
       "english": "TM68"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3785,9 +3035,7 @@
       "japanese": "わざマシン69",
       "english": "TM69"
     },
-    "id": 396,
-    "price": 1000,
-    "limit": 0
+    "id": 396
   },
   {
     "name": {
@@ -3795,9 +3043,7 @@
       "japanese": "わざマシン70",
       "chinese": "招式学习器70"
     },
-    "id": 397,
-    "price": 1000,
-    "limit": 0
+    "id": 397
   },
   {
     "name": {
@@ -3805,9 +3051,7 @@
       "english": "TM71",
       "chinese": "招式学习器71"
     },
-    "id": 398,
-    "price": 1000,
-    "limit": 0
+    "id": 398
   },
   {
     "id": 399,
@@ -3815,9 +3059,7 @@
       "english": "TM72",
       "japanese": "わざマシン72",
       "chinese": "招式学习器72"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 400,
@@ -3825,9 +3067,7 @@
       "chinese": "招式学习器73",
       "japanese": "わざマシン73",
       "english": "TM73"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3835,9 +3075,7 @@
       "japanese": "わざマシン74",
       "chinese": "招式学习器74"
     },
-    "id": 401,
-    "price": 1000,
-    "limit": 0
+    "id": 401
   },
   {
     "id": 402,
@@ -3845,9 +3083,7 @@
       "chinese": "招式学习器75",
       "japanese": "わざマシン75",
       "english": "TM75"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 403,
@@ -3855,9 +3091,7 @@
       "chinese": "招式学习器76",
       "japanese": "わざマシン76",
       "english": "TM76"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 404,
@@ -3865,9 +3099,7 @@
       "english": "TM77",
       "japanese": "わざマシン77",
       "chinese": "招式学习器77"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3875,9 +3107,7 @@
       "english": "TM78",
       "chinese": "招式学习器78"
     },
-    "id": 405,
-    "price": 1000,
-    "limit": 0
+    "id": 405
   },
   {
     "id": 406,
@@ -3885,9 +3115,7 @@
       "chinese": "招式学习器79",
       "english": "TM79",
       "japanese": "わざマシン79"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3895,9 +3123,7 @@
       "english": "TM80",
       "chinese": "招式学习器80"
     },
-    "id": 407,
-    "price": 1000,
-    "limit": 0
+    "id": 407
   },
   {
     "id": 408,
@@ -3905,9 +3131,7 @@
       "chinese": "招式学习器81",
       "english": "TM81",
       "japanese": "わざマシン81"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3915,9 +3139,7 @@
       "japanese": "わざマシン82",
       "english": "TM82"
     },
-    "id": 409,
-    "price": 1000,
-    "limit": 0
+    "id": 409
   },
   {
     "id": 410,
@@ -3925,9 +3147,7 @@
       "chinese": "招式学习器83",
       "english": "TM83",
       "japanese": "わざマシン83"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3935,9 +3155,7 @@
       "japanese": "わざマシン84",
       "chinese": "招式学习器84"
     },
-    "id": 411,
-    "price": 1000,
-    "limit": 0
+    "id": 411
   },
   {
     "id": 412,
@@ -3945,9 +3163,7 @@
       "japanese": "わざマシン85",
       "english": "TM85",
       "chinese": "招式学习器85"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3955,9 +3171,7 @@
       "english": "TM86",
       "chinese": "招式学习器86"
     },
-    "id": 413,
-    "price": 1000,
-    "limit": 0
+    "id": 413
   },
   {
     "id": 414,
@@ -3965,9 +3179,7 @@
       "chinese": "招式学习器87",
       "japanese": "わざマシン87",
       "english": "TM87"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 415,
@@ -3975,9 +3187,7 @@
       "english": "TM88",
       "japanese": "わざマシン88",
       "chinese": "招式学习器88"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 416,
@@ -3985,9 +3195,7 @@
       "japanese": "わざマシン89",
       "english": "TM89",
       "chinese": "招式学习器89"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -3995,9 +3203,7 @@
       "japanese": "わざマシン90",
       "english": "TM90"
     },
-    "id": 417,
-    "price": 1000,
-    "limit": 0
+    "id": 417
   },
   {
     "name": {
@@ -4005,9 +3211,7 @@
       "english": "TM91",
       "chinese": "招式学习器91"
     },
-    "id": 418,
-    "price": 1000,
-    "limit": 0
+    "id": 418
   },
   {
     "name": {
@@ -4015,9 +3219,7 @@
       "japanese": "わざマシン92",
       "chinese": "招式学习器92"
     },
-    "id": 419,
-    "price": 1000,
-    "limit": 0
+    "id": 419
   },
   {
     "name": {
@@ -4025,9 +3227,7 @@
       "english": "HM01",
       "japanese": "ひでんマシン01"
     },
-    "id": 420,
-    "price": 1000,
-    "limit": 0
+    "id": 420
   },
   {
     "name": {
@@ -4035,9 +3235,7 @@
       "english": "HM02",
       "japanese": "ひでんマシン02"
     },
-    "id": 421,
-    "price": 1000,
-    "limit": 0
+    "id": 421
   },
   {
     "name": {
@@ -4045,9 +3243,7 @@
       "english": "HM03",
       "chinese": "秘传学习器03"
     },
-    "id": 422,
-    "price": 1000,
-    "limit": 0
+    "id": 422
   },
   {
     "name": {
@@ -4055,9 +3251,7 @@
       "japanese": "ひでんマシン04",
       "english": "HM04"
     },
-    "id": 423,
-    "price": 1000,
-    "limit": 0
+    "id": 423
   },
   {
     "name": {
@@ -4065,9 +3259,7 @@
       "english": "HM05",
       "japanese": "ひでんマシン05"
     },
-    "id": 424,
-    "price": 1000,
-    "limit": 0
+    "id": 424
   },
   {
     "name": {
@@ -4075,9 +3267,7 @@
       "english": "HM06",
       "chinese": "秘传学习器06"
     },
-    "id": 425,
-    "price": 1000,
-    "limit": 0
+    "id": 425
   },
   {
     "name": {
@@ -4085,9 +3275,7 @@
       "english": "Explorer Kit",
       "chinese": "探險組合探险套装"
     },
-    "id": 428,
-    "price": 1000,
-    "limit": 0
+    "id": 428
   },
   {
     "id": 429,
@@ -4095,9 +3283,7 @@
       "chinese": "宝物袋",
       "japanese": "たからぶくろ",
       "english": "Loot Sack"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 430,
@@ -4105,9 +3291,7 @@
       "japanese": "ルールブック",
       "english": "Rule Book",
       "chinese": "规则书"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4115,9 +3299,7 @@
       "japanese": "ポケトレ",
       "english": "Poké Radar"
     },
-    "id": 431,
-    "price": 1000,
-    "limit": 0
+    "id": 431
   },
   {
     "id": 432,
@@ -4125,9 +3307,7 @@
       "english": "Point Card",
       "japanese": "ポイントカード",
       "chinese": "点数卡"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 433,
@@ -4135,9 +3315,7 @@
       "english": "Journal",
       "japanese": "ぼうけんノート",
       "chinese": "冒险笔记"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4145,9 +3323,7 @@
       "japanese": "シールいれ",
       "english": "Seal Case"
     },
-    "id": 434,
-    "price": 1000,
-    "limit": 0
+    "id": 434
   },
   {
     "id": 435,
@@ -4155,9 +3331,7 @@
       "japanese": "アクセサリーいれ",
       "english": "Fashion Case",
       "chinese": "饰品盒"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 436,
@@ -4165,9 +3339,7 @@
       "japanese": "シールぶくろ",
       "english": "Seal Bag",
       "chinese": "贴纸袋"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 437,
@@ -4175,9 +3347,7 @@
       "japanese": "ともだちてちょう",
       "english": "Pal Pad",
       "chinese": "朋友手册"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 438,
@@ -4185,9 +3355,7 @@
       "japanese": "はつでんしょキー",
       "english": "Works Key",
       "chinese": "发电厂钥匙"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 439,
@@ -4195,9 +3363,7 @@
       "chinese": "古代护符",
       "english": "Old Charm",
       "japanese": "こだいのおまもり"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 440,
@@ -4205,9 +3371,7 @@
       "chinese": "银河队钥匙",
       "english": "Galactic Key",
       "japanese": "ギンガだんのカギ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 441,
@@ -4215,9 +3379,7 @@
       "chinese": "红色锁链",
       "english": "Red Chain",
       "japanese": "あかいくさり"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 442,
@@ -4225,9 +3387,7 @@
       "chinese": "城镇地图",
       "japanese": "タウンマップ",
       "english": "Town Map"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 443,
@@ -4235,9 +3395,7 @@
       "japanese": "バトルサーチャー",
       "english": "Vs. Seeker",
       "chinese": "对战搜寻器"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4245,9 +3403,7 @@
       "japanese": "コインケース",
       "english": "Coin Case"
     },
-    "id": 444,
-    "price": 1000,
-    "limit": 0
+    "id": 444
   },
   {
     "name": {
@@ -4255,9 +3411,7 @@
       "english": "Old Rod",
       "chinese": "破旧钓竿"
     },
-    "id": 445,
-    "price": 1000,
-    "limit": 0
+    "id": 445
   },
   {
     "id": 446,
@@ -4265,9 +3419,7 @@
       "english": "Good Rod",
       "japanese": "いいつりざお",
       "chinese": "好钓竿"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 447,
@@ -4275,9 +3427,7 @@
       "japanese": "すごいつりざお",
       "english": "Super Rod",
       "chinese": "厉害钓竿"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 448,
@@ -4285,9 +3435,7 @@
       "japanese": "コダックじょうろ",
       "english": "Sprayduck",
       "chinese": "可达鸭喷壶"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 449,
@@ -4295,17 +3443,13 @@
       "english": "Poffin Case",
       "japanese": "ポフィンケース",
       "chinese": "宝芬盒"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 450,
     "name": {
       "english": "Bike"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4313,9 +3457,7 @@
       "english": "Suite Key",
       "chinese": "房间钥匙"
     },
-    "id": 451,
-    "price": 1000,
-    "limit": 0
+    "id": 451
   },
   {
     "name": {
@@ -4323,9 +3465,7 @@
       "english": "Oak's Letter",
       "chinese": "大木的信"
     },
-    "id": 452,
-    "price": 1000,
-    "limit": 0
+    "id": 452
   },
   {
     "id": 453,
@@ -4333,9 +3473,7 @@
       "chinese": "新月之羽",
       "english": "Lunar Wing",
       "japanese": "みかづきのはね"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 454,
@@ -4343,9 +3481,7 @@
       "chinese": "会员卡",
       "english": "Member Card",
       "japanese": "メンバーズカード"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 455,
@@ -4353,9 +3489,7 @@
       "english": "Azure Flute",
       "japanese": "てんかいのふえ",
       "chinese": "天界之笛"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 456,
@@ -4363,9 +3497,7 @@
       "english": "S.S. Ticket",
       "japanese": "ふねのチケット",
       "chinese": "船票"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4373,9 +3505,7 @@
       "english": "Contest Pass",
       "japanese": "コンテストパス"
     },
-    "id": 457,
-    "price": 1000,
-    "limit": 0
+    "id": 457
   },
   {
     "id": 458,
@@ -4383,9 +3513,7 @@
       "chinese": "火山镇石",
       "japanese": "かざんのおきいし",
       "english": "Magma Stone"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4393,9 +3521,7 @@
       "japanese": "おとどけもの",
       "english": "Parcel"
     },
-    "id": 459,
-    "price": 1000,
-    "limit": 0
+    "id": 459
   },
   {
     "name": {
@@ -4403,9 +3529,7 @@
       "japanese": "ひきかえけん１",
       "chinese": "兑换券１"
     },
-    "id": 460,
-    "price": 1000,
-    "limit": 0
+    "id": 460
   },
   {
     "id": 461,
@@ -4413,9 +3537,7 @@
       "chinese": "兑换券２",
       "japanese": "ひきかえけん２",
       "english": "Coupon 2"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 462,
@@ -4423,9 +3545,7 @@
       "english": "Coupon 3",
       "japanese": "ひきかえけん３",
       "chinese": "兑换券３"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 463,
@@ -4433,9 +3553,7 @@
       "english": "Storage Key",
       "japanese": "そうこのカギ",
       "chinese": "仓库钥匙"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4443,9 +3561,7 @@
       "english": "Secret Potion",
       "chinese": "秘传之药"
     },
-    "id": 464,
-    "price": 1000,
-    "limit": 0
+    "id": 464
   },
   {
     "id": 465,
@@ -4453,9 +3569,7 @@
       "chinese": "对战记录器",
       "japanese": "バトルレコーダー",
       "english": "Vs. Recorder"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4463,9 +3577,7 @@
       "english": "Gracidea",
       "japanese": "グラシデアのはな"
     },
-    "id": 466,
-    "price": 1000,
-    "limit": 0
+    "id": 466
   },
   {
     "id": 467,
@@ -4473,9 +3585,7 @@
       "chinese": "秘密钥匙",
       "japanese": "ひみつのカギ",
       "english": "Secret Key"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4483,9 +3593,7 @@
       "japanese": "ぼんぐりケース",
       "english": "Apricorn Box"
     },
-    "id": 468,
-    "price": 1000,
-    "limit": 0
+    "id": 468
   },
   {
     "name": {
@@ -4493,9 +3601,7 @@
       "japanese": "アンノーンノート",
       "chinese": "未知图腾笔记"
     },
-    "id": 469,
-    "price": 1000,
-    "limit": 0
+    "id": 469
   },
   {
     "id": 470,
@@ -4503,9 +3609,7 @@
       "japanese": "きのみプランター",
       "english": "Berry Pots",
       "chinese": "树果种植盆"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4513,9 +3617,7 @@
       "japanese": "ダウジングマシン",
       "chinese": "探宝器"
     },
-    "id": 471,
-    "price": 1000,
-    "limit": 0
+    "id": 471
   },
   {
     "name": {
@@ -4523,9 +3625,7 @@
       "english": "Blue Card",
       "chinese": "蓝卡"
     },
-    "id": 472,
-    "price": 1000,
-    "limit": 0
+    "id": 472
   },
   {
     "name": {
@@ -4533,9 +3633,7 @@
       "japanese": "おいしいシッポ",
       "chinese": "美味尾巴"
     },
-    "id": 473,
-    "price": 1000,
-    "limit": 0
+    "id": 473
   },
   {
     "id": 474,
@@ -4543,9 +3641,7 @@
       "english": "Clear Bell",
       "japanese": "とうめいなスズ",
       "chinese": "透明铃铛"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 475,
@@ -4553,9 +3649,7 @@
       "japanese": "カードキー",
       "english": "Card Key",
       "chinese": "钥匙卡"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 476,
@@ -4563,9 +3657,7 @@
       "chinese": "地下钥匙",
       "japanese": "ちかのカギ",
       "english": "Basement Key"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4573,9 +3665,7 @@
       "english": "Squirt Bottle",
       "chinese": "杰尼龟喷壶"
     },
-    "id": 477,
-    "price": 1000,
-    "limit": 0
+    "id": 477
   },
   {
     "id": 478,
@@ -4583,9 +3673,7 @@
       "japanese": "あかいウロコ",
       "english": "Red Scale",
       "chinese": "红色鳞片"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4593,9 +3681,7 @@
       "japanese": "おとしもの",
       "chinese": "遗失物"
     },
-    "id": 479,
-    "price": 1000,
-    "limit": 0
+    "id": 479
   },
   {
     "name": {
@@ -4603,9 +3689,7 @@
       "english": "Pass",
       "chinese": "定期月票"
     },
-    "id": 480,
-    "price": 1000,
-    "limit": 0
+    "id": 480
   },
   {
     "id": 481,
@@ -4613,9 +3697,7 @@
       "chinese": "机械零件",
       "english": "Machine Part",
       "japanese": "きかいのぶひん"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4623,9 +3705,7 @@
       "english": "Silver Wing",
       "japanese": "ぎんいろのはね"
     },
-    "id": 482,
-    "price": 1000,
-    "limit": 0
+    "id": 482
   },
   {
     "id": 483,
@@ -4633,9 +3713,7 @@
       "english": "Rainbow Wing",
       "japanese": "にじいろのはね",
       "chinese": "虹色之羽"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 484,
@@ -4643,9 +3721,7 @@
       "chinese": "神奇蛋",
       "japanese": "ふしぎなタマゴ",
       "english": "Mystery Egg"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 485,
@@ -4653,9 +3729,7 @@
       "chinese": "红球果",
       "japanese": "あかぼんぐり",
       "english": "Red Apricorn"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 486,
@@ -4663,9 +3737,7 @@
       "english": "Blue Apricorn",
       "japanese": "あおぼんぐり",
       "chinese": "蓝球果"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4673,9 +3745,7 @@
       "japanese": "きぼんぐり",
       "chinese": "黄球果"
     },
-    "id": 487,
-    "price": 1000,
-    "limit": 0
+    "id": 487
   },
   {
     "id": 488,
@@ -4683,9 +3753,7 @@
       "chinese": "绿球果",
       "english": "Green Apricorn",
       "japanese": "みどぼんぐり"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4693,9 +3761,7 @@
       "english": "Pink Apricorn",
       "chinese": "粉球果"
     },
-    "id": 489,
-    "price": 1000,
-    "limit": 0
+    "id": 489
   },
   {
     "name": {
@@ -4703,9 +3769,7 @@
       "english": "White Apricorn",
       "chinese": "白球果"
     },
-    "id": 490,
-    "price": 1000,
-    "limit": 0
+    "id": 490
   },
   {
     "name": {
@@ -4713,9 +3777,7 @@
       "japanese": "くろぼんぐり",
       "chinese": "黑球果"
     },
-    "id": 491,
-    "price": 1000,
-    "limit": 0
+    "id": 491
   },
   {
     "id": 492,
@@ -4723,9 +3785,7 @@
       "chinese": "速度球",
       "english": "Fast Ball",
       "japanese": "スピードボール"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 493,
@@ -4733,9 +3793,7 @@
       "chinese": "等级球",
       "japanese": "レベルボール",
       "english": "Level Ball"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 494,
@@ -4743,9 +3801,7 @@
       "chinese": "诱饵球",
       "english": "Lure Ball",
       "japanese": "ルアーボール"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 495,
@@ -4753,9 +3809,7 @@
       "chinese": "沉重球",
       "english": "Heavy Ball",
       "japanese": "ヘビーボール"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 496,
@@ -4763,9 +3817,7 @@
       "chinese": "甜蜜球",
       "japanese": "ラブラブボール",
       "english": "Love Ball"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4773,9 +3825,7 @@
       "english": "Friend Ball",
       "chinese": "友友球"
     },
-    "id": 497,
-    "price": 1000,
-    "limit": 0
+    "id": 497
   },
   {
     "name": {
@@ -4783,9 +3833,7 @@
       "japanese": "ムーンボール",
       "chinese": "月亮球"
     },
-    "id": 498,
-    "price": 1000,
-    "limit": 0
+    "id": 498
   },
   {
     "id": 499,
@@ -4793,9 +3841,7 @@
       "chinese": "竞赛球",
       "japanese": "コンペボール",
       "english": "Sport Ball"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 500,
@@ -4803,9 +3849,7 @@
       "japanese": "パークボール",
       "english": "Park Ball",
       "chinese": "公园球"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4813,9 +3857,7 @@
       "english": "Photo Album",
       "japanese": "フォトアルバム"
     },
-    "id": 501,
-    "price": 1000,
-    "limit": 0
+    "id": 501
   },
   {
     "name": {
@@ -4823,9 +3865,7 @@
       "japanese": "ＧＢプレイヤー",
       "english": "GB Sounds"
     },
-    "id": 502,
-    "price": 1000,
-    "limit": 0
+    "id": 502
   },
   {
     "name": {
@@ -4833,9 +3873,7 @@
       "english": "Tidal Bell",
       "chinese": "海声铃铛"
     },
-    "id": 503,
-    "price": 1000,
-    "limit": 0
+    "id": 503
   },
   {
     "name": {
@@ -4843,9 +3881,7 @@
       "english": "Rage Candy Bar",
       "japanese": "いかりまんじゅう"
     },
-    "id": 504,
-    "price": 1000,
-    "limit": 0
+    "id": 504
   },
   {
     "id": 505,
@@ -4853,9 +3889,7 @@
       "japanese": "データカード 01",
       "english": "Data Card 01",
       "chinese": "資料卡数据卡 01"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 506,
@@ -4863,9 +3897,7 @@
       "chinese": "資料卡数据卡 02",
       "english": "Data Card 02",
       "japanese": "データカード 02"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 507,
@@ -4873,9 +3905,7 @@
       "english": "Data Card 03",
       "japanese": "データカード 03",
       "chinese": "資料卡数据卡 03"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 508,
@@ -4883,9 +3913,7 @@
       "japanese": "データカード 04",
       "english": "Data Card 04",
       "chinese": "資料卡数据卡 04"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4893,9 +3921,7 @@
       "japanese": "データカード 05",
       "english": "Data Card 05"
     },
-    "id": 509,
-    "price": 1000,
-    "limit": 0
+    "id": 509
   },
   {
     "id": 510,
@@ -4903,9 +3929,7 @@
       "english": "Data Card 06",
       "japanese": "データカード 06",
       "chinese": "資料卡数据卡 06"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 511,
@@ -4913,9 +3937,7 @@
       "english": "Data Card 07",
       "japanese": "データカード 07",
       "chinese": "資料卡数据卡 07"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 512,
@@ -4923,9 +3945,7 @@
       "chinese": "資料卡数据卡 08",
       "japanese": "データカード 08",
       "english": "Data Card 08"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 513,
@@ -4933,9 +3953,7 @@
       "english": "Data Card 09",
       "japanese": "データカード 09",
       "chinese": "資料卡数据卡 09"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4943,9 +3961,7 @@
       "english": "Data Card 10",
       "chinese": "資料卡数据卡 10"
     },
-    "id": 514,
-    "price": 1000,
-    "limit": 0
+    "id": 514
   },
   {
     "id": 515,
@@ -4953,9 +3969,7 @@
       "japanese": "データカード 11",
       "english": "Data Card 11",
       "chinese": "資料卡数据卡 11"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 516,
@@ -4963,9 +3977,7 @@
       "chinese": "資料卡数据卡 12",
       "english": "Data Card 12",
       "japanese": "データカード 12"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4973,9 +3985,7 @@
       "english": "Data Card 13",
       "japanese": "データカード 13"
     },
-    "id": 517,
-    "price": 1000,
-    "limit": 0
+    "id": 517
   },
   {
     "id": 518,
@@ -4983,9 +3993,7 @@
       "chinese": "資料卡数据卡 14",
       "english": "Data Card 14",
       "japanese": "データカード 14"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -4993,9 +4001,7 @@
       "english": "Data Card 15",
       "japanese": "データカード 15"
     },
-    "id": 519,
-    "price": 1000,
-    "limit": 0
+    "id": 519
   },
   {
     "name": {
@@ -5003,9 +4009,7 @@
       "english": "Data Card 16",
       "chinese": "資料卡数据卡 16"
     },
-    "id": 520,
-    "price": 1000,
-    "limit": 0
+    "id": 520
   },
   {
     "name": {
@@ -5013,9 +4017,7 @@
       "english": "Data Card 17",
       "japanese": "データカード 17"
     },
-    "id": 521,
-    "price": 1000,
-    "limit": 0
+    "id": 521
   },
   {
     "name": {
@@ -5023,9 +4025,7 @@
       "english": "Data Card 18",
       "japanese": "データカード 18"
     },
-    "id": 522,
-    "price": 1000,
-    "limit": 0
+    "id": 522
   },
   {
     "id": 523,
@@ -5033,9 +4033,7 @@
       "english": "Data Card 19",
       "japanese": "データカード 19",
       "chinese": "資料卡数据卡 19"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 524,
@@ -5043,9 +4041,7 @@
       "chinese": "資料卡数据卡 20",
       "english": "Data Card 20",
       "japanese": "データカード 20"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 525,
@@ -5053,9 +4049,7 @@
       "chinese": "資料卡数据卡 21",
       "japanese": "データカード 21",
       "english": "Data Card 21"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5063,9 +4057,7 @@
       "english": "Data Card 22",
       "chinese": "資料卡数据卡 22"
     },
-    "id": 526,
-    "price": 1000,
-    "limit": 0
+    "id": 526
   },
   {
     "id": 527,
@@ -5073,9 +4065,7 @@
       "chinese": "資料卡数据卡 23",
       "english": "Data Card 23",
       "japanese": "データカード 23"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 528,
@@ -5083,9 +4073,7 @@
       "japanese": "データカード 24",
       "english": "Data Card 24",
       "chinese": "資料卡数据卡 24"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 529,
@@ -5093,9 +4081,7 @@
       "chinese": "資料卡数据卡 25",
       "english": "Data Card 25",
       "japanese": "データカード 25"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5103,9 +4089,7 @@
       "english": "Data Card 26",
       "japanese": "データカード 26"
     },
-    "id": 530,
-    "price": 1000,
-    "limit": 0
+    "id": 530
   },
   {
     "id": 531,
@@ -5113,9 +4097,7 @@
       "chinese": "資料卡数据卡 27",
       "japanese": "データカード 27",
       "english": "Data Card 27"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5123,9 +4105,7 @@
       "japanese": "もえぎいろのたま",
       "english": "Jade Orb"
     },
-    "id": 532,
-    "price": 1000,
-    "limit": 0
+    "id": 532
   },
   {
     "id": 533,
@@ -5133,9 +4113,7 @@
       "japanese": "ロックカプセル",
       "english": "Lock Capsule",
       "chinese": "上锁的容器"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5143,9 +4121,7 @@
       "english": "Red Orb",
       "chinese": "朱红色宝珠"
     },
-    "id": 534,
-    "price": 1000,
-    "limit": 0
+    "id": 534
   },
   {
     "name": {
@@ -5153,9 +4129,7 @@
       "english": "Blue Orb",
       "chinese": "靛蓝色宝珠"
     },
-    "id": 535,
-    "price": 1000,
-    "limit": 0
+    "id": 535
   },
   {
     "id": 536,
@@ -5163,9 +4137,7 @@
       "english": "Enigma Stone",
       "japanese": "なぞのすいしょう",
       "chinese": "谜之水晶"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 537,
@@ -5173,9 +4145,7 @@
       "chinese": "美丽鳞片",
       "japanese": "きれいなウロコ",
       "english": "Prism Scale"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 538,
@@ -5183,9 +4153,7 @@
       "chinese": "进化奇石",
       "english": "Eviolite",
       "japanese": "しんかのきせき"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5193,9 +4161,7 @@
       "english": "Float Stone",
       "chinese": "轻石"
     },
-    "id": 539,
-    "price": 1000,
-    "limit": 0
+    "id": 539
   },
   {
     "id": 540,
@@ -5203,9 +4169,7 @@
       "english": "Rocky Helmet",
       "japanese": "ゴツゴツメット",
       "chinese": "凸凸头盔"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 541,
@@ -5213,9 +4177,7 @@
       "english": "Air Balloon",
       "japanese": "ふうせん",
       "chinese": "气球"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5223,9 +4185,7 @@
       "english": "Red Card",
       "chinese": "红牌"
     },
-    "id": 542,
-    "price": 1000,
-    "limit": 0
+    "id": 542
   },
   {
     "name": {
@@ -5233,9 +4193,7 @@
       "japanese": "ねらいのまと",
       "chinese": "标靶"
     },
-    "id": 543,
-    "price": 1000,
-    "limit": 0
+    "id": 543
   },
   {
     "id": 544,
@@ -5243,9 +4201,7 @@
       "english": "Binding Band",
       "japanese": "しめつけバンド",
       "chinese": "紧绑束带"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5253,9 +4209,7 @@
       "english": "Absorb Bulb",
       "chinese": "球根"
     },
-    "id": 545,
-    "price": 1000,
-    "limit": 0
+    "id": 545
   },
   {
     "name": {
@@ -5263,9 +4217,7 @@
       "english": "Cell Battery",
       "japanese": "じゅうでんち"
     },
-    "id": 546,
-    "price": 1000,
-    "limit": 0
+    "id": 546
   },
   {
     "name": {
@@ -5273,9 +4225,7 @@
       "japanese": "だっしゅつボタン",
       "chinese": "逃脱按键"
     },
-    "id": 547,
-    "price": 1000,
-    "limit": 0
+    "id": 547
   },
   {
     "name": {
@@ -5283,9 +4233,7 @@
       "japanese": "ほのおのジュエル",
       "english": "Fire Gem"
     },
-    "id": 548,
-    "price": 1000,
-    "limit": 0
+    "id": 548
   },
   {
     "id": 549,
@@ -5293,9 +4241,7 @@
       "japanese": "みずのジュエル",
       "english": "Water Gem",
       "chinese": "水之宝石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5303,9 +4249,7 @@
       "japanese": "でんきのジュエル",
       "english": "Electric Gem"
     },
-    "id": 550,
-    "price": 1000,
-    "limit": 0
+    "id": 550
   },
   {
     "id": 551,
@@ -5313,9 +4257,7 @@
       "chinese": "草之宝石",
       "japanese": "くさのジュエル",
       "english": "Grass Gem"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 552,
@@ -5323,9 +4265,7 @@
       "english": "Ice Gem",
       "japanese": "こおりのジュエル",
       "chinese": "冰之宝石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5333,9 +4273,7 @@
       "japanese": "かくとうジュエル",
       "chinese": "格斗宝石"
     },
-    "id": 553,
-    "price": 1000,
-    "limit": 0
+    "id": 553
   },
   {
     "id": 554,
@@ -5343,9 +4281,7 @@
       "english": "Poison Gem",
       "japanese": "どくのジュエル",
       "chinese": "毒之宝石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5353,9 +4289,7 @@
       "japanese": "じめんのジュエル",
       "chinese": "地面宝石"
     },
-    "id": 555,
-    "price": 1000,
-    "limit": 0
+    "id": 555
   },
   {
     "name": {
@@ -5363,9 +4297,7 @@
       "english": "Flying Gem",
       "japanese": "ひこうのジュエル"
     },
-    "id": 556,
-    "price": 1000,
-    "limit": 0
+    "id": 556
   },
   {
     "id": 557,
@@ -5373,9 +4305,7 @@
       "chinese": "超能力宝石",
       "english": "Psychic Gem",
       "japanese": "エスパージュエル"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 558,
@@ -5383,9 +4313,7 @@
       "english": "Bug Gem",
       "japanese": "むしのジュエル",
       "chinese": "虫之宝石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5393,9 +4321,7 @@
       "japanese": "いわのジュエル",
       "chinese": "岩石宝石"
     },
-    "id": 559,
-    "price": 1000,
-    "limit": 0
+    "id": 559
   },
   {
     "name": {
@@ -5403,9 +4329,7 @@
       "english": "Ghost Gem",
       "japanese": "ゴーストジュエル"
     },
-    "id": 560,
-    "price": 1000,
-    "limit": 0
+    "id": 560
   },
   {
     "id": 561,
@@ -5413,9 +4337,7 @@
       "chinese": "龙之宝石",
       "japanese": "ドラゴンジュエル",
       "english": "Dragon Gem"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5423,9 +4345,7 @@
       "japanese": "あくのジュエル",
       "english": "Dark Gem"
     },
-    "id": 562,
-    "price": 1000,
-    "limit": 0
+    "id": 562
   },
   {
     "id": 563,
@@ -5433,9 +4353,7 @@
       "english": "Steel Gem",
       "japanese": "はがねのジュエル",
       "chinese": "钢之宝石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 564,
@@ -5443,9 +4361,7 @@
       "chinese": "一般宝石",
       "japanese": "ノーマルジュエル",
       "english": "Normal Gem"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 565,
@@ -5453,9 +4369,7 @@
       "english": "Health Wing",
       "japanese": "たいりょくのハネ",
       "chinese": "体力之羽"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5463,9 +4377,7 @@
       "english": "Muscle Wing",
       "japanese": "きんりょくのハネ"
     },
-    "id": 566,
-    "price": 1000,
-    "limit": 0
+    "id": 566
   },
   {
     "name": {
@@ -5473,9 +4385,7 @@
       "english": "Resist Wing",
       "chinese": "抵抗之羽"
     },
-    "id": 567,
-    "price": 1000,
-    "limit": 0
+    "id": 567
   },
   {
     "id": 568,
@@ -5483,9 +4393,7 @@
       "chinese": "智力之羽",
       "english": "Genius Wing",
       "japanese": "ちりょくのハネ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5493,9 +4401,7 @@
       "japanese": "せいしんのハネ",
       "english": "Clever Wing"
     },
-    "id": 569,
-    "price": 1000,
-    "limit": 0
+    "id": 569
   },
   {
     "id": 570,
@@ -5503,9 +4409,7 @@
       "chinese": "瞬发之羽",
       "english": "Swift Wing",
       "japanese": "しゅんぱつのハネ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5513,9 +4417,7 @@
       "japanese": "きれいなハネ",
       "chinese": "美丽之羽"
     },
-    "id": 571,
-    "price": 1000,
-    "limit": 0
+    "id": 571
   },
   {
     "id": 572,
@@ -5523,9 +4425,7 @@
       "japanese": "ふたのカセキ",
       "english": "Cover Fossil",
       "chinese": "背盖化石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5533,9 +4433,7 @@
       "japanese": "はねのカセキ",
       "english": "Plume Fossil"
     },
-    "id": 573,
-    "price": 1000,
-    "limit": 0
+    "id": 573
   },
   {
     "id": 574,
@@ -5543,9 +4441,7 @@
       "english": "Liberty Pass",
       "japanese": "リバティチケット",
       "chinese": "自由船票"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 575,
@@ -5553,9 +4449,7 @@
       "chinese": "释出之玉",
       "japanese": "デルダマ",
       "english": "Pass Orb"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 576,
@@ -5563,9 +4457,7 @@
       "chinese": "梦境球",
       "english": "Dream Ball",
       "japanese": "ドリームボール"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 577,
@@ -5573,9 +4465,7 @@
       "english": "Poké Toy",
       "japanese": "ポケじゃらし",
       "chinese": "宝可尾草"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 578,
@@ -5583,9 +4473,7 @@
       "japanese": "グッズケース",
       "english": "Prop Case",
       "chinese": "物品箱"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 579,
@@ -5593,9 +4481,7 @@
       "japanese": "ドラゴンのホネ",
       "english": "Dragon Skull",
       "chinese": "龙之骨"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5603,9 +4489,7 @@
       "japanese": "かおるキノコ",
       "english": "Balm Mushroom"
     },
-    "id": 580,
-    "price": 1000,
-    "limit": 0
+    "id": 580
   },
   {
     "name": {
@@ -5613,9 +4497,7 @@
       "japanese": "でかいきんのたま",
       "english": "Big Nugget"
     },
-    "id": 581,
-    "price": 1000,
-    "limit": 0
+    "id": 581
   },
   {
     "name": {
@@ -5623,9 +4505,7 @@
       "english": "Pearl String",
       "japanese": "おだんごしんじゅ"
     },
-    "id": 582,
-    "price": 1000,
-    "limit": 0
+    "id": 582
   },
   {
     "id": 583,
@@ -5633,9 +4513,7 @@
       "english": "Comet Shard",
       "japanese": "すいせいのかけら",
       "chinese": "彗星碎片"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5643,9 +4521,7 @@
       "english": "Relic Copper",
       "japanese": "こだいのどうか"
     },
-    "id": 584,
-    "price": 1000,
-    "limit": 0
+    "id": 584
   },
   {
     "id": 585,
@@ -5653,9 +4529,7 @@
       "english": "Relic Silver",
       "japanese": "こだいのぎんか",
       "chinese": "古代银币"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5663,9 +4537,7 @@
       "japanese": "こだいのきんか",
       "english": "Relic Gold"
     },
-    "id": 586,
-    "price": 1000,
-    "limit": 0
+    "id": 586
   },
   {
     "name": {
@@ -5673,9 +4545,7 @@
       "japanese": "こだいのツボ",
       "english": "Relic Vase"
     },
-    "id": 587,
-    "price": 1000,
-    "limit": 0
+    "id": 587
   },
   {
     "name": {
@@ -5683,9 +4553,7 @@
       "japanese": "こだいのうでわ",
       "english": "Relic Band"
     },
-    "id": 588,
-    "price": 1000,
-    "limit": 0
+    "id": 588
   },
   {
     "id": 589,
@@ -5693,9 +4561,7 @@
       "japanese": "こだいのせきぞう",
       "english": "Relic Statue",
       "chinese": "古代石像"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5703,9 +4569,7 @@
       "japanese": "こだいのおうかん",
       "chinese": "古代王冠"
     },
-    "id": 590,
-    "price": 1000,
-    "limit": 0
+    "id": 590
   },
   {
     "id": 591,
@@ -5713,9 +4577,7 @@
       "chinese": "飞云冰淇淋",
       "english": "Casteliacone",
       "japanese": "ヒウンアイス"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5723,9 +4585,7 @@
       "japanese": "クリティカット 2",
       "english": "Dire Hit 2"
     },
-    "id": 592,
-    "price": 1000,
-    "limit": 0
+    "id": 592
   },
   {
     "name": {
@@ -5733,9 +4593,7 @@
       "english": "X Speed 2",
       "japanese": "スピーダー 2"
     },
-    "id": 593,
-    "price": 1000,
-    "limit": 0
+    "id": 593
   },
   {
     "name": {
@@ -5743,9 +4601,7 @@
       "english": "X Sp. Atk 2",
       "chinese": "特攻强化 2"
     },
-    "id": 594,
-    "price": 1000,
-    "limit": 0
+    "id": 594
   },
   {
     "id": 595,
@@ -5753,9 +4609,7 @@
       "chinese": "特防强化 2",
       "japanese": "スペシャルガード 2",
       "english": "X Sp. Def 2"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 596,
@@ -5763,9 +4617,7 @@
       "english": "X Defense 2",
       "japanese": "ディフェンダー 2",
       "chinese": "防御强化 2"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5773,9 +4625,7 @@
       "english": "X Attack 2",
       "chinese": "力量强化 2"
     },
-    "id": 597,
-    "price": 1000,
-    "limit": 0
+    "id": 597
   },
   {
     "name": {
@@ -5783,9 +4633,7 @@
       "english": "X Accuracy 2",
       "chinese": "命中强化 2"
     },
-    "id": 598,
-    "price": 1000,
-    "limit": 0
+    "id": 598
   },
   {
     "name": {
@@ -5793,9 +4641,7 @@
       "japanese": "スピーダー 3",
       "chinese": "速度强化 3"
     },
-    "id": 599,
-    "price": 1000,
-    "limit": 0
+    "id": 599
   },
   {
     "name": {
@@ -5803,9 +4649,7 @@
       "japanese": "スペシャルアップ 3",
       "english": "X Sp. Atk 3"
     },
-    "id": 600,
-    "price": 1000,
-    "limit": 0
+    "id": 600
   },
   {
     "id": 601,
@@ -5813,9 +4657,7 @@
       "english": "X Sp. Def 3",
       "japanese": "スペシャルガード 3",
       "chinese": "特防强化 3"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5823,9 +4665,7 @@
       "english": "X Defense 3",
       "japanese": "ディフェンダー 3"
     },
-    "id": 602,
-    "price": 1000,
-    "limit": 0
+    "id": 602
   },
   {
     "name": {
@@ -5833,9 +4673,7 @@
       "japanese": "プラスパワー 3",
       "chinese": "力量强化 3"
     },
-    "id": 603,
-    "price": 1000,
-    "limit": 0
+    "id": 603
   },
   {
     "name": {
@@ -5843,9 +4681,7 @@
       "english": "X Accuracy 3",
       "japanese": "ヨクアタール 3"
     },
-    "id": 604,
-    "price": 1000,
-    "limit": 0
+    "id": 604
   },
   {
     "id": 605,
@@ -5853,9 +4689,7 @@
       "english": "X Speed 6",
       "japanese": "スピーダー 6",
       "chinese": "速度强化 6"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5863,9 +4697,7 @@
       "english": "X Sp. Atk 6",
       "chinese": "特攻强化 6"
     },
-    "id": 606,
-    "price": 1000,
-    "limit": 0
+    "id": 606
   },
   {
     "id": 607,
@@ -5873,9 +4705,7 @@
       "chinese": "特防强化 6",
       "english": "X Sp. Def 6",
       "japanese": "スペシャルガード 6"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 608,
@@ -5883,9 +4713,7 @@
       "chinese": "防御强化 6",
       "japanese": "ディフェンダー 6",
       "english": "X Defense 6"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5893,9 +4721,7 @@
       "japanese": "プラスパワー 6",
       "english": "X Attack 6"
     },
-    "id": 609,
-    "price": 1000,
-    "limit": 0
+    "id": 609
   },
   {
     "id": 610,
@@ -5903,9 +4729,7 @@
       "english": "X Accuracy 6",
       "japanese": "ヨクアタール 6",
       "chinese": "命中强化 6"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5913,9 +4737,7 @@
       "english": "Ability Urge",
       "japanese": "スキルコール"
     },
-    "id": 611,
-    "price": 1000,
-    "limit": 0
+    "id": 611
   },
   {
     "name": {
@@ -5923,9 +4745,7 @@
       "english": "Item Drop",
       "japanese": "アイテムドロップ"
     },
-    "id": 612,
-    "price": 1000,
-    "limit": 0
+    "id": 612
   },
   {
     "name": {
@@ -5933,9 +4753,7 @@
       "japanese": "アイテムコール",
       "chinese": null
     },
-    "id": 613,
-    "price": 1000,
-    "limit": 0
+    "id": 613
   },
   {
     "name": {
@@ -5943,9 +4761,7 @@
       "english": "Reset Urge",
       "japanese": "フラットコール"
     },
-    "id": 614,
-    "price": 1000,
-    "limit": 0
+    "id": 614
   },
   {
     "id": 615,
@@ -5953,9 +4769,7 @@
       "english": "Dire Hit 3",
       "japanese": "クリティカット 3",
       "chinese": "要害攻击 3"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 616,
@@ -5963,9 +4777,7 @@
       "english": "Light Stone",
       "japanese": "ライトストーン",
       "chinese": "光明石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -5973,9 +4785,7 @@
       "english": "Dark Stone",
       "japanese": "ダークストーン"
     },
-    "id": 617,
-    "price": 1000,
-    "limit": 0
+    "id": 617
   },
   {
     "name": {
@@ -5983,9 +4793,7 @@
       "japanese": "わざマシン93",
       "english": "TM93"
     },
-    "id": 618,
-    "price": 1000,
-    "limit": 0
+    "id": 618
   },
   {
     "id": 619,
@@ -5993,9 +4801,7 @@
       "english": "TM94",
       "japanese": "わざマシン94",
       "chinese": "招式学习器94"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6003,9 +4809,7 @@
       "japanese": "わざマシン95",
       "english": "TM95"
     },
-    "id": 620,
-    "price": 1000,
-    "limit": 0
+    "id": 620
   },
   {
     "id": 621,
@@ -6013,9 +4817,7 @@
       "chinese": "即时通讯器",
       "japanese": "ライブキャスター",
       "english": "Xtransceiver"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6023,9 +4825,7 @@
       "english": "Gram 1",
       "chinese": "配送物品１"
     },
-    "id": 623,
-    "price": 1000,
-    "limit": 0
+    "id": 623
   },
   {
     "id": 624,
@@ -6033,9 +4833,7 @@
       "english": "Gram 2",
       "japanese": "はいたつぶつ２",
       "chinese": "配送物品２"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6043,9 +4841,7 @@
       "japanese": "はいたつぶつ３",
       "english": "Gram 3"
     },
-    "id": 625,
-    "price": 1000,
-    "limit": 0
+    "id": 625
   },
   {
     "name": {
@@ -6053,9 +4849,7 @@
       "japanese": "ライブキャスター",
       "chinese": "即时通讯器"
     },
-    "id": 626,
-    "price": 1000,
-    "limit": 0
+    "id": 626
   },
   {
     "id": 627,
@@ -6063,9 +4857,7 @@
       "chinese": "奖牌盒",
       "english": "Medal Box",
       "japanese": "メダルボックス"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6073,9 +4865,7 @@
       "japanese": "いでんしのくさび",
       "chinese": "基因之楔"
     },
-    "id": 628,
-    "price": 1000,
-    "limit": 0
+    "id": 628
   },
   {
     "name": {
@@ -6083,9 +4873,7 @@
       "english": "DNA Splicers",
       "chinese": "基因之楔"
     },
-    "id": 629,
-    "price": 1000,
-    "limit": 0
+    "id": 629
   },
   {
     "id": 630,
@@ -6093,9 +4881,7 @@
       "japanese": "きょかしょう",
       "english": "Permit",
       "chinese": "许可证"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6103,9 +4889,7 @@
       "japanese": "まるいおまもり",
       "chinese": "圆形护符"
     },
-    "id": 631,
-    "price": 1000,
-    "limit": 0
+    "id": 631
   },
   {
     "id": 632,
@@ -6113,9 +4897,7 @@
       "japanese": "ひかるおまもり",
       "english": "Shiny Charm",
       "chinese": "闪耀护符"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6123,9 +4905,7 @@
       "english": "Plasma Card",
       "japanese": "プラズマカード"
     },
-    "id": 633,
-    "price": 1000,
-    "limit": 0
+    "id": 633
   },
   {
     "id": 634,
@@ -6133,9 +4913,7 @@
       "chinese": "脏手帕",
       "japanese": "よごれたハンカチ",
       "english": "Grubby Hanky"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6143,9 +4921,7 @@
       "english": "Colress Machine",
       "chinese": "阿克罗玛机器"
     },
-    "id": 635,
-    "price": 1000,
-    "limit": 0
+    "id": 635
   },
   {
     "name": {
@@ -6153,9 +4929,7 @@
       "english": "Dropped Item",
       "chinese": "遗忘物"
     },
-    "id": 636,
-    "price": 1000,
-    "limit": 0
+    "id": 636
   },
   {
     "name": {
@@ -6163,9 +4937,7 @@
       "english": "Dropped Item",
       "japanese": "わすれもの"
     },
-    "id": 637,
-    "price": 1000,
-    "limit": 0
+    "id": 637
   },
   {
     "id": 638,
@@ -6173,9 +4945,7 @@
       "chinese": "现形镜",
       "english": "Reveal Glass",
       "japanese": "うつしかがみ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6183,9 +4953,7 @@
       "japanese": "じゃくてんほけん",
       "chinese": "弱点保险"
     },
-    "id": 639,
-    "price": 1000,
-    "limit": 0
+    "id": 639
   },
   {
     "name": {
@@ -6193,9 +4961,7 @@
       "japanese": "とつげきチョッキ",
       "chinese": "突击背心"
     },
-    "id": 640,
-    "price": 1000,
-    "limit": 0
+    "id": 640
   },
   {
     "id": 641,
@@ -6203,9 +4969,7 @@
       "english": "Holo Caster",
       "japanese": "ホロキャスター",
       "chinese": "全像投影通訊器全息影像通讯器"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 642,
@@ -6213,9 +4977,7 @@
       "chinese": "博士的信",
       "japanese": "はかせのてがみ",
       "english": "Prof's Letter"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 643,
@@ -6223,9 +4985,7 @@
       "japanese": "ローラースケート",
       "english": "Roller Skates",
       "chinese": "溜冰鞋轮滑鞋"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 644,
@@ -6233,9 +4993,7 @@
       "chinese": "妖精石板",
       "english": "Pixie Plate",
       "japanese": "せいれいプレート"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6243,9 +5001,7 @@
       "english": "Ability Capsule",
       "chinese": "特性胶囊"
     },
-    "id": 645,
-    "price": 1000,
-    "limit": 0
+    "id": 645
   },
   {
     "id": 646,
@@ -6253,9 +5009,7 @@
       "english": "Whipped Dream",
       "japanese": "ホイップポップ",
       "chinese": "泡沫奶油"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 647,
@@ -6263,9 +5017,7 @@
       "chinese": "香袋",
       "japanese": "においぶくろ",
       "english": "Sachet"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6273,9 +5025,7 @@
       "english": "Luminous Moss",
       "japanese": "ひかりごけ"
     },
-    "id": 648,
-    "price": 1000,
-    "limit": 0
+    "id": 648
   },
   {
     "name": {
@@ -6283,9 +5033,7 @@
       "english": "Snowball",
       "japanese": "ゆきだま"
     },
-    "id": 649,
-    "price": 1000,
-    "limit": 0
+    "id": 649
   },
   {
     "name": {
@@ -6293,9 +5041,7 @@
       "english": "Safety Goggles",
       "japanese": "ぼうじんゴーグル"
     },
-    "id": 650,
-    "price": 1000,
-    "limit": 0
+    "id": 650
   },
   {
     "name": {
@@ -6303,9 +5049,7 @@
       "japanese": "ポケモンのふえ",
       "english": "Poké Flute"
     },
-    "id": 651,
-    "price": 1000,
-    "limit": 0
+    "id": 651
   },
   {
     "id": 652,
@@ -6313,9 +5057,7 @@
       "japanese": "たわわこやし",
       "english": "Rich Mulch",
       "chinese": "硕果肥"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 653,
@@ -6323,9 +5065,7 @@
       "japanese": "びっくりこやし",
       "english": "Surprise Mulch",
       "chinese": "吃惊肥"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 654,
@@ -6333,9 +5073,7 @@
       "chinese": "劲劲肥",
       "english": "Boost Mulch",
       "japanese": "ぐんぐんこやし"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6343,9 +5081,7 @@
       "english": "Amaze Mulch",
       "japanese": "とんでもこやし"
     },
-    "id": 655,
-    "price": 1000,
-    "limit": 0
+    "id": 655
   },
   {
     "name": {
@@ -6353,9 +5089,7 @@
       "japanese": "ゲンガナイト",
       "english": "Gengarite"
     },
-    "id": 656,
-    "price": 1000,
-    "limit": 0
+    "id": 656
   },
   {
     "id": 657,
@@ -6363,9 +5097,7 @@
       "chinese": "沙奈朵进化石",
       "english": "Gardevoirite",
       "japanese": "サーナイトナイト"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 658,
@@ -6373,9 +5105,7 @@
       "chinese": "电龙进化石",
       "english": "Ampharosite",
       "japanese": "デンリュウナイト"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 659,
@@ -6383,9 +5113,7 @@
       "chinese": "妙蛙花进化石",
       "japanese": "フシギバナイト",
       "english": "Venusaurite"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6393,9 +5121,7 @@
       "english": "Charizardite X",
       "chinese": "喷火龙进化石X"
     },
-    "id": 660,
-    "price": 1000,
-    "limit": 0
+    "id": 660
   },
   {
     "name": {
@@ -6403,9 +5129,7 @@
       "japanese": "カメックスナイト",
       "chinese": "水箭龟进化石"
     },
-    "id": 661,
-    "price": 1000,
-    "limit": 0
+    "id": 661
   },
   {
     "id": 662,
@@ -6413,9 +5137,7 @@
       "chinese": "超梦进化石X",
       "japanese": "ミュウツナイトX",
       "english": "Mewtwonite X"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6423,9 +5145,7 @@
       "english": "Mewtwonite Y",
       "japanese": "ミュウツナイトY"
     },
-    "id": 663,
-    "price": 1000,
-    "limit": 0
+    "id": 663
   },
   {
     "name": {
@@ -6433,9 +5153,7 @@
       "english": "Blazikenite",
       "chinese": "火焰鸡进化石"
     },
-    "id": 664,
-    "price": 1000,
-    "limit": 0
+    "id": 664
   },
   {
     "id": 665,
@@ -6443,9 +5161,7 @@
       "english": "Medichamite",
       "japanese": "チャーレムナイト",
       "chinese": "恰雷姆进化石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 666,
@@ -6453,9 +5169,7 @@
       "chinese": "黑鲁加进化石",
       "english": "Houndoominite",
       "japanese": "ヘルガナイト"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 667,
@@ -6463,9 +5177,7 @@
       "chinese": "波士可多拉进化石",
       "english": "Aggronite",
       "japanese": "ボスゴドラナイト"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 668,
@@ -6473,9 +5185,7 @@
       "chinese": "诅咒娃娃进化石",
       "japanese": "ジュペッタナイト",
       "english": "Banettite"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 669,
@@ -6483,9 +5193,7 @@
       "english": "Tyranitarite",
       "japanese": "バンギラスナイト",
       "chinese": "班基拉斯进化石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 670,
@@ -6493,9 +5201,7 @@
       "english": "Scizorite",
       "japanese": "ハッサムナイト",
       "chinese": "巨钳螳螂进化石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 671,
@@ -6503,9 +5209,7 @@
       "japanese": "カイロスナイト",
       "english": "Pinsirite",
       "chinese": "凯罗斯进化石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6513,9 +5217,7 @@
       "english": "Aerodactylite",
       "japanese": "プテラナイト"
     },
-    "id": 672,
-    "price": 1000,
-    "limit": 0
+    "id": 672
   },
   {
     "id": 673,
@@ -6523,9 +5225,7 @@
       "english": "Lucarionite",
       "japanese": "ルカリオナイト",
       "chinese": "路卡利欧进化石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 674,
@@ -6533,9 +5233,7 @@
       "japanese": "ユキノオナイト",
       "english": "Abomasite",
       "chinese": "暴雪王进化石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 675,
@@ -6543,9 +5241,7 @@
       "chinese": "袋兽进化石",
       "japanese": "ガルーラナイト",
       "english": "Kangaskhanite"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6553,9 +5249,7 @@
       "english": "Gyaradosite",
       "japanese": "ギャラドスナイト"
     },
-    "id": 676,
-    "price": 1000,
-    "limit": 0
+    "id": 676
   },
   {
     "name": {
@@ -6563,9 +5257,7 @@
       "english": "Absolite",
       "japanese": "アブソルナイト"
     },
-    "id": 677,
-    "price": 1000,
-    "limit": 0
+    "id": 677
   },
   {
     "id": 678,
@@ -6573,9 +5265,7 @@
       "chinese": "喷火龙进化石Y",
       "japanese": "リザードナイトY",
       "english": "Charizardite Y"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 679,
@@ -6583,9 +5273,7 @@
       "english": "Alakazite",
       "japanese": "フーディナイト",
       "chinese": "胡地进化石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6593,9 +5281,7 @@
       "english": "Heracronite",
       "chinese": "赫拉克罗斯进化石"
     },
-    "id": 680,
-    "price": 1000,
-    "limit": 0
+    "id": 680
   },
   {
     "id": 681,
@@ -6603,9 +5289,7 @@
       "chinese": "大嘴娃进化石",
       "japanese": "クチートナイト",
       "english": "Mawilite"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6613,9 +5297,7 @@
       "japanese": "ライボルトナイト",
       "chinese": "雷电兽进化石"
     },
-    "id": 682,
-    "price": 1000,
-    "limit": 0
+    "id": 682
   },
   {
     "id": 683,
@@ -6623,9 +5305,7 @@
       "japanese": "ガブリアスナイト",
       "english": "Garchompite",
       "chinese": "烈咬陆鲨进化石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6633,9 +5313,7 @@
       "japanese": "ラティアスナイト",
       "english": "Latiasite"
     },
-    "id": 684,
-    "price": 1000,
-    "limit": 0
+    "id": 684
   },
   {
     "name": {
@@ -6643,9 +5321,7 @@
       "english": "Latiosite",
       "chinese": "拉帝欧斯进化石"
     },
-    "id": 685,
-    "price": 1000,
-    "limit": 0
+    "id": 685
   },
   {
     "name": {
@@ -6653,9 +5329,7 @@
       "english": "Roseli Berry",
       "japanese": "ロゼルのみ"
     },
-    "id": 686,
-    "price": 1000,
-    "limit": 0
+    "id": 686
   },
   {
     "name": {
@@ -6663,9 +5337,7 @@
       "japanese": "アッキのみ",
       "english": "Kee Berry"
     },
-    "id": 687,
-    "price": 1000,
-    "limit": 0
+    "id": 687
   },
   {
     "id": 688,
@@ -6673,9 +5345,7 @@
       "chinese": "香罗果",
       "japanese": "タラプのみ",
       "english": "Maranga Berry"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 689,
@@ -6683,9 +5353,7 @@
       "chinese": "莲叶童子喷壶",
       "japanese": "ハスボーじょうろ",
       "english": "Sprinklotad"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6693,9 +5361,7 @@
       "japanese": "わざマシン96",
       "chinese": "招式学习器96"
     },
-    "id": 690,
-    "price": 1000,
-    "limit": 0
+    "id": 690
   },
   {
     "id": 691,
@@ -6703,9 +5369,7 @@
       "chinese": "招式学习器97",
       "english": "TM97",
       "japanese": "わざマシン97"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6713,9 +5377,7 @@
       "japanese": "わざマシン98",
       "english": "TM98"
     },
-    "id": 692,
-    "price": 1000,
-    "limit": 0
+    "id": 692
   },
   {
     "id": 693,
@@ -6723,9 +5385,7 @@
       "chinese": "招式学习器99",
       "english": "TM99",
       "japanese": "わざマシン99"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 694,
@@ -6733,9 +5393,7 @@
       "chinese": "招式学习器100",
       "japanese": "わざマシン100",
       "english": "TM100"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6743,9 +5401,7 @@
       "english": "Power Plant Pass",
       "japanese": "はつでんしょパス"
     },
-    "id": 695,
-    "price": 1000,
-    "limit": 0
+    "id": 695
   },
   {
     "name": {
@@ -6753,9 +5409,7 @@
       "japanese": "メガリング",
       "english": "Mega Ring"
     },
-    "id": 696,
-    "price": 1000,
-    "limit": 0
+    "id": 696
   },
   {
     "name": {
@@ -6763,17 +5417,13 @@
       "english": "Intriguing Stone",
       "japanese": "すごそうないし"
     },
-    "id": 697,
-    "price": 1000,
-    "limit": 0
+    "id": 697
   },
   {
     "id": 698,
     "name": {
       "english": "Common Stone"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6781,9 +5431,7 @@
       "japanese": "バーゲンチケット",
       "english": "Discount Coupon"
     },
-    "id": 699,
-    "price": 1000,
-    "limit": 0
+    "id": 699
   },
   {
     "id": 700,
@@ -6791,9 +5439,7 @@
       "english": "Elevator Key",
       "japanese": "エレベーターキー",
       "chinese": null
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 701,
@@ -6801,9 +5447,7 @@
       "chinese": "ＴＭＶ自由票",
       "english": "TMV Pass",
       "japanese": "TMVパス"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 702,
@@ -6811,9 +5455,7 @@
       "chinese": "卡洛斯勋章",
       "japanese": "カロスエンブレム",
       "english": "Honor of Kalos"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 703,
@@ -6821,9 +5463,7 @@
       "chinese": "探险心得",
       "japanese": "たんけんこころえ",
       "english": "Adventure Rules"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6831,9 +5471,7 @@
       "english": "Strange Souvenir",
       "chinese": "神秘摆设"
     },
-    "id": 704,
-    "price": 1000,
-    "limit": 0
+    "id": 704
   },
   {
     "name": {
@@ -6841,9 +5479,7 @@
       "japanese": "レンズケース",
       "chinese": "隐形眼镜盒"
     },
-    "id": 705,
-    "price": 1000,
-    "limit": 0
+    "id": 705
   },
   {
     "id": 706,
@@ -6851,17 +5487,13 @@
       "chinese": "化妆包",
       "japanese": "コスメポーチ",
       "english": "Makeup Bag"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 707,
     "name": {
       "english": "Travel Trunk"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6869,9 +5501,7 @@
       "english": "Lumiose Galette",
       "japanese": "ミアレガレット"
     },
-    "id": 708,
-    "price": 1000,
-    "limit": 0
+    "id": 708
   },
   {
     "name": {
@@ -6879,9 +5509,7 @@
       "english": "Shalour Sable",
       "chinese": "娑罗沙布蕾"
     },
-    "id": 709,
-    "price": 1000,
-    "limit": 0
+    "id": 709
   },
   {
     "id": 710,
@@ -6889,9 +5517,7 @@
       "chinese": "颚之化石",
       "english": "Jaw Fossil",
       "japanese": "アゴのカセキ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6899,9 +5525,7 @@
       "english": "Sail Fossil",
       "chinese": "鳍之化石"
     },
-    "id": 711,
-    "price": 1000,
-    "limit": 0
+    "id": 711
   },
   {
     "id": 712,
@@ -6909,9 +5533,7 @@
       "english": "Looker Ticket",
       "japanese": "ハンサムチケット",
       "chinese": "帅哥券"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6919,9 +5541,7 @@
       "japanese": "じてんしゃ",
       "english": "Bicycle"
     },
-    "id": 713,
-    "price": 1000,
-    "limit": 0
+    "id": 713
   },
   {
     "name": {
@@ -6929,9 +5549,7 @@
       "english": "Holo Caster",
       "japanese": "ホロキャスター"
     },
-    "id": 714,
-    "price": 1000,
-    "limit": 0
+    "id": 714
   },
   {
     "id": 715,
@@ -6939,9 +5557,7 @@
       "chinese": "妖精宝石",
       "english": "Fairy Gem",
       "japanese": "フェアリージュエル"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6949,17 +5565,13 @@
       "japanese": "メガチャーム",
       "chinese": "超级坠饰"
     },
-    "id": 716,
-    "price": 1000,
-    "limit": 0
+    "id": 716
   },
   {
     "name": {
       "english": "Mega Glove"
     },
-    "id": 717,
-    "price": 1000,
-    "limit": 0
+    "id": 717
   },
   {
     "id": 718,
@@ -6967,9 +5579,7 @@
       "english": "Mach Bike",
       "japanese": "マッハじてんしゃ",
       "chinese": "音速自行车"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -6977,9 +5587,7 @@
       "japanese": "ダートじてんしゃ",
       "english": "Acro Bike"
     },
-    "id": 719,
-    "price": 1000,
-    "limit": 0
+    "id": 719
   },
   {
     "name": {
@@ -6987,9 +5595,7 @@
       "japanese": "ホエルコじょうろ",
       "english": "Wailmer Pail"
     },
-    "id": 720,
-    "price": 1000,
-    "limit": 0
+    "id": 720
   },
   {
     "id": 721,
@@ -6997,9 +5603,7 @@
       "chinese": "得文的物品",
       "english": "Devon Parts",
       "japanese": "デボンのにもつ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 722,
@@ -7007,9 +5611,7 @@
       "japanese": "はいぶくろ",
       "english": "Soot Sack",
       "chinese": "集灰袋"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 723,
@@ -7017,9 +5619,7 @@
       "chinese": "地下钥匙",
       "english": "Basement Key",
       "japanese": "ちかのカギ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 724,
@@ -7027,9 +5627,7 @@
       "chinese": "寶可方塊組合宝可方块套装",
       "japanese": "ポロックキット",
       "english": "Pokéblock Kit"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7037,9 +5635,7 @@
       "english": "Letter",
       "japanese": "ダイゴへのてがみ"
     },
-    "id": 725,
-    "price": 1000,
-    "limit": 0
+    "id": 725
   },
   {
     "name": {
@@ -7047,9 +5643,7 @@
       "japanese": "むげんのチケット",
       "chinese": "无限船票"
     },
-    "id": 726,
-    "price": 1000,
-    "limit": 0
+    "id": 726
   },
   {
     "id": 727,
@@ -7057,9 +5651,7 @@
       "chinese": "探测器",
       "japanese": "たんちき",
       "english": "Scanner"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7067,9 +5659,7 @@
       "english": "Go-Goggles",
       "japanese": "ゴーゴーゴーグル"
     },
-    "id": 728,
-    "price": 1000,
-    "limit": 0
+    "id": 728
   },
   {
     "id": 729,
@@ -7077,9 +5667,7 @@
       "chinese": "陨石",
       "english": "Meteorite",
       "japanese": "いんせき"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 730,
@@ -7087,9 +5675,7 @@
       "english": "Key to Room 1",
       "japanese": "いちごうしつのカギ",
       "chinese": "１號客房的鑰匙 /１号客房的钥匙"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7097,9 +5683,7 @@
       "japanese": "にごうしつのカギ",
       "chinese": "２號客房的鑰匙 /２号客房的钥匙"
     },
-    "id": 731,
-    "price": 1000,
-    "limit": 0
+    "id": 731
   },
   {
     "id": 732,
@@ -7107,9 +5691,7 @@
       "chinese": "４號客房的鑰匙 /４号客房的钥匙",
       "japanese": "よんごうしつのカギ",
       "english": "Key to Room 4"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 733,
@@ -7117,9 +5699,7 @@
       "english": "Key to Room 6",
       "japanese": "ろくごうしつのカギ",
       "chinese": "６號客房的鑰匙 /６号客房的钥匙"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7127,9 +5707,7 @@
       "japanese": "そうこのカギ",
       "english": "Storage Key"
     },
-    "id": 734,
-    "price": 1000,
-    "limit": 0
+    "id": 734
   },
   {
     "id": 735,
@@ -7137,9 +5715,7 @@
       "chinese": "得文侦测镜",
       "japanese": "デボンスコープ",
       "english": "Devon Scope"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 736,
@@ -7147,9 +5723,7 @@
       "chinese": "船票",
       "english": "S.S. Ticket",
       "japanese": "ふねのチケット"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7157,9 +5731,7 @@
       "english": "HM07",
       "chinese": "秘传学习器07"
     },
-    "id": 737,
-    "price": 1000,
-    "limit": 0
+    "id": 737
   },
   {
     "id": 738,
@@ -7167,9 +5739,7 @@
       "chinese": "得文潜水装备",
       "english": "Devon Scuba Gear",
       "japanese": "デボンボンベ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7177,9 +5747,7 @@
       "japanese": "ライブスーツ",
       "english": "Contest Costume"
     },
-    "id": 739,
-    "price": 1000,
-    "limit": 0
+    "id": 739
   },
   {
     "id": 740,
@@ -7187,9 +5755,7 @@
       "english": "Contest Costume",
       "japanese": "ライブスーツ",
       "chinese": "演出礼服"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7197,9 +5763,7 @@
       "japanese": "マグマスーツ",
       "english": "Magma Suit"
     },
-    "id": 741,
-    "price": 1000,
-    "limit": 0
+    "id": 741
   },
   {
     "id": 742,
@@ -7207,9 +5771,7 @@
       "japanese": "アクアスーツ",
       "english": "Aqua Suit",
       "chinese": "海洋装"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 743,
@@ -7217,9 +5779,7 @@
       "chinese": "双人票",
       "japanese": "ペアチケット",
       "english": "Pair of Tickets"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7227,57 +5787,43 @@
       "japanese": "メガバングル",
       "chinese": "超级手镯"
     },
-    "id": 744,
-    "price": 1000,
-    "limit": 0
+    "id": 744
   },
   {
     "id": 745,
     "name": {
       "english": "Mega Pendant"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 746,
     "name": {
       "english": "Mega Glasses"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 747,
     "name": {
       "english": "Mega Anchor"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
       "english": "Mega Stickpin"
     },
-    "id": 748,
-    "price": 1000,
-    "limit": 0
+    "id": 748
   },
   {
     "name": {
       "english": "Mega Tiara"
     },
-    "id": 749,
-    "price": 1000,
-    "limit": 0
+    "id": 749
   },
   {
     "id": 750,
     "name": {
       "english": "Mega Anklet"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7285,9 +5831,7 @@
       "english": "Meteorite",
       "japanese": "いんせき"
     },
-    "id": 751,
-    "price": 1000,
-    "limit": 0
+    "id": 751
   },
   {
     "name": {
@@ -7295,9 +5839,7 @@
       "japanese": "ラグラージナイト",
       "english": "Swampertite"
     },
-    "id": 752,
-    "price": 1000,
-    "limit": 0
+    "id": 752
   },
   {
     "name": {
@@ -7305,9 +5847,7 @@
       "japanese": "ジュカインナイト",
       "chinese": "蜥蜴王进化石"
     },
-    "id": 753,
-    "price": 1000,
-    "limit": 0
+    "id": 753
   },
   {
     "id": 754,
@@ -7315,9 +5855,7 @@
       "chinese": "勾魂眼进化石",
       "japanese": "ヤミラミナイト",
       "english": "Sablenite"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 755,
@@ -7325,9 +5863,7 @@
       "japanese": "チルタリスナイト",
       "english": "Altarianite",
       "chinese": "七夕青鸟进化石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7335,9 +5871,7 @@
       "japanese": "エルレイドナイト",
       "chinese": "艾路雷朵进化石"
     },
-    "id": 756,
-    "price": 1000,
-    "limit": 0
+    "id": 756
   },
   {
     "id": 757,
@@ -7345,9 +5879,7 @@
       "english": "Audinite",
       "japanese": "タブンネナイト",
       "chinese": "差不多娃娃进化石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 758,
@@ -7355,9 +5887,7 @@
       "chinese": "巨金怪进化石",
       "japanese": "メタグロスナイト",
       "english": "Metagrossite"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 759,
@@ -7365,9 +5895,7 @@
       "japanese": "サメハダナイト",
       "english": "Sharpedonite",
       "chinese": "巨牙鲨进化石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7375,9 +5903,7 @@
       "japanese": "ヤドランナイト",
       "english": "Slowbronite"
     },
-    "id": 760,
-    "price": 1000,
-    "limit": 0
+    "id": 760
   },
   {
     "name": {
@@ -7385,9 +5911,7 @@
       "english": "Steelixite",
       "chinese": "大钢蛇进化石"
     },
-    "id": 761,
-    "price": 1000,
-    "limit": 0
+    "id": 761
   },
   {
     "name": {
@@ -7395,9 +5919,7 @@
       "english": "Pidgeotite",
       "chinese": "大比鸟进化石"
     },
-    "id": 762,
-    "price": 1000,
-    "limit": 0
+    "id": 762
   },
   {
     "name": {
@@ -7405,9 +5927,7 @@
       "english": "Glalitite",
       "chinese": "冰鬼护进化石"
     },
-    "id": 763,
-    "price": 1000,
-    "limit": 0
+    "id": 763
   },
   {
     "id": 764,
@@ -7415,9 +5935,7 @@
       "chinese": "蒂安希进化石",
       "english": "Diancite",
       "japanese": "ディアンシナイト"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 765,
@@ -7425,9 +5943,7 @@
       "chinese": "惩戒之壶",
       "japanese": "いましめのつぼ",
       "english": "Prison Bottle"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 766,
@@ -7435,9 +5951,7 @@
       "chinese": "超级护腕",
       "japanese": "メガブレス",
       "english": "Mega Cuff"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 767,
@@ -7445,9 +5959,7 @@
       "english": "Cameruptite",
       "japanese": "バクーダナイト",
       "chinese": "喷火驼进化石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7455,9 +5967,7 @@
       "japanese": "ミミロップナイト",
       "english": "Lopunnite"
     },
-    "id": 768,
-    "price": 1000,
-    "limit": 0
+    "id": 768
   },
   {
     "name": {
@@ -7465,9 +5975,7 @@
       "japanese": "ボーマンダナイト",
       "chinese": "暴飞龙进化石"
     },
-    "id": 769,
-    "price": 1000,
-    "limit": 0
+    "id": 769
   },
   {
     "id": 770,
@@ -7475,9 +5983,7 @@
       "japanese": "スピアナイト",
       "english": "Beedrillite",
       "chinese": "大针蜂进化石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 771,
@@ -7485,9 +5991,7 @@
       "english": "Meteorite",
       "japanese": "いんせき",
       "chinese": "陨石"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 772,
@@ -7495,9 +5999,7 @@
       "chinese": "陨石",
       "english": "Meteorite",
       "japanese": "いんせき"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 773,
@@ -7505,9 +6007,7 @@
       "chinese": "钥石",
       "japanese": "キーストーン",
       "english": "Key Stone"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 774,
@@ -7515,9 +6015,7 @@
       "english": "Meteorite Shard",
       "japanese": "いんせきのかけら",
       "chinese": "陨石碎片"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7525,9 +6023,7 @@
       "english": "Eon Flute",
       "japanese": "むげんのふえ"
     },
-    "id": 775,
-    "price": 1000,
-    "limit": 0
+    "id": 775
   },
   {
     "name": {
@@ -7535,9 +6031,7 @@
       "japanese": "ノーマルＺ",
       "chinese": "一般Ｚ"
     },
-    "id": 776,
-    "price": 1000,
-    "limit": 0
+    "id": 776
   },
   {
     "id": 777,
@@ -7545,9 +6039,7 @@
       "english": "Firium Z",
       "japanese": "ホノオＺ",
       "chinese": "火Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 778,
@@ -7555,9 +6047,7 @@
       "japanese": "ミズＺ",
       "english": "Waterium Z",
       "chinese": "水Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 779,
@@ -7565,9 +6055,7 @@
       "chinese": "电Ｚ",
       "english": "Electrium Z",
       "japanese": "デンキＺ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 780,
@@ -7575,9 +6063,7 @@
       "japanese": "クサＺ",
       "english": "Grassium Z",
       "chinese": "草Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7585,9 +6071,7 @@
       "english": "Icium Z",
       "chinese": "冰Ｚ"
     },
-    "id": 781,
-    "price": 1000,
-    "limit": 0
+    "id": 781
   },
   {
     "name": {
@@ -7595,9 +6079,7 @@
       "japanese": "カクトウＺ",
       "english": "Fightinium Z"
     },
-    "id": 782,
-    "price": 1000,
-    "limit": 0
+    "id": 782
   },
   {
     "id": 783,
@@ -7605,9 +6087,7 @@
       "english": "Poisonium Z",
       "japanese": "ドクＺ",
       "chinese": "毒Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 784,
@@ -7615,9 +6095,7 @@
       "english": "Groundium Z",
       "japanese": "ジメンＺ",
       "chinese": "地面Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7625,9 +6103,7 @@
       "english": "Flyinium Z",
       "chinese": "飞行Ｚ"
     },
-    "id": 785,
-    "price": 1000,
-    "limit": 0
+    "id": 785
   },
   {
     "id": 786,
@@ -7635,9 +6111,7 @@
       "chinese": "超能力Ｚ",
       "japanese": "エスパーＺ",
       "english": "Psychium Z"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 787,
@@ -7645,9 +6119,7 @@
       "japanese": "ムシＺ",
       "english": "Buginium Z",
       "chinese": "虫Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7655,9 +6127,7 @@
       "japanese": "イワＺ",
       "english": "Rockium Z"
     },
-    "id": 788,
-    "price": 1000,
-    "limit": 0
+    "id": 788
   },
   {
     "name": {
@@ -7665,9 +6135,7 @@
       "japanese": "ゴーストＺ",
       "english": "Ghostium Z"
     },
-    "id": 789,
-    "price": 1000,
-    "limit": 0
+    "id": 789
   },
   {
     "name": {
@@ -7675,9 +6143,7 @@
       "japanese": "ドラゴンＺ",
       "chinese": "龙Ｚ"
     },
-    "id": 790,
-    "price": 1000,
-    "limit": 0
+    "id": 790
   },
   {
     "name": {
@@ -7685,9 +6151,7 @@
       "english": "Darkinium Z",
       "japanese": "アクＺ"
     },
-    "id": 791,
-    "price": 1000,
-    "limit": 0
+    "id": 791
   },
   {
     "name": {
@@ -7695,9 +6159,7 @@
       "english": "Steelium Z",
       "chinese": "钢Ｚ"
     },
-    "id": 792,
-    "price": 1000,
-    "limit": 0
+    "id": 792
   },
   {
     "id": 793,
@@ -7705,9 +6167,7 @@
       "chinese": "妖精Ｚ",
       "english": "Fairium Z",
       "japanese": "フェアリーＺ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 794,
@@ -7715,9 +6175,7 @@
       "english": "Pikanium Z",
       "japanese": "ピカチュウＺ",
       "chinese": "皮卡丘Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 795,
@@ -7725,9 +6183,7 @@
       "chinese": "银色王冠",
       "japanese": "ぎんのおうかん",
       "english": "Bottle Cap"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7735,9 +6191,7 @@
       "english": "Gold Bottle Cap",
       "japanese": "きんのおうかん"
     },
-    "id": 796,
-    "price": 1000,
-    "limit": 0
+    "id": 796
   },
   {
     "name": {
@@ -7745,9 +6199,7 @@
       "japanese": "Ｚリング",
       "chinese": "Ｚ手环"
     },
-    "id": 797,
-    "price": 1000,
-    "limit": 0
+    "id": 797
   },
   {
     "id": 798,
@@ -7755,9 +6207,7 @@
       "chinese": "狙射树枭Ｚ",
       "english": "Decidium Z",
       "japanese": "ジュナイパーＺ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7765,9 +6215,7 @@
       "english": "Incinium Z",
       "chinese": "炽焰咆哮虎Ｚ"
     },
-    "id": 799,
-    "price": 1000,
-    "limit": 0
+    "id": 799
   },
   {
     "id": 800,
@@ -7775,9 +6223,7 @@
       "chinese": "西狮海壬Ｚ",
       "english": "Primarium Z",
       "japanese": "アシレーヌＺ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 801,
@@ -7785,9 +6231,7 @@
       "english": "Tapunium Z",
       "japanese": "カプＺ",
       "chinese": "卡璞Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7795,9 +6239,7 @@
       "english": "Marshadium Z",
       "chinese": "玛夏多Ｚ"
     },
-    "id": 802,
-    "price": 1000,
-    "limit": 0
+    "id": 802
   },
   {
     "id": 803,
@@ -7805,9 +6247,7 @@
       "english": "Aloraichium Z",
       "japanese": "アロライＺ",
       "chinese": "阿罗雷Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7815,9 +6255,7 @@
       "english": "Snorlium Z",
       "chinese": "卡比兽Ｚ"
     },
-    "id": 804,
-    "price": 1000,
-    "limit": 0
+    "id": 804
   },
   {
     "name": {
@@ -7825,9 +6263,7 @@
       "japanese": "イーブイＺ",
       "chinese": "伊布Ｚ"
     },
-    "id": 805,
-    "price": 1000,
-    "limit": 0
+    "id": 805
   },
   {
     "name": {
@@ -7835,9 +6271,7 @@
       "japanese": "ミュウＺ",
       "english": "Mewnium Z"
     },
-    "id": 806,
-    "price": 1000,
-    "limit": 0
+    "id": 806
   },
   {
     "name": {
@@ -7845,9 +6279,7 @@
       "english": "Normalium Z",
       "chinese": "一般Ｚ"
     },
-    "id": 807,
-    "price": 1000,
-    "limit": 0
+    "id": 807
   },
   {
     "id": 808,
@@ -7855,9 +6287,7 @@
       "english": "Firium Z",
       "japanese": "ホノオＺ",
       "chinese": "火Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7865,9 +6295,7 @@
       "japanese": "ミズＺ",
       "chinese": "水Ｚ"
     },
-    "id": 809,
-    "price": 1000,
-    "limit": 0
+    "id": 809
   },
   {
     "id": 810,
@@ -7875,9 +6303,7 @@
       "japanese": "デンキＺ",
       "english": "Electrium Z",
       "chinese": "电Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 811,
@@ -7885,9 +6311,7 @@
       "japanese": "クサＺ",
       "english": "Grassium Z",
       "chinese": "草Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 812,
@@ -7895,9 +6319,7 @@
       "english": "Icium Z",
       "japanese": "コオリＺ",
       "chinese": "冰Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 813,
@@ -7905,9 +6327,7 @@
       "english": "Fightinium Z",
       "japanese": "カクトウＺ",
       "chinese": "格斗Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7915,9 +6335,7 @@
       "english": "Poisonium Z",
       "chinese": "毒Ｚ"
     },
-    "id": 814,
-    "price": 1000,
-    "limit": 0
+    "id": 814
   },
   {
     "id": 815,
@@ -7925,9 +6343,7 @@
       "japanese": "ジメンＺ",
       "english": "Groundium Z",
       "chinese": "地面Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7935,9 +6351,7 @@
       "english": "Flyinium Z",
       "japanese": "ヒコウＺ"
     },
-    "id": 816,
-    "price": 1000,
-    "limit": 0
+    "id": 816
   },
   {
     "id": 817,
@@ -7945,9 +6359,7 @@
       "english": "Psychium Z",
       "japanese": "エスパーＺ",
       "chinese": "超能力Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 818,
@@ -7955,9 +6367,7 @@
       "english": "Buginium Z",
       "japanese": "ムシＺ",
       "chinese": "虫Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 819,
@@ -7965,9 +6375,7 @@
       "chinese": "岩石Ｚ",
       "english": "Rockium Z",
       "japanese": "イワＺ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 820,
@@ -7975,9 +6383,7 @@
       "japanese": "ゴーストＺ",
       "english": "Ghostium Z",
       "chinese": "幽灵Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 821,
@@ -7985,9 +6391,7 @@
       "japanese": "ドラゴンＺ",
       "english": "Dragonium Z",
       "chinese": "龙Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -7995,9 +6399,7 @@
       "english": "Darkinium Z",
       "japanese": "アクＺ"
     },
-    "id": 822,
-    "price": 1000,
-    "limit": 0
+    "id": 822
   },
   {
     "id": 823,
@@ -8005,9 +6407,7 @@
       "chinese": "钢Ｚ",
       "japanese": "ハガネＺ",
       "english": "Steelium Z"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8015,9 +6415,7 @@
       "japanese": "フェアリーＺ",
       "english": "Fairium Z"
     },
-    "id": 824,
-    "price": 1000,
-    "limit": 0
+    "id": 824
   },
   {
     "id": 825,
@@ -8025,9 +6423,7 @@
       "chinese": "皮卡丘Ｚ",
       "english": "Pikanium Z",
       "japanese": "ピカチュウＺ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 826,
@@ -8035,9 +6431,7 @@
       "japanese": "ジュナイパーＺ",
       "english": "Decidium Z",
       "chinese": "狙射树枭Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 827,
@@ -8045,9 +6439,7 @@
       "english": "Incinium Z",
       "japanese": "ガオガエンＺ",
       "chinese": "炽焰咆哮虎Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 828,
@@ -8055,9 +6447,7 @@
       "chinese": "西狮海壬Ｚ",
       "english": "Primarium Z",
       "japanese": "アシレーヌＺ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 829,
@@ -8065,9 +6455,7 @@
       "english": "Tapunium Z",
       "japanese": "カプＺ",
       "chinese": "卡璞Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8075,9 +6463,7 @@
       "japanese": "マーシャドーＺ",
       "english": "Marshadium Z"
     },
-    "id": 830,
-    "price": 1000,
-    "limit": 0
+    "id": 830
   },
   {
     "name": {
@@ -8085,9 +6471,7 @@
       "japanese": "アロライＺ",
       "chinese": "阿罗雷Ｚ"
     },
-    "id": 831,
-    "price": 1000,
-    "limit": 0
+    "id": 831
   },
   {
     "id": 832,
@@ -8095,9 +6479,7 @@
       "japanese": "カビゴンＺ",
       "english": "Snorlium Z",
       "chinese": "卡比兽Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 833,
@@ -8105,9 +6487,7 @@
       "english": "Eevium Z",
       "japanese": "イーブイＺ",
       "chinese": "伊布Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 834,
@@ -8115,9 +6495,7 @@
       "chinese": "梦幻Ｚ",
       "english": "Mewnium Z",
       "japanese": "ミュウＺ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8125,9 +6503,7 @@
       "english": "Pikashunium Z",
       "chinese": "智皮卡Ｚ"
     },
-    "id": 835,
-    "price": 1000,
-    "limit": 0
+    "id": 835
   },
   {
     "id": 836,
@@ -8135,9 +6511,7 @@
       "chinese": "智皮卡Ｚ",
       "japanese": "サトピカＺ",
       "english": "Pikashunium Z"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 841,
@@ -8145,9 +6519,7 @@
       "japanese": "ざいりょうぶくろ",
       "english": "Forage Bag",
       "chinese": "材料袋"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8155,9 +6527,7 @@
       "english": "Fishing Rod",
       "chinese": "钓竿"
     },
-    "id": 842,
-    "price": 1000,
-    "limit": 0
+    "id": 842
   },
   {
     "id": 843,
@@ -8165,9 +6535,7 @@
       "chinese": "博士的面罩",
       "english": "Professor's Mask",
       "japanese": "はかせのふくめん"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 844,
@@ -8175,9 +6543,7 @@
       "japanese": "フェスチケット",
       "english": "Festival Ticket",
       "chinese": "圆庆票"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8185,9 +6551,7 @@
       "english": "Sparkling Stone",
       "chinese": "光辉石"
     },
-    "id": 845,
-    "price": 1000,
-    "limit": 0
+    "id": 845
   },
   {
     "name": {
@@ -8195,9 +6559,7 @@
       "english": "Adrenaline Orb",
       "chinese": "胆怯球"
     },
-    "id": 846,
-    "price": 1000,
-    "limit": 0
+    "id": 846
   },
   {
     "name": {
@@ -8205,9 +6567,7 @@
       "english": "Zygarde Cube",
       "chinese": "基格尔德多面体"
     },
-    "id": 847,
-    "price": 1000,
-    "limit": 0
+    "id": 847
   },
   {
     "name": {
@@ -8215,9 +6575,7 @@
       "english": "Ice Stone",
       "chinese": "冰之石"
     },
-    "id": 849,
-    "price": 1000,
-    "limit": 0
+    "id": 849
   },
   {
     "id": 850,
@@ -8225,9 +6583,7 @@
       "english": "Ride Pager",
       "japanese": "ライドギア",
       "chinese": "骑行装置"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8235,9 +6591,7 @@
       "japanese": "ウルトラボール",
       "english": "Beast Ball"
     },
-    "id": 851,
-    "price": 1000,
-    "limit": 0
+    "id": 851
   },
   {
     "name": {
@@ -8245,9 +6599,7 @@
       "japanese": "おおきいマラサダ",
       "chinese": "大马拉萨达"
     },
-    "id": 852,
-    "price": 1000,
-    "limit": 0
+    "id": 852
   },
   {
     "id": 853,
@@ -8255,9 +6607,7 @@
       "english": "Red Nectar",
       "japanese": "くれないのミツ",
       "chinese": "朱紅色花蜜"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8265,9 +6615,7 @@
       "japanese": "やまぶきのミツ",
       "english": "Yellow Nectar"
     },
-    "id": 854,
-    "price": 1000,
-    "limit": 0
+    "id": 854
   },
   {
     "name": {
@@ -8275,9 +6623,7 @@
       "english": "Pink Nectar",
       "japanese": "うすもものミツ"
     },
-    "id": 855,
-    "price": 1000,
-    "limit": 0
+    "id": 855
   },
   {
     "name": {
@@ -8285,9 +6631,7 @@
       "japanese": "むらさきのミツ",
       "english": "Purple Nectar"
     },
-    "id": 856,
-    "price": 1000,
-    "limit": 0
+    "id": 856
   },
   {
     "name": {
@@ -8295,9 +6639,7 @@
       "english": "Sun Flute",
       "japanese": "たいようのふえ"
     },
-    "id": 857,
-    "price": 1000,
-    "limit": 0
+    "id": 857
   },
   {
     "id": 858,
@@ -8305,9 +6647,7 @@
       "chinese": "月亮之笛",
       "japanese": "つきのふえ",
       "english": "Moon Flute"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8315,9 +6655,7 @@
       "english": "Enigmatic Card",
       "chinese": "奇异卡片"
     },
-    "id": 860,
-    "price": 1000,
-    "limit": 0
+    "id": 860
   },
   {
     "name": {
@@ -8325,9 +6663,7 @@
       "japanese": "グランドコート",
       "chinese": "大地膜"
     },
-    "id": 879,
-    "price": 1000,
-    "limit": 0
+    "id": 879
   },
   {
     "name": {
@@ -8335,9 +6671,7 @@
       "japanese": "ぼうごパット",
       "english": "Protective Pads"
     },
-    "id": 880,
-    "price": 1000,
-    "limit": 0
+    "id": 880
   },
   {
     "name": {
@@ -8345,9 +6679,7 @@
       "japanese": "エレキシード",
       "english": "Electric Seed"
     },
-    "id": 881,
-    "price": 1000,
-    "limit": 0
+    "id": 881
   },
   {
     "name": {
@@ -8355,9 +6687,7 @@
       "japanese": "サイコシード",
       "chinese": "精神种子"
     },
-    "id": 882,
-    "price": 1000,
-    "limit": 0
+    "id": 882
   },
   {
     "id": 883,
@@ -8365,9 +6695,7 @@
       "japanese": "ミストシード",
       "english": "Misty Seed",
       "chinese": "薄雾种子"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 884,
@@ -8375,9 +6703,7 @@
       "english": "Grassy Seed",
       "japanese": "グラスシード",
       "chinese": "青草种子"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8385,9 +6711,7 @@
       "japanese": "ファイトメモリ",
       "chinese": "战斗存储碟"
     },
-    "id": 904,
-    "price": 1000,
-    "limit": 0
+    "id": 904
   },
   {
     "id": 905,
@@ -8395,9 +6719,7 @@
       "english": "Flying Memory",
       "japanese": "フライングメモリ",
       "chinese": "飞翔存储碟"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8405,9 +6727,7 @@
       "english": "Poison Memory",
       "japanese": "ポイズンメモリ"
     },
-    "id": 906,
-    "price": 1000,
-    "limit": 0
+    "id": 906
   },
   {
     "name": {
@@ -8415,9 +6735,7 @@
       "english": "Ground Memory",
       "japanese": "グラウンドメモリ"
     },
-    "id": 907,
-    "price": 1000,
-    "limit": 0
+    "id": 907
   },
   {
     "name": {
@@ -8425,9 +6743,7 @@
       "japanese": "ロックメモリ",
       "english": "Rock Memory"
     },
-    "id": 908,
-    "price": 1000,
-    "limit": 0
+    "id": 908
   },
   {
     "name": {
@@ -8435,9 +6751,7 @@
       "english": "Bug Memory",
       "japanese": "バグメモリ"
     },
-    "id": 909,
-    "price": 1000,
-    "limit": 0
+    "id": 909
   },
   {
     "id": 910,
@@ -8445,9 +6759,7 @@
       "japanese": "ゴーストメモリ",
       "english": "Ghost Memory",
       "chinese": "幽灵存储碟"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 911,
@@ -8455,9 +6767,7 @@
       "japanese": "スチールメモリ",
       "english": "Steel Memory",
       "chinese": "钢铁存储碟"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8465,9 +6775,7 @@
       "english": "Fire Memory",
       "chinese": "火焰存储碟"
     },
-    "id": 912,
-    "price": 1000,
-    "limit": 0
+    "id": 912
   },
   {
     "name": {
@@ -8475,9 +6783,7 @@
       "english": "Water Memory",
       "chinese": "清水存储碟"
     },
-    "id": 913,
-    "price": 1000,
-    "limit": 0
+    "id": 913
   },
   {
     "name": {
@@ -8485,9 +6791,7 @@
       "japanese": "グラスメモリ",
       "chinese": "青草存储碟"
     },
-    "id": 914,
-    "price": 1000,
-    "limit": 0
+    "id": 914
   },
   {
     "id": 915,
@@ -8495,9 +6799,7 @@
       "chinese": "电子存储碟",
       "english": "Electric Memory",
       "japanese": "エレクトロメモリ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8505,9 +6807,7 @@
       "japanese": "サイキックメモリ",
       "chinese": "精神存储碟"
     },
-    "id": 916,
-    "price": 1000,
-    "limit": 0
+    "id": 916
   },
   {
     "id": 917,
@@ -8515,9 +6815,7 @@
       "chinese": "冰雪存储碟",
       "japanese": "アイスメモリ",
       "english": "Ice Memory"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 918,
@@ -8525,9 +6823,7 @@
       "chinese": "龙存储碟",
       "english": "Dragon Memory",
       "japanese": "ドラゴンメモリ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8535,9 +6831,7 @@
       "japanese": "ダークメモリ",
       "chinese": "黑暗存储碟"
     },
-    "id": 919,
-    "price": 1000,
-    "limit": 0
+    "id": 919
   },
   {
     "id": 920,
@@ -8545,9 +6839,7 @@
       "chinese": "妖精存储碟",
       "japanese": "フェアリーメモリ",
       "english": "Fairy Memory"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 921,
@@ -8555,9 +6847,7 @@
       "chinese": "索尔迦雷欧Ｚ",
       "japanese": "ソルガレオＺ",
       "english": "Solganium Z"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 922,
@@ -8565,9 +6855,7 @@
       "english": "Lunalium Z",
       "japanese": "ルナアーラＺ",
       "chinese": "露奈雅拉Ｚ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8575,9 +6863,7 @@
       "japanese": "ウルトラネクロＺ",
       "english": "Ultranecrozium Z"
     },
-    "id": 923,
-    "price": 1000,
-    "limit": 0
+    "id": 923
   },
   {
     "name": {
@@ -8585,9 +6871,7 @@
       "english": "Mimikium Z",
       "japanese": "ミミッキュＺ"
     },
-    "id": 924,
-    "price": 1000,
-    "limit": 0
+    "id": 924
   },
   {
     "id": 925,
@@ -8595,9 +6879,7 @@
       "chinese": "鬃岩狼人Ｚ",
       "japanese": "ルガルガンＺ",
       "english": "Lycanium Z"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8605,9 +6887,7 @@
       "japanese": "ジャラランガＺ",
       "chinese": "杖尾鳞甲龙Ｚ"
     },
-    "id": 926,
-    "price": 1000,
-    "limit": 0
+    "id": 926
   },
   {
     "name": {
@@ -8615,9 +6895,7 @@
       "japanese": "ソルガレオＺ",
       "chinese": "索尔迦雷欧Ｚ"
     },
-    "id": 927,
-    "price": 1000,
-    "limit": 0
+    "id": 927
   },
   {
     "name": {
@@ -8625,9 +6903,7 @@
       "english": "Lunalium Z",
       "japanese": "ルナアーラＺ"
     },
-    "id": 928,
-    "price": 1000,
-    "limit": 0
+    "id": 928
   },
   {
     "id": 929,
@@ -8635,9 +6911,7 @@
       "chinese": "究极奈克洛Ｚ",
       "japanese": "ウルトラネクロＺ",
       "english": "Ultranecrozium Z"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8645,9 +6919,7 @@
       "english": "Mimikium Z",
       "chinese": "谜拟ＱＺ"
     },
-    "id": 930,
-    "price": 1000,
-    "limit": 0
+    "id": 930
   },
   {
     "id": 931,
@@ -8655,9 +6927,7 @@
       "chinese": "鬃岩狼人Ｚ",
       "english": "Lycanium Z",
       "japanese": "ルガルガンＺ"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8665,9 +6935,7 @@
       "japanese": "ジャラランガＺ",
       "english": "Kommonium Z"
     },
-    "id": 932,
-    "price": 1000,
-    "limit": 0
+    "id": 932
   },
   {
     "id": 933,
@@ -8675,9 +6943,7 @@
       "chinese": "Ｚ强力手环",
       "english": "Z-Power Ring",
       "japanese": "Ｚパワーリング"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8685,9 +6951,7 @@
       "english": "Pink Petal",
       "japanese": "ももいろはなびら"
     },
-    "id": 934,
-    "price": 1000,
-    "limit": 0
+    "id": 934
   },
   {
     "id": 935,
@@ -8695,9 +6959,7 @@
       "chinese": "橙色花瓣",
       "english": "Orange Petal",
       "japanese": "だいだいはなびら"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8705,9 +6967,7 @@
       "japanese": "あおのはなびら",
       "english": "Blue Petal"
     },
-    "id": 936,
-    "price": 1000,
-    "limit": 0
+    "id": 936
   },
   {
     "name": {
@@ -8715,9 +6975,7 @@
       "japanese": "あかのはなびら",
       "chinese": "红色花瓣"
     },
-    "id": 937,
-    "price": 1000,
-    "limit": 0
+    "id": 937
   },
   {
     "id": 938,
@@ -8725,9 +6983,7 @@
       "japanese": "みどりのはなびら",
       "english": "Green Petal",
       "chinese": "绿色花瓣"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8735,9 +6991,7 @@
       "english": "Yellow Petal",
       "japanese": "きいろのはなびら"
     },
-    "id": 939,
-    "price": 1000,
-    "limit": 0
+    "id": 939
   },
   {
     "name": {
@@ -8745,9 +6999,7 @@
       "english": "Purple Petal",
       "chinese": "紫色花瓣"
     },
-    "id": 940,
-    "price": 1000,
-    "limit": 0
+    "id": 940
   },
   {
     "id": 941,
@@ -8755,9 +7007,7 @@
       "english": "Rainbow Flower",
       "japanese": "にじいろのはな",
       "chinese": "虹色之花"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 942,
@@ -8765,9 +7015,7 @@
       "japanese": "だいだいバッジ",
       "english": "Surge Badge",
       "chinese": "桔色徽章"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8775,9 +7023,7 @@
       "japanese": "ネクロプラスソル",
       "english": "N-Solarizer"
     },
-    "id": 943,
-    "price": 1000,
-    "limit": 0
+    "id": 943
   },
   {
     "name": {
@@ -8785,9 +7031,7 @@
       "japanese": "ネクロプラスルナ",
       "english": "N-Lunarizer"
     },
-    "id": 944,
-    "price": 1000,
-    "limit": 0
+    "id": 944
   },
   {
     "id": 945,
@@ -8795,9 +7039,7 @@
       "chinese": "奈克洛索尔合体器",
       "english": "N-Solarizer",
       "japanese": "ネクロプラスソル"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8805,9 +7047,7 @@
       "english": "N-Lunarizer",
       "chinese": "奈克洛露奈合体器"
     },
-    "id": 946,
-    "price": 1000,
-    "limit": 0
+    "id": 946
   },
   {
     "name": {
@@ -8815,9 +7055,7 @@
       "japanese": "イリマのノーマルＺ",
       "chinese": "伊利马的一般Ｚ"
     },
-    "id": 947,
-    "price": 1000,
-    "limit": 0
+    "id": 947
   },
   {
     "id": 948,
@@ -8825,9 +7063,7 @@
       "japanese": "のこされたボール",
       "english": "Left Poké Ball",
       "chinese": "留下的精灵球"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 949,
@@ -8835,9 +7071,7 @@
       "chinese": "孵蛋碰碰",
       "japanese": "タマゴふかポン",
       "english": "Roto Hatch"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 950,
@@ -8845,9 +7079,7 @@
       "english": "Roto Bargain",
       "japanese": "やすうりポン",
       "chinese": "优惠碰碰"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8855,9 +7087,7 @@
       "english": "Roto Prize Money",
       "japanese": "おこづかいポン"
     },
-    "id": 951,
-    "price": 1000,
-    "limit": 0
+    "id": 951
   },
   {
     "name": {
@@ -8865,9 +7095,7 @@
       "english": "Roto Exp. Points",
       "chinese": "经验碰碰"
     },
-    "id": 952,
-    "price": 1000,
-    "limit": 0
+    "id": 952
   },
   {
     "id": 953,
@@ -8875,9 +7103,7 @@
       "chinese": "亲密碰碰",
       "english": "Roto Friendship",
       "japanese": "なつきポン"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 954,
@@ -8885,9 +7111,7 @@
       "english": "Roto Encounter",
       "japanese": "みっけポン",
       "chinese": "相遇碰碰"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 955,
@@ -8895,9 +7119,7 @@
       "chinese": "隐身碰碰",
       "english": "Roto Stealth",
       "japanese": "かくれポン"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 956,
@@ -8905,9 +7127,7 @@
       "chinese": "ＨＰ回復碰碰",
       "japanese": "ＨＰかいふくポン",
       "english": "Roto HP Restore"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 957,
@@ -8915,9 +7135,7 @@
       "japanese": "ＰＰかいふくポン",
       "english": "Roto PP Restore",
       "chinese": "ＰＰ回復碰碰"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "id": 958,
@@ -8925,9 +7143,7 @@
       "chinese": "加油碰碰",
       "english": "Roto Boost",
       "japanese": "おうえんポン"
-    },
-    "price": 1000,
-    "limit": 0
+    }
   },
   {
     "name": {
@@ -8935,9 +7151,7 @@
       "english": "Roto Catch",
       "chinese": "捕捉碰碰"
     },
-    "id": 959,
-    "price": 1000,
-    "limit": 0
+    "id": 959
   },
   {
     "name": {
@@ -8945,9 +7159,7 @@
       "english": "Friendship Bracelet",
       "chinese": ""
     },
-    "id": 960,
-    "price": 1000,
-    "limit": 0
+    "id": 960
   },
   {
     "id": 961,
@@ -8955,28 +7167,6 @@
       "japanese": "わざマシン31-Galar",
       "english": "TM31-Galar",
       "chinese": "招式学习器31-Galar"
-    },
-    "price": 1000,
-    "limit": 0
-  },
-  {
-    "id": 962,
-    "name": {
-      "japanese": "",
-      "english": "Friendly Bracelet of Darkness",
-      "chinese": ""
-    },
-    "price": 1000,
-    "limit": 0
-  },
-  {
-    "id": 963,
-    "name": {
-      "japanese": "",
-      "english": "Fairy Bracelet of Affection",
-      "chinese": ""
-    },
-    "price": 1000,
-    "limit": 0
+    }
   }
 ]

@@ -24,8 +24,9 @@ import { parseItems, msgBalance } from './items';
 const logger = getLogger('Pokemon');
 
 export const prefixes = ['!', '~', 'p!'];
+
 export function prefix_regex(command: string): RegExp {
-  return RegExp('(' + prefixes.join('|') + ')' + command, 'i');
+  return RegExp('(' + prefixes.join('|') + ')(' + command + ')', 'i');
 }
 
 export async function monsterParser(
@@ -91,7 +92,7 @@ export async function monsterParser(
     }
 
     if (
-      command.match(prefix_regex('trade')) &&
+      command.match(prefix_regex('trade|t ')) &&
       channel_name == cache.settings.specific_channel &&
       splitMsg.length > 1
     ) {
@@ -106,7 +107,7 @@ export async function monsterParser(
     }
 
     if (
-      command.match(prefix_regex('dex')) &&
+      command.match(prefix_regex('dex|d ')) &&
       channel_name == cache.settings.specific_channel &&
       splitMsg.length > 1
     ) {
@@ -121,7 +122,7 @@ export async function monsterParser(
     }
 
     if (
-      command.match(prefix_regex('search')) &&
+      command.match(prefix_regex('search|s ')) &&
       channel_name == cache.settings.specific_channel &&
       splitMsg.length > 1
     ) {
@@ -135,7 +136,7 @@ export async function monsterParser(
       searchMonsters(message);
     }
     if (
-      command.match(prefix_regex('pokemon')) &&
+      command.match(prefix_regex('pokemon|p ')) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -149,7 +150,7 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(prefix_regex('info (\\d+)')) &&
+      message.content.match(prefix_regex('(info|i) (\\d+)')) &&
       !message.content.match(/info latest/i) &&
       channel_name == cache.settings.specific_channel
     ) {
@@ -164,7 +165,7 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(prefix_regex('info latest')) &&
+      message.content.match(prefix_regex('info latest|i l ')) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -178,7 +179,7 @@ export async function monsterParser(
     }
 
     if (
-      command.match(prefix_regex('info')) &&
+      command.match(prefix_regex('info|i ')) &&
       splitMsg.length == 1 &&
       channel_name == cache.settings.specific_channel
     ) {
@@ -235,7 +236,7 @@ export async function monsterParser(
     }
 
     if (
-      command.match(prefix_regex('favorites')) &&
+      command.match(prefix_regex('favorites|favourites')) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -249,7 +250,7 @@ export async function monsterParser(
     }
 
     if (
-      command.match(prefix_regex('favorite')) &&
+      command.match(prefix_regex('favorite|favourite')) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -263,7 +264,7 @@ export async function monsterParser(
     }
 
     if (
-      command.match(prefix_regex('unfavorite')) &&
+      command.match(prefix_regex('unfavorite|unfavourite')) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();

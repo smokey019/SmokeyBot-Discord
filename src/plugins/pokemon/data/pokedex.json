@@ -7401,6 +7401,7 @@
       "chinese": "急冻鸟",
       "french": "Artikodin"
     },
+    "special": "Legendary",
     "type": ["Ice", "Flying"],
     "gender": "N",
     "baseStats": {
@@ -7434,6 +7435,7 @@
       "chinese": "闪电鸟",
       "french": "Électhor"
     },
+    "special": "Legendary",
     "type": ["Electric", "Flying"],
     "gender": "N",
     "baseStats": {
@@ -7467,6 +7469,7 @@
       "chinese": "火焰鸟",
       "french": "Sulfura"
     },
+    "special": "Legendary",
     "type": ["Fire", "Flying"],
     "gender": "N",
     "baseStats": {
@@ -7602,6 +7605,7 @@
       "chinese": "超梦",
       "french": "Mewtwo"
     },
+    "special": "Mythical",
     "type": ["Psychic"],
     "gender": "N",
     "baseStats": {
@@ -7637,6 +7641,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Mewtwo",
     "forme": "Mega-X",
     "type": ["Psychic", "Fighting"],
@@ -7672,6 +7677,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Mewtwo",
     "forme": "Mega-Y",
     "type": ["Psychic"],
@@ -7707,6 +7713,7 @@
       "chinese": "梦幻",
       "french": "Mew"
     },
+    "special": "Legendary",
     "type": ["Psychic"],
     "gender": "N",
     "baseStats": {
@@ -9440,8 +9447,8 @@
     "weightkg": 27,
     "color": "#000000",
     "prevo": "Eevee",
-    "evoType": "levelFriendship",
-    "evoCondition": "at night",
+    "evotype": "useItem",
+    "evoItem": "Friendly Bracelet of Darkness",
     "eggGroups": ["Field"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989219354017833/197.png",
@@ -11268,6 +11275,7 @@
       "chinese": "雷公",
       "french": "Raikou"
     },
+    "special": "Legendary",
     "type": ["Electric"],
     "gender": "N",
     "baseStats": {
@@ -11301,6 +11309,7 @@
       "chinese": "炎帝",
       "french": "Entei"
     },
+    "special": "Legendary",
     "type": ["Fire"],
     "gender": "N",
     "baseStats": {
@@ -11334,6 +11343,7 @@
       "chinese": "水君",
       "french": "Suicune"
     },
+    "special": "Legendary",
     "type": ["Water"],
     "gender": "N",
     "baseStats": {
@@ -11504,6 +11514,7 @@
       "chinese": "洛奇亚",
       "french": "Lugia"
     },
+    "special": "Legendary",
     "type": ["Psychic", "Flying"],
     "gender": "N",
     "baseStats": {
@@ -11537,6 +11548,7 @@
       "chinese": "凤王",
       "french": "Ho-Oh"
     },
+    "special": "Legendary",
     "type": ["Fire", "Flying"],
     "gender": "N",
     "baseStats": {
@@ -11570,6 +11582,7 @@
       "chinese": "时拉比",
       "french": "Celebi"
     },
+    "special": "Mythical",
     "type": ["Psychic", "Grass"],
     "gender": "N",
     "baseStats": {
@@ -16734,6 +16747,7 @@
       "chinese": "雷吉洛克",
       "french": "Regirock"
     },
+    "special": "Legendary",
     "type": ["Rock"],
     "gender": "N",
     "baseStats": {
@@ -16767,6 +16781,7 @@
       "chinese": "雷吉艾斯",
       "french": "Regice"
     },
+    "special": "Legendary",
     "type": ["Ice"],
     "gender": "N",
     "baseStats": {
@@ -16800,6 +16815,7 @@
       "chinese": "雷吉斯奇鲁",
       "french": "Registeel"
     },
+    "special": "Legendary",
     "type": ["Steel"],
     "gender": "N",
     "baseStats": {
@@ -16833,6 +16849,7 @@
       "chinese": "拉帝亚斯",
       "french": "Latias"
     },
+    "special": "Legendary",
     "type": ["Dragon", "Psychic"],
     "gender": "F",
     "baseStats": {
@@ -16869,6 +16886,7 @@
     },
     "baseSpecies": "Latias",
     "forme": "Mega",
+    "special": "Legendary",
     "type": ["Dragon", "Psychic"],
     "gender": "F",
     "baseStats": {
@@ -16902,6 +16920,7 @@
       "chinese": "拉帝欧斯",
       "french": "Latios"
     },
+    "special": "Legendary",
     "type": ["Dragon", "Psychic"],
     "gender": "M",
     "baseStats": {
@@ -16938,6 +16957,7 @@
     },
     "baseSpecies": "Latios",
     "forme": "Mega",
+    "special": "Legendary",
     "type": ["Dragon", "Psychic"],
     "gender": "M",
     "baseStats": {
@@ -16971,6 +16991,7 @@
       "chinese": "盖欧卡",
       "french": "Kyogre"
     },
+    "special": "Legendary",
     "type": ["Water"],
     "gender": "N",
     "baseStats": {
@@ -17007,6 +17028,7 @@
     },
     "baseSpecies": "Kyogre",
     "forme": "Primal",
+    "special": "Legendary",
     "type": ["Water"],
     "gender": "N",
     "baseStats": {
@@ -17034,6 +17056,7 @@
       "chinese": "固拉多",
       "french": "Groudon"
     },
+    "special": "Legendary",
     "type": ["Ground"],
     "gender": "N",
     "baseStats": {
@@ -17070,6 +17093,7 @@
     },
     "baseSpecies": "Groudon",
     "forme": "Primal",
+    "special": "Legendary",
     "type": ["Ground", "Fire"],
     "gender": "N",
     "baseStats": {
@@ -17097,6 +17121,7 @@
       "chinese": "烈空坐",
       "french": "Rayquaza"
     },
+    "special": "Legendary",
     "type": ["Dragon", "Flying"],
     "gender": "N",
     "baseStats": {
@@ -17133,6 +17158,7 @@
     },
     "baseSpecies": "Rayquaza",
     "forme": "Mega",
+    "special": "Legendary",
     "type": ["Dragon", "Flying"],
     "gender": "N",
     "baseStats": {
@@ -17166,6 +17192,7 @@
       "chinese": "基拉祈",
       "french": "Jirachi"
     },
+    "special": "Mythical",
     "type": ["Steel", "Psychic"],
     "gender": "N",
     "baseStats": {
@@ -17198,6 +17225,7 @@
       "chinese": "代欧奇希斯",
       "french": "Deoxys"
     },
+    "special": "Mythical",
     "baseForme": "Normal",
     "type": ["Psychic"],
     "gender": "N",
@@ -17233,6 +17261,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Mythical",
     "baseSpecies": "Deoxys",
     "forme": "Attack",
     "type": ["Psychic"],
@@ -17262,6 +17291,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Mythical",
     "baseSpecies": "Deoxys",
     "forme": "Defense",
     "type": ["Psychic"],
@@ -17291,6 +17321,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Mythical",
     "baseSpecies": "Deoxys",
     "forme": "Speed",
     "type": ["Psychic"],
@@ -21075,6 +21106,7 @@
       "chinese": "由克希",
       "french": "Créhelf"
     },
+    "special": "Legendary",
     "type": ["Psychic"],
     "gender": "N",
     "baseStats": {
@@ -21107,6 +21139,7 @@
       "chinese": "艾姆利多",
       "french": "Créfollet"
     },
+    "special": "Legendary",
     "type": ["Psychic"],
     "gender": "N",
     "baseStats": {
@@ -21139,6 +21172,7 @@
       "chinese": "亚克诺姆",
       "french": "Créfadet"
     },
+    "special": "Legendary",
     "type": ["Psychic"],
     "gender": "N",
     "baseStats": {
@@ -21171,6 +21205,7 @@
       "chinese": "帝牙卢卡",
       "french": "Dialga"
     },
+    "special": "Legendary",
     "type": ["Steel", "Dragon"],
     "gender": "N",
     "baseStats": {
@@ -21204,6 +21239,7 @@
       "chinese": "帕路奇亚",
       "french": "Palkia"
     },
+    "special": "Legendary",
     "type": ["Water", "Dragon"],
     "gender": "N",
     "baseStats": {
@@ -21237,6 +21273,7 @@
       "chinese": "席多蓝恩",
       "french": "Heatran"
     },
+    "special": "Legendary",
     "type": ["Fire", "Steel"],
     "baseStats": {
       "hp": 91,
@@ -21269,6 +21306,7 @@
       "chinese": "雷吉奇卡斯",
       "french": "Regigigas"
     },
+    "special": "Legendary",
     "type": ["Normal"],
     "gender": "N",
     "baseStats": {
@@ -21302,6 +21340,7 @@
       "french": "Giratina"
     },
     "baseForme": "Altered",
+    "special": "Legendary",
     "type": ["Ghost", "Dragon"],
     "gender": "N",
     "baseStats": {
@@ -21339,6 +21378,7 @@
     },
     "baseSpecies": "Giratina",
     "forme": "Origin",
+    "special": "Legendary",
     "type": ["Ghost", "Dragon"],
     "gender": "N",
     "baseStats": {
@@ -21367,6 +21407,7 @@
       "chinese": "克雷色利亚",
       "french": "Cresselia"
     },
+    "special": "Legendary",
     "type": ["Psychic"],
     "gender": "F",
     "baseStats": {
@@ -21399,6 +21440,7 @@
       "chinese": "霏欧纳",
       "french": "Phione"
     },
+    "special": "Mythical",
     "type": ["Water"],
     "gender": "N",
     "baseStats": {
@@ -21431,6 +21473,7 @@
       "chinese": "玛纳霏",
       "french": "Manaphy"
     },
+    "special": "Mythical",
     "type": ["Water"],
     "gender": "N",
     "baseStats": {
@@ -21463,6 +21506,7 @@
       "chinese": "达克莱伊",
       "french": "Darkrai"
     },
+    "special": "Mythical",
     "type": ["Dark"],
     "gender": "N",
     "baseStats": {
@@ -21495,6 +21539,7 @@
       "chinese": "谢米",
       "french": "Shaymin"
     },
+    "special": "Mythical",
     "baseForme": "Land",
     "type": ["Grass"],
     "gender": "N",
@@ -21530,6 +21575,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Mythical",
     "baseSpecies": "Shaymin",
     "forme": "Sky",
     "type": ["Grass", "Flying"],
@@ -21559,6 +21605,7 @@
       "chinese": "阿尔宙斯",
       "french": "Arceus"
     },
+    "special": "Mythical",
     "baseForme": "Normal",
     "type": ["Normal"],
     "gender": "N",
@@ -22142,6 +22189,7 @@
       "chinese": "比克提尼",
       "french": "Victini"
     },
+    "special": "Mythical",
     "type": ["Psychic", "Fire"],
     "gender": "N",
     "baseStats": {
@@ -27542,6 +27590,7 @@
       "chinese": "勾帕路翁",
       "french": "Cobaltium"
     },
+    "special": "Legendary",
     "type": ["Steel", "Fighting"],
     "gender": "N",
     "baseStats": {
@@ -27574,6 +27623,7 @@
       "chinese": "代拉基翁",
       "french": "Terrakium"
     },
+    "special": "Legendary",
     "type": ["Rock", "Fighting"],
     "gender": "N",
     "baseStats": {
@@ -27606,6 +27656,7 @@
       "chinese": "毕力吉翁",
       "french": "Viridium"
     },
+    "special": "Legendary",
     "type": ["Grass", "Fighting"],
     "gender": "N",
     "baseStats": {
@@ -27638,6 +27689,7 @@
       "chinese": "龙卷云",
       "french": "Boréas"
     },
+    "special": "Legendary",
     "baseForme": "Incarnate",
     "type": ["Flying"],
     "gender": "M",
@@ -27674,6 +27726,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Tornadus",
     "forme": "Therian",
     "type": ["Flying"],
@@ -27703,6 +27756,7 @@
       "chinese": "雷电云",
       "french": "Fulguris"
     },
+    "special": "Legendary",
     "baseForme": "Incarnate",
     "type": ["Electric", "Flying"],
     "gender": "M",
@@ -27739,6 +27793,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Thundurus",
     "forme": "Therian",
     "type": ["Electric", "Flying"],
@@ -27768,6 +27823,7 @@
       "chinese": "莱希拉姆",
       "french": "Reshiram"
     },
+    "special": "Legendary",
     "type": ["Dragon", "Fire"],
     "gender": "N",
     "baseStats": {
@@ -27800,6 +27856,7 @@
       "chinese": "捷克罗姆",
       "french": "Zekrom"
     },
+    "special": "Legendary",
     "type": ["Dragon", "Electric"],
     "gender": "N",
     "baseStats": {
@@ -27832,6 +27889,7 @@
       "chinese": "土地云",
       "french": "Démétéros"
     },
+    "special": "Legendary",
     "baseForme": "Incarnate",
     "type": ["Ground", "Flying"],
     "gender": "M",
@@ -27868,6 +27926,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Landorus",
     "forme": "Therian",
     "type": ["Ground", "Flying"],
@@ -27897,6 +27956,7 @@
       "chinese": "酋雷姆",
       "french": "Kyurem"
     },
+    "special": "Legendary",
     "type": ["Dragon", "Ice"],
     "gender": "N",
     "baseStats": {
@@ -27931,6 +27991,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Kyurem",
     "forme": "Black",
     "type": ["Dragon", "Ice"],
@@ -27960,6 +28021,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Kyurem",
     "forme": "White",
     "type": ["Dragon", "Ice"],
@@ -27989,6 +28051,7 @@
       "chinese": "凯路迪欧",
       "french": "Keldeo"
     },
+    "special": "Mythical",
     "baseForme": "Ordinary",
     "type": ["Water", "Fighting"],
     "gender": "N",
@@ -28024,6 +28087,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Mythical",
     "baseSpecies": "Keldeo",
     "forme": "Resolute",
     "type": ["Water", "Fighting"],
@@ -28054,6 +28118,7 @@
       "chinese": "美洛耶塔",
       "french": "Meloetta"
     },
+    "special": "Mythical",
     "baseForme": "Aria",
     "type": ["Normal", "Psychic"],
     "gender": "N",
@@ -28089,6 +28154,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Mythical",
     "baseSpecies": "Meloetta",
     "forme": "Pirouette",
     "type": ["Normal", "Fighting"],
@@ -28119,6 +28185,7 @@
       "chinese": "盖诺赛克特",
       "french": "Genesect"
     },
+    "special": "Mythical",
     "type": ["Bug", "Steel"],
     "gender": "N",
     "baseStats": {
@@ -30368,8 +30435,8 @@
     "weightkg": 23.5,
     "color": "#f000ff",
     "prevo": "Eevee",
-    "evoType": "levelExtra",
-    "evoCondition": "with a Fairy-type move and two levels of Affection",
+    "evotype": "useItem",
+    "evoItem": "Fairy Bracelet of Affection",
     "eggGroups": ["Field"],
     "images": {
       "normal": "https://i.imgur.com/NgfrAuB.png",
@@ -31097,6 +31164,7 @@
       "chinese": "哲尔尼亚斯",
       "french": "Xerneas"
     },
+    "special": "Legendary",
     "baseForme": "Active",
     "type": ["Fairy"],
     "gender": "N",
@@ -31132,6 +31200,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Xerneas",
     "forme": "Neutral",
     "type": ["Fairy"],
@@ -31160,6 +31229,7 @@
       "chinese": "伊裴尔塔尔",
       "french": "Yveltal"
     },
+    "special": "Legendary",
     "type": ["Dark", "Flying"],
     "gender": "N",
     "baseStats": {
@@ -31192,6 +31262,7 @@
       "chinese": "基格尔德",
       "french": "Zygarde"
     },
+    "special": "Legendary",
     "baseForme": "50%",
     "type": ["Dragon", "Ground"],
     "gender": "N",
@@ -31234,6 +31305,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Zygarde",
     "forme": "10%",
     "type": ["Dragon", "Ground"],
@@ -31265,6 +31337,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Zygarde",
     "forme": "Complete",
     "type": ["Dragon", "Ground"],
@@ -31296,6 +31369,7 @@
       "chinese": "蒂安希",
       "french": "Diancie"
     },
+    "special": "Mythical",
     "type": ["Rock", "Fairy"],
     "gender": "N",
     "baseStats": {
@@ -31330,6 +31404,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Mythical",
     "baseSpecies": "Diancie",
     "forme": "Mega",
     "type": ["Rock", "Fairy"],
@@ -31365,6 +31440,7 @@
       "chinese": "胡帕",
       "french": "Hoopa"
     },
+    "special": "Mythical",
     "baseForme": "Confined",
     "type": ["Psychic", "Ghost"],
     "gender": "N",
@@ -31400,6 +31476,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Mythical",
     "baseSpecies": "Hoopa",
     "forme": "Unbound",
     "type": ["Psychic", "Dark"],
@@ -31429,6 +31506,7 @@
       "chinese": "波尔凯尼恩",
       "french": "Volcanion"
     },
+    "special": "Mythical",
     "type": ["Fire", "Water"],
     "gender": "N",
     "baseStats": {
@@ -33585,6 +33663,7 @@
       "chinese": "属性：空",
       "french": "Silvallié"
     },
+    "special": "Legendary",
     "type": ["Normal"],
     "gender": "N",
     "baseStats": {
@@ -33618,6 +33697,7 @@
       "chinese": "银伴战兽",
       "french": "Météno"
     },
+    "special": "Legendary",
     "type": ["Normal"],
     "gender": "N",
     "baseStats": {
@@ -34769,6 +34849,7 @@
       "chinese": "卡璞・鸣鸣",
       "french": "Tokopiyon"
     },
+    "special": "Legendary",
     "type": ["Electric", "Fairy"],
     "gender": "N",
     "baseStats": {
@@ -34802,6 +34883,7 @@
       "chinese": "卡璞・蝶蝶",
       "french": "Tokotoro"
     },
+    "special": "Legendary",
     "type": ["Psychic", "Fairy"],
     "gender": "N",
     "baseStats": {
@@ -34835,6 +34917,7 @@
       "chinese": "卡璞・哞哞",
       "french": "Tokopisco"
     },
+    "special": "Legendary",
     "type": ["Grass", "Fairy"],
     "gender": "N",
     "baseStats": {
@@ -34868,6 +34951,7 @@
       "chinese": "卡璞・鳍鳍",
       "french": "Cosmog"
     },
+    "special": "Legendary",
     "type": ["Water", "Fairy"],
     "gender": "N",
     "baseStats": {
@@ -34901,6 +34985,7 @@
       "chinese": "科斯莫古",
       "french": "Cosmovum"
     },
+    "special": "Legendary",
     "type": ["Psychic"],
     "gender": "N",
     "baseStats": {
@@ -34934,6 +35019,7 @@
       "chinese": "科斯莫姆",
       "french": "Solgaleo"
     },
+    "special": "Legendary",
     "type": ["Psychic"],
     "gender": "N",
     "baseStats": {
@@ -34969,6 +35055,7 @@
       "chinese": "索尔迦雷欧",
       "french": "Lunala"
     },
+    "special": "Legendary",
     "type": ["Psychic", "Steel"],
     "gender": "N",
     "baseStats": {
@@ -35003,6 +35090,7 @@
       "chinese": "露奈雅拉",
       "french": "Zéroïd"
     },
+    "special": "Legendary",
     "type": ["Psychic", "Ghost"],
     "gender": "N",
     "baseStats": {
@@ -35037,6 +35125,7 @@
       "chinese": "虚吾伊德",
       "french": "Mouscoto"
     },
+    "special": "Ultrabeast",
     "type": ["Rock", "Poison"],
     "gender": "N",
     "baseStats": {
@@ -35069,6 +35158,7 @@
       "chinese": "爆肌蚊",
       "french": "Cancrelove"
     },
+    "special": "Ultrabeast",
     "type": ["Bug", "Fighting"],
     "gender": "N",
     "baseStats": {
@@ -35101,6 +35191,7 @@
       "chinese": "费洛美螂",
       "french": "Câblifère"
     },
+    "special": "Ultrabeast",
     "type": ["Bug", "Fighting"],
     "gender": "N",
     "baseStats": {
@@ -35133,6 +35224,7 @@
       "chinese": "电束木",
       "french": "Bamboiselle"
     },
+    "special": "Ultrabeast",
     "type": ["Electric"],
     "gender": "N",
     "baseStats": {
@@ -35165,6 +35257,7 @@
       "chinese": "铁火辉夜",
       "french": "Katagami"
     },
+    "special": "Ultrabeast",
     "type": ["Steel", "Flying"],
     "gender": "N",
     "baseStats": {
@@ -35197,6 +35290,7 @@
       "chinese": "纸御剑",
       "french": "Engloutyran"
     },
+    "special": "Ultrabeast",
     "type": ["Grass", "Steel"],
     "gender": "N",
     "baseStats": {
@@ -35229,6 +35323,7 @@
       "chinese": "恶食大王",
       "french": "Necrozma"
     },
+    "special": "Ultrabeast",
     "type": ["Dark", "Dragon"],
     "gender": "N",
     "baseStats": {
@@ -35261,6 +35356,7 @@
       "chinese": "奈克洛兹玛",
       "french": "Magearna"
     },
+    "special": "Legendary",
     "type": ["Psychic"],
     "gender": "N",
     "baseStats": {
@@ -35304,6 +35400,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Necrozma",
     "forme": "Dusk-Mane",
     "type": ["Psychic", "Steel"],
@@ -35333,6 +35430,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Necrozma",
     "forme": "Dawn-Wings",
     "type": ["Psychic", "Ghost"],
@@ -35362,6 +35460,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Necrozma",
     "forme": "Ultra",
     "type": ["Psychic", "Dragon"],
@@ -35392,6 +35491,7 @@
       "chinese": "玛机雅娜",
       "french": "Marshadow"
     },
+    "special": "Mythical",
     "type": ["Steel", "Fairy"],
     "gender": "N",
     "baseStats": {
@@ -35426,6 +35526,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Mythical",
     "baseSpecies": "Magearna",
     "forme": "Original",
     "type": ["Steel", "Fairy"],
@@ -35454,6 +35555,7 @@
       "chinese": "玛夏多",
       "french": "Vémini"
     },
+    "special": "Mythical",
     "type": ["Fighting", "Ghost"],
     "gender": "N",
     "baseStats": {
@@ -35486,6 +35588,7 @@
       "chinese": "毒贝比",
       "french": "Mandrillon"
     },
+    "special": "Ultrabeast",
     "type": ["Poison"],
     "gender": "N",
     "baseStats": {
@@ -35519,6 +35622,7 @@
       "chinese": "四颚针龙",
       "french": "Ama-Ama"
     },
+    "special": "Ultrabeast",
     "type": ["Poison", "Dragon"],
     "gender": "N",
     "baseStats": {
@@ -35554,6 +35658,7 @@
       "chinese": "垒磊石",
       "french": "Pierroteknik"
     },
+    "special": "Ultrabeast",
     "type": ["Rock", "Steel"],
     "gender": "N",
     "baseStats": {
@@ -35586,6 +35691,7 @@
       "chinese": "砰头小丑",
       "french": "Zeraora"
     },
+    "special": "Ultrabeast",
     "type": ["Fire", "Ghost"],
     "gender": "N",
     "baseStats": {
@@ -35618,6 +35724,7 @@
       "chinese": "捷拉奥拉",
       "french": "Meltan"
     },
+    "special": "Mythical",
     "type": ["Electric"],
     "gender": "N",
     "baseStats": {
@@ -35650,6 +35757,7 @@
       "chinese": "美录坦",
       "french": "Melmetal"
     },
+    "special": "Mythical",
     "type": ["Steel"],
     "gender": "N",
     "baseStats": {
@@ -35682,6 +35790,7 @@
       "chinese": "美录梅塔",
       "french": ""
     },
+    "special": "Mythical",
     "type": ["Steel"],
     "gender": "N",
     "baseStats": {
@@ -39365,6 +39474,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "type": ["Fairy"],
     "gender": "N",
     "baseStats": {
@@ -39399,6 +39509,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Zacian",
     "forme": "Crowned",
     "type": ["Fairy", "Steel"],
@@ -39435,6 +39546,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "type": ["Fighting"],
     "gender": "N",
     "baseStats": {
@@ -39469,6 +39581,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Zamazenta",
     "forme": "Crowned",
     "type": ["Fighting", "Steel"],
@@ -39505,6 +39618,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "type": ["Poison", "Dragon"],
     "gender": "N",
     "baseStats": {
@@ -39539,6 +39653,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "baseSpecies": "Eternatus",
     "forme": "Eternamax",
     "type": ["Poison", "Dragon"],
@@ -39573,6 +39688,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "type": ["Fighting"],
     "genderRatio": {
       "M": 0.875,
@@ -39609,6 +39725,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "type": ["Fighting", "Dark"],
     "baseStats": {
       "hp": 100,
@@ -39625,7 +39742,7 @@
     "weightkg": 105,
     "color": "#a0a0a0",
     "prevo": "Kubfu",
-    "evoType": "item",
+    "evotype": "useItem",
     "evoItem": "Bracelet of Darkness",
     "eggGroups": ["Undiscovered"],
     "images": {
@@ -39643,6 +39760,7 @@
       "chinese": "",
       "french": ""
     },
+    "special": "Legendary",
     "type": ["Fighting", "Water"],
     "baseStats": {
       "hp": 100,
@@ -39659,7 +39777,7 @@
     "weightkg": 105,
     "color": "#a0a0a0",
     "prevo": "Kubfu",
-    "evoType": "item",
+    "evotype": "useItem",
     "evoItem": "Bracelet of Water",
     "eggGroups": ["Undiscovered"],
     "images": {
