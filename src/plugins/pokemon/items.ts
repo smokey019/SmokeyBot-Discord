@@ -147,13 +147,15 @@ export async function checkItemEvolution(
         if (
           evolve.evoType == 'useItem' ||
           (evolve.evoType == 'trade' && isTrade) ||
-          (evolve.evoType == 'levelFriendship' && monster.held_item == 960)
+          (evolve.evoType == 'levelFriendship' && monster.held_item == 960) ||
+          (evolve.requiredItem && evolve.forme == 'Mega')
         ) {
           const item = getItemByID(monster.held_item);
 
           if (
             item.name.english == evolve.evoItem ||
-            (evolve.evoType == 'levelFriendship' && monster.held_item == 960)
+            (evolve.evoType == 'levelFriendship' && monster.held_item == 960) ||
+            (evolve.requiredItem && item.name.english == evolve.requiredItem)
           ) {
             const updateMonster = await databaseClient<IMonsterModel>(
               MonsterTable,
@@ -202,6 +204,10 @@ async function giveMonsterItem(message: Message) {
     const item = parseInt(split[2]);
     const monster = await getUserMonster(split[3]);
     const items = JSON.parse(user.items);
+
+    if (!monster) {
+      message.reply('there was an error giving item');
+    }
 
     if (
       items.length > 0 &&

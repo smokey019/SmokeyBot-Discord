@@ -27,4 +27,8 @@ export function rollShiny(): 0 | 1 {
   return getRndInteger(1, 4096) >= 4096 ? 1 : 0;
 }
 
+export function rollPerfectIV(): 0 | 1 {
+  return getRndInteger(1, 2096) >= 2096 ? 1 : 0;
+}
+
 export const img_monster_ball = `https://cdn.discordapp.com/attachments/550103813587992586/721256683665621092/pokeball2.png`;

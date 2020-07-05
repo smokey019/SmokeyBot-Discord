@@ -460,6 +460,9 @@ export async function monsterDex(message: Message): Promise<void> {
   const tmpSplit = message.content.split(' ');
   let tempMonster = undefined;
 
+  /**
+   * TODO: this breaks with names with too many spaces: '~dex mega mewtwo y --shiny'
+   */
   if (tmpSplit.length >= 3 && !tmpSplit[2].match(/shiny/i)) {
     tempMonster = findMonsterByName(
       tmpSplit[1].toLowerCase() + ' ' + tmpSplit[2].toLowerCase(),

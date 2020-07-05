@@ -118,7 +118,7 @@
   {
     "id": 3,
     "name": {
-      "english": "Venusaur-Mega",
+      "english": "Mega Venusaur",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -128,9 +128,9 @@
     "type": ["Grass", "Poison"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103241059041320/003-Mega.png",
-      "shiny": "https://i.imgur.com/ZdkbETH.png",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/003.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/003_shiny.gif"
+      "shiny": "https://i.imgur.com/DzrkF5e.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__003-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_003-mega__xy.gif"
     },
     "genderRatio": {
       "M": 0.875,
@@ -277,7 +277,7 @@
   {
     "id": 6,
     "name": {
-      "english": "Charizard-Mega-X",
+      "english": "Mega Charizard-X",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -307,15 +307,15 @@
     "requiredItem": "Charizardite X",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103263422939186/006-Mega_X.png",
-      "shiny": "https://i.imgur.com/ZdkbETH.png",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/006.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/006_shiny.gif"
+      "shiny": "https://i.imgur.com/GOWnSV4.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__006-mega-x__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_006-mega-x__xy.gif"
     }
   },
   {
     "id": 6,
     "name": {
-      "english": "Charizard-Mega-Y",
+      "english": "Mega Charizard-Y",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -345,7 +345,7 @@
     "requiredItem": "Charizardite Y",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103266841559080/006-Mega_Y.png",
-      "shiny": "https://i.imgur.com/ZdkbETH.png",
+      "shiny": "https://i.imgur.com/5MqbUQk.png",
       "gif": "https://bot.smokey.gg/pokemon/images/gif/006.gif",
       "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/006_shiny.gif"
     }
@@ -502,7 +502,7 @@
   {
     "id": 9,
     "name": {
-      "english": "Blastoise-Mega",
+      "english": "Mega Blastoise",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -532,9 +532,9 @@
     "requiredItem": "Blastoisinite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103270666502164/009-Mega.png",
-      "shiny": "https://i.imgur.com/ZdkbETH.png",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/009.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/009_shiny.gif"
+      "shiny": "https://i.imgur.com/IQ5sEGP.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__009-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_009-mega__xy.gif"
     }
   },
   {
@@ -775,7 +775,7 @@
   {
     "id": 15,
     "name": {
-      "english": "Beedrill-Mega",
+      "english": "Mega Beedrill",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -802,8 +802,8 @@
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103274861068358/015-Mega.png",
       "shiny": "https://i.imgur.com/DTs5DPM.png",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/015.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/015_shiny.gif"
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__015-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_015-mega__xy.gif"
     }
   },
   {
@@ -916,7 +916,7 @@
   {
     "id": 18,
     "name": {
-      "english": "Pidgeot-Mega",
+      "english": "Mega Pidgeot",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -943,8 +943,8 @@
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103278648524870/018-Mega.png",
       "shiny": "https://i.imgur.com/tdbLpeG.png",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/018.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/018_shiny.gif"
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__018-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_018-mega__xy.gif"
     }
   },
   {
@@ -986,7 +986,7 @@
   {
     "id": 19.1,
     "name": {
-      "english": "Rattata-Alola",
+      "english": "Alolan Rattata",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -1059,7 +1059,7 @@
   {
     "id": 20.1,
     "name": {
-      "english": "Raticate-Alola",
+      "english": "Alolan Raticate",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -1665,7 +1665,7 @@
   {
     "id": 25.1,
     "name": {
-      "english": "Pikachu-Alola",
+      "english": "Alolan Pikachu",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -1819,7 +1819,7 @@
   {
     "id": 26.1,
     "name": {
-      "english": "Raichu-Alola",
+      "english": "Alolan Raichu",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -1890,7 +1890,7 @@
   {
     "id": 27.1,
     "name": {
-      "english": "Sandshrew-Alola",
+      "english": "Alolan Sandshrew",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -1961,7 +1961,7 @@
   {
     "id": 28.1,
     "name": {
-      "english": "Sandslash-Alola",
+      "english": "Alolan Sandslash",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -2323,7 +2323,7 @@
   {
     "id": 37.1,
     "name": {
-      "english": "Vulpix-Alola",
+      "english": "Alolan Vulpix",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -2403,7 +2403,7 @@
   {
     "id": 38.1,
     "name": {
-      "english": "Ninetales-Alola",
+      "english": "Alolan Ninetales",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -2869,7 +2869,7 @@
   {
     "id": 50.1,
     "name": {
-      "english": "Diglett-Alola",
+      "english": "Alolan Diglett",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -2942,7 +2942,7 @@
   {
     "id": 51.1,
     "name": {
-      "english": "Dugtrio-Alola",
+      "english": "Alolan Dugtrio",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -3015,7 +3015,7 @@
   {
     "id": 52.1,
     "name": {
-      "english": "Meowth-Alola",
+      "english": "Alolan Meowth",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -3051,7 +3051,7 @@
   {
     "id": 52.2,
     "name": {
-      "english": "Meowth-Galar",
+      "english": "Galarian Meowth",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -3154,7 +3154,7 @@
   {
     "id": 53.1,
     "name": {
-      "english": "Persian-Alola",
+      "english": "Alolan Persian",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -3632,7 +3632,7 @@
   {
     "id": 65,
     "name": {
-      "english": "Alakazam-Mega",
+      "english": "Mega Alakazam",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -3662,9 +3662,9 @@
     "requiredItem": "Alakazite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103283434225670/065-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/065.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/065_shiny.gif"
+      "shiny": "https://i.imgur.com/ZRKJKPY.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__065-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_065-mega__xy.gif"
     }
   },
   {
@@ -4031,7 +4031,7 @@
   {
     "id": 74.1,
     "name": {
-      "english": "Geodude-Alola",
+      "english": "Alolan Geodude",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -4105,7 +4105,7 @@
   {
     "id": 75.1,
     "name": {
-      "english": "Graveler-Alola",
+      "english": "Alolan Graveler",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -4180,7 +4180,7 @@
   {
     "id": 76.1,
     "name": {
-      "english": "Golem-Alola",
+      "english": "Alolan Golem",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -4253,7 +4253,7 @@
   {
     "id": 77.2,
     "name": {
-      "english": "Ponyta-Galar",
+      "english": "Galarian Ponyta",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -4326,7 +4326,7 @@
   {
     "id": 78.2,
     "name": {
-      "english": "Rapidash-Galar",
+      "english": "Galarian Rapidash",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -4399,7 +4399,7 @@
   {
     "id": 79.2,
     "name": {
-      "english": "Slowpoke-Galar",
+      "english": "Galarian Slowpoke",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -4465,7 +4465,7 @@
   {
     "id": 80,
     "name": {
-      "english": "Slowbro-Mega",
+      "english": "Mega Slowbro",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -4491,9 +4491,9 @@
     "requiredItem": "Slowbronite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103286760046633/080-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/080.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/080_shiny.gif"
+      "shiny": "https://i.imgur.com/eo24EI4.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__080-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_080-mega__xy.gif"
     }
   },
   {
@@ -4606,7 +4606,7 @@
   {
     "id": 83.2,
     "name": {
-      "english": "Farfetch'd-Galar",
+      "english": "Galarian Farfetch'd",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -4815,7 +4815,7 @@
   {
     "id": 88.1,
     "name": {
-      "english": "Grimer-Alola",
+      "english": "Alolan Grimer",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -4888,7 +4888,7 @@
   {
     "id": 89.1,
     "name": {
-      "english": "Muk-Alola",
+      "english": "Alolan Muk",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -5096,7 +5096,7 @@
   {
     "id": 94,
     "name": {
-      "english": "Gengar-Mega",
+      "english": "Mega Gengar",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -5122,9 +5122,9 @@
     "requiredItem": "Gengarite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103291482833167/094-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/094.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/094_shiny.gif"
+      "shiny": "https://i.imgur.com/Dc2yfG6.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__094-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_094-mega__xy.gif"
     }
   },
   {
@@ -5503,7 +5503,7 @@
   {
     "id": 103.1,
     "name": {
-      "english": "Exeggutor-Alola",
+      "english": "Alolan Exeggutor",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -5611,7 +5611,7 @@
   {
     "id": 105.1,
     "name": {
-      "english": "Marowak-Alola",
+      "english": "Alolan Marowak",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -5827,7 +5827,7 @@
   {
     "id": 110.2,
     "name": {
-      "english": "Weezing-Galar",
+      "english": "Galarian Weezing",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -6044,7 +6044,7 @@
   {
     "id": 115,
     "name": {
-      "english": "Kangaskhan-Mega",
+      "english": "Mega Kangaskhan",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -6071,9 +6071,9 @@
     "requiredItem": "Kangaskhanite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103295115100170/115-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/115.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/115_shiny.gif"
+      "shiny": "https://i.imgur.com/rsrO9mU.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__115-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_115-mega__xy.gif"
     }
   },
   {
@@ -6329,7 +6329,7 @@
   {
     "id": 122.2,
     "name": {
-      "english": "Mr. Mime-Galar",
+      "english": "Galarian Mr. Mime",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -6552,7 +6552,7 @@
   {
     "id": 127,
     "name": {
-      "english": "Pinsir-Mega",
+      "english": "Mega Pinsir",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -6578,9 +6578,9 @@
     "requiredItem": "Pinsirite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103300035149835/127-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/127.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/127_shiny.gif"
+      "shiny": "https://i.imgur.com/izQN5yN.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__127-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_127-mega__xy.gif"
     }
   },
   {
@@ -6689,7 +6689,7 @@
   {
     "id": 130,
     "name": {
-      "english": "Gyarados-Mega",
+      "english": "Mega Gyarados",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -6715,9 +6715,9 @@
     "requiredItem": "Gyaradosite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103302803259413/130-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/130.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/130_shiny.gif"
+      "shiny": "https://i.imgur.com/iFmbGyG.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__130-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_130-mega__xy.gif"
     }
   },
   {
@@ -7282,7 +7282,7 @@
   {
     "id": 142,
     "name": {
-      "english": "Aerodactyl-Mega",
+      "english": "Mega Aerodactyl",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -7312,9 +7312,9 @@
     "requiredItem": "Aerodactylite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103305504522240/142-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/142.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/142_shiny.gif"
+      "shiny": "https://i.imgur.com/3HzDqj5.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__142-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_142-mega__xy.gif"
     }
   },
   {
@@ -7605,7 +7605,7 @@
       "chinese": "超梦",
       "french": "Mewtwo"
     },
-    "special": "Mythical",
+    "special": "Legendary",
     "type": ["Psychic"],
     "gender": "N",
     "baseStats": {
@@ -7636,7 +7636,7 @@
   {
     "id": 150,
     "name": {
-      "english": "Mewtwo-Mega-X",
+      "english": "Mega Mewtwo-X",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -7664,15 +7664,15 @@
     "requiredItem": "Mewtwonite X",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103307408736286/150-Mega_X.png",
-      "shiny": "https://i.imgur.com/zsTeyCh.png",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/150.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/150_shiny.gif"
+      "shiny": "https://i.imgur.com/rS5oerv.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__150-mega-x__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_150-mega-x__xy.gif"
     }
   },
   {
     "id": 150,
     "name": {
-      "english": "Mewtwo-Mega-Y",
+      "english": "Mega Mewtwo-Y",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -7700,9 +7700,9 @@
     "requiredItem": "Mewtwonite Y",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103310613184562/150-Mega_Y.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/150.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/150_shiny.gif"
+      "shiny": "https://i.imgur.com/FiAnhtL.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__150-mega-y__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_150-mega-y__xy.gif"
     }
   },
   {
@@ -8856,7 +8856,7 @@
   {
     "id": 181,
     "name": {
-      "english": "Ampharos-Mega",
+      "english": "Mega Ampharos",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -8882,9 +8882,9 @@
     "requiredItem": "Ampharosite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103314916409384/181-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/181.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/181_shiny.gif"
+      "shiny": "https://i.imgur.com/HBHcyTH.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__181-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_181-mega__xy.gif"
     }
   },
   {
@@ -9447,7 +9447,7 @@
     "weightkg": 27,
     "color": "#000000",
     "prevo": "Eevee",
-    "evotype": "useItem",
+    "evoType": "useItem",
     "evoItem": "Friendly Bracelet of Darkness",
     "eggGroups": ["Field"],
     "images": {
@@ -9893,7 +9893,7 @@
   {
     "id": 208,
     "name": {
-      "english": "Steelix-Mega",
+      "english": "Mega Steelix",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -9919,9 +9919,9 @@
     "requiredItem": "Steelixite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103327566692432/208-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/208.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/208_shiny.gif"
+      "shiny": "https://i.imgur.com/G2mlnsV.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__208-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_208-mega__xy.gif"
     }
   },
   {
@@ -10075,7 +10075,7 @@
   {
     "id": 212,
     "name": {
-      "english": "Scizor-Mega",
+      "english": "Mega Scizor",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -10101,9 +10101,9 @@
     "requiredItem": "Scizorite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103332532486194/212-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/212.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/212_shiny.gif"
+      "shiny": "https://i.imgur.com/lrYjEd3.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__212-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_212-mega__xy.gif"
     }
   },
   {
@@ -10177,7 +10177,7 @@
   {
     "id": 214,
     "name": {
-      "english": "Heracross-Mega",
+      "english": "Mega Heracross",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -10203,9 +10203,9 @@
     "requiredItem": "Heracronite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103338073292820/214-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/214.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/214_shiny.gif"
+      "shiny": "https://i.imgur.com/vG5JkpT.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__214-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_214-mega__xy.gif"
     }
   },
   {
@@ -10492,7 +10492,7 @@
   {
     "id": 222.2,
     "name": {
-      "english": "Corsola-Galar",
+      "english": "Galarian Corsola",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -10774,7 +10774,7 @@
   {
     "id": 229,
     "name": {
-      "english": "Houndoom-Mega",
+      "english": "Mega Houndoom",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -10800,9 +10800,9 @@
     "requiredItem": "Houndoominite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103342565392394/229-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/229.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/229_shiny.gif"
+      "shiny": "https://i.imgur.com/jvH9oR5.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__229-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_229-mega__xy.gif"
     }
   },
   {
@@ -11475,7 +11475,7 @@
   {
     "id": 248,
     "name": {
-      "english": "Tyranitar-Mega",
+      "english": "Mega Tyranitar",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -11501,9 +11501,9 @@
     "requiredItem": "Tyranitarite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103346143264788/248-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/248.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/248_shiny.gif"
+      "shiny": "https://i.imgur.com/XAFQ5wc.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__248-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_248-mega__xy.gif"
     }
   },
   {
@@ -11726,7 +11726,7 @@
   {
     "id": 254,
     "name": {
-      "english": "Sceptile-Mega",
+      "english": "Mega Sceptile",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -11756,9 +11756,9 @@
     "requiredItem": "Sceptilite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103352526995517/254-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/254.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/254_shiny.gif"
+      "shiny": "https://i.imgur.com/lgIdLH8.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__254-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_254-mega__xy.gif"
     }
   },
   {
@@ -11880,7 +11880,7 @@
   {
     "id": 257,
     "name": {
-      "english": "Blaziken-Mega",
+      "english": "Mega Blaziken",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -11910,9 +11910,9 @@
     "requiredItem": "Blazikenite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103357031415899/257-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/257.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/257_shiny.gif"
+      "shiny": "https://i.imgur.com/6chyNg3.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__257-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_257-mega__xy.gif"
     }
   },
   {
@@ -12034,7 +12034,7 @@
   {
     "id": 260,
     "name": {
-      "english": "Swampert-Mega",
+      "english": "Mega Swampert",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -12064,9 +12064,9 @@
     "requiredItem": "Swampertite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103362161311774/260-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/260.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/260_shiny.gif"
+      "shiny": "https://i.imgur.com/8wXl6BZ.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__260-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_260-mega__xy.gif"
     }
   },
   {
@@ -12177,7 +12177,7 @@
   {
     "id": 263.2,
     "name": {
-      "english": "Zigzagoon-Galar",
+      "english": "Galarian Zigzagoon",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -12250,7 +12250,7 @@
   {
     "id": 264.2,
     "name": {
-      "english": "Linoone-Galar",
+      "english": "Galarian Linoone",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -12912,7 +12912,7 @@
   {
     "id": 282,
     "name": {
-      "english": "Gardevoir-Mega",
+      "english": "Mega Gardevoir",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -12938,9 +12938,9 @@
     "requiredItem": "Gardevoirite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103365172822096/282-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/282.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/282_shiny.gif"
+      "shiny": "https://i.imgur.com/ZFtBEHm.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__282-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_282-mega__xy.gif"
     }
   },
   {
@@ -13648,7 +13648,7 @@
   {
     "id": 302,
     "name": {
-      "english": "Sableye-Mega",
+      "english": "Mega Sableye",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -13674,9 +13674,9 @@
     "requiredItem": "Sablenite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103369706864640/302-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/302.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/302_shiny.gif"
+      "shiny": "https://i.imgur.com/BOqLgkG.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__302-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_302-mega__xy.gif"
     }
   },
   {
@@ -13717,7 +13717,7 @@
   {
     "id": 303,
     "name": {
-      "english": "Mawile-Mega",
+      "english": "Mega Mawile",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -13743,9 +13743,9 @@
     "requiredItem": "Mawilite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103373204783104/303-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/303.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/303_shiny.gif"
+      "shiny": "https://i.imgur.com/kCoxdMI.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__303-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_303-mega__xy.gif"
     }
   },
   {
@@ -13858,7 +13858,7 @@
   {
     "id": 306,
     "name": {
-      "english": "Aggron-Mega",
+      "english": "Mega Aggron",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -13884,9 +13884,9 @@
     "requiredItem": "Aggronite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103380339294238/306-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/306.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/306_shiny.gif"
+      "shiny": "https://i.imgur.com/CUWrIpp.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__306-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_306-mega__xy.gif"
     }
   },
   {
@@ -13961,7 +13961,7 @@
   {
     "id": 308,
     "name": {
-      "english": "Medicham-Mega",
+      "english": "Mega Medicham",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -13987,9 +13987,9 @@
     "requiredItem": "Medichamite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103381446459402/308-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/308.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/308_shiny.gif"
+      "shiny": "https://i.imgur.com/xSwiCyz.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__308-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_308-mega__xy.gif"
     }
   },
   {
@@ -14066,7 +14066,7 @@
   {
     "id": 310,
     "name": {
-      "english": "Manectric-Mega",
+      "english": "Mega Manectric",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -14092,9 +14092,9 @@
     "requiredItem": "Manectite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103386911768678/310-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/310.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/310_shiny.gif"
+      "shiny": "https://i.imgur.com/RvFF1P4.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__310-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_310-mega__xy.gif"
     }
   },
   {
@@ -14408,7 +14408,7 @@
   {
     "id": 319,
     "name": {
-      "english": "Sharpedo-Mega",
+      "english": "Mega Sharpedo",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -14434,9 +14434,9 @@
     "requiredItem": "Sharpedonite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103392414826537/319-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/319.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/319_shiny.gif"
+      "shiny": "https://i.imgur.com/lGRGHfD.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__319-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_319-mega__xy.gif"
     }
   },
   {
@@ -14582,7 +14582,7 @@
   {
     "id": 323,
     "name": {
-      "english": "Camerupt-Mega",
+      "english": "Mega Camerupt",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -14608,9 +14608,9 @@
     "requiredItem": "Cameruptite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103395778396160/323-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/323.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/323_shiny.gif"
+      "shiny": "https://i.imgur.com/xGD4YgA.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__323-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_323-mega__xy.gif"
     }
   },
   {
@@ -14988,7 +14988,7 @@
   {
     "id": 334,
     "name": {
-      "english": "Altaria-Mega",
+      "english": "Mega Altaria",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -15014,9 +15014,9 @@
     "requiredItem": "Altarianite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103399532429352/334-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/334.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/334_shiny.gif"
+      "shiny": "https://i.imgur.com/BHYZqco.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__334-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_334-mega__xy.gif"
     }
   },
   {
@@ -15803,7 +15803,7 @@
   {
     "id": 354,
     "name": {
-      "english": "Banette-Mega",
+      "english": "Mega Banette",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -15829,9 +15829,9 @@
     "requiredItem": "Banettite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103401805742110/354-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/354.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/354_shiny.gif"
+      "shiny": "https://i.imgur.com/EIFjjlE.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__354-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_354-mega__xy.gif"
     }
   },
   {
@@ -16008,7 +16008,7 @@
   {
     "id": 359,
     "name": {
-      "english": "Absol-Mega",
+      "english": "Mega Absol",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -16034,9 +16034,9 @@
     "requiredItem": "Absolite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103404716720138/359-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/359.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/359_shiny.gif"
+      "shiny": "https://i.imgur.com/sRZ4Fau.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__359-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_359-mega__xy.gif"
     }
   },
   {
@@ -16147,7 +16147,7 @@
   {
     "id": 362,
     "name": {
-      "english": "Glalie-Mega",
+      "english": "Mega Glalie",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -16173,9 +16173,9 @@
     "requiredItem": "Glalitite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103414300573746/362-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/362.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/362_shiny.gif"
+      "shiny": "https://i.imgur.com/zsTeyCh.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__362-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_362-mega__xy.gif"
     }
   },
   {
@@ -16566,7 +16566,7 @@
   {
     "id": 373,
     "name": {
-      "english": "Salamence-Mega",
+      "english": "Mega Salamence",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -16592,9 +16592,9 @@
     "requiredItem": "Salamencite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103419178549259/373-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/373.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/373_shiny.gif"
+      "shiny": "https://i.imgur.com/FI1P6VT.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__373-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_373-mega__xy.gif"
     }
   },
   {
@@ -16707,7 +16707,7 @@
   {
     "id": 376,
     "name": {
-      "english": "Metagross-Mega",
+      "english": "Mega Metagross",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -16734,9 +16734,9 @@
     "requiredItem": "Metagrossite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103425943961630/376-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/376.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/376_shiny.gif"
+      "shiny": "https://i.imgur.com/Nsl4LTs.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__376-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_376-mega__xy.gif"
     }
   },
   {
@@ -16879,7 +16879,7 @@
   {
     "id": 380,
     "name": {
-      "english": "Latias-Mega",
+      "english": "Mega Latias",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -16907,9 +16907,9 @@
     "requiredItem": "Latiasite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103432042348554/380-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/380.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/380_shiny.gif"
+      "shiny": "https://i.imgur.com/YPogdcK.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__380-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_380-mega__xy.gif"
     }
   },
   {
@@ -16950,7 +16950,7 @@
   {
     "id": 381,
     "name": {
-      "english": "Latios-Mega",
+      "english": "Mega Latios",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -16978,9 +16978,9 @@
     "requiredItem": "Latiosite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103438996766730/381-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/381.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/381_shiny.gif"
+      "shiny": "https://i.imgur.com/0cA88hA.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__381-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_381-mega__xy.gif"
     }
   },
   {
@@ -17151,7 +17151,7 @@
   {
     "id": 384,
     "name": {
-      "english": "Rayquaza-Mega",
+      "english": "Mega Rayquaza",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -17179,9 +17179,9 @@
     "requiredMove": "Dragon Ascent",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103454289068032/384-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/384.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/384_shiny.gif"
+      "shiny": "https://i.imgur.com/si7JoLD.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__384-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_384-mega__xy.gif"
     }
   },
   {
@@ -18943,7 +18943,7 @@
   {
     "id": 428,
     "name": {
-      "english": "Lopunny-Mega",
+      "english": "Mega Lopunny",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -18969,9 +18969,9 @@
     "requiredItem": "Lopunnite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103459091677194/428-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/428.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/428_shiny.gif"
+      "shiny": "https://i.imgur.com/TO8AMUj.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__428-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_428-mega__xy.gif"
     }
   },
   {
@@ -19572,7 +19572,7 @@
   {
     "id": 445,
     "name": {
-      "english": "Garchomp-Mega",
+      "english": "Mega Garchomp",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -19598,9 +19598,9 @@
     "requiredItem": "Garchompite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103464787542026/445-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/445.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/445_shiny.gif"
+      "shiny": "https://i.imgur.com/hoU5BkG.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__445-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_445-mega__xy.gif"
     }
   },
   {
@@ -19726,7 +19726,7 @@
   {
     "id": 448,
     "name": {
-      "english": "Lucario-Mega",
+      "english": "Mega Lucario",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -19756,9 +19756,9 @@
     "requiredItem": "Lucarionite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103468780388412/448-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/448.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/448_shiny.gif"
+      "shiny": "https://i.imgur.com/khTu4Vk.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__448-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_448-mega__xy.gif"
     }
   },
   {
@@ -20173,7 +20173,7 @@
   {
     "id": 460,
     "name": {
-      "english": "Abomasnow-Mega",
+      "english": "Mega Abomasnow",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -20199,9 +20199,9 @@
     "requiredItem": "Abomasite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103473700175934/460-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/460.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/460_shiny.gif"
+      "shiny": "https://i.imgur.com/JqOKbkW.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__460-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_460-mega__xy.gif"
     }
   },
   {
@@ -20767,7 +20767,7 @@
   {
     "id": 475,
     "name": {
-      "english": "Gallade-Mega",
+      "english": "Mega Gallade",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -20794,9 +20794,9 @@
     "requiredItem": "Galladite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103478465036338/475-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/475.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/475_shiny.gif"
+      "shiny": "https://i.imgur.com/zebsa6Z.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__475-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_475-mega__xy.gif"
     }
   },
   {
@@ -23552,7 +23552,7 @@
   {
     "id": 531,
     "name": {
-      "english": "Audino-Mega",
+      "english": "Mega Audino",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -23578,9 +23578,9 @@
     "requiredItem": "Audinite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103482294435840/531-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/531.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/531_shiny.gif"
+      "shiny": "https://i.imgur.com/juo16Z1.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__531-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_531-mega__xy.gif"
     }
   },
   {
@@ -24433,7 +24433,7 @@
   {
     "id": 554.2,
     "name": {
-      "english": "Darumaka-Galar",
+      "english": "Galarian Darumaka",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -24543,7 +24543,7 @@
   {
     "id": 555.2,
     "name": {
-      "english": "Darmanitan-Galar",
+      "english": "Galarian Darmanitan",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -24853,7 +24853,7 @@
   {
     "id": 562.2,
     "name": {
-      "english": "Yamask-Galar",
+      "english": "Galarian Yamask",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -26903,7 +26903,7 @@
   {
     "id": 618.2,
     "name": {
-      "english": "Stunfisk-Galar",
+      "english": "Galarian Stunfisk",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -30435,7 +30435,7 @@
     "weightkg": 23.5,
     "color": "#f000ff",
     "prevo": "Eevee",
-    "evotype": "useItem",
+    "evoType": "useItem",
     "evoItem": "Fairy Bracelet of Affection",
     "eggGroups": ["Field"],
     "images": {
@@ -31399,7 +31399,7 @@
   {
     "id": 719,
     "name": {
-      "english": "Diancie-Mega",
+      "english": "Mega Diancie",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -31427,9 +31427,9 @@
     "requiredItem": "Diancite",
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103486623088640/719-Mega.png",
-      "shiny": "",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/719.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/719_shiny.gif"
+      "shiny": "https://i.imgur.com/AVMcXE7.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__719-mega__xy.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_719-mega__xy.gif"
     }
   },
   {
@@ -39742,7 +39742,7 @@
     "weightkg": 105,
     "color": "#a0a0a0",
     "prevo": "Kubfu",
-    "evotype": "useItem",
+    "evoType": "useItem",
     "evoItem": "Bracelet of Darkness",
     "eggGroups": ["Undiscovered"],
     "images": {
@@ -39777,7 +39777,7 @@
     "weightkg": 105,
     "color": "#a0a0a0",
     "prevo": "Kubfu",
-    "evotype": "useItem",
+    "evoType": "useItem",
     "evoItem": "Bracelet of Water",
     "eggGroups": ["Undiscovered"],
     "images": {

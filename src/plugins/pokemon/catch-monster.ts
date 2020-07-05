@@ -1,16 +1,15 @@
 import { Message } from 'discord.js';
 
-import { getCurrentTime, getRndInteger } from '../../utils';
+import { getCurrentTime, getRndInteger, explode } from '../../utils';
 import { getLogger } from '../../clients/logger';
 import { ICache, cacheClient } from '../../clients/cache';
 import { getRandomNature } from './natures';
-import { rollShiny, rollLevel } from './utils';
+import { rollShiny, rollLevel, rollPerfectIV } from './utils';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { databaseClient, getMonsterUser } from '../../clients/database';
 import { MonsterUserTable, IMonsterUserModel } from '../../models/MonsterUser';
 import { userDex } from './info';
 import { IMonsterDex } from './monsters';
-import { prefix_regex } from './parser';
 
 const logger = getLogger('Pokemon');
 
@@ -22,21 +21,15 @@ const logger = getLogger('Pokemon');
  * @param currentSpawn
  */
 function monsterMatchesPrevious(messageContent: string, { name }: IMonsterDex) {
+  const split = explode(messageContent, ' ', 2);
+  if (split.length <= 1) return false;
+  const monster = split[1].toLowerCase();
+
   return (
-    messageContent.match(
-      prefix_regex(`catch ${name.english.toLowerCase().replace(/♂|♀/g, '')}`),
-    ) ||
-    messageContent.match(
-      prefix_regex(
-        `キャッチ ${name.japanese.toLowerCase().replace(/♂|♀/g, '')}`,
-      ),
-    ) ||
-    messageContent.match(
-      prefix_regex(`抓住 ${name.chinese.toLowerCase().replace(/♂|♀/g, '')}`),
-    ) ||
-    messageContent.match(
-      prefix_regex(`capture ${name.french.toLowerCase().replace(/♂|♀/g, '')}`),
-    )
+    monster == name.english.toLowerCase().replace(/♂|♀/g, '') ||
+    monster == name.japanese.toLowerCase().replace(/♂|♀/g, '') ||
+    monster == name.chinese.toLowerCase().replace(/♂|♀/g, '') ||
+    monster == name.french.toLowerCase().replace(/♂|♀/g, '')
   );
 }
 
@@ -114,6 +107,17 @@ export async function catchMonster(
       captured_at: timestamp,
       favorite: 0,
     };
+
+    const isPerfect = rollPerfectIV();
+
+    if (isPerfect) {
+      monster.hp = getRndInteger(28, 31);
+      monster.attack = getRndInteger(28, 31);
+      monster.defense = getRndInteger(28, 31);
+      monster.sp_attack = getRndInteger(28, 31);
+      monster.sp_defense = getRndInteger(28, 31);
+      monster.speed = getRndInteger(28, 31);
+    }
 
     const averageIV = (
       ((monster.hp +

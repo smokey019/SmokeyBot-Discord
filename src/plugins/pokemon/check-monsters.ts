@@ -35,6 +35,7 @@ export async function checkMonsters(message: Message): Promise<void> {
     let message_contents = [];
     let shiny = '';
     let favorite = '';
+    let legendary = '';
 
     logger.debug(`Successfully fetched! Compiling..`);
 
@@ -45,6 +46,21 @@ export async function checkMonsters(message: Message): Promise<void> {
     pokemon.forEach((element: IMonsterModel) => {
       const monster = findMonsterByID(element.monster_id);
       if (!monster) return;
+
+      if (
+        (splitMsg[splitMsg.length - 1].toLowerCase() == '--legendary' &&
+          monster.special != 'Legendary') ||
+        (splitMsg[splitMsg.length - 1].toLowerCase() == '--mythical' &&
+          monster.special != 'Mythical') ||
+        (splitMsg[splitMsg.length - 1].toLowerCase() == '--ultrabeast' &&
+          monster.special != 'Ultrabeast') ||
+        (splitMsg[splitMsg.length - 1].toLowerCase() == '--shiny' &&
+          !element.shiny) ||
+        (splitMsg[splitMsg.length - 1].toLowerCase() == '--mega' &&
+          !monster.forme)
+      ) {
+        return;
+      }
 
       if (element.shiny) {
         shiny = ' ⭐';
@@ -58,6 +74,12 @@ export async function checkMonsters(message: Message): Promise<void> {
         favorite = '';
       }
 
+      if (monster.special) {
+        legendary = ` 💠`;
+      } else {
+        legendary = '';
+      }
+
       const averageIV = (
         ((element.hp +
           element.attack +
@@ -69,7 +91,7 @@ export async function checkMonsters(message: Message): Promise<void> {
         100
       ).toFixed(2);
 
-      const tmpMsg = `**${element.id}** - **${monster.name.english}${shiny}**${favorite} - **Level ${element.level}** - **Avg IV ${averageIV}%**`;
+      const tmpMsg = `**${element.id}** - **${monster.name.english}${shiny}${favorite}${legendary}** - **Level ${element.level}** - **Avg IV ${averageIV}%**`;
 
       temp_monsters.push({
         id: element.id,
@@ -204,6 +226,7 @@ export async function checkFavorites(message: Message): Promise<void> {
     let message_contents = [];
     let shiny = '';
     let favorite = '';
+    let legendary = '';
 
     logger.trace(`Successfully fetched! Compiling..`);
 
@@ -215,6 +238,21 @@ export async function checkFavorites(message: Message): Promise<void> {
 
     pokemon.forEach((element: IMonsterModel) => {
       const monster = findMonsterByID(element.monster_id);
+
+      if (
+        (splitMsg[splitMsg.length - 1].toLowerCase() == '--legendary' &&
+          monster.special != 'Legendary') ||
+        (splitMsg[splitMsg.length - 1].toLowerCase() == '--mythical' &&
+          monster.special != 'Mythical') ||
+        (splitMsg[splitMsg.length - 1].toLowerCase() == '--ultrabeast' &&
+          monster.special != 'Ultrabeast') ||
+        (splitMsg[splitMsg.length - 1].toLowerCase() == '--shiny' &&
+          !element.shiny) ||
+        (splitMsg[splitMsg.length - 1].toLowerCase() == '--mega' &&
+          !monster.forme)
+      ) {
+        return;
+      }
 
       if (element.shiny) {
         shiny = ' ⭐';
@@ -228,6 +266,12 @@ export async function checkFavorites(message: Message): Promise<void> {
         favorite = '';
       }
 
+      if (monster.special) {
+        legendary = ` 💠`;
+      } else {
+        legendary = '';
+      }
+
       const averageIV = (
         ((element.hp +
           element.attack +
@@ -239,7 +283,7 @@ export async function checkFavorites(message: Message): Promise<void> {
         100
       ).toFixed(2);
 
-      const tmpMsg = `**${element.id}** - **${monster.name.english}${shiny}**${favorite} - **Level ${element.level}** - **Avg IV ${averageIV}%**`;
+      const tmpMsg = `**${element.id}** - **${monster.name.english}${shiny}${favorite}${legendary}** - **Level ${element.level}** - **Avg IV ${averageIV}%**`;
 
       temp_monsters.push({
         id: element.id,
@@ -364,6 +408,7 @@ export async function searchMonsters(message: Message): Promise<void> {
     let message_contents = [];
     let shiny = '';
     let favorite = '';
+    let legendary = '';
 
     const temp_monsters = [];
 
@@ -380,6 +425,12 @@ export async function searchMonsters(message: Message): Promise<void> {
         shiny = ' ⭐';
       } else {
         shiny = '';
+      }
+
+      if (monster.special) {
+        legendary = ` 💠`;
+      } else {
+        legendary = '';
       }
 
       if (element.favorite) {
@@ -399,7 +450,7 @@ export async function searchMonsters(message: Message): Promise<void> {
         100
       ).toFixed(2);
 
-      const tmpMsg = `**${element.id}** - **${monster.name.english}${shiny}**${favorite} - **LVL ${element.level}** - **IV ${averageIV}%**`;
+      const tmpMsg = `**${element.id}** - **${monster.name.english}${shiny}${favorite}${legendary}** - **LVL ${element.level}** - **IV ${averageIV}%**`;
 
       temp_monsters.push({
         id: element.id,

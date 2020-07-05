@@ -41,7 +41,7 @@ export async function monsterParser(
 
   if (
     cache.monster_spawn.current_spawn &&
-    command.match(prefix_regex('catch')) &&
+    command.match(prefix_regex('catch|キャッチ|抓住|capture')) &&
     channel_name == cache.settings.specific_channel &&
     splitMsg.length > 1
   ) {
@@ -92,7 +92,7 @@ export async function monsterParser(
     }
 
     if (
-      command.match(prefix_regex('trade|t ')) &&
+      command.match(prefix_regex('trade|t')) &&
       channel_name == cache.settings.specific_channel &&
       splitMsg.length > 1
     ) {
@@ -107,7 +107,7 @@ export async function monsterParser(
     }
 
     if (
-      command.match(prefix_regex('dex|d ')) &&
+      command.match(prefix_regex('dex|d')) &&
       channel_name == cache.settings.specific_channel &&
       splitMsg.length > 1
     ) {
@@ -122,7 +122,7 @@ export async function monsterParser(
     }
 
     if (
-      command.match(prefix_regex('search|s ')) &&
+      command.match(prefix_regex('search')) &&
       channel_name == cache.settings.specific_channel &&
       splitMsg.length > 1
     ) {
@@ -136,7 +136,7 @@ export async function monsterParser(
       searchMonsters(message);
     }
     if (
-      command.match(prefix_regex('pokemon|p ')) &&
+      command.match(prefix_regex('pokemon|p')) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -165,7 +165,7 @@ export async function monsterParser(
     }
 
     if (
-      message.content.match(prefix_regex('info latest|i l ')) &&
+      message.content.match(prefix_regex('info latest|i l')) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -179,7 +179,7 @@ export async function monsterParser(
     }
 
     if (
-      command.match(prefix_regex('info|i ')) &&
+      command.match(prefix_regex('info|i')) &&
       splitMsg.length == 1 &&
       channel_name == cache.settings.specific_channel
     ) {

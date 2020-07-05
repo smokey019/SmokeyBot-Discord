@@ -32,6 +32,7 @@ export interface IMonsterDex {
     french: string;
   };
   baseSpecies?: string;
+  special?: string;
   baseForme?: string;
   forme?: string;
   region?: string;
