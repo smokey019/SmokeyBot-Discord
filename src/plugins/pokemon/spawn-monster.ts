@@ -47,12 +47,12 @@ export async function spawnMonster(
   while (
     !monster.name.english ||
     monster.id < 0 ||
-    monster.id > 890 ||
+    monster.id > 893 ||
     monster.forme ||
     !monster.images
   ) {
     logger.debug('Invalid monster found.');
-    console.log(monster);
+    logger.debug(monster);
     monster = getRandomMonster();
   }
 

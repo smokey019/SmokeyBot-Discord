@@ -85,6 +85,8 @@ async function parseMessage(message: Message) {
       }
     }
   } else {
+    if (message.author.bot) return;
+
     if (timestamp - cache.time > 3) {
       smokeybotParser(message, cache);
     }

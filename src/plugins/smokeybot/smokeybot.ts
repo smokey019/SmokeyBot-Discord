@@ -2,7 +2,20 @@ import { MessageEmbed, Message } from 'discord.js';
 import { jsonFetch, getCurrentTime } from '../../utils';
 import { getLogger } from '../../clients/logger';
 import { cacheClient } from '../../clients/cache';
-import { IFFZRoom } from '../../models/FFZ-Emotes';
+
+export interface IFFZRoom {
+  room?: {
+    _id: number;
+    css: null;
+    display_name: string;
+    id: string;
+    is_group: boolean;
+    moderator_badge: null;
+    set: number;
+    twitch_id: number;
+  };
+  sets?: unknown;
+}
 
 const logger = getLogger('SmokeyBot');
 

@@ -181,6 +181,7 @@ export async function monsterParser(
     if (
       command.match(prefix_regex('info|i')) &&
       splitMsg.length == 1 &&
+      !splitMsg[0].match('item') &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();

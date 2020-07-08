@@ -61,7 +61,7 @@ export async function catchMonster(
       cache.monster_spawn.current_spawn,
     )
   ) {
-    logger.debug(
+    logger.trace(
       `${message.guild?.name} - ${message.author.username} | Starting catch~`,
     );
 
@@ -83,7 +83,7 @@ export async function catchMonster(
       cacheClient
         .set(message.guild.id, cache)
         .then(() =>
-          logger.debug(
+          logger.trace(
             `${message.guild?.name} - ${message.author.username} | Updated cache~`,
           ),
         );
@@ -156,7 +156,7 @@ export async function catchMonster(
           uid: message.author.id,
         });
 
-        logger.info(`Successfully inserted user ${message.author.username}`);
+        logger.debug(`Successfully inserted user ${message.author.username}`);
       }
 
       if (insertMonster) {
@@ -164,7 +164,7 @@ export async function catchMonster(
 
         if (shiny == 1 && !dex.includes(currentSpawn.id)) {
           response = `POGGERS! You caught a ⭐__***SHINY***__⭐ level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}** - Added to Pokédex.`;
-          logger.info(
+          logger.error(
             `${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
           );
           await databaseClient<IMonsterUserModel>(MonsterUserTable)
@@ -185,7 +185,7 @@ export async function catchMonster(
           );
         } else if (shiny == 1 && dex.includes(currentSpawn.id)) {
           response = `POGGERS! You caught a ⭐__***SHINY***__⭐ level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}**.`;
-          logger.info(
+          logger.error(
             `${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
           );
         }
@@ -215,7 +215,7 @@ export async function catchMonster(
 
     message
       .reply(`That is the wrong pokémon!`)
-      .then(() => logger.debug(`${message.author.username} is WRONG!`))
+      .then(() => logger.trace(`${message.author.username} is WRONG!`))
       .catch(logger.error);
   }
 }

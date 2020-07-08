@@ -158,7 +158,13 @@ export async function checkMonsters(message: Message): Promise<void> {
     if (message_contents.length > 20) {
       all_monsters = chunk(message_contents, 20);
 
-      if (splitMsg.length == 4 && all_monsters.length > 1) {
+      if (
+        splitMsg.length >= 4 &&
+        all_monsters.length > 1 &&
+        !splitMsg[splitMsg.length - 1].match(
+          /legendary|mythical|ultrabeast|shiny|mega/i,
+        )
+      ) {
         const page = parseInt(splitMsg[splitMsg.length - 1]) - 1;
 
         if (all_monsters[page]) {
@@ -350,7 +356,13 @@ export async function checkFavorites(message: Message): Promise<void> {
     if (message_contents.length > 20) {
       all_monsters = chunk(message_contents, 20);
 
-      if (splitMsg.length == 4 && all_monsters.length > 1) {
+      if (
+        splitMsg.length >= 4 &&
+        all_monsters.length > 1 &&
+        !splitMsg[splitMsg.length - 1].match(
+          /legendary|mythical|ultrabeast|shiny|mega/i,
+        )
+      ) {
         const page = parseInt(splitMsg[splitMsg.length - 1]) - 1;
 
         if (all_monsters[page]) {

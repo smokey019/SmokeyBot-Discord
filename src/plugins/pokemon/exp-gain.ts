@@ -38,7 +38,7 @@ export async function checkExpGain(message: Message): Promise<any> {
           .where({ id: user.current_monster })
           .increment('experience', getRndInteger(50, 620));
         if (updateExp) {
-          logger.info(
+          logger.trace(
             `User ${message.author.username} gained XP in ${message.guild.name}.`,
           );
 
@@ -88,7 +88,7 @@ export async function checkExpGain(message: Message): Promise<any> {
                       imgs = [evolve.images.normal, monster_dex.images.normal];
                     }
                     const embed = new MessageEmbed({
-                      color: 0x00bc8c,
+                      color: evolve.color,
                       description: `Nice! **${monster_dex.name.english}** has evolved into **${evolve.name.english}**!`,
                       image: {
                         url: imgs[0],
