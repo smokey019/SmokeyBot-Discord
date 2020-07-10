@@ -37,8 +37,7 @@
 - `bal|balance|bank|currency`
   - Check your currency balance.
 - `item`
-  - `buy`
-    - `item number|item name`
+  - `buy item number|item name`
     - Buy an item and put it in your inventory.
   - `remove|- %monster_id%`
     - Remove a monster's item.
