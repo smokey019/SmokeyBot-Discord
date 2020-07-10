@@ -1,4 +1,5 @@
 ## Structure
+
 - `./src/clients`
   - "Clients" are isolated adapters to outside data connections (database, discord, cache, ...).
   - Keeping them separate allows you to quickly modify connection info and keep from polluting business logic (the primary goal of the app isn't to find the database).
@@ -17,6 +18,7 @@
     - Note: TypeScript comes in handy here. "Your plugin must implement `interface IPlugin { onMessage?: (message: Message) => Promise<void>... }`..."
 
 ## Tools
+
 - [Prettier](https://prettier.io/) - Opinionated code formatter that ensures formatting is always consistent. It is set to run during commit (`package.json#husky`), so it does the work behind the scenes if you don't want to worry about it.
 - [Yarn](https://classic.yarnpkg.com/) (Optional) - Alternative package manager to npm. In my experience, it handles package version locking better and is faster. Using `yarn` instead of `npm install` will read the `yarn.lock` file and use package versions from there.
 - [TypeScript](https://www.typescriptlang.org/) - Adds types and other safety features to JavaScript. Added bonus of allowing the use of newer JavaScript features in Node and significantly improving development experience (better documentation on hover, "find all references", safer auto refactors, etc).
@@ -26,3 +28,57 @@
 - [log4js](https://github.com/log4js-node/log4js-node) - Logging can get messy. This adds a layer of configurability to it (driven by `LOG_LEVEL`) so you can tweak the amount of output without modifying code. Can also have it output to multiple, different locations (files, log aggregators, console, ...).
 - [knex](http://knexjs.org/) - SQL Builder that adds safety and TypeScript support so you don't have to worry about it.
 
+## Commands
+
+- `~|p!|!`
+  - Prefixes.
+- `catch|キャッチ|抓住|capture %monster%`
+  - Catch a monster. Case insensitive.
+- `bal|balance|bank|currency`
+  - Check your currency balance.
+- `item`
+  - `buy`
+    - `item number|item name`
+    - Buy an item and put it in your inventory.
+  - `remove|-`
+    - `%monster_id%`
+    - Remove a monster's item.
+  - `balance`
+    - Check your currency balance.
+  - `give|+`
+    - `%item_id% %monster_id%`
+    - Give a monster an item.
+  - `list|items|=`
+    - List all your items in your inventory. (Not your monsters).
+  - `shop`
+    - `%page_number%`
+    - Check the shop for items.
+- `trade`
+  - `start @User %monster_id%`
+    - Starts a trade with mentioned user.
+  - `cancel|delete|del|-`
+    - Cancels latest trade.
+  - `accept|confirm|acc|+`
+    - Accepts a trade.
+- `dex|d %monster_name% (shiny)`
+  - Look up a Monster in the Dex. Optionally add shiny at the end to see the shiny version image.
+- `search %monster_name% (iv|level|id|shiny|name) (high|low) (page)`
+  - Search your Monsters.
+- `pokemon|p %monster_name% (iv|level|id|shiny|name) (high|low) (page|legendary|mythical|ultrabeast|shiny|mega)`
+  - Search your Monsters.
+- `favorites|favourites %monster_name% (iv|level|id|shiny|name) (high|low) (page|legendary|mythical|ultrabeast|shiny|mega)`
+  - Search your Favorite Monsters.
+- `favorite|favourite %monster_id%`
+  - Favorite a monster.
+- `unfavorite|unfavourite %monster_id%`
+  - Unfavorite a monster.
+- `info|i %monster_id%`
+  - Show information for a monster.
+- `info latest|i l`
+  - Show information for latest monster.
+- `release %monster_id% (%monster_id% %monster_id%...)`
+  - Release a monster. Release more monsters by typing a space in between each ID. Up to 20.
+- `recover %monster_id%`
+  - If you accidentally release the wrong monster you can recover it this way.
+- `select %monster_id%`
+  - Select a monster to level up while you chat in Discord.

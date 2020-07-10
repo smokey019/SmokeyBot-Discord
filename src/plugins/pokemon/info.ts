@@ -493,7 +493,7 @@ export async function monsterDex(message: Message): Promise<void> {
 
     if (tempMonster.region || tempMonster.forme) {
       // shiny
-      if (tmpSplit[tmpSplit.length - 1] == '--shiny') {
+      if (tmpSplit[tmpSplit.length - 1].match(/shiny/i)) {
         thumbnail = tempMonster.images['gif-shiny'];
         image = tempMonster.images.shiny;
       } else {
@@ -503,7 +503,7 @@ export async function monsterDex(message: Message): Promise<void> {
       }
     } else {
       // shiny
-      if (tmpSplit[tmpSplit.length - 1] == '--shiny') {
+      if (tmpSplit[tmpSplit.length - 1].match(/shiny/i)) {
         thumbnail = tempMonster.images['gif-shiny'];
         image = tempMonster.images.shiny;
       } else {

@@ -283,12 +283,8 @@ export async function monsterParser(
 
   if (timestamp - cache.time < 3) {
     if (
-      (command.match(prefix_regex('release')) &&
-        channel_name == cache.settings.specific_channel) ||
-      (command.match(prefix_regex('pokemon')) &&
-        channel_name == cache.settings.specific_channel) ||
-      (command.match(prefix_regex('info')) &&
-        channel_name == cache.settings.specific_channel)
+      command.match(prefixes.join('|')) &&
+      channel_name == cache.settings.specific_channel
     ) {
       logger.debug(`${message.guild.name} - Cooldown present.`);
       return;

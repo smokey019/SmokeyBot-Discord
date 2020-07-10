@@ -48,16 +48,14 @@ export async function checkMonsters(message: Message): Promise<void> {
       if (!monster) return;
 
       if (
-        (splitMsg[splitMsg.length - 1].toLowerCase() == '--legendary' &&
+        (splitMsg[splitMsg.length - 1].match(/legendary/i) &&
           monster.special != 'Legendary') ||
-        (splitMsg[splitMsg.length - 1].toLowerCase() == '--mythical' &&
+        (splitMsg[splitMsg.length - 1].match(/mythical/i) &&
           monster.special != 'Mythical') ||
-        (splitMsg[splitMsg.length - 1].toLowerCase() == '--ultrabeast' &&
+        (splitMsg[splitMsg.length - 1].match(/ultrabeast/i) &&
           monster.special != 'Ultrabeast') ||
-        (splitMsg[splitMsg.length - 1].toLowerCase() == '--shiny' &&
-          !element.shiny) ||
-        (splitMsg[splitMsg.length - 1].toLowerCase() == '--mega' &&
-          !monster.forme)
+        (splitMsg[splitMsg.length - 1].match(/shiny/i) && !element.shiny) ||
+        (splitMsg[splitMsg.length - 1].match(/mega/i) && !monster.forme)
       ) {
         return;
       }
@@ -246,16 +244,14 @@ export async function checkFavorites(message: Message): Promise<void> {
       const monster = findMonsterByID(element.monster_id);
 
       if (
-        (splitMsg[splitMsg.length - 1].toLowerCase() == '--legendary' &&
+        (splitMsg[splitMsg.length - 1].match(/legendary/i) &&
           monster.special != 'Legendary') ||
-        (splitMsg[splitMsg.length - 1].toLowerCase() == '--mythical' &&
+        (splitMsg[splitMsg.length - 1].match(/mythical/i) &&
           monster.special != 'Mythical') ||
-        (splitMsg[splitMsg.length - 1].toLowerCase() == '--ultrabeast' &&
+        (splitMsg[splitMsg.length - 1].match(/ultrabeast/i) &&
           monster.special != 'Ultrabeast') ||
-        (splitMsg[splitMsg.length - 1].toLowerCase() == '--shiny' &&
-          !element.shiny) ||
-        (splitMsg[splitMsg.length - 1].toLowerCase() == '--mega' &&
-          !monster.forme)
+        (splitMsg[splitMsg.length - 1].match(/shiny/i) && !element.shiny) ||
+        (splitMsg[splitMsg.length - 1].match(/mega/i) && !monster.forme)
       ) {
         return;
       }
