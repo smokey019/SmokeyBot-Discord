@@ -40,18 +40,15 @@
   - `buy`
     - `item number|item name`
     - Buy an item and put it in your inventory.
-  - `remove|-`
-    - `%monster_id%`
+  - `remove|- %monster_id%`
     - Remove a monster's item.
   - `balance`
     - Check your currency balance.
-  - `give|+`
-    - `%item_id% %monster_id%`
+  - `give|+ %item_id% %monster_id%`
     - Give a monster an item.
   - `list|items|=`
     - List all your items in your inventory. (Not your monsters).
-  - `shop`
-    - `%page_number%`
+  - `shop %page_number%`
     - Check the shop for items.
 - `trade`
   - `start @User %monster_id%`
