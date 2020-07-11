@@ -241,6 +241,7 @@ export async function selectMonster(message: Message): Promise<any> {
   const splitMsg = message.content.split(' ');
 
   const monster: IMonsterModel = await getUserMonster(splitMsg[1]);
+  if (!monster) return undefined;
   const dex = findMonsterByID(monster.monster_id);
 
   if (monster && message.author.id == monster.uid) {

@@ -1,9 +1,10 @@
 import { Message } from 'discord.js';
-import { databaseClient } from '../../clients/database';
+import { databaseClient, getMonsterUser } from '../../clients/database';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { findMonsterByID } from './monsters';
 import { getLogger } from '../../clients/logger';
 import { explode } from '../../utils';
+import { IMonsterUserModel } from '../../models/MonsterUser';
 
 const logger = getLogger('Pokemon');
 
@@ -58,9 +59,18 @@ export async function releaseMonster(message: Message): Promise<void> {
           .catch(console.error);
       }
     } else {
-      const to_release = await databaseClient<IMonsterModel>(MonsterTable)
-        .select()
-        .where('id', tmpMsg[1]);
+      let to_release = undefined;
+
+      if (tmpMsg[1] == '^') {
+        const user: IMonsterUserModel = await getMonsterUser(message.author.id);
+        to_release = await databaseClient<IMonsterModel>(MonsterTable)
+          .select()
+          .where('id', user.latest_monster);
+      } else {
+        to_release = await databaseClient<IMonsterModel>(MonsterTable)
+          .select()
+          .where('id', tmpMsg[1]);
+      }
 
       if (
         to_release &&

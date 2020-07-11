@@ -2,8 +2,18 @@ import { Message } from 'discord.js';
 import { getCurrentTime } from '../../utils';
 import { cacheClient, ICache } from '../../clients/cache';
 import { toggleSmokeMon } from '../pokemon/options';
-import { sync_smokemotes, sync_ffz_emotes } from './smokeybot';
+import { sync_smokemotes, sync_ffz_emotes } from './sync-emojis';
 import { getLogger } from '../../clients/logger';
+import {
+  sumSmash,
+  checkVase,
+  gtfo,
+  checkColorRoles,
+  removeEmptyRoles,
+  checkTweet,
+  removeColorRoles,
+} from './smokeybot';
+import { prefix_regex } from '../pokemon/parser';
 
 const logger = getLogger('SmokeyBot');
 
@@ -40,6 +50,19 @@ export async function smokeybotParser(
     }
   }
 
+  if (splitMsg[0].match(prefix_regex('help|commands'))) {
+    cache.time = getCurrentTime();
+
+    cacheClient.set(message.guild.id, {
+      ...cache,
+      time: getCurrentTime(),
+    });
+
+    message.reply(
+      'for a list of commands check this link out: https://www.smokey.gg/tutorials/smokeybot-on-discord/',
+    );
+  }
+
   if (splitMsg[0].toLowerCase() == '~sync-emotes-smokemotes') {
     cache.time = getCurrentTime();
 
@@ -62,6 +85,83 @@ export async function smokeybotParser(
     sync_ffz_emotes(message);
   }
 
+  if (message.content == '~check color roles') {
+    cache.time = getCurrentTime();
+
+    cacheClient.set(message.guild.id, {
+      ...cache,
+      time: getCurrentTime(),
+    });
+
+    checkColorRoles(message);
+  }
+
+  if (message.content == '~remove color roles') {
+    cache.time = getCurrentTime();
+
+    cacheClient.set(message.guild.id, {
+      ...cache,
+      time: getCurrentTime(),
+    });
+
+    removeColorRoles(message);
+  }
+
+  if (message.content == '~remove empty roles') {
+    cache.time = getCurrentTime();
+
+    cacheClient.set(message.guild.id, {
+      ...cache,
+      time: getCurrentTime(),
+    });
+
+    removeEmptyRoles(message);
+  }
+
+  if (message.content == '~check tweet') {
+    cache.time = getCurrentTime();
+
+    cacheClient.set(message.guild.id, {
+      ...cache,
+      time: getCurrentTime(),
+    });
+
+    checkTweet(message);
+  }
+
+  if (splitMsg[0].toLowerCase() == '~smash') {
+    cache.time = getCurrentTime();
+
+    cacheClient.set(message.guild.id, {
+      ...cache,
+      time: getCurrentTime(),
+    });
+
+    sumSmash(message);
+  }
+
+  if (message.content == '~check vase') {
+    cache.time = getCurrentTime();
+
+    cacheClient.set(message.guild.id, {
+      ...cache,
+      time: getCurrentTime(),
+    });
+
+    checkVase(message);
+  }
+
+  if (splitMsg[0].toLowerCase() == '~gtfo') {
+    cache.time = getCurrentTime();
+
+    cacheClient.set(message.guild.id, {
+      ...cache,
+      time: getCurrentTime(),
+    });
+
+    gtfo(message);
+  }
+
   if (splitMsg[0].toLowerCase() == '~invite') {
     cache.time = getCurrentTime();
 
@@ -71,7 +171,7 @@ export async function smokeybotParser(
     });
 
     message.reply(
-      `here is Smokey's Discord Bot invite link: https://discordapp.com/oauth2/authorize?client_id=458710213122457600&scope=bot&permissions=8`,
+      `here is Smokey's Discord Bot invite link: https://discord.com/oauth2/authorize?client_id=458710213122457600&scope=bot&permissions=268954696`,
     );
   }
 }

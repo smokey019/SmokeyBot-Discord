@@ -112,8 +112,8 @@
     "prevo": "Ivysaur",
     "evoLevel": 32,
     "eggGroups": ["Monster", "Grass"],
-    "otherFormes": ["Venusaur-Mega"],
-    "formeOrder": ["Venusaur", "Venusaur-Mega"]
+    "otherFormes": ["Mega Venusaur"],
+    "formeOrder": ["Venusaur", "Mega Venusaur"]
   },
   {
     "id": 3,
@@ -151,7 +151,10 @@
     "weightkg": 155.5,
     "color": "#41c600",
     "eggGroups": ["Monster", "Grass"],
-    "requiredItem": "Venusaurite"
+    "requiredItem": "Venusaurite",
+    "evoType": "useItem",
+    "evoItem": "Venusaurite",
+    "prevo": "Venusaur"
   },
   {
     "id": 4,
@@ -266,12 +269,12 @@
     "prevo": "Charmeleon",
     "evoLevel": 36,
     "eggGroups": ["Monster", "Dragon"],
-    "otherFormes": ["Charizard-Mega-X", "Charizard-Mega-Y", "Charizard-Gmax"],
+    "otherFormes": ["Mega Charizard-X", "Mega Charizard-Y", "Gmax Charizard"],
     "formeOrder": [
       "Charizard",
-      "Charizard-Mega-X",
-      "Charizard-Mega-Y",
-      "Charizard-Gmax"
+      "Mega Charizard-X",
+      "Mega Charizard-Y",
+      "Gmax Charizard"
     ]
   },
   {
@@ -310,7 +313,10 @@
       "shiny": "https://i.imgur.com/GOWnSV4.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__006-mega-x__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_006-mega-x__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Charizardite X",
+    "prevo": "Charizard"
   },
   {
     "id": 6,
@@ -348,12 +354,15 @@
       "shiny": "https://i.imgur.com/5MqbUQk.png",
       "gif": "https://bot.smokey.gg/pokemon/images/gif/006.gif",
       "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/006_shiny.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Charizardite Y",
+    "prevo": "Charizard"
   },
   {
     "id": 6,
     "name": {
-      "english": "Charizard-Gmax",
+      "english": "Gmax Charizard",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -381,7 +390,13 @@
     "weightkg": 0,
     "color": "#ff0000",
     "eggGroups": ["Monster", "Dragon"],
-    "isGigantamax": "G-Max Wildfire"
+    "isGigantamax": "G-Max Wildfire",
+    "images": {
+      "normal": "https://img.pokemondb.net/artwork/large/charizard-gigantamax.jpg",
+      "shiny": "",
+      "gif": "",
+      "gif-shiny": ""
+    }
   },
   {
     "id": 7,
@@ -496,8 +511,8 @@
     "prevo": "Wartortle",
     "evoLevel": 36,
     "eggGroups": ["Monster", "Water 1"],
-    "otherFormes": ["Blastoise-Mega"],
-    "formeOrder": ["Blastoise", "Blastoise-Mega"]
+    "otherFormes": ["Mega Blastoise"],
+    "formeOrder": ["Blastoise", "Mega Blastoise"]
   },
   {
     "id": 9,
@@ -535,7 +550,10 @@
       "shiny": "https://i.imgur.com/IQ5sEGP.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__009-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_009-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Blastoisinite",
+    "prevo": "Blastoise"
   },
   {
     "id": 10,
@@ -637,13 +655,13 @@
     "prevo": "Metapod",
     "evoLevel": 10,
     "eggGroups": ["Bug"],
-    "otherFormes": ["Butterfree-Gmax"],
-    "formeOrder": ["Butterfree", "Butterfree-Gmax"]
+    "otherFormes": ["Gmax Butterfree"],
+    "formeOrder": ["Butterfree", "Gmax Butterfree"]
   },
   {
     "id": 12,
     "name": {
-      "english": "Butterfree-Gmax",
+      "english": "Gmax Butterfree",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -667,7 +685,13 @@
     "weightkg": 0,
     "color": "#ffffff",
     "eggGroups": ["Bug"],
-    "isGigantamax": "G-Max Befuddle"
+    "isGigantamax": "G-Max Befuddle",
+    "images": {
+      "normal": "https://img.pokemondb.net/artwork/large/butterfree-gigantamax.jpg",
+      "shiny": "",
+      "gif": "",
+      "gif-shiny": ""
+    }
   },
   {
     "id": 13,
@@ -769,8 +793,8 @@
     "prevo": "Kakuna",
     "evoLevel": 10,
     "eggGroups": ["Bug"],
-    "otherFormes": ["Beedrill-Mega"],
-    "formeOrder": ["Beedrill", "Beedrill-Mega"]
+    "otherFormes": ["Mega Beedrill"],
+    "formeOrder": ["Beedrill", "Mega Beedrill"]
   },
   {
     "id": 15,
@@ -804,7 +828,10 @@
       "shiny": "https://i.imgur.com/DTs5DPM.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__015-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_015-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Beedrillite",
+    "prevo": "Beedrill"
   },
   {
     "id": 16,
@@ -904,8 +931,8 @@
     "prevo": "Pidgeotto",
     "evoLevel": 36,
     "eggGroups": ["Flying"],
-    "otherFormes": ["Pidgeot-Mega"],
-    "formeOrder": ["Pidgeot", "Pidgeot-Mega"],
+    "otherFormes": ["Mega Pidgeot"],
+    "formeOrder": ["Pidgeot", "Mega Pidgeot"],
     "images": {
       "normal": "https://i.imgur.com/nFNQpES.png",
       "shiny": "https://i.imgur.com/oqzBGFe.png",
@@ -945,7 +972,10 @@
       "shiny": "https://i.imgur.com/tdbLpeG.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__018-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_018-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Pidgeotite",
+    "prevo": "Pidgeot"
   },
   {
     "id": 19,
@@ -1272,7 +1302,7 @@
       "Pikachu-Alola",
       "Pikachu-Partner",
       "Pikachu-Starter",
-      "Pikachu-Gmax"
+      "Gmax Pikachu"
     ],
     "formeOrder": [
       "Pikachu",
@@ -1290,7 +1320,7 @@
       "Pikachu-PhD",
       "Pikachu-Libre",
       "Pikachu-Cosplay",
-      "Pikachu-Gmax"
+      "Gmax Pikachu"
     ],
     "images": {
       "normal": "https://i.imgur.com/twrmrms.png",
@@ -1753,7 +1783,7 @@
   {
     "id": 25,
     "name": {
-      "english": "Pikachu-Gmax",
+      "english": "Gmax Pikachu",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -1777,7 +1807,13 @@
     "weightkg": 0,
     "color": "#fcff00",
     "eggGroups": ["Field", "Fairy"],
-    "isGigantamax": "G-Max Volt Crash"
+    "isGigantamax": "G-Max Volt Crash",
+    "images": {
+      "normal": "https://img.pokemondb.net/artwork/large/pikachu-gigantamax.jpg",
+      "shiny": "",
+      "gif": "",
+      "gif-shiny": ""
+    }
   },
   {
     "id": 26,
@@ -2003,6 +2039,12 @@
       "chinese": "尼多兰",
       "french": "Nidoran♀"
     },
+    "images": {
+      "normal": "https://i.imgur.com/ePsokfo.png",
+      "shiny": "https://i.imgur.com/Oazhwxi.png",
+      "gif": "https://bot.smokey.gg/pokemon/images/gif/029.gif",
+      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/029_shiny.gif"
+    },
     "type": ["Poison"],
     "gender": "F",
     "baseStats": {
@@ -2105,6 +2147,12 @@
       "japanese": "ニドラン♂",
       "chinese": "尼多朗",
       "french": "Nidoran♂"
+    },
+    "images": {
+      "normal": "https://i.imgur.com/zs1oDs6.png",
+      "shiny": "https://i.imgur.com/0LU8ZuJ.png",
+      "gif": "https://bot.smokey.gg/pokemon/images/gif/032.gif",
+      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/032_shiny.gif"
     },
     "type": ["Poison"],
     "gender": "M",
@@ -3003,8 +3051,8 @@
     "color": "#fcff00",
     "evos": ["Persian"],
     "eggGroups": ["Field"],
-    "otherFormes": ["Meowth-Alola", "Meowth-Galar", "Meowth-Gmax"],
-    "formeOrder": ["Meowth", "Meowth-Alola", "Meowth-Galar", "Meowth-Gmax"],
+    "otherFormes": ["Meowth-Alola", "Meowth-Galar", "Gmax Meowth"],
+    "formeOrder": ["Meowth", "Meowth-Alola", "Meowth-Galar", "Gmax Meowth"],
     "images": {
       "normal": "https://i.imgur.com/pYrxomv.png",
       "shiny": "https://i.imgur.com/GgKINgo.png",
@@ -3087,7 +3135,7 @@
   {
     "id": 52,
     "name": {
-      "english": "Meowth-Gmax",
+      "english": "Gmax Meowth",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -3112,7 +3160,13 @@
     "weightkg": 0,
     "color": "#fcff00",
     "eggGroups": ["Field"],
-    "isGigantamax": "G-Max Gold Rush"
+    "isGigantamax": "G-Max Gold Rush",
+    "images": {
+      "normal": "https://img.pokemondb.net/artwork/large/meowth-gigantamax.jpg",
+      "shiny": "",
+      "gif": "",
+      "gif-shiny": ""
+    }
   },
   {
     "id": 53,
@@ -3620,8 +3674,8 @@
     "prevo": "Kadabra",
     "evoType": "trade",
     "eggGroups": ["Human-Like"],
-    "otherFormes": ["Alakazam-Mega"],
-    "formeOrder": ["Alakazam", "Alakazam-Mega"],
+    "otherFormes": ["Mega Alakazam"],
+    "formeOrder": ["Alakazam", "Mega Alakazam"],
     "images": {
       "normal": "https://i.imgur.com/5nSdbp8.png",
       "shiny": "https://i.imgur.com/bJUF4cM.png",
@@ -3665,7 +3719,10 @@
       "shiny": "https://i.imgur.com/ZRKJKPY.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__065-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_065-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Alakazite",
+    "prevo": "Alakazam"
   },
   {
     "id": 66,
@@ -3777,8 +3834,8 @@
     "prevo": "Machoke",
     "evoType": "trade",
     "eggGroups": ["Human-Like"],
-    "otherFormes": ["Machamp-Gmax"],
-    "formeOrder": ["Machamp", "Machamp-Gmax"],
+    "otherFormes": ["Gmax Machamp"],
+    "formeOrder": ["Machamp", "Gmax Machamp"],
     "images": {
       "normal": "https://i.imgur.com/SN2gEGo.png",
       "shiny": "https://i.imgur.com/pBtP3h8.png",
@@ -3789,7 +3846,7 @@
   {
     "id": 68,
     "name": {
-      "english": "Machamp-Gmax",
+      "english": "Gmax Machamp",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -3818,7 +3875,13 @@
     "weightkg": 0,
     "color": "#444444",
     "eggGroups": ["Human-Like"],
-    "isGigantamax": "G-Max Chi Strike"
+    "isGigantamax": "G-Max Chi Strike",
+    "images": {
+      "normal": "https://img.pokemondb.net/artwork/large/machamp-gigantamax.jpg",
+      "shiny": "",
+      "gif": "",
+      "gif-shiny": ""
+    }
   },
   {
     "id": 69,
@@ -4453,8 +4516,8 @@
     "prevo": "Slowpoke",
     "evoLevel": 37,
     "eggGroups": ["Monster", "Water 1"],
-    "otherFormes": ["Slowbro-Mega"],
-    "formeOrder": ["Slowbro", "Slowbro-Mega"],
+    "otherFormes": ["Mega Slowbro"],
+    "formeOrder": ["Slowbro", "Mega Slowbro"],
     "images": {
       "normal": "https://i.imgur.com/f0uDGSL.png",
       "shiny": "https://i.imgur.com/ddnH4JK.png",
@@ -4494,7 +4557,10 @@
       "shiny": "https://i.imgur.com/eo24EI4.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__080-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_080-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Slowbronite",
+    "prevo": "Slowbro"
   },
   {
     "id": 81,
@@ -5084,8 +5150,8 @@
     "prevo": "Haunter",
     "evoType": "trade",
     "eggGroups": ["Amorphous"],
-    "otherFormes": ["Gengar-Mega", "Gengar-Gmax"],
-    "formeOrder": ["Gengar", "Gengar-Mega", "Gengar-Gmax"],
+    "otherFormes": ["Mega Gengar", "Gmax Gengar"],
+    "formeOrder": ["Gengar", "Mega Gengar", "Gmax Gengar"],
     "images": {
       "normal": "https://i.imgur.com/wCa0sDe.png",
       "shiny": "https://i.imgur.com/zYCU9Yw.png",
@@ -5125,12 +5191,15 @@
       "shiny": "https://i.imgur.com/Dc2yfG6.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__094-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_094-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Gengarite",
+    "prevo": "Gengar"
   },
   {
     "id": 94,
     "name": {
-      "english": "Gengar-Gmax",
+      "english": "Gmax Gengar",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -5153,7 +5222,13 @@
     "weightkg": 0,
     "color": "#6000ff",
     "eggGroups": ["Amorphous"],
-    "isGigantamax": "G-Max Terror"
+    "isGigantamax": "G-Max Terror",
+    "images": {
+      "normal": "https://img.pokemondb.net/artwork/large/gengar-gigantamax.jpg",
+      "shiny": "",
+      "gif": "",
+      "gif-shiny": ""
+    }
   },
   {
     "id": 95,
@@ -5320,8 +5395,8 @@
     "prevo": "Krabby",
     "evoLevel": 28,
     "eggGroups": ["Water 3"],
-    "otherFormes": ["Kingler-Gmax"],
-    "formeOrder": ["Kingler", "Kingler-Gmax"],
+    "otherFormes": ["Gmax Kingler"],
+    "formeOrder": ["Kingler", "Gmax Kingler"],
     "images": {
       "normal": "https://i.imgur.com/9kZeia6.png",
       "shiny": "https://i.imgur.com/h7CUjhi.png",
@@ -5332,7 +5407,7 @@
   {
     "id": 99,
     "name": {
-      "english": "Kingler-Gmax",
+      "english": "Gmax Kingler",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -5357,7 +5432,13 @@
     "weightkg": 0,
     "color": "#ff0000",
     "eggGroups": ["Water 3"],
-    "isGigantamax": "G-Max Foam Burst"
+    "isGigantamax": "G-Max Foam Burst",
+    "images": {
+      "normal": "https://img.pokemondb.net/artwork/large/kingler-gigantamax.jpg",
+      "shiny": "",
+      "gif": "",
+      "gif-shiny": ""
+    }
   },
   {
     "id": 100,
@@ -6032,8 +6113,8 @@
     "weightkg": 80,
     "color": "#983f00",
     "eggGroups": ["Monster"],
-    "otherFormes": ["Kangaskhan-Mega"],
-    "formeOrder": ["Kangaskhan", "Kangaskhan-Mega"],
+    "otherFormes": ["Mega Kangaskhan"],
+    "formeOrder": ["Kangaskhan", "Mega Kangaskhan"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721986645707980850/115.png",
       "shiny": "https://i.imgur.com/y4MAA9f.png",
@@ -6074,7 +6155,10 @@
       "shiny": "https://i.imgur.com/rsrO9mU.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__115-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_115-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Kangaskhanite",
+    "prevo": "Kangaskhan"
   },
   {
     "id": 116,
@@ -6540,8 +6624,8 @@
     "weightkg": 55,
     "color": "#983f00",
     "eggGroups": ["Bug"],
-    "otherFormes": ["Pinsir-Mega"],
-    "formeOrder": ["Pinsir", "Pinsir-Mega"],
+    "otherFormes": ["Mega Pinsir"],
+    "formeOrder": ["Pinsir", "Mega Pinsir"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721986718902911036/127.png",
       "shiny": "https://i.imgur.com/nfZrfVI.png",
@@ -6581,7 +6665,10 @@
       "shiny": "https://i.imgur.com/izQN5yN.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__127-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_127-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Pinsirite",
+    "prevo": "Pinsir"
   },
   {
     "id": 128,
@@ -6677,8 +6764,8 @@
     "prevo": "Magikarp",
     "evoLevel": 20,
     "eggGroups": ["Water 2", "Dragon"],
-    "otherFormes": ["Gyarados-Mega"],
-    "formeOrder": ["Gyarados", "Gyarados-Mega"],
+    "otherFormes": ["Mega Gyarados"],
+    "formeOrder": ["Gyarados", "Mega Gyarados"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721986756445995018/130.png",
       "shiny": "https://i.imgur.com/jb822Se.png",
@@ -6718,7 +6805,10 @@
       "shiny": "https://i.imgur.com/iFmbGyG.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__130-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_130-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Gyaradosite",
+    "prevo": "Gyarados"
   },
   {
     "id": 131,
@@ -6746,8 +6836,8 @@
     "weightkg": 220,
     "color": "#003cff",
     "eggGroups": ["Monster", "Water 1"],
-    "otherFormes": ["Lapras-Gmax"],
-    "formeOrder": ["Lapras", "Lapras-Gmax"],
+    "otherFormes": ["Gmax Lapras"],
+    "formeOrder": ["Lapras", "Gmax Lapras"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721986760724316230/131.png",
       "shiny": "https://i.imgur.com/OaR5dmh.png",
@@ -6758,7 +6848,7 @@
   {
     "id": 131,
     "name": {
-      "english": "Lapras-Gmax",
+      "english": "Gmax Lapras",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -6783,7 +6873,13 @@
     "weightkg": 0,
     "color": "#003cff",
     "eggGroups": ["Monster", "Water 1"],
-    "isGigantamax": "G-Max Resonance"
+    "isGigantamax": "G-Max Resonance",
+    "images": {
+      "normal": "https://img.pokemondb.net/artwork/large/lapras-gigantamax.jpg",
+      "shiny": "",
+      "gif": "",
+      "gif-shiny": ""
+    }
   },
   {
     "id": 132,
@@ -6858,8 +6954,8 @@
       "Sylveon"
     ],
     "eggGroups": ["Field"],
-    "otherFormes": ["Eevee-Starter", "Eevee-Gmax"],
-    "formeOrder": ["Eevee", "Eevee-Starter", "Eevee-Gmax"],
+    "otherFormes": ["Eevee-Starter", "Gmax Eevee"],
+    "formeOrder": ["Eevee", "Eevee-Starter", "Gmax Eevee"],
     "images": {
       "normal": "https://i.imgur.com/2NxSws2.png",
       "shiny": "https://i.imgur.com/JhomfqJ.png",
@@ -6903,7 +6999,7 @@
   {
     "id": 133,
     "name": {
-      "english": "Eevee-Gmax",
+      "english": "Gmax Eevee",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -6932,7 +7028,13 @@
     "weightkg": 0,
     "color": "#983f00",
     "eggGroups": ["Field"],
-    "isGigantamax": "G-Max Cuddle"
+    "isGigantamax": "G-Max Cuddle",
+    "images": {
+      "normal": "https://img.pokemondb.net/artwork/large/eevee-gigantamax.jpg",
+      "shiny": "",
+      "gif": "",
+      "gif-shiny": ""
+    }
   },
   {
     "id": 134,
@@ -7270,8 +7372,8 @@
     "weightkg": 59,
     "color": "#6000ff",
     "eggGroups": ["Flying"],
-    "otherFormes": ["Aerodactyl-Mega"],
-    "formeOrder": ["Aerodactyl", "Aerodactyl-Mega"],
+    "otherFormes": ["Mega Aerodactyl"],
+    "formeOrder": ["Aerodactyl", "Mega Aerodactyl"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721986845637869588/142.png",
       "shiny": "https://i.imgur.com/5pVLURT.png",
@@ -7315,7 +7417,10 @@
       "shiny": "https://i.imgur.com/3HzDqj5.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__142-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_142-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Aerodactylite",
+    "prevo": "Aerodactyl"
   },
   {
     "id": 143,
@@ -7350,8 +7455,8 @@
     "evoType": "levelFriendship",
     "eggGroups": ["Monster"],
     "canHatch": true,
-    "otherFormes": ["Snorlax-Gmax"],
-    "formeOrder": ["Snorlax", "Snorlax-Gmax"],
+    "otherFormes": ["Gmax Snorlax"],
+    "formeOrder": ["Snorlax", "Gmax Snorlax"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721986851027681280/143.png",
       "shiny": "https://i.imgur.com/TBKIXmK.png",
@@ -7362,7 +7467,7 @@
   {
     "id": 143,
     "name": {
-      "english": "Snorlax-Gmax",
+      "english": "Gmax Snorlax",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -7391,7 +7496,13 @@
     "weightkg": 0,
     "color": "#000000",
     "eggGroups": ["Monster"],
-    "isGigantamax": "G-Max Replenish"
+    "isGigantamax": "G-Max Replenish",
+    "images": {
+      "normal": "https://img.pokemondb.net/artwork/large/snorlax-gigantamax.jpg",
+      "shiny": "",
+      "gif": "",
+      "gif-shiny": ""
+    }
   },
   {
     "id": 144,
@@ -7624,8 +7735,8 @@
     "weightkg": 122,
     "color": "#6000ff",
     "eggGroups": ["Undiscovered"],
-    "otherFormes": ["Mewtwo-Mega-X", "Mewtwo-Mega-Y"],
-    "formeOrder": ["Mewtwo", "Mewtwo-Mega-X", "Mewtwo-Mega-Y"],
+    "otherFormes": ["Mega Mewtwo-X", "Mega Mewtwo-Y"],
+    "formeOrder": ["Mewtwo", "Mega Mewtwo-X", "Mega Mewtwo-Y"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721988890759790602/150.png",
       "shiny": "https://i.imgur.com/K0iYyKb.png",
@@ -7667,7 +7778,10 @@
       "shiny": "https://i.imgur.com/rS5oerv.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__150-mega-x__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_150-mega-x__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Mewtwonite X",
+    "prevo": "Mewtwo"
   },
   {
     "id": 150,
@@ -7703,7 +7817,10 @@
       "shiny": "https://i.imgur.com/FiAnhtL.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__150-mega-y__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_150-mega-y__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Mewtwonite Y",
+    "prevo": "Mewtwo"
   },
   {
     "id": 151,
@@ -8844,8 +8961,8 @@
     "prevo": "Flaaffy",
     "evoLevel": 30,
     "eggGroups": ["Monster", "Field"],
-    "otherFormes": ["Ampharos-Mega"],
-    "formeOrder": ["Ampharos", "Ampharos-Mega"],
+    "otherFormes": ["Mega Ampharos"],
+    "formeOrder": ["Ampharos", "Mega Ampharos"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989130762059796/181.png",
       "shiny": "https://i.imgur.com/Cb4oPDe.png",
@@ -8885,7 +9002,10 @@
       "shiny": "https://i.imgur.com/HBHcyTH.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__181-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_181-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Ampharosite",
+    "prevo": "Ampharos"
   },
   {
     "id": 182,
@@ -9881,8 +10001,8 @@
     "evoType": "trade",
     "evoItem": "Metal Coat",
     "eggGroups": ["Mineral"],
-    "otherFormes": ["Steelix-Mega"],
-    "formeOrder": ["Steelix", "Steelix-Mega"],
+    "otherFormes": ["Mega Steelix"],
+    "formeOrder": ["Steelix", "Mega Steelix"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989275922726922/208.png",
       "shiny": "https://i.imgur.com/Q03JEIP.png",
@@ -9922,7 +10042,10 @@
       "shiny": "https://i.imgur.com/G2mlnsV.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__208-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_208-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Steelixite",
+    "prevo": "Steelix"
   },
   {
     "id": 209,
@@ -10063,8 +10186,8 @@
     "evoType": "trade",
     "evoItem": "Metal Coat",
     "eggGroups": ["Bug"],
-    "otherFormes": ["Scizor-Mega"],
-    "formeOrder": ["Scizor", "Scizor-Mega"],
+    "otherFormes": ["Mega Scizor"],
+    "formeOrder": ["Scizor", "Mega Scizor"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989356054904843/212.png",
       "shiny": "https://i.imgur.com/DmdlwUa.png",
@@ -10104,7 +10227,10 @@
       "shiny": "https://i.imgur.com/lrYjEd3.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__212-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_212-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Scizorite",
+    "prevo": "Scizor"
   },
   {
     "id": 213,
@@ -10165,8 +10291,8 @@
     "weightkg": 54,
     "color": "#003cff",
     "eggGroups": ["Bug"],
-    "otherFormes": ["Heracross-Mega"],
-    "formeOrder": ["Heracross", "Heracross-Mega"],
+    "otherFormes": ["Mega Heracross"],
+    "formeOrder": ["Heracross", "Mega Heracross"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989366112714812/214.png",
       "shiny": "https://i.imgur.com/IWaPghp.png",
@@ -10206,7 +10332,10 @@
       "shiny": "https://i.imgur.com/vG5JkpT.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__214-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_214-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Heracronite",
+    "prevo": "Heracross"
   },
   {
     "id": 215,
@@ -10762,8 +10891,8 @@
     "prevo": "Houndour",
     "evoLevel": 24,
     "eggGroups": ["Field"],
-    "otherFormes": ["Houndoom-Mega"],
-    "formeOrder": ["Houndoom", "Houndoom-Mega"],
+    "otherFormes": ["Mega Houndoom"],
+    "formeOrder": ["Houndoom", "Mega Houndoom"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989561445777468/229.png",
       "shiny": "https://i.imgur.com/ZMVB1Vj.png",
@@ -10803,7 +10932,10 @@
       "shiny": "https://i.imgur.com/jvH9oR5.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__229-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_229-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Houndoominite",
+    "prevo": "Houndoom"
   },
   {
     "id": 230,
@@ -11463,8 +11595,8 @@
     "prevo": "Pupitar",
     "evoLevel": 55,
     "eggGroups": ["Monster"],
-    "otherFormes": ["Tyranitar-Mega"],
-    "formeOrder": ["Tyranitar", "Tyranitar-Mega"],
+    "otherFormes": ["Mega Tyranitar"],
+    "formeOrder": ["Tyranitar", "Mega Tyranitar"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989639019298846/248.png",
       "shiny": "https://i.imgur.com/MLhFscj.png",
@@ -11504,7 +11636,10 @@
       "shiny": "https://i.imgur.com/XAFQ5wc.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__248-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_248-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Tyranitarite",
+    "prevo": "Tyranitar"
   },
   {
     "id": 249,
@@ -11714,8 +11849,8 @@
     "prevo": "Grovyle",
     "evoLevel": 36,
     "eggGroups": ["Monster", "Dragon"],
-    "otherFormes": ["Sceptile-Mega"],
-    "formeOrder": ["Sceptile", "Sceptile-Mega"],
+    "otherFormes": ["Mega Sceptile"],
+    "formeOrder": ["Sceptile", "Mega Sceptile"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989681432231936/254.png",
       "shiny": "https://i.imgur.com/uR6nEHR.png",
@@ -11759,7 +11894,10 @@
       "shiny": "https://i.imgur.com/lgIdLH8.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__254-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_254-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Sceptilite",
+    "prevo": "Sceptile"
   },
   {
     "id": 255,
@@ -11868,8 +12006,8 @@
     "prevo": "Combusken",
     "evoLevel": 36,
     "eggGroups": ["Field"],
-    "otherFormes": ["Blaziken-Mega"],
-    "formeOrder": ["Blaziken", "Blaziken-Mega"],
+    "otherFormes": ["Mega Blaziken"],
+    "formeOrder": ["Blaziken", "Mega Blaziken"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989696401702983/257.png",
       "shiny": "https://i.imgur.com/m7kUTk7.png",
@@ -11913,7 +12051,10 @@
       "shiny": "https://i.imgur.com/6chyNg3.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__257-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_257-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Blazikenite",
+    "prevo": "Blaziken"
   },
   {
     "id": 258,
@@ -12022,8 +12163,8 @@
     "prevo": "Marshtomp",
     "evoLevel": 36,
     "eggGroups": ["Monster", "Water 1"],
-    "otherFormes": ["Swampert-Mega"],
-    "formeOrder": ["Swampert", "Swampert-Mega"],
+    "otherFormes": ["Mega Swampert"],
+    "formeOrder": ["Swampert", "Mega Swampert"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989713371725834/260.png",
       "shiny": "https://i.imgur.com/PYsV966.png",
@@ -12067,7 +12208,10 @@
       "shiny": "https://i.imgur.com/8wXl6BZ.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__260-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_260-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Swampertite",
+    "prevo": "Swampert"
   },
   {
     "id": 261,
@@ -12900,8 +13044,8 @@
     "prevo": "Kirlia",
     "evoLevel": 30,
     "eggGroups": ["Human-Like", "Amorphous"],
-    "otherFormes": ["Gardevoir-Mega"],
-    "formeOrder": ["Gardevoir", "Gardevoir-Mega"],
+    "otherFormes": ["Mega Gardevoir"],
+    "formeOrder": ["Gardevoir", "Mega Gardevoir"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989827104342036/282.png",
       "shiny": "https://i.imgur.com/N2plyDR.png",
@@ -12941,7 +13085,10 @@
       "shiny": "https://i.imgur.com/ZFtBEHm.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__282-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_282-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Gardevoirite",
+    "prevo": "Gardevoir"
   },
   {
     "id": 283,
@@ -13636,8 +13783,8 @@
     "weightkg": 11,
     "color": "#6000ff",
     "eggGroups": ["Human-Like"],
-    "otherFormes": ["Sableye-Mega"],
-    "formeOrder": ["Sableye", "Sableye-Mega"],
+    "otherFormes": ["Mega Sableye"],
+    "formeOrder": ["Sableye", "Mega Sableye"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989919110594620/302.png",
       "shiny": "https://i.imgur.com/1KFkAkQ.png",
@@ -13677,7 +13824,10 @@
       "shiny": "https://i.imgur.com/BOqLgkG.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__302-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_302-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Sablenite",
+    "prevo": "Sableye"
   },
   {
     "id": 303,
@@ -13705,8 +13855,8 @@
     "weightkg": 11.5,
     "color": "#000000",
     "eggGroups": ["Field", "Fairy"],
-    "otherFormes": ["Mawile-Mega"],
-    "formeOrder": ["Mawile", "Mawile-Mega"],
+    "otherFormes": ["Mega Mawile"],
+    "formeOrder": ["Mawile", "Mega Mawile"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989923393110036/303.png",
       "shiny": "https://i.imgur.com/Y8m2Jn7.png",
@@ -13746,7 +13896,10 @@
       "shiny": "https://i.imgur.com/kCoxdMI.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__303-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_303-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Mawilite",
+    "prevo": "Mawile"
   },
   {
     "id": 304,
@@ -13846,8 +13999,8 @@
     "prevo": "Lairon",
     "evoLevel": 42,
     "eggGroups": ["Monster"],
-    "otherFormes": ["Aggron-Mega"],
-    "formeOrder": ["Aggron", "Aggron-Mega"],
+    "otherFormes": ["Mega Aggron"],
+    "formeOrder": ["Aggron", "Mega Aggron"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989934528987176/306.png",
       "shiny": "https://i.imgur.com/VLitEXH.png",
@@ -13887,7 +14040,10 @@
       "shiny": "https://i.imgur.com/CUWrIpp.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__306-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_306-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Aggronite",
+    "prevo": "Aggron"
   },
   {
     "id": 307,
@@ -13949,8 +14105,8 @@
     "prevo": "Meditite",
     "evoLevel": 37,
     "eggGroups": ["Human-Like"],
-    "otherFormes": ["Medicham-Mega"],
-    "formeOrder": ["Medicham", "Medicham-Mega"],
+    "otherFormes": ["Mega Medicham"],
+    "formeOrder": ["Medicham", "Mega Medicham"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989941923545128/308.png",
       "shiny": "https://i.imgur.com/SOtDfT9.png",
@@ -13990,7 +14146,10 @@
       "shiny": "https://i.imgur.com/xSwiCyz.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__308-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_308-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Medichamite",
+    "prevo": "Medicham"
   },
   {
     "id": 309,
@@ -14054,8 +14213,8 @@
     "prevo": "Electrike",
     "evoLevel": 26,
     "eggGroups": ["Field"],
-    "otherFormes": ["Manectric-Mega"],
-    "formeOrder": ["Manectric", "Manectric-Mega"],
+    "otherFormes": ["Mega Manectric"],
+    "formeOrder": ["Manectric", "Mega Manectric"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989949511041024/310.png",
       "shiny": "https://i.imgur.com/ILVUevY.png",
@@ -14095,7 +14254,10 @@
       "shiny": "https://i.imgur.com/RvFF1P4.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__310-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_310-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Manectite",
+    "prevo": "Manectric"
   },
   {
     "id": 311,
@@ -14396,8 +14558,8 @@
     "prevo": "Carvanha",
     "evoLevel": 30,
     "eggGroups": ["Water 2"],
-    "otherFormes": ["Sharpedo-Mega"],
-    "formeOrder": ["Sharpedo", "Sharpedo-Mega"],
+    "otherFormes": ["Mega Sharpedo"],
+    "formeOrder": ["Sharpedo", "Mega Sharpedo"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721989995480743996/319.png",
       "shiny": "https://i.imgur.com/aSNC42I.png",
@@ -14437,7 +14599,10 @@
       "shiny": "https://i.imgur.com/lGRGHfD.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__319-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_319-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Sharpedonite",
+    "prevo": "Sharpedo"
   },
   {
     "id": 320,
@@ -14570,8 +14735,8 @@
     "prevo": "Numel",
     "evoLevel": 33,
     "eggGroups": ["Field"],
-    "otherFormes": ["Camerupt-Mega"],
-    "formeOrder": ["Camerupt", "Camerupt-Mega"],
+    "otherFormes": ["Mega Camerupt"],
+    "formeOrder": ["Camerupt", "Mega Camerupt"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721990012677259284/323.png",
       "shiny": "https://i.imgur.com/qgLXWND.png",
@@ -14611,7 +14776,10 @@
       "shiny": "https://i.imgur.com/xGD4YgA.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__323-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_323-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Cameruptite",
+    "prevo": "Camerupt"
   },
   {
     "id": 324,
@@ -14976,8 +15144,8 @@
     "prevo": "Swablu",
     "evoLevel": 35,
     "eggGroups": ["Flying", "Dragon"],
-    "otherFormes": ["Altaria-Mega"],
-    "formeOrder": ["Altaria", "Altaria-Mega"],
+    "otherFormes": ["Mega Altaria"],
+    "formeOrder": ["Altaria", "Mega Altaria"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721990062421573662/334.png",
       "shiny": "https://i.imgur.com/baxIE8x.png",
@@ -15017,7 +15185,10 @@
       "shiny": "https://i.imgur.com/BHYZqco.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__334-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_334-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Altarianite",
+    "prevo": "Altaria"
   },
   {
     "id": 335,
@@ -15791,8 +15962,8 @@
     "prevo": "Shuppet",
     "evoLevel": 37,
     "eggGroups": ["Amorphous"],
-    "otherFormes": ["Banette-Mega"],
-    "formeOrder": ["Banette", "Banette-Mega"],
+    "otherFormes": ["Mega Banette"],
+    "formeOrder": ["Banette", "Mega Banette"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721990148753195029/354.png",
       "shiny": "https://i.imgur.com/zLC4yd7.png",
@@ -15832,7 +16003,10 @@
       "shiny": "https://i.imgur.com/EIFjjlE.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__354-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_354-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Banettite",
+    "prevo": "Banette"
   },
   {
     "id": 355,
@@ -15996,8 +16170,8 @@
     "weightkg": 47,
     "color": "#ffffff",
     "eggGroups": ["Field"],
-    "otherFormes": ["Absol-Mega"],
-    "formeOrder": ["Absol", "Absol-Mega"],
+    "otherFormes": ["Mega Absol"],
+    "formeOrder": ["Absol", "Mega Absol"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721990167963107408/359.png",
       "shiny": "https://i.imgur.com/7jYEbfE.png",
@@ -16037,7 +16211,10 @@
       "shiny": "https://i.imgur.com/sRZ4Fau.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__359-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_359-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Absolite",
+    "prevo": "Absol"
   },
   {
     "id": 360,
@@ -16135,8 +16312,8 @@
     "prevo": "Snorunt",
     "evoLevel": 42,
     "eggGroups": ["Fairy", "Mineral"],
-    "otherFormes": ["Glalie-Mega"],
-    "formeOrder": ["Glalie", "Glalie-Mega"],
+    "otherFormes": ["Mega Glalie"],
+    "formeOrder": ["Glalie", "Mega Glalie"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/721990181229559858/362.png",
       "shiny": "https://i.imgur.com/M2f5eZM.png",
@@ -16176,7 +16353,10 @@
       "shiny": "https://i.imgur.com/zsTeyCh.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__362-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_362-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Glalitite",
+    "prevo": "Glalie"
   },
   {
     "id": 363,
@@ -16554,8 +16734,8 @@
     "prevo": "Shelgon",
     "evoLevel": 50,
     "eggGroups": ["Dragon"],
-    "otherFormes": ["Salamence-Mega"],
-    "formeOrder": ["Salamence", "Salamence-Mega"],
+    "otherFormes": ["Mega Salamence"],
+    "formeOrder": ["Salamence", "Mega Salamence"],
     "images": {
       "normal": "https://i.imgur.com/zc4xVLu.png",
       "shiny": "https://i.imgur.com/mpOA44Q.png",
@@ -16595,7 +16775,10 @@
       "shiny": "https://i.imgur.com/FI1P6VT.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__373-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_373-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Salamencite",
+    "prevo": "Salamence"
   },
   {
     "id": 374,
@@ -16695,8 +16878,8 @@
     "prevo": "Metang",
     "evoLevel": 45,
     "eggGroups": ["Mineral"],
-    "otherFormes": ["Metagross-Mega"],
-    "formeOrder": ["Metagross", "Metagross-Mega"],
+    "otherFormes": ["Mega Metagross"],
+    "formeOrder": ["Metagross", "Mega Metagross"],
     "images": {
       "normal": "https://i.imgur.com/G879KPM.png",
       "shiny": "https://i.imgur.com/KA6f6xK.png",
@@ -16737,7 +16920,10 @@
       "shiny": "https://i.imgur.com/Nsl4LTs.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__376-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_376-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Metagrossite",
+    "prevo": "Metagross"
   },
   {
     "id": 377,
@@ -16867,8 +17053,8 @@
     "weightkg": 40,
     "color": "#ff0000",
     "eggGroups": ["Undiscovered"],
-    "otherFormes": ["Latias-Mega"],
-    "formeOrder": ["Latias", "Latias-Mega"],
+    "otherFormes": ["Mega Latias"],
+    "formeOrder": ["Latias", "Mega Latias"],
     "images": {
       "normal": "https://i.imgur.com/9vAiurV.png",
       "shiny": "https://i.imgur.com/uKzxZmg.png",
@@ -16910,7 +17096,10 @@
       "shiny": "https://i.imgur.com/YPogdcK.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__380-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_380-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Latiasite",
+    "prevo": "Latias"
   },
   {
     "id": 381,
@@ -16938,8 +17127,8 @@
     "weightkg": 60,
     "color": "#003cff",
     "eggGroups": ["Undiscovered"],
-    "otherFormes": ["Latios-Mega"],
-    "formeOrder": ["Latios", "Latios-Mega"],
+    "otherFormes": ["Mega Latios"],
+    "formeOrder": ["Latios", "Mega Latios"],
     "images": {
       "normal": "https://i.imgur.com/JkXrfo7.png",
       "shiny": "https://i.imgur.com/7N86ZT0.png",
@@ -16981,7 +17170,10 @@
       "shiny": "https://i.imgur.com/0cA88hA.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__381-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_381-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Latiosite",
+    "prevo": "Latios"
   },
   {
     "id": 382,
@@ -17139,8 +17331,8 @@
     "weightkg": 206.5,
     "color": "#41c600",
     "eggGroups": ["Undiscovered"],
-    "otherFormes": ["Rayquaza-Mega"],
-    "formeOrder": ["Rayquaza", "Rayquaza-Mega"],
+    "otherFormes": ["Mega Rayquaza"],
+    "formeOrder": ["Rayquaza", "Mega Rayquaza"],
     "images": {
       "normal": "https://i.imgur.com/zyo2VMd.png",
       "shiny": "https://i.imgur.com/iTpprPi.png",
@@ -17182,7 +17374,10 @@
       "shiny": "https://i.imgur.com/si7JoLD.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__384-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_384-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Bracelet of Dragon's Ascent",
+    "prevo": "Rayquaza"
   },
   {
     "id": 385,
@@ -18931,8 +19126,8 @@
     "prevo": "Buneary",
     "evoType": "levelFriendship",
     "eggGroups": ["Field", "Human-Like"],
-    "otherFormes": ["Lopunny-Mega"],
-    "formeOrder": ["Lopunny", "Lopunny-Mega"],
+    "otherFormes": ["Mega Lopunny"],
+    "formeOrder": ["Lopunny", "Mega Lopunny"],
     "images": {
       "normal": "https://i.imgur.com/py5nGNM.png",
       "shiny": "https://i.imgur.com/uEuKiWg.png",
@@ -18972,7 +19167,10 @@
       "shiny": "https://i.imgur.com/TO8AMUj.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__428-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_428-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Lopunnite",
+    "prevo": "Lopunny"
   },
   {
     "id": 429,
@@ -19560,8 +19758,8 @@
     "prevo": "Gabite",
     "evoLevel": 48,
     "eggGroups": ["Monster", "Dragon"],
-    "otherFormes": ["Garchomp-Mega"],
-    "formeOrder": ["Garchomp", "Garchomp-Mega"],
+    "otherFormes": ["Mega Garchomp"],
+    "formeOrder": ["Garchomp", "Mega Garchomp"],
     "images": {
       "normal": "https://i.imgur.com/Llf2JbV.png",
       "shiny": "https://i.imgur.com/zMzjU4S.png",
@@ -19601,7 +19799,10 @@
       "shiny": "https://i.imgur.com/hoU5BkG.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__445-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_445-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Garchompite",
+    "prevo": "Garchomp"
   },
   {
     "id": 446,
@@ -19714,8 +19915,8 @@
     "evoType": "levelFriendship",
     "evoCondition": "during the day",
     "eggGroups": ["Field", "Human-Like"],
-    "otherFormes": ["Lucario-Mega"],
-    "formeOrder": ["Lucario", "Lucario-Mega"],
+    "otherFormes": ["Mega Lucario"],
+    "formeOrder": ["Lucario", "Mega Lucario"],
     "images": {
       "normal": "https://i.imgur.com/D4SiKlz.png",
       "shiny": "https://i.imgur.com/LgF8E3u.png",
@@ -19759,7 +19960,10 @@
       "shiny": "https://i.imgur.com/khTu4Vk.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__448-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_448-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Lucarionite",
+    "prevo": "Lucario"
   },
   {
     "id": 449,
@@ -20161,8 +20365,8 @@
     "prevo": "Snover",
     "evoLevel": 40,
     "eggGroups": ["Monster", "Grass"],
-    "otherFormes": ["Abomasnow-Mega"],
-    "formeOrder": ["Abomasnow", "Abomasnow-Mega"],
+    "otherFormes": ["Mega Abomasnow"],
+    "formeOrder": ["Abomasnow", "Mega Abomasnow"],
     "images": {
       "normal": "https://i.imgur.com/46n0iSs.png",
       "shiny": "https://i.imgur.com/gwoKhU1.png",
@@ -20202,7 +20406,10 @@
       "shiny": "https://i.imgur.com/JqOKbkW.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__460-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_460-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Abomasite",
+    "prevo": "Abomasnow"
   },
   {
     "id": 461,
@@ -20755,8 +20962,8 @@
     "evoType": "useItem",
     "evoItem": "Dawn Stone",
     "eggGroups": ["Human-Like", "Amorphous"],
-    "otherFormes": ["Gallade-Mega"],
-    "formeOrder": ["Gallade", "Gallade-Mega"],
+    "otherFormes": ["Mega Gallade"],
+    "formeOrder": ["Gallade", "Mega Gallade"],
     "images": {
       "normal": "https://i.imgur.com/EOYzeC5.png",
       "shiny": "https://i.imgur.com/fc35pId.png",
@@ -20797,7 +21004,10 @@
       "shiny": "https://i.imgur.com/zebsa6Z.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__475-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_475-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Galladite",
+    "prevo": "Gallade"
   },
   {
     "id": 476,
@@ -23540,8 +23750,8 @@
     "weightkg": 31,
     "color": "#f000ff",
     "eggGroups": ["Fairy"],
-    "otherFormes": ["Audino-Mega"],
-    "formeOrder": ["Audino", "Audino-Mega"],
+    "otherFormes": ["Mega Audino"],
+    "formeOrder": ["Audino", "Mega Audino"],
     "images": {
       "normal": "https://i.imgur.com/pnCnErB.png",
       "shiny": "https://i.imgur.com/peJb15u.png",
@@ -23581,7 +23791,10 @@
       "shiny": "https://i.imgur.com/juo16Z1.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__531-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_531-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Audinite",
+    "prevo": "Audino"
   },
   {
     "id": 532,
@@ -25129,8 +25342,8 @@
     "prevo": "Trubbish",
     "evoLevel": 36,
     "eggGroups": ["Mineral"],
-    "otherFormes": ["Garbodor-Gmax"],
-    "formeOrder": ["Garbodor", "Garbodor-Gmax"],
+    "otherFormes": ["Gmax Garbodor"],
+    "formeOrder": ["Garbodor", "Gmax Garbodor"],
     "images": {
       "normal": "https://i.imgur.com/HjfNWHx.png",
       "shiny": "https://i.imgur.com/P0bflF6.png",
@@ -25141,7 +25354,7 @@
   {
     "id": 569,
     "name": {
-      "english": "Garbodor-Gmax",
+      "english": "Gmax Garbodor",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -25166,7 +25379,13 @@
     "weightkg": 0,
     "color": "#41c600",
     "eggGroups": ["Mineral"],
-    "isGigantamax": "G-Max Malodor"
+    "isGigantamax": "G-Max Malodor",
+    "images": {
+      "normal": "https://img.pokemondb.net/artwork/large/garbodor-gigantamax.jpg",
+      "shiny": "",
+      "gif": "",
+      "gif-shiny": ""
+    }
   },
   {
     "id": 570,
@@ -31387,8 +31606,8 @@
     "weightkg": 8.8,
     "color": "#f000ff",
     "eggGroups": ["Undiscovered"],
-    "otherFormes": ["Diancie-Mega"],
-    "formeOrder": ["Diancie", "Diancie-Mega"],
+    "otherFormes": ["Mega Diancie"],
+    "formeOrder": ["Diancie", "Mega Diancie"],
     "images": {
       "normal": "https://i.imgur.com/GyXAXs5.png",
       "shiny": "https://i.imgur.com/MT3wIRG.png",
@@ -31430,7 +31649,10 @@
       "shiny": "https://i.imgur.com/AVMcXE7.png",
       "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__719-mega__xy.gif",
       "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_719-mega__xy.gif"
-    }
+    },
+    "evoType": "useItem",
+    "evoItem": "Diancite",
+    "prevo": "Diancie"
   },
   {
     "id": 720,
@@ -35808,8 +36030,8 @@
     "weightkg": 800,
     "color": "#444444",
     "eggGroups": ["Undiscovered"],
-    "otherFormes": ["Melmetal-Gmax"],
-    "formeOrder": ["Melmetal", "Melmetal-Gmax"],
+    "otherFormes": ["Gmax Melmetal"],
+    "formeOrder": ["Melmetal", "Gmax Melmetal"],
     "images": {
       "normal": "https://i.imgur.com/m4wz2R8.png",
       "shiny": "https://i.imgur.com/LDfF3ij.png",
@@ -35820,7 +36042,7 @@
   {
     "id": 809,
     "name": {
-      "english": "Melmetal-Gmax",
+      "english": "Gmax Melmetal",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -35844,7 +36066,13 @@
     "weightkg": 0,
     "color": "#444444",
     "eggGroups": ["Undiscovered"],
-    "isGigantamax": "G-Max Meltdown"
+    "isGigantamax": "G-Max Meltdown",
+    "images": {
+      "normal": "https://img.pokemondb.net/artwork/large/melmetal-gigantamax.jpg",
+      "shiny": "",
+      "gif": "",
+      "gif-shiny": ""
+    }
   },
   {
     "id": 810,
@@ -36353,8 +36581,8 @@
     "prevo": "Corvisquire",
     "evoLevel": 38,
     "eggGroups": ["Flying"],
-    "otherFormes": ["Corviknight-Gmax"],
-    "formeOrder": ["Corviknight", "Corviknight-Gmax"],
+    "otherFormes": ["Gmax Corviknight"],
+    "formeOrder": ["Corviknight", "Gmax Corviknight"],
     "images": {
       "normal": "https://i.imgur.com/3YN04TX.png",
       "shiny": "https://i.imgur.com/J59RBJb.png",
@@ -36365,7 +36593,7 @@
   {
     "id": 823,
     "name": {
-      "english": "Corviknight-Gmax",
+      "english": "Gmax Corviknight",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -36392,10 +36620,10 @@
     "eggGroups": ["Flying"],
     "isGigantamax": "G-Max Wind Rage",
     "images": {
-      "normal": "",
+      "normal": "https://img.pokemondb.net/artwork/large/corviknight-gigantamax.jpg",
       "shiny": "",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/corviknight-gmax.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/corviknight-gmax.png"
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {
@@ -36496,8 +36724,8 @@
     "prevo": "Dottler",
     "evoLevel": 30,
     "eggGroups": ["Bug"],
-    "otherFormes": ["Orbeetle-Gmax"],
-    "formeOrder": ["Orbeetle", "Orbeetle-Gmax"],
+    "otherFormes": ["Gmax Orbeetle"],
+    "formeOrder": ["Orbeetle", "Gmax Orbeetle"],
     "images": {
       "normal": "https://i.imgur.com/lHsDQqJ.png",
       "shiny": "https://i.imgur.com/H6x4Nw1.png",
@@ -36508,7 +36736,7 @@
   {
     "id": 826,
     "name": {
-      "english": "Orbeetle-Gmax",
+      "english": "Gmax Orbeetle",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -36535,10 +36763,10 @@
     "eggGroups": ["Bug"],
     "isGigantamax": "G-Max Gravitas",
     "images": {
-      "normal": "",
+      "normal": "https://img.pokemondb.net/artwork/large/orbeetle-gigantamax.jpg",
       "shiny": "",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/orbeetle-gmax.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/orbeetle-gmax.png"
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {
@@ -36810,8 +37038,8 @@
     "prevo": "Chewtle",
     "evoLevel": 22,
     "eggGroups": ["Monster", "Water 1"],
-    "otherFormes": ["Drednaw-Gmax"],
-    "formeOrder": ["Drednaw", "Drednaw-Gmax"],
+    "otherFormes": ["Gmax Drednaw"],
+    "formeOrder": ["Drednaw", "Gmax Drednaw"],
     "images": {
       "normal": "https://i.imgur.com/lAenDef.png",
       "shiny": "https://i.imgur.com/X6JmYWJ.png",
@@ -36822,7 +37050,7 @@
   {
     "id": 834,
     "name": {
-      "english": "Drednaw-Gmax",
+      "english": "Gmax Drednaw",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -36849,10 +37077,10 @@
     "eggGroups": ["Monster", "Water 1"],
     "isGigantamax": "G-Max Stonesurge",
     "images": {
-      "normal": "",
+      "normal": "https://img.pokemondb.net/artwork/large/drednaw-gigantamax.jpg",
       "shiny": "",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/drednaw-gmax.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/drednaw-gmax.png"
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {
@@ -37020,8 +37248,8 @@
     "prevo": "Carkol",
     "evoLevel": 34,
     "eggGroups": ["Mineral"],
-    "otherFormes": ["Coalossal-Gmax"],
-    "formeOrder": ["Coalossal", "Coalossal-Gmax"],
+    "otherFormes": ["Gmax Coalossal"],
+    "formeOrder": ["Coalossal", "Gmax Coalossal"],
     "images": {
       "normal": "https://i.imgur.com/LHWsJnA.png",
       "shiny": "https://i.imgur.com/NTVAnoe.png",
@@ -37032,7 +37260,7 @@
   {
     "id": 839,
     "name": {
-      "english": "Coalossal-Gmax",
+      "english": "Gmax Coalossal",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -37059,10 +37287,10 @@
     "eggGroups": ["Mineral"],
     "isGigantamax": "G-Max Volcalith",
     "images": {
-      "normal": "",
+      "normal": "https://img.pokemondb.net/artwork/large/coalossal-gigantamax.jpg",
       "shiny": "",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/coalossal-gmax.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/coalossal-gmax.png"
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {
@@ -37128,8 +37356,8 @@
     "evoType": "useItem",
     "evoItem": "Tart Apple",
     "eggGroups": ["Grass", "Dragon"],
-    "otherFormes": ["Flapple-Gmax"],
-    "formeOrder": ["Flapple", "Flapple-Gmax"],
+    "otherFormes": ["Gmax Flapple"],
+    "formeOrder": ["Flapple", "Gmax Flapple"],
     "images": {
       "normal": "https://i.imgur.com/9aIdSrH.png",
       "shiny": "https://i.imgur.com/9gluNNP.png",
@@ -37140,7 +37368,7 @@
   {
     "id": 841,
     "name": {
-      "english": "Flapple-Gmax",
+      "english": "Gmax Flapple",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -37167,10 +37395,10 @@
     "eggGroups": ["Grass", "Dragon"],
     "isGigantamax": "G-Max Tartness",
     "images": {
-      "normal": "",
+      "normal": "https://img.pokemondb.net/artwork/large/flapple-gigantamax.jpg",
       "shiny": "",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/flapple-gmax.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/flapple-gmax.png"
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {
@@ -37202,8 +37430,8 @@
     "evoType": "useItem",
     "evoItem": "Sweet Apple",
     "eggGroups": ["Grass", "Dragon"],
-    "otherFormes": ["Appletun-Gmax"],
-    "formeOrder": ["Appletun", "Appletun-Gmax"],
+    "otherFormes": ["Gmax Appletun"],
+    "formeOrder": ["Appletun", "Gmax Appletun"],
     "images": {
       "normal": "https://i.imgur.com/ECarlae.png",
       "shiny": "https://i.imgur.com/fBVCqPx.png",
@@ -37214,7 +37442,7 @@
   {
     "id": 842,
     "name": {
-      "english": "Appletun-Gmax",
+      "english": "Gmax Appletun",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -37241,10 +37469,10 @@
     "eggGroups": ["Grass", "Dragon"],
     "isGigantamax": "G-Max Sweetness",
     "images": {
-      "normal": "",
+      "normal": "https://img.pokemondb.net/artwork/large/appletun-gigantamax.jpg",
       "shiny": "",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/appletun-gmax.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/appletun-gmax.png"
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {
@@ -37309,8 +37537,8 @@
     "prevo": "Silicobra",
     "evoLevel": 36,
     "eggGroups": ["Field", "Dragon"],
-    "otherFormes": ["Sandaconda-Gmax"],
-    "formeOrder": ["Sandaconda", "Sandaconda-Gmax"],
+    "otherFormes": ["Gmax Sandaconda"],
+    "formeOrder": ["Sandaconda", "Gmax Sandaconda"],
     "images": {
       "normal": "https://i.imgur.com/1vhyL6c.png",
       "shiny": "https://i.imgur.com/fMX9cwX.png",
@@ -37321,7 +37549,7 @@
   {
     "id": 844,
     "name": {
-      "english": "Sandaconda-Gmax",
+      "english": "Gmax Sandaconda",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -37348,10 +37576,10 @@
     "eggGroups": ["Field", "Dragon"],
     "isGigantamax": "G-Max Sandblast",
     "images": {
-      "normal": "",
+      "normal": "https://img.pokemondb.net/artwork/large/sandaconda-gigantamax.jpg",
       "shiny": "",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/sandaconda-gmax.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/sandaconda-gmax.png"
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {
@@ -37587,16 +37815,12 @@
     "prevo": "Toxel",
     "evoLevel": 30,
     "eggGroups": ["Human-Like"],
-    "otherFormes": [
-      "Toxtricity-Low-Key",
-      "Toxtricity-Gmax",
-      "Toxtricity-Low-Key-Gmax"
-    ],
+    "otherFormes": ["Toxtricity-Low-Key", "Gmax Toxtricity", "Gmax Toxtricity"],
     "formeOrder": [
       "Toxtricity",
       "Toxtricity-Low-Key",
-      "Toxtricity-Gmax",
-      "Toxtricity-Low-Key-Gmax"
+      "Gmax Toxtricity",
+      "Gmax Toxtricity"
     ],
     "images": {
       "normal": "https://i.imgur.com/jGDsFaT.png",
@@ -37645,7 +37869,7 @@
   {
     "id": 849,
     "name": {
-      "english": "Toxtricity-Gmax",
+      "english": "Gmax Toxtricity",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -37672,16 +37896,16 @@
     "eggGroups": ["Human-Like"],
     "isGigantamax": "G-Max Stun Shock",
     "images": {
-      "normal": "",
+      "normal": "https://img.pokemondb.net/artwork/large/toxtricity-gigantamax.jpg",
       "shiny": "",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/toxtricity-gmax.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/toxtricity-gmax.png"
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {
     "id": 849,
     "name": {
-      "english": "Toxtricity-Low-Key-Gmax",
+      "english": "Gmax Toxtricity",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -37709,10 +37933,10 @@
     "isGigantamax": "G-Max Stun Shock",
     "battleOnly": "Toxtricity-Low-Key",
     "images": {
-      "normal": "",
+      "normal": "https://img.pokemondb.net/artwork/large/toxtricity-gigantamax.jpg",
       "shiny": "",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/toxtricity-low-key-gmax.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/toxtricity-low-key-gmax.png"
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {
@@ -37777,8 +38001,8 @@
     "prevo": "Sizzlipede",
     "evoLevel": 28,
     "eggGroups": ["Bug"],
-    "otherFormes": ["Centiskorch-Gmax"],
-    "formeOrder": ["Centiskorch", "Centiskorch-Gmax"],
+    "otherFormes": ["Gmax Centiskorch"],
+    "formeOrder": ["Centiskorch", "Gmax Centiskorch"],
     "images": {
       "normal": "https://i.imgur.com/ZI9KPTa.png",
       "shiny": "https://i.imgur.com/9LSKdMy.png",
@@ -37789,7 +38013,7 @@
   {
     "id": 851,
     "name": {
-      "english": "Centiskorch-Gmax",
+      "english": "Gmax Centiskorch",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -37816,10 +38040,10 @@
     "eggGroups": ["Bug"],
     "isGigantamax": "G-Max Centiferno",
     "images": {
-      "normal": "",
+      "normal": "https://img.pokemondb.net/artwork/large/centiskorch-gigantamax.jpg",
       "shiny": "",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/centiskorch-gmax.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/centiskorch-gmax.png"
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {
@@ -38141,8 +38365,8 @@
     "prevo": "Hattrem",
     "evoLevel": 42,
     "eggGroups": ["Fairy"],
-    "otherFormes": ["Hatterene-Gmax"],
-    "formeOrder": ["Hatterene", "Hatterene-Gmax"],
+    "otherFormes": ["Gmax Hatterene"],
+    "formeOrder": ["Hatterene", "Gmax Hatterene"],
     "images": {
       "normal": "https://i.imgur.com/ZMHyWoE.png",
       "shiny": "https://i.imgur.com/gCxOLWs.png",
@@ -38153,7 +38377,7 @@
   {
     "id": 858,
     "name": {
-      "english": "Hatterene-Gmax",
+      "english": "Gmax Hatterene",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -38181,10 +38405,10 @@
     "eggGroups": ["Fairy"],
     "isGigantamax": "G-Max Smite",
     "images": {
-      "normal": "",
+      "normal": "https://img.pokemondb.net/artwork/large/hatterene-gigantamax.jpg",
       "shiny": "",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/hatterene-gmax.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/hatterene-gmax.png"
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {
@@ -38288,8 +38512,8 @@
     "prevo": "Morgrem",
     "evoLevel": 42,
     "eggGroups": ["Fairy", "Human-Like"],
-    "otherFormes": ["Grimmsnarl-Gmax"],
-    "formeOrder": ["Grimmsnarl", "Grimmsnarl-Gmax"],
+    "otherFormes": ["Gmax Grimmsnarl"],
+    "formeOrder": ["Grimmsnarl", "Gmax Grimmsnarl"],
     "images": {
       "normal": "https://i.imgur.com/WKpGxW0.png",
       "shiny": "https://i.imgur.com/91NcY05.png",
@@ -38300,7 +38524,7 @@
   {
     "id": 861,
     "name": {
-      "english": "Grimmsnarl-Gmax",
+      "english": "Gmax Grimmsnarl",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -38328,10 +38552,10 @@
     "eggGroups": ["Fairy", "Human-Like"],
     "isGigantamax": "G-Max Snooze",
     "images": {
-      "normal": "",
+      "normal": "https://img.pokemondb.net/artwork/large/grimmsnarl-gigantamax.jpg",
       "shiny": "",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/grimmsnarl-gmax.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/grimmsnarl-gmax.png"
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {
@@ -38474,8 +38698,8 @@
     "images": {
       "normal": "https://i.imgur.com/XbCXpEv.png",
       "shiny": "https://i.imgur.com/w85tnhN.png",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/sirfetch'd.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/sirfetch'd.png"
+      "gif": "https://img.pokemondb.net/sprites/home/normal/sirfetchd.png",
+      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/sirfetchd.png"
     }
   },
   {
@@ -38509,8 +38733,8 @@
     "images": {
       "normal": "https://i.imgur.com/NgUAHXJ.png",
       "shiny": "https://i.imgur.com/ncVUD3H.png",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/mr. rime.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/mr. rime.png"
+      "gif": "https://img.pokemondb.net/sprites/home/normal/mr-rime.png",
+      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/mr-rime.png"
     }
   },
   {
@@ -38611,7 +38835,7 @@
     "evoType": "other",
     "evoCondition": "spin while holding a Sweet",
     "eggGroups": ["Fairy", "Amorphous"],
-    "otherFormes": ["Alcremie-Gmax"],
+    "otherFormes": ["Gmax Alcremie"],
     "cosmeticFormes": [
       "Alcremie-Ruby-Cream",
       "Alcremie-Matcha-Cream",
@@ -38632,7 +38856,7 @@
       "Alcremie-Ruby-Swirl",
       "Alcremie-Caramel-Swirl",
       "Alcremie-Rainbow-Swirl",
-      "Alcremie-Gmax"
+      "Gmax Alcremie"
     ],
     "images": {
       "normal": "https://i.imgur.com/IhJUtxK.png",
@@ -38644,7 +38868,7 @@
   {
     "id": 869,
     "name": {
-      "english": "Alcremie-Gmax",
+      "english": "Gmax Alcremie",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -38671,10 +38895,10 @@
     "eggGroups": ["Fairy", "Amorphous"],
     "isGigantamax": "G-Max Finale",
     "images": {
-      "normal": "",
+      "normal": "https://img.pokemondb.net/artwork/large/alcremie-gigantamax.jpg",
       "shiny": "",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/alcremie-gmax.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/alcremie-gmax.png"
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {
@@ -39110,8 +39334,8 @@
     "prevo": "Cufant",
     "evoLevel": 34,
     "eggGroups": ["Field", "Mineral"],
-    "otherFormes": ["Copperajah-Gmax"],
-    "formeOrder": ["Copperajah", "Copperajah-Gmax"],
+    "otherFormes": ["Gmax Copperajah"],
+    "formeOrder": ["Copperajah", "Gmax Copperajah"],
     "images": {
       "normal": "https://i.imgur.com/gHDkCFk.png",
       "shiny": "https://i.imgur.com/TCijqi1.png",
@@ -39122,7 +39346,7 @@
   {
     "id": 879,
     "name": {
-      "english": "Copperajah-Gmax",
+      "english": "Gmax Copperajah",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -39148,10 +39372,10 @@
     "eggGroups": ["Field", "Mineral"],
     "isGigantamax": "G-Max Steelsurge",
     "images": {
-      "normal": "",
+      "normal": "https://img.pokemondb.net/artwork/large/copperajah-gigantamax.jpg",
       "shiny": "",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/copperajah-gmax.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/copperajah-gmax.png"
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {
@@ -39316,8 +39540,8 @@
     "weightkg": 40,
     "color": "#ffffff",
     "eggGroups": ["Mineral", "Dragon"],
-    "otherFormes": ["Duraludon-Gmax"],
-    "formeOrder": ["Duraludon", "Duraludon-Gmax"],
+    "otherFormes": ["Gmax Duraludon"],
+    "formeOrder": ["Duraludon", "Gmax Duraludon"],
     "images": {
       "normal": "https://i.imgur.com/8F91ClA.png",
       "shiny": "https://i.imgur.com/kS826sw.png",
@@ -39328,7 +39552,7 @@
   {
     "id": 884,
     "name": {
-      "english": "Duraludon-Gmax",
+      "english": "Gmax Duraludon",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -39355,10 +39579,10 @@
     "eggGroups": ["Mineral", "Dragon"],
     "isGigantamax": "G-Max Depletion",
     "images": {
-      "normal": "",
+      "normal": "https://img.pokemondb.net/artwork/large/duraludon-gigantamax.jpg",
       "shiny": "",
-      "gif": "https://img.pokemondb.net/sprites/home/normal/duraludon-gmax.png",
-      "gif-shiny": "https://img.pokemondb.net/sprites/home/shiny/duraludon-gmax.png"
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {

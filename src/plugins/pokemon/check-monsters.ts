@@ -2,7 +2,7 @@ import { Message, MessageEmbed } from 'discord.js';
 
 import { theWord, chunk } from '../../utils';
 import { getLogger } from '../../clients/logger';
-import { findMonsterByID, IMonsterDex } from './monsters';
+import { findMonsterByID, findMonsterByName } from './monsters';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { databaseClient } from '../../clients/database';
 import { COLOR_GREEN, COLOR_WHITE } from '../../colors';
@@ -44,7 +44,14 @@ export async function checkMonsters(message: Message): Promise<void> {
     const temp_monsters = [];
 
     pokemon.forEach((element: IMonsterModel) => {
-      const monster = findMonsterByID(element.monster_id);
+      let monster = undefined;
+
+      if (element.mega) {
+        monster = findMonsterByName(element.mega_name);
+      } else {
+        monster = findMonsterByID(element.monster_id);
+      }
+
       if (!monster) return;
 
       if (
@@ -241,7 +248,15 @@ export async function checkFavorites(message: Message): Promise<void> {
     const temp_monsters = [];
 
     pokemon.forEach((element: IMonsterModel) => {
-      const monster = findMonsterByID(element.monster_id);
+      let monster = undefined;
+
+      if (element.mega) {
+        monster = findMonsterByName(element.mega_name);
+      } else {
+        monster = findMonsterByID(element.monster_id);
+      }
+
+      if (!monster) return;
 
       if (
         (splitMsg[splitMsg.length - 1].match(/legendary/i) &&
@@ -421,7 +436,14 @@ export async function searchMonsters(message: Message): Promise<void> {
     const temp_monsters = [];
 
     pokemon.forEach((element: IMonsterModel) => {
-      const monster: IMonsterDex = findMonsterByID(element.monster_id);
+      let monster = undefined;
+
+      if (element.mega) {
+        monster = findMonsterByName(element.mega_name);
+      } else {
+        monster = findMonsterByID(element.monster_id);
+      }
+
       if (
         !monster ||
         monster.name.english.toLowerCase().replace(/♂|♀/g, '') !=

@@ -1,339 +1,391 @@
-import { MessageEmbed, Message } from 'discord.js';
-import { jsonFetch, getCurrentTime } from '../../utils';
+import { Message, MessageEmbed } from 'discord.js';
+import { getCurrentTime } from '../../utils';
+import {
+  cacheClient,
+  cacheTwitter,
+  cacheToBeDeleted,
+} from '../../clients/cache';
+import { twitterClient } from '../../clients/twitter';
 import { getLogger } from '../../clients/logger';
-import { cacheClient } from '../../clients/cache';
-
-export interface IFFZRoom {
-  room?: {
-    _id: number;
-    css: null;
-    display_name: string;
-    id: string;
-    is_group: boolean;
-    moderator_badge: null;
-    set: number;
-    twitch_id: number;
-  };
-  sets?: unknown;
-}
 
 const logger = getLogger('SmokeyBot');
 
-/**
- *
- * @param message
- */
-export async function sync_ffz_emotes(message: Message): Promise<void> {
-  let embed = undefined;
-  let to_be_deleted = undefined;
-
-  if (message.content.match(/~sync-emotes-ffz/i)) {
-    if (message.member.hasPermission('ADMINISTRATOR')) {
-      embed = new MessageEmbed()
-        // Set the title of the field
-        .setTitle('Emoji Manager')
-        // Set the color of the embed
-        .setColor(0xff0000)
-        // Set the main content of the embed
-        .setDescription(`Checking FrankerFaceZ API to sync emotes..`);
-      // Send the embed to the same channel as the message
-      await message.channel
-        .send(embed)
-        .then((message) => {
-          to_be_deleted = message.id;
-        })
-        .catch(logger.error);
-
-      const existing_emojis = [];
-
-      const split_msg = message.content.split(' ');
-
-      if (split_msg.length != 2) {
-        return;
-      }
-
-      let emojis = undefined;
-
-      split_msg[1] = split_msg[1].toLowerCase().replace(/\W/g, '');
-
-      logger.log(
-        `fetching FFZ Emotes for Twitch channel ${split_msg[1]} (requested by ${message.member.displayName} in ${message.guild.name})..`,
-      );
-
-      // emojis.smokEmotes = await jsonFetch(`https://bot.smokey.gg/api/emotes/?channel_id=${split_msg[1]}`);
-
-      const ffz_emotes: IFFZRoom = await jsonFetch(
-        `https://api.frankerfacez.com/v1/room/${split_msg[1].toLowerCase()}`,
-      );
-
-      if (!ffz_emotes) {
-        message.channel.messages
-          .fetch(to_be_deleted)
-          .then((message) => {
-            message.delete();
-          })
-          .catch(logger.error);
-
-        embed = new MessageEmbed()
-          // Set the title of the field
-          .setTitle('Emoji Manager')
-          // Set the color of the embed
-          .setColor(0xff0000)
-          // Set the main content of the embed
-          .setDescription(
-            `There was an error fetching from FrankerFaceZ's API.`,
-          );
-        // Send the embed to the same channel as the message
-        message.channel.send(embed);
-
-        return;
-      }
-
-      if (ffz_emotes.room.set) {
-        const set_number = ffz_emotes.room.set;
-        let emote_cooldown = 1000;
-
-        emojis = ffz_emotes.sets[set_number].emoticons;
-
-        new Map(message.guild.emojis.cache).forEach((value) => {
-          existing_emojis.push(value.name);
-        });
-
-        emojis.forEach(
-          (value: { urls: { [x: string]: string }; name: string }) => {
-            let emote_url = '';
-
-            if (value.urls['2']) {
-              emote_url = 'https:' + value.urls['2'];
-            } else {
-              emote_url = 'https:' + value.urls['4'];
-            }
-
-            if (emote_url.match(/frankerfacez/i)) {
-              if (!existing_emojis.includes(value.name)) {
-                setTimeout(
-                  create_emoji,
-                  emote_cooldown,
-                  emote_url,
-                  message,
-                  value,
-                );
-
-                emote_cooldown = emote_cooldown + 1250;
-              }
-            }
-          },
-        );
-      }
-
-      if (ffz_emotes) {
-        message.channel.messages
-          .fetch(to_be_deleted)
-          .then((message) => {
-            message.delete();
-          })
-          .catch(logger.error);
-
-        embed = new MessageEmbed()
-          // Set the title of the field
-          .setTitle('Emoji Manager')
-          // Set the color of the embed
-          .setColor(0x00bc8c)
-          // Set the main content of the embed
-          .setDescription(
-            `**Successfully synced emotes!** \n\n It may take a minute or two for all of emojis to show up. \n\n **NOTE:** Wide emotes won't show up properly in Discord.`,
-          );
-        // Send the embed to the same channel as the message
-        message.channel.send(embed);
-      }
-    }
-  }
-}
-
-/**
- *
- * @param message
- */
-export async function sync_smokemotes(message: Message): Promise<void> {
-  let embed = undefined;
-  let to_be_deleted = undefined;
-
-  if (message.member.hasPermission('ADMINISTRATOR')) {
-    embed = new MessageEmbed()
-      // Set the title of the field
-      .setTitle('Emoji Manager')
-      // Set the color of the embed
-      .setColor(0xff0000)
-      // Set the main content of the embed
-      .setDescription(`Checking smokEmotes API to sync emotes..`);
-    // Send the embed to the same channel as the message
-    await message.channel
-      .send(embed)
-      .then((message) => {
-        to_be_deleted = message.id;
-      })
-      .catch(logger.error);
-
-    const existing_emojis = [];
-
-    const split_msg = message.content.split(' ');
-
-    if (split_msg.length < 2) {
-      return;
-    }
-
-    let emojis = undefined;
-
-    split_msg[1] = split_msg[1].toLowerCase().replace(/\W/g, '');
-
-    split_msg[2] = split_msg[2].toLowerCase();
-
-    if (split_msg[1] == 'global' && split_msg[2] == 'static') {
-      logger.info(
-        `fetching Global Static smokEmotes (requested by ${message.member.displayName} in ${message.guild.name})..`,
-      );
-
-      emojis = await jsonFetch(
-        `https://bot.smokey.gg/api/emotes/?channel_name=global&type=static`,
-      );
-    } else if (split_msg[1] == 'global' && split_msg[2] == 'gif') {
-      logger.info(
-        `fetching Global Static smokEmotes (requested by ${message.member.displayName} in ${message.guild.name})..`,
-      );
-
-      emojis = await jsonFetch(
-        `https://bot.smokey.gg/api/emotes/?channel_name=global&type=gif`,
-      );
-    }
-
-    if (!emojis.smokEmotes) {
-      message.channel.messages
-        .fetch(to_be_deleted)
-        .then((message) => {
-          message.delete();
-        })
-        .catch(logger.error);
-
-      embed = new MessageEmbed()
-        // Set the title of the field
-        .setTitle('Emoji Manager')
-        // Set the color of the embed
-        .setColor(0xff0000)
-        // Set the main content of the embed
-        .setDescription(`There was an error fetching from smokEmotes's API.`);
-      // Send the embed to the same channel as the message
-      message.channel.send(embed);
-
-      return;
-    } else {
-      new Map(message.guild.emojis.cache).forEach((value) => {
-        existing_emojis.push(value.name);
-      });
-
-      let emote_cooldown = 1000;
-
-      emojis.smokEmotes.forEach((value) => {
-        const emote_url = value.images['2x'];
-
-        if (!existing_emojis.includes(value.code) && value.width <= 128) {
-          setTimeout(create_emoji, emote_cooldown, emote_url, message, value);
-
-          emote_cooldown = emote_cooldown + 1250;
-        }
-      });
-
-      if (emojis.smokEmotes) {
-        message.channel.messages
-          .fetch(to_be_deleted)
-          .then((message) => {
-            message.delete();
-          })
-          .catch(logger.error);
-
-        embed = new MessageEmbed()
-          // Set the title of the field
-          .setTitle('Emoji Manager')
-          // Set the color of the embed
-          .setColor(0x00bc8c)
-          // Set the main content of the embed
-          .setDescription(
-            `**Successfully synced emotes!** \n\n It may take a minute or two for all of emojis to show up. \n\n **NOTE:** Wide emotes won't show up properly in Discord and are not uploaded.`,
-          );
-        // Send the embed to the same channel as the message
-        message.channel.send(embed);
-      }
-    }
-  }
-}
-
-/**
- * Send Message on Discord
- * @param title
- * @param msg
- * @param message
- * @param color
- */
-async function send_message(
-  title: string,
-  msg: string,
+export async function check_tweets(
+  user: string,
   message: Message,
-  color = 0xff0000,
-): Promise<Message | boolean> {
-  if (!title || !msg || !message) return false;
-
-  const cache = await cacheClient.get(message.guild.id);
+  tweet_count = 1,
+): Promise<void> {
   const timestamp = getCurrentTime();
 
-  if (timestamp - cache.time > 10) {
+  const cache = await cacheClient.get(message.guild.id);
+
+  const params = {
+    screen_name: user,
+    count: tweet_count,
+  };
+
+  if (
+    message.member.hasPermission('ADMINISTRATOR') ||
+    timestamp - cache.time > 10
+  ) {
     cache.time = getCurrentTime();
     cacheClient.set(message.guild.id, cache);
 
-    const embed = new MessageEmbed()
-      // Set the title of the field
-      .setTitle(title)
-      // Set the color of the embed
-      .setColor(color)
-      // Set the main content of the embed
-      .setDescription(msg);
-    // Send the embed to the same channel as the message
-    await message.channel
-      .send(embed)
-      .then((sentMsg) => {
-        return sentMsg;
-      })
-      .catch(logger.error);
-  }
+    twitterClient.get('statuses/user_timeline', params).then((tweets) => {
+      if (cache.tweet) {
+        if (cache.tweet.id != tweets[0].id) {
+          // new tweet
 
-  return false;
+          cache.tweet = tweets[0];
+          cache.time = timestamp;
+
+          send_tweet_message(tweets[0], message);
+        } else {
+          // same tweet, respond tho xd
+
+          cache.time = timestamp;
+          cache.tweet = tweets[0];
+
+          send_tweet_message(tweets[0], message);
+        }
+      } else {
+        cache.tweet = tweets[0];
+        cache.time = timestamp;
+
+        send_tweet_message(tweets[0], message);
+      }
+    });
+  }
 }
 
 /**
- * Create emoji in a Discord Guild
- * @param emote_url
+ * Send a Message w/ Tweet
+ * @param tweet
  * @param message
- * @param value
  */
-function create_emoji(
-  emote_url: string,
+async function send_tweet_message(
+  tweet: {
+    user: {
+      profile_background_color: string;
+      name: string;
+      profile_image_url_https: string;
+    };
+    text: string;
+    id_str: string;
+    created_at: number | Date;
+  },
   message: Message,
-  value: { code: string; name: string },
-) {
-  const name = value.code || value.name;
+): Promise<void> {
+  //if (tweet.text.charAt(0) != "@") {
 
-  message.guild.emojis
-    .create(emote_url, name)
-    .then((emoji) => {
-      logger.debug(`Created new emoji with name ${emoji.name}!`);
-      return true;
+  const embed = new MessageEmbed()
+    .setTitle(`*Latest Tweet*`)
+    .setColor(`0x${tweet.user.profile_background_color}`)
+    .setDescription(
+      tweet.text +
+        `\n\n *https://twitter.com/${tweet.user.name}/status/${tweet.id_str}*`,
+    )
+    .setAuthor(
+      tweet.user.name,
+      tweet.user.profile_image_url_https,
+      `https://twitter.com/${tweet.user.name}`,
+    )
+    .setTimestamp(tweet.created_at)
+    .setFooter(
+      'Twitter',
+      'https://abs.twimg.com/icons/apple-touch-icon-192x192.png',
+    );
+  // .setURL(`https://twitter.com/${tweet.user.name}/status/${tweet.id_str}`);
+  await message.channel
+    .send(embed)
+    .then((message) => {
+      return message;
     })
-    .catch((err) => {
-      logger.error('Emote error:', err);
-      if (err.message.match(/Maximum number of emojis reached/i)) {
-        send_message(
-          'Error',
-          'Maximum emotes reached. Make room and try again.',
-          message,
-        );
+    .catch(logger.error);
+
+  //}
+}
+
+async function send_image_message(
+  message: Message,
+  image: string,
+  color = 0x00bc8c,
+  delete_after = false,
+  delete_timer = 6000,
+) {
+  const embed = new MessageEmbed()
+    // .setTitle('<:sumSmash:454911973868699648>')
+    .setColor(color)
+    // .setDescription()
+    .setImage(image);
+  await message.channel
+    .send(embed)
+    .then((tmpMsg) => {
+      if (delete_after && delete_timer > 1000) {
+        setTimeout(delete_message, delete_timer, message, tmpMsg.id);
+        setTimeout(delete_message, delete_timer, message, message.id);
       }
-    });
+    })
+    .catch(logger.error);
+}
+
+async function delete_message(message: Message, msg_id: any) {
+  message.channel.messages
+    .fetch(msg_id)
+    .then((message) => {
+      message.delete();
+    })
+    .catch(logger.error);
+}
+
+async function delete_role(value: any, message: Message) {
+  value
+    .delete(
+      `Color role. Deleted by SmokeyBot - initiated by ${message.author}.`,
+    )
+    .then((deleted) => logger.debug(`Deleted role ${deleted.name}`))
+    .catch((err) => logger.error(err));
+}
+
+export async function checkTweet(message: Message): Promise<void> {
+  const twitter = await cacheTwitter.get(message.guild.id);
+
+  check_tweets(twitter, message);
+}
+
+export async function checkColorRoles(message: Message): Promise<void> {
+  logger.info(
+    `Checking for color roles -> requested by ${message.member.displayName} in ${message.guild.name}..`,
+  );
+
+  const cached_roles = await message.guild.roles.fetch();
+  let color_roles = 0;
+
+  let embed = new MessageEmbed()
+    // Set the title of the field
+    .setTitle('Role Manager')
+    // Set the color of the embed
+    .setColor(0xff0000)
+    // Set the main content of the embed
+    .setDescription(`Checking for color roles.`);
+  // Send the embed to the same channel as the message
+  await message.channel
+    .send(embed)
+    .then(async (message) => {
+      await cacheToBeDeleted.set(message.guild.id, message.id);
+    })
+    .catch((err) => logger.error(err));
+
+  new Map(cached_roles.cache).forEach((value) => {
+    if (value.name.match(/USER-/i)) {
+      color_roles++;
+    }
+  });
+
+  const to_be_deleted = await cacheToBeDeleted.get(message.guild.id);
+
+  message.channel.messages
+    .fetch(to_be_deleted)
+    .then((message) => {
+      message.delete({ reason: 'Automated deletion by SmokeyBot' });
+    })
+    .catch((err) => logger.error(err));
+
+  if (color_roles > 0) {
+    embed = new MessageEmbed()
+      // Set the title of the field
+      .setTitle('Role Manager')
+      // Set the color of the embed
+      .setColor(0x00bc8c)
+      // Set the main content of the embed
+      .setDescription(`There are ${color_roles} color role(s).`);
+    // Send the embed to the same channel as the message
+    message.channel.send(embed);
+  } else {
+    embed = new MessageEmbed()
+      // Set the title of the field
+      .setTitle('Role Manager')
+      // Set the color of the embed
+      .setColor(0x00bc8c)
+      // Set the main content of the embed
+      .setDescription(`There were no color roles.`);
+    // Send the embed to the same channel as the message
+    message.channel.send(embed);
+  }
+}
+
+export async function removeColorRoles(message: Message): Promise<void> {
+  logger.info(
+    `Checking for color roles -> requested by ${message.member.displayName} in ${message.guild.name}..`,
+  );
+
+  const cached_roles = await message.guild.roles.fetch();
+  let color_roles = 0;
+
+  let embed = new MessageEmbed()
+    // Set the title of the field
+    .setTitle('Role Manager')
+    // Set the color of the embed
+    .setColor(0xff0000)
+    // Set the main content of the embed
+    .setDescription(`Checking for color roles.`);
+  // Send the embed to the same channel as the message
+  await message.channel
+    .send(embed)
+    .then(async (message) => {
+      await cacheToBeDeleted.set(message.guild.id, message.id);
+    })
+    .catch((err) => logger.error(err));
+
+  let temp_timer = 1000;
+
+  new Map(cached_roles.cache).forEach((value) => {
+    const temp_mods = [
+      'USER-120041147291795458',
+      'USER-106164905127731200',
+      'USER-90646365092188160',
+      'USER-235188818641158154',
+      'USER-130033913698582529',
+      'USER-251083845552701440',
+      'USER-121397945047318531',
+      'USER-152843239336968192',
+      'USER-354374626081767446',
+      'USER-132663982195605504',
+      'USER-315603729313169408',
+    ];
+
+    if (value.name.match(/USER-/i) && !temp_mods.includes(value.name)) {
+      setTimeout(delete_role, temp_timer, value, message);
+      color_roles++;
+      temp_timer = temp_timer + 1000;
+    }
+  });
+
+  message.channel.messages
+    .fetch(await cacheToBeDeleted.get(message.guild.id))
+    .then((message) => {
+      message.delete({ reason: 'Automated deletion by SmokeyBot' });
+    })
+    .catch((err) => logger.error(err));
+
+  if (color_roles > 0) {
+    embed = new MessageEmbed()
+      // Set the title of the field
+      .setTitle('Role Manager')
+      // Set the color of the embed
+      .setColor(0x00bc8c)
+      // Set the main content of the embed
+      .setDescription(`Successfully removed ${color_roles} color role(s).`);
+    // Send the embed to the same channel as the message
+    message.channel.send(embed);
+  } else {
+    embed = new MessageEmbed()
+      // Set the title of the field
+      .setTitle('Role Manager')
+      // Set the color of the embed
+      .setColor(0x00bc8c)
+      // Set the main content of the embed
+      .setDescription(`There were no color roles to remove.`);
+    // Send the embed to the same channel as the message
+    message.channel.send(embed);
+  }
+}
+
+export async function removeEmptyRoles(message: Message): Promise<void> {
+  logger.info(
+    `Checking for empty roles -> requested by ${message.member.displayName} in ${message.guild.name}..`,
+  );
+
+  const cached_roles = await message.guild.roles.fetch();
+  let empty_roles = 0;
+
+  let embed = new MessageEmbed()
+    // Set the title of the field
+    .setTitle('Role Manager')
+    // Set the color of the embed
+    .setColor(0xff0000)
+    // Set the main content of the embed
+    .setDescription(`Checking for empty roles.`);
+  // Send the embed to the same channel as the message
+  await message.channel
+    .send(embed)
+    .then(async (message) => {
+      await cacheToBeDeleted.set(message.guild.id, message.id);
+    })
+    .catch((err) => logger.error(err));
+
+  new Map(cached_roles.cache).forEach((value) => {
+    if (
+      value.members.size == 0 &&
+      value.name != '-BUFFER ZONE-' &&
+      !value.name.match(/Twitch Subscriber/i)
+    ) {
+      value
+        .delete(
+          `Empty role. Deleted by SmokeyBot - initiated by ${message.author}.`,
+        )
+        .then((deleted) => logger.info(`Deleted role ${deleted.name}`))
+        .catch((err) => logger.error(err));
+      empty_roles++;
+    }
+  });
+
+  message.channel.messages
+    .fetch(await cacheToBeDeleted.get(message.guild.id))
+    .then((message) => {
+      message.delete({ reason: 'Automated deletion by SmokeyBot' });
+    })
+    .catch((err) => logger.error(err));
+
+  if (empty_roles > 0) {
+    embed = new MessageEmbed()
+      // Set the title of the field
+      .setTitle('Role Manager')
+      // Set the color of the embed
+      .setColor(0x00bc8c)
+      // Set the main content of the embed
+      .setDescription(`Successfully removed ${empty_roles} empty role(s).`);
+    // Send the embed to the same channel as the message
+    message.channel.send(embed);
+  } else {
+    embed = new MessageEmbed()
+      // Set the title of the field
+      .setTitle('Role Manager')
+      // Set the color of the embed
+      .setColor(0x00bc8c)
+      // Set the main content of the embed
+      .setDescription(`There were no empty roles to remove.`);
+    // Send the embed to the same channel as the message
+    message.channel.send(embed);
+  }
+}
+
+export async function checkVase(message: Message): Promise<void> {
+  setTimeout(
+    send_image_message,
+    250,
+    message,
+    'https://media.discordapp.net/attachments/238772427960614912/698266752542572624/mHXydsWErf.gif',
+    0x00bc8c,
+    true,
+    7000,
+  );
+}
+
+export async function gtfo(message: Message): Promise<void> {
+  setTimeout(
+    send_image_message,
+    250,
+    message,
+    'https://cdn.discordapp.com/attachments/238494640758587394/699139113605136404/VsSMgcJwSp.gif',
+  );
+}
+
+export async function sumSmash(message: Message): Promise<void> {
+  setTimeout(
+    send_image_message,
+    250,
+    message,
+    'https://i.imgur.com/0Ns0tYf.gif',
+  );
 }

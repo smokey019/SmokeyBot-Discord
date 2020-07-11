@@ -3,9 +3,13 @@ import { Message, MessageEmbed } from 'discord.js';
 import { getMonsterUser, databaseClient } from '../../clients/database';
 import { explode, format_number, chunk } from '../../utils';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
-import { getUserMonster, findMonsterByID, getAllMonsters } from './monsters';
+import {
+  getUserMonster,
+  findMonsterByID,
+  IMonsterDex,
+  findMonsterByName,
+} from './monsters';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
-import { COLOR_PURPLE } from '../../colors';
 
 export type Iitem = typeof Items[1];
 
@@ -39,13 +43,17 @@ async function listItems(message: Message) {
   const splitMsg = message.content.split(' ');
 
   items.forEach((element) => {
-    item_message.push(`${element.id} - ${element.name.english}`);
+    item_message.push(
+      `ID: ${element.id} - Name: ${
+        element.name.english
+      } - Price: ${format_number(element.price)}`,
+    );
   });
 
   let all_items = [];
 
-  if (item_message.length > 15) {
-    all_items = chunk(item_message, 15);
+  if (item_message.length > 10) {
+    all_items = chunk(item_message, 10);
 
     if (splitMsg.length == 3 && all_items.length > 1) {
       const page = parseInt(splitMsg[2]) - 1;
@@ -86,6 +94,7 @@ export async function msgUserItems(message: Message): Promise<any> {
 
       items.forEach((element) => {
         const item_dex = getItemByID(element);
+        if (!item_dex) return;
         item_message.push(`${item_dex.id} - ${item_dex.name.english}`);
       });
 
@@ -101,7 +110,12 @@ async function removeMonsterItem(message: Message) {
   const split = explode(message.content, ' ', 3);
   const monster = await getUserMonster(split[2]);
 
-  if (user && split.length == 3 && monster.uid == message.author.id) {
+  if (
+    user &&
+    split.length == 3 &&
+    monster.uid == message.author.id &&
+    monster.held_item
+  ) {
     const items = JSON.parse(user.items);
 
     items.push(monster.held_item);
@@ -125,72 +139,77 @@ export async function checkItemEvolution(
   message: Message,
   isTrade = false,
 ): Promise<any> {
-  const monster_dex = findMonsterByID(monster.monster_id);
+  const monster_dex: IMonsterDex = findMonsterByID(monster.monster_id);
 
-  if (monster_dex.evos && monster.held_item != 229) {
-    const allMonsters = getAllMonsters();
+  if (
+    (monster_dex.evos && monster.held_item != 229) ||
+    monster_dex.otherFormes
+  ) {
+    let evolve: IMonsterDex = undefined;
+    const item = getItemByID(monster.held_item);
 
-    let evolve = undefined;
-    allMonsters.forEach(async (element) => {
-      if (!element.forme) {
-        if (
-          element.name.english.toLowerCase() ==
-          monster_dex.evos[0].toLowerCase()
-        ) {
-          evolve = element;
+    if (monster_dex.evos) {
+      monster_dex.evos.forEach((evo) => {
+        const tmpEvo = findMonsterByName(evo);
+        if (tmpEvo.evoItem == item.name.english) {
+          evolve = tmpEvo;
         }
+      });
+    } else if (monster_dex.otherFormes) {
+      monster_dex.otherFormes.forEach((evo) => {
+        const tmpEvo = findMonsterByName(evo);
+        if (tmpEvo.evoItem == item.name.english) {
+          evolve = tmpEvo;
+        }
+      });
+    }
+
+    if (
+      evolve != undefined ||
+      evolve.evoItem == item.name.english ||
+      (evolve.evoType == 'levelFriendship' && monster.held_item == 960) ||
+      (evolve.evoType == 'trade' && isTrade)
+    ) {
+      let updateMonster = undefined;
+      if (!evolve.forme) {
+        updateMonster = await databaseClient<IMonsterModel>(MonsterTable)
+          .where({ id: monster.id })
+          .update({ monster_id: evolve.id, held_item: null });
+      } else {
+        updateMonster = await databaseClient<IMonsterModel>(MonsterTable)
+          .where({ id: monster.id })
+          .update({
+            monster_id: evolve.id,
+            mega: 1,
+            mega_name: evolve.name.english,
+          });
       }
-    });
 
-    if (evolve.evoType || evolve.otherFormes) {
-      if (evolve.evoType) {
-        if (
-          evolve.evoType == 'useItem' ||
-          (evolve.evoType == 'trade' && isTrade) ||
-          (evolve.evoType == 'levelFriendship' && monster.held_item == 960) ||
-          (evolve.requiredItem && evolve.forme == 'Mega')
-        ) {
-          const item = getItemByID(monster.held_item);
-
-          if (
-            item.name.english == evolve.evoItem ||
-            (evolve.evoType == 'levelFriendship' && monster.held_item == 960) ||
-            (evolve.requiredItem && item.name.english == evolve.requiredItem)
-          ) {
-            const updateMonster = await databaseClient<IMonsterModel>(
-              MonsterTable,
-            )
-              .where({ id: monster.id })
-              .update({ monster_id: evolve.id, held_item: null });
-
-            if (updateMonster) {
-              let imgs = [];
-              if (monster.shiny) {
-                imgs = [evolve.images.shiny, monster_dex.images.shiny];
-              } else {
-                imgs = [evolve.images.normal, monster_dex.images.normal];
-              }
-              const embed = new MessageEmbed({
-                color: COLOR_PURPLE,
-                description: `Nice! **${monster_dex.name.english}** has evolved into **${evolve.name.english}** with held item **${item.name.english}**!`,
-                image: {
-                  url: imgs[0],
-                },
-                thumbnail: {
-                  url: imgs[1],
-                },
-                title: `${message.author.username}'s ${monster_dex.name.english} is evolving!`,
-              });
-
-              await message.channel
-                .send(embed)
-                .then(() => {
-                  return;
-                })
-                .catch(console.error);
-            }
-          }
+      if (updateMonster) {
+        let imgs = [];
+        if (monster.shiny) {
+          imgs = [evolve.images.shiny, monster_dex.images.shiny];
+        } else {
+          imgs = [evolve.images.normal, monster_dex.images.normal];
         }
+        const embed = new MessageEmbed({
+          color: evolve.color,
+          description: `Nice! **${monster_dex.name.english}** has evolved into **${evolve.name.english}** with held item **${item.name.english}**!`,
+          image: {
+            url: imgs[0],
+          },
+          thumbnail: {
+            url: imgs[1],
+          },
+          title: `${message.author.username}'s ${monster_dex.name.english} is evolving!`,
+        });
+
+        await message.channel
+          .send(embed)
+          .then(() => {
+            return;
+          })
+          .catch(console.error);
       }
     }
   }
@@ -250,7 +269,7 @@ async function buyItem(message: Message) {
     const item_to_buy =
       getItemByID(parseInt(split[2])) || getItemByName(split[2]);
 
-    if (item_to_buy && user.currency >= 1000) {
+    if (item_to_buy && user.currency >= item_to_buy.price) {
       user.items = JSON.parse(user.items);
 
       user.items.push(item_to_buy.id);
@@ -259,14 +278,18 @@ async function buyItem(message: Message) {
         MonsterUserTable,
       )
         .where({ uid: message.author.id })
-        .decrement('currency', 1000)
+        .decrement('currency', item_to_buy.price)
         .update({ items: JSON.stringify(user.items) });
 
       if (updateUser) {
         message.reply(
           `you have purchased **${
             item_to_buy.name.english
-          }**! Current Balance: **${format_number(user.currency - 1000)}**.`,
+          }** for **${format_number(
+            item_to_buy.price,
+          )}**! Current Balance: **${format_number(
+            user.currency - item_to_buy.price,
+          )}**.`,
         );
       }
     }

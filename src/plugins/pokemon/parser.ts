@@ -181,7 +181,7 @@ export async function monsterParser(
     if (
       command.match(prefix_regex('info|i')) &&
       splitMsg.length == 1 &&
-      !splitMsg[0].match('item') &&
+      !splitMsg[0].match(/item/i) &&
       channel_name == cache.settings.specific_channel
     ) {
       cache.time = getCurrentTime();
@@ -279,11 +279,9 @@ export async function monsterParser(
     }
 
     checkExpGain(message);
-  }
-
-  if (timestamp - cache.time < 3) {
+  } else {
     if (
-      command.match(prefixes.join('|')) &&
+      command.match(/~|p!|!/i) &&
       channel_name == cache.settings.specific_channel
     ) {
       logger.debug(`${message.guild.name} - Cooldown present.`);

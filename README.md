@@ -1,7 +1,28 @@
-## Commands
+## SmokeyBot Commands
+
+- `~check color roles`
+  - Replies with how many empty color roles are in your server.
+- `~remove color roles`
+  - Removes all empty color roles in your server. **NOT REVERSABLE!!**
+- `~remove empty roles`
+  - Removes ANY empty roles **NOT REVERSABLE!!**
+- `~sync-emotes-ffz CHANNEL_NAME`
+  - Uploads a channel's FrankerFaceZ Emotes to a Discord server's emojis.
+- `~sync-emotes-smokemotes CHANNEL_NAME`
+  - Uploads a channel's smokEmotes to a Discord server's emojis.
+- `~invite`
+  - Sends invite link for the bot.
+
+## Pokemon Commands
+
+- `~smokemon enable|disable`
+
+  - Enable/disable the Pokemon Plugin.
 
 - `~|p!|!`
   - Prefixes.
+- `commands|help`
+  - Displays this file in an image.
 - `catch|キャッチ|抓住|capture %monster%`
   - Catch a monster. Case insensitive.
 - `bal|balance|bank|currency`

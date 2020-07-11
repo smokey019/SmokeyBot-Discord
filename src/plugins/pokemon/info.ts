@@ -12,6 +12,9 @@ import {
 import { img_monster_ball } from './utils';
 import { IMonsterUserModel } from '../../models/MonsterUser';
 import { COLOR_GREEN } from '../../colors';
+import { getLogger } from '../../clients/logger';
+
+const logger = getLogger('SmokeyBot');
 
 export async function monsterEmbed(
   monster_db: IMonsterModel,
@@ -21,7 +24,13 @@ export async function monsterEmbed(
     return;
   }
 
-  const monster = findMonsterByID(monster_db.monster_id);
+  let monster = undefined;
+
+  if (monster_db.mega) {
+    monster = findMonsterByName(monster_db.mega_name);
+  } else {
+    monster = findMonsterByID(monster_db.monster_id);
+  }
 
   const monster_types = monster.type.join(' | ');
 
@@ -131,7 +140,7 @@ export async function monsterEmbed(
         return message;
       })
       .catch(console.error);
-  } else if (!monster.forme && !monster_db.shiny) {
+  } else if (!monster_db.shiny) {
     const embed = new MessageEmbed()
       .setAuthor(
         `Level ${monster_db.level} ${monster.name.english}${favorite}`,
@@ -565,8 +574,15 @@ export async function userDex(message: Message): Promise<Array<any>> {
 
   if (pokemon.length > 0) {
     pokemon.forEach((element) => {
-      if (!dex.includes(element.monster_id)) {
-        dex.push(element.monster_id);
+      const monster = findMonsterByID(element.monster_id);
+      if (!monster) {
+        logger.error(
+          `couldn't find monster id ${element.id} MiD ${element.monster_id}`,
+        );
+        return;
+      }
+      if (!dex.includes(monster.name.english)) {
+        dex.push(monster.name.english);
       }
     });
   }

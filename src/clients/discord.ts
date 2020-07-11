@@ -1,6 +1,6 @@
 import { Client, Message } from 'discord.js';
 import { getLogger } from './logger';
-import { cacheClient, ICache } from './cache';
+import { cacheClient, ICache, cacheTwitter } from './cache';
 import { getGuildSettings, putGuildSettings, IGuildSettings } from './database';
 import { getCurrentTime, getRndInteger } from '../utils';
 import { spawnMonster } from '../plugins/pokemon/spawn-monster';
@@ -77,9 +77,11 @@ async function parseMessage(message: Message) {
                 smokemon_enabled: settings.smokemon_enabled,
                 specific_channel: settings.specific_channel,
               },
-              time: timestamp,
+              time: timestamp - 15,
             })
           : undefined;
+
+        await cacheTwitter.set(message.guild.id, 'summit1g');
 
         logger.info(`Initialized cache for ${message.guild.name}.`);
       }
