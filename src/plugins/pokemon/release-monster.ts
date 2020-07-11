@@ -1,5 +1,5 @@
 import { Message } from 'discord.js';
-import { databaseClient, getMonsterUser } from '../../clients/database';
+import { databaseClient, getUser } from '../../clients/database';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { findMonsterByID } from './monsters';
 import { getLogger } from '../../clients/logger';
@@ -62,7 +62,7 @@ export async function releaseMonster(message: Message): Promise<void> {
       let to_release = undefined;
 
       if (tmpMsg[1] == '^') {
-        const user: IMonsterUserModel = await getMonsterUser(message.author.id);
+        const user: IMonsterUserModel = await getUser(message.author.id);
         to_release = await databaseClient<IMonsterModel>(MonsterTable)
           .select()
           .where('id', user.latest_monster);

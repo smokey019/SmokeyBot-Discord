@@ -1,7 +1,7 @@
 import { Message, MessageEmbed } from 'discord.js';
 import { getCurrentTime, getRndInteger } from '../../utils';
 import { xp_cache } from '../../clients/cache';
-import { getMonsterUser, databaseClient } from '../../clients/database';
+import { getUser, databaseClient } from '../../clients/database';
 import { MonsterTable, IMonsterModel } from '../../models/Monster';
 import { getLogger } from '../../clients/logger';
 import {
@@ -25,7 +25,7 @@ export async function checkExpGain(message: Message): Promise<any> {
   } else {
     const should_we_exp = getRndInteger(5, 600);
     if (timestamp - parseInt(cache) > should_we_exp) {
-      const user = await getMonsterUser(message.author.id);
+      const user = await getUser(message.author.id);
       if (!user) return;
       if (user.current_monster) {
         const monster: IMonsterModel = await getUserMonster(

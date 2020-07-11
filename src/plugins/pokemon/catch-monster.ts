@@ -6,7 +6,7 @@ import { ICache, cacheClient } from '../../clients/cache';
 import { getRandomNature } from './natures';
 import { rollShiny, rollLevel, rollPerfectIV } from './utils';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
-import { databaseClient, getMonsterUser } from '../../clients/database';
+import { databaseClient, getUser } from '../../clients/database';
 import { MonsterUserTable, IMonsterUserModel } from '../../models/MonsterUser';
 import { userDex } from './info';
 import { IMonsterDex } from './monsters';
@@ -190,7 +190,7 @@ export async function catchMonster(
           );
         }
 
-        const user = await getMonsterUser(message.author.id);
+        const user = await getUser(message.author.id);
 
         if (user) {
           if (user.streak == 10) {

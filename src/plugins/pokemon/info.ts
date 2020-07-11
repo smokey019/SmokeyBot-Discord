@@ -7,7 +7,7 @@ import {
   databaseClient,
   IUserSettings,
   UserSettingsTable,
-  getMonsterUser,
+  getUser,
 } from '../../clients/database';
 import { img_monster_ball } from './utils';
 import { IMonsterUserModel } from '../../models/MonsterUser';
@@ -448,7 +448,7 @@ export async function monsterInfo(message: Message): Promise<void> {
  * @param id
  */
 export async function currentMonsterInfo(message: Message): Promise<void> {
-  const user: IMonsterUserModel = await getMonsterUser(message.author.id);
+  const user: IMonsterUserModel = await getUser(message.author.id);
 
   if (!user) return;
 

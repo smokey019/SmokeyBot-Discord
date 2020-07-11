@@ -1,6 +1,6 @@
 import Items from './data/items.json';
 import { Message, MessageEmbed } from 'discord.js';
-import { getMonsterUser, databaseClient } from '../../clients/database';
+import { getUser, databaseClient } from '../../clients/database';
 import { explode, format_number, chunk } from '../../utils';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 import {
@@ -84,7 +84,7 @@ async function listItems(message: Message) {
 }
 
 export async function msgUserItems(message: Message): Promise<any> {
-  const user = await getMonsterUser(message.author.id);
+  const user = await getUser(message.author.id);
 
   if (user) {
     const items = JSON.parse(user.items);
@@ -106,7 +106,7 @@ export async function msgUserItems(message: Message): Promise<any> {
 }
 
 async function removeMonsterItem(message: Message) {
-  const user = await getMonsterUser(message.author.id);
+  const user = await getUser(message.author.id);
   const split = explode(message.content, ' ', 3);
   const monster = await getUserMonster(split[2]);
 
@@ -216,7 +216,7 @@ export async function checkItemEvolution(
 }
 
 async function giveMonsterItem(message: Message) {
-  const user = await getMonsterUser(message.author.id);
+  const user = await getUser(message.author.id);
   const split = explode(message.content, ' ', 4);
 
   if (user && split.length == 4) {
@@ -262,7 +262,7 @@ async function giveMonsterItem(message: Message) {
 }
 
 async function buyItem(message: Message) {
-  const user = await getMonsterUser(message.author.id);
+  const user = await getUser(message.author.id);
   const split = explode(message.content, ' ', 3);
 
   if (user && split.length) {
@@ -297,7 +297,7 @@ async function buyItem(message: Message) {
 }
 
 export async function checkCurrency(uid: number | string): Promise<number> {
-  const user = await getMonsterUser(uid);
+  const user = await getUser(uid);
 
   if (user) {
     return user.currency;
@@ -307,7 +307,7 @@ export async function checkCurrency(uid: number | string): Promise<number> {
 }
 
 export async function msgBalance(message: Message): Promise<any> {
-  const user = await getMonsterUser(message.author.id);
+  const user = await getUser(message.author.id);
 
   if (user) {
     message.reply(`your balance is ${format_number(user.currency)}.`);

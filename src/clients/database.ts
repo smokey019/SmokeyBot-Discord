@@ -24,7 +24,7 @@ export const databaseClient = knex({
  */
 export async function getGuildSettings(
   guild_id: number | string,
-): Promise<any> {
+): Promise<IGuildSettings> {
   const guild_settings = await databaseClient<IGuildSettings>(
     GuildSettingsTable,
   )
@@ -38,7 +38,7 @@ export async function getGuildSettings(
  * WIP
  * @param uid
  */
-export async function getMonsterUser(uid: number | string): Promise<any> {
+export async function getUser(uid: number | string): Promise<IUserSettings> {
   const user_settings = await databaseClient<IUserSettings>(UserSettingsTable)
     .select()
     .where('uid', uid);

@@ -21,9 +21,9 @@ const logger = getLogger('Pokemon');
 const MonsterPool: Array<IMonsterDex> = [];
 const MonsterDex: Array<IMonsterDex> = [];
 
-export type IMonster = typeof PokeDex[0];
+export type IMonsterDex = typeof PokeDex[0];
 
-export interface IMonsterDex {
+export interface IMonsterDexTest {
   id: number;
   name: {
     english: string;
@@ -193,7 +193,7 @@ export function getPokedex(): IMonsterDex[] {
   return MonsterDex;
 }
 
-export function getMonsterByIndex(): IMonsterDex | undefined {
+export function getMonsterByIndex(): IMonsterDex {
   return MonsterDex[0];
 }
 
@@ -201,12 +201,14 @@ export function getRandomMonster(): IMonsterDex {
   return MonsterPool[getRndInteger(0, MonsterPool.length - 1)];
 }
 
-export function findMonsterByID(id: number): any {
+export function findMonsterByID(id: number): IMonsterDex {
+  let monster = undefined;
   for (let index = 0; index < MonsterDex.length; index++) {
     if (MonsterDex[index].id == id) {
-      return MonsterDex[index];
+      monster = MonsterDex[index];
     }
   }
+  return monster;
 }
 
 export function findMonsterByName(name: string): IMonsterDex {
@@ -237,7 +239,7 @@ export async function getUserMonster(
   }
 }
 
-export async function selectMonster(message: Message): Promise<any> {
+export async function selectMonster(message: Message): Promise<boolean> {
   const splitMsg = message.content.split(' ');
 
   const monster: IMonsterModel = await getUserMonster(splitMsg[1]);
@@ -251,11 +253,16 @@ export async function selectMonster(message: Message): Promise<any> {
 
     if (updateUser) {
       message.reply(`selected ${dex.name.english}!`);
+      return true;
+    } else {
+      return false;
     }
+  } else {
+    return false;
   }
 }
 
-export async function setFavorite(message: Message): Promise<any> {
+export async function setFavorite(message: Message): Promise<boolean> {
   const splitMsg = message.content.split(' ');
 
   const monster: IMonsterModel = await getUserMonster(splitMsg[1]);
@@ -267,11 +274,16 @@ export async function setFavorite(message: Message): Promise<any> {
 
     if (updatedMonster) {
       message.reply(`favorited monster id ${monster.id}!`);
+      return true;
+    } else {
+      return false;
     }
+  } else {
+    return false;
   }
 }
 
-export async function unFavorite(message: Message): Promise<any> {
+export async function unFavorite(message: Message): Promise<boolean> {
   const splitMsg = message.content.split(' ');
 
   const monster: IMonsterModel = await getUserMonster(splitMsg[1]);
@@ -283,7 +295,12 @@ export async function unFavorite(message: Message): Promise<any> {
 
     if (updatedMonster) {
       message.reply(`unfavorited monster id ${monster.id}!`);
+      return true;
+    } else {
+      return false;
     }
+  } else {
+    return false;
   }
 }
 

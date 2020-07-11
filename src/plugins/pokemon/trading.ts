@@ -1,6 +1,6 @@
 import { getLogger } from '../../clients/logger';
 import { Message, MessageEmbed } from 'discord.js';
-import { getMonsterUser, databaseClient } from '../../clients/database';
+import { getUser, databaseClient } from '../../clients/database';
 import { ITrade, TradeTable } from '../../models/Trades';
 import { getCurrentTime, theWord } from '../../utils';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
@@ -26,7 +26,7 @@ export async function startTrade(message: Message): Promise<any> {
 
     if (to_user == message.author.id) return;
 
-    const recipient = await getMonsterUser(to_user);
+    const recipient = await getUser(to_user);
     const check_trade = await checkTrade(traded_monster, to_user, message);
 
     if (recipient && !check_trade) {

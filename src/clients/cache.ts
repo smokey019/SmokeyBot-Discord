@@ -1,6 +1,5 @@
 import { Message } from 'discord.js';
 import Keyv from 'keyv';
-
 import { getLogger } from './logger';
 import { IMonsterDex } from '../plugins/pokemon/monsters';
 import { getConfigValue } from '../config';
@@ -37,3 +36,6 @@ export const cacheToBeDeleted = new Keyv({ namespace: 'cacheToBeDeleted' });
 
 cacheClient.on('error', (error) => logger.error(error));
 xp_cache.on('error', (error) => logger.error(error));
+cacheTwitter.on('error', (error) => logger.error(error));
+cacheTweets.on('error', (error) => logger.error(error));
+cacheToBeDeleted.on('error', (error) => logger.error(error));
