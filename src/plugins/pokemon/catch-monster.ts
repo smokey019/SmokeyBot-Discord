@@ -103,14 +103,12 @@ export async function catchMonster(
       uid: message.author.id,
       original_uid: message.author.id,
       shiny: shiny,
-      mega: 0,
       captured_at: timestamp,
-      favorite: 0,
     };
 
     const isPerfect = rollPerfectIV();
 
-    if (isPerfect) {
+    if (isPerfect || shiny) {
       monster.hp = getRndInteger(28, 31);
       monster.attack = getRndInteger(28, 31);
       monster.defense = getRndInteger(28, 31);

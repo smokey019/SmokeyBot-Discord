@@ -3,16 +3,11 @@ import { Message, MessageEmbed } from 'discord.js';
 import { format_number } from '../../utils';
 import { findMonsterByID, findMonsterByName } from './monsters';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
-import {
-  databaseClient,
-  IUserSettings,
-  UserSettingsTable,
-  getUser,
-} from '../../clients/database';
+import { databaseClient, getUser } from '../../clients/database';
 import { img_monster_ball } from './utils';
-import { IMonsterUserModel } from '../../models/MonsterUser';
 import { COLOR_GREEN } from '../../colors';
 import { getLogger } from '../../clients/logger';
+import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 
 const logger = getLogger('SmokeyBot');
 
@@ -24,13 +19,7 @@ export async function monsterEmbed(
     return;
   }
 
-  let monster = undefined;
-
-  if (monster_db.mega) {
-    monster = findMonsterByName(monster_db.mega_name);
-  } else {
-    monster = findMonsterByID(monster_db.monster_id);
-  }
+  const monster = findMonsterByID(monster_db.monster_id);
 
   const monster_types = monster.type.join(' | ');
 
@@ -98,10 +87,10 @@ export async function monsterEmbed(
     released = '\n***RELEASED***\n\n';
   }
 
-  let original = `✅`;
+  /*let original = `✅`;
   if (monster_db.uid != monster_db.original_uid) {
     original = `🔴`;
-  }
+  }*/
 
   if (monster_db.shiny) {
     const embed = new MessageEmbed()
@@ -118,7 +107,6 @@ export async function monsterEmbed(
     **ID**: ${monster_db.id}
     **National №**: ${tmpID}
     **Dex Count**: ${count}
-    **With Original Owner**: ${original}
 
     **Exp**: ${format_number(monster_db.experience)} / ${format_number(
       next_level_xp,
@@ -154,7 +142,6 @@ export async function monsterEmbed(
     }
     **National №**: ${tmpID}
     **Dex Count**: ${count}
-    **Original Owner**: ${original}
 
     **Exp**: ${format_number(monster_db.experience)} / ${format_number(
       next_level_xp,
@@ -408,7 +395,7 @@ export async function TESTmonsterEmbed(
  * @param message
  */
 export async function monsterInfoLatest(message: Message): Promise<void> {
-  const user = await databaseClient<IUserSettings>(UserSettingsTable)
+  const user = await databaseClient<IMonsterUserModel>(MonsterUserTable)
     .select()
     .where('uid', message.author.id);
 

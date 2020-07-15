@@ -171,7 +171,7 @@ export async function confirmTrade(message: Message): Promise<any> {
 
     const updateMonster = await databaseClient<IMonsterModel>(MonsterTable)
       .where({ id: trade.monster_id })
-      .update({ uid: message.author.id });
+      .update({ uid: message.author.id, favorite: 0 });
 
     if (updateMonster) {
       const monster_db = await getUserMonster(trade.monster_id);

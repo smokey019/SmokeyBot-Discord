@@ -3,6 +3,7 @@ import knex from 'knex';
 import { getConfigValue } from '../config';
 import { getLogger } from './logger';
 import { Message } from 'discord.js';
+import { IMonsterUserModel, MonsterUserTable } from '../models/MonsterUser';
 
 const logger = getLogger('Database');
 
@@ -38,8 +39,12 @@ export async function getGuildSettings(
  * WIP
  * @param uid
  */
-export async function getUser(uid: number | string): Promise<IUserSettings> {
-  const user_settings = await databaseClient<IUserSettings>(UserSettingsTable)
+export async function getUser(
+  uid: number | string,
+): Promise<IMonsterUserModel> {
+  const user_settings = await databaseClient<IMonsterUserModel>(
+    MonsterUserTable,
+  )
     .select()
     .where('uid', uid);
 
@@ -74,15 +79,4 @@ export interface IGuildSettings {
   guild_id: number | string;
   smokemon_enabled: number;
   specific_channel: string;
-}
-
-export const UserSettingsTable = 'smokemon_users';
-
-export interface IUserSettings {
-  id: number;
-  uid: number;
-  currency: number;
-  current_monster: number;
-  latest_monster: number;
-  items: [];
 }

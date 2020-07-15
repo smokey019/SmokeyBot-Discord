@@ -16,8 +16,6 @@ export interface IMonsterModel {
   uid: string;
   original_uid: string;
   shiny: 0 | 1;
-  mega?: 0 | 1;
-  mega_name?: string;
   captured_at: number;
   released?: 0 | 1;
   favorite?: 0 | 1;

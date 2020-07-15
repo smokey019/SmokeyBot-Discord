@@ -10,6 +10,9 @@ import {
   findMonsterByName,
 } from './monsters';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
+import { getLogger } from 'log4js';
+
+const logger = getLogger('Items');
 
 export type Iitem = typeof Items[1];
 
@@ -90,17 +93,49 @@ export async function msgUserItems(message: Message): Promise<any> {
     const items = JSON.parse(user.items);
 
     if (items.length > 0) {
-      const item_message = [];
+      let item_message = [];
+
+      const splitMsg = message.content.split(' ');
 
       items.forEach((element) => {
         const item_dex = getItemByID(element);
         if (!item_dex) return;
-        item_message.push(`${item_dex.id} - ${item_dex.name.english}`);
+        item_message.push(
+          `ID: **${item_dex.id}** - **${item_dex.name.english}**`,
+        );
       });
 
-      const response = item_message.join(' | ');
+      let all_items = [];
 
-      message.reply(`Total items: ${items.length}\n\n` + response);
+      if (item_message.length > 10) {
+        all_items = chunk(item_message, 10);
+
+        if (splitMsg.length == 3 && all_items.length > 1) {
+          const page = parseInt(splitMsg[2]) - 1;
+
+          if (all_items[page]) {
+            item_message = all_items[page];
+          }
+        } else {
+          item_message = all_items[0];
+        }
+      }
+
+      const new_msg = item_message.join('\n');
+
+      const embed = new MessageEmbed()
+        .setAuthor(
+          `${message.author.username}'s Items - Total: ${items.length} - Pages: ${all_items.length}`,
+          `https://cdn.bulbagarden.net/upload/0/03/Bag_Ultra_Ball_Sprite.png`,
+        )
+        .setColor(0xff0000)
+        .setDescription(new_msg);
+      await message.channel
+        .send(embed)
+        .then((message) => {
+          return message;
+        })
+        .catch(console.error);
     }
   }
 }
@@ -120,6 +155,9 @@ async function removeMonsterItem(message: Message) {
 
     items.push(monster.held_item);
 
+    const itemDex = getItemByID(monster.held_item);
+    const monsterDex = findMonsterByID(monster.monster_id);
+
     const updateUser = await databaseClient<IMonsterUserModel>(MonsterUserTable)
       .where({ uid: message.author.id })
       .update({ items: JSON.stringify(items) });
@@ -129,7 +167,9 @@ async function removeMonsterItem(message: Message) {
       .update({ held_item: null });
 
     if (updateUser && updateMonster) {
-      message.reply(`removed ${monster.id}'s item!`);
+      message.reply(
+        `removed **${monsterDex.name.english}**'s item - **${itemDex.name.english}**.`,
+      );
     }
   }
 }
@@ -151,6 +191,7 @@ export async function checkItemEvolution(
     if (monster_dex.evos) {
       monster_dex.evos.forEach((evo) => {
         const tmpEvo = findMonsterByName(evo);
+        if (!tmpEvo.evoItem) return;
         if (tmpEvo.evoItem == item.name.english) {
           evolve = tmpEvo;
         }
@@ -158,6 +199,7 @@ export async function checkItemEvolution(
     } else if (monster_dex.otherFormes) {
       monster_dex.otherFormes.forEach((evo) => {
         const tmpEvo = findMonsterByName(evo);
+        if (!tmpEvo.evoItem) return;
         if (tmpEvo.evoItem == item.name.english) {
           evolve = tmpEvo;
         }
@@ -180,8 +222,7 @@ export async function checkItemEvolution(
           .where({ id: monster.id })
           .update({
             monster_id: evolve.id,
-            mega: 1,
-            mega_name: evolve.name.english,
+            held_item: null,
           });
       }
 
@@ -209,7 +250,7 @@ export async function checkItemEvolution(
           .then(() => {
             return;
           })
-          .catch(console.error);
+          .catch(logger.error);
       }
     }
   }
@@ -225,7 +266,7 @@ async function giveMonsterItem(message: Message) {
     const items = JSON.parse(user.items);
 
     if (!monster) {
-      message.reply('there was an error giving item');
+      message.reply('there was an error giving item.');
     }
 
     if (
@@ -252,7 +293,11 @@ async function giveMonsterItem(message: Message) {
 
           if (updateUser && updateMonster) {
             monster.held_item = item;
-            message.reply(`gave ${monster.id} an item!`);
+            const itemDex = getItemByID(item);
+            const monsterDex = findMonsterByID(monster.monster_id);
+            message.reply(
+              `gave **${monsterDex.name.english}** an item - **${itemDex.name.english}**! Neato!`,
+            );
             await checkItemEvolution(monster, message);
           }
         }
@@ -270,16 +315,16 @@ async function buyItem(message: Message) {
       getItemByID(parseInt(split[2])) || getItemByName(split[2]);
 
     if (item_to_buy && user.currency >= item_to_buy.price) {
-      user.items = JSON.parse(user.items);
+      const items = JSON.parse(user.items);
 
-      user.items.push(item_to_buy.id);
+      items.push(item_to_buy.id);
 
       const updateUser = await databaseClient<IMonsterUserModel>(
         MonsterUserTable,
       )
         .where({ uid: message.author.id })
         .decrement('currency', item_to_buy.price)
-        .update({ items: JSON.stringify(user.items) });
+        .update({ items: JSON.stringify(items) });
 
       if (updateUser) {
         message.reply(
@@ -287,7 +332,7 @@ async function buyItem(message: Message) {
             item_to_buy.name.english
           }** for **${format_number(
             item_to_buy.price,
-          )}**! Current Balance: **${format_number(
+          )}**! Remaining Balance: **${format_number(
             user.currency - item_to_buy.price,
           )}**.`,
         );
@@ -310,7 +355,9 @@ export async function msgBalance(message: Message): Promise<any> {
   const user = await getUser(message.author.id);
 
   if (user) {
-    message.reply(`your balance is ${format_number(user.currency)}.`);
+    message.reply(
+      `your current balance is **${format_number(user.currency)}**.`,
+    );
   }
 }
 

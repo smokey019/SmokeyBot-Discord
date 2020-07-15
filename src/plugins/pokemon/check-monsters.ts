@@ -2,7 +2,7 @@ import { Message, MessageEmbed } from 'discord.js';
 
 import { theWord, chunk } from '../../utils';
 import { getLogger } from '../../clients/logger';
-import { findMonsterByID, findMonsterByName } from './monsters';
+import { findMonsterByID, getPokedex, IMonsterDex } from './monsters';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { databaseClient } from '../../clients/database';
 import { COLOR_GREEN, COLOR_WHITE } from '../../colors';
@@ -39,18 +39,10 @@ export async function checkMonsters(message: Message): Promise<void> {
 
     logger.debug(`Successfully fetched! Compiling..`);
 
-    message_contents.push(`**Total ${theWord()}**: ${pokemon.length}\n`);
-
     const temp_monsters = [];
 
     pokemon.forEach((element: IMonsterModel) => {
-      let monster = undefined;
-
-      if (element.mega) {
-        monster = findMonsterByName(element.mega_name);
-      } else {
-        monster = findMonsterByID(element.monster_id);
-      }
+      const monster = findMonsterByID(element.monster_id);
 
       if (!monster) return;
 
@@ -184,7 +176,7 @@ export async function checkMonsters(message: Message): Promise<void> {
 
     const embed = new MessageEmbed()
       .setAuthor(
-        `${message.author.username}'s Pokémon`,
+        `${message.author.username}'s Pokémon - Total: ${pokemon.length} - Pages: ${all_monsters.length}`,
         message.author.avatarURL()?.toString(),
       )
       .setColor(COLOR_GREEN)
@@ -241,20 +233,10 @@ export async function checkFavorites(message: Message): Promise<void> {
 
     logger.trace(`Successfully fetched! Compiling..`);
 
-    message_contents.push(
-      `**Total Favorite ${theWord()}**: ${pokemon.length}\n`,
-    );
-
     const temp_monsters = [];
 
     pokemon.forEach((element: IMonsterModel) => {
-      let monster = undefined;
-
-      if (element.mega) {
-        monster = findMonsterByName(element.mega_name);
-      } else {
-        monster = findMonsterByID(element.monster_id);
-      }
+      const monster = findMonsterByID(element.monster_id);
 
       if (!monster) return;
 
@@ -388,7 +370,7 @@ export async function checkFavorites(message: Message): Promise<void> {
 
     const embed = new MessageEmbed()
       .setAuthor(
-        `${message.author.username}'s Pokémon`,
+        `${message.author.username}'s Pokémon - Total: ${pokemon.length} - Pages: ${all_monsters.length}`,
         message.author.avatarURL()?.toString(),
       )
       .setColor(COLOR_WHITE)
@@ -411,6 +393,7 @@ export async function checkFavorites(message: Message): Promise<void> {
       .catch(console.error);
   }
 }
+
 /**
  *
  * @param message
@@ -436,13 +419,7 @@ export async function searchMonsters(message: Message): Promise<void> {
     const temp_monsters = [];
 
     pokemon.forEach((element: IMonsterModel) => {
-      let monster = undefined;
-
-      if (element.mega) {
-        monster = findMonsterByName(element.mega_name);
-      } else {
-        monster = findMonsterByID(element.monster_id);
-      }
+      const monster = findMonsterByID(element.monster_id);
 
       if (
         !monster ||
@@ -561,7 +538,7 @@ export async function searchMonsters(message: Message): Promise<void> {
 
       const embed = new MessageEmbed()
         .setAuthor(
-          `${message.author.username}'s Pokémon`,
+          `${message.author.username}'s Pokémon - Total: ${pokemon.length} - Pages: ${all_monsters.length}`,
           message.author.avatarURL()?.toString(),
         )
         .setColor(0xff0000)

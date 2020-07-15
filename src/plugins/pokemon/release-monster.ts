@@ -41,7 +41,7 @@ export async function releaseMonster(message: Message): Promise<void> {
               .update({ released: 1 });
 
             if (released_monster) {
-              logger.debug(`Successfully released a monster.`);
+              logger.trace(`Successfully released a monster.`);
             }
           }
         });
