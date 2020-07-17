@@ -1,5 +1,5 @@
 import { Message, TextChannel } from 'discord.js';
-import { ICache, cacheClient } from '../../clients/cache';
+import { ICache, GLOBAL_COOLDOWN, getGCD } from '../../clients/cache';
 import { catchMonster } from './catch-monster';
 import {
   userDex,
@@ -13,15 +13,13 @@ import {
   checkMonsters,
   checkFavorites,
   searchMonsters,
+  checkPokedex,
 } from './check-monsters';
 import { releaseMonster, recoverMonster } from './release-monster';
 import { selectMonster, setFavorite, unFavorite } from './monsters';
 import { checkExpGain } from './exp-gain';
-import { getLogger } from '../../clients/logger';
 import { parseTrade } from './trading';
 import { parseItems, msgBalance } from './items';
-
-const logger = getLogger('Pokemon');
 
 export const prefixes = ['!', '~', 'p!'];
 
@@ -32,23 +30,24 @@ export function prefix_regex(command: string): RegExp {
 export async function monsterParser(
   message: Message,
   cache: ICache,
-): Promise<any> {
-  const timestamp = getCurrentTime();
-
+): Promise<void> {
   const channel_name = (message.channel as TextChannel).name;
   const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
   const command = splitMsg[0];
+  const GCD = await getGCD(message.guild.id);
+  const timestamp = getCurrentTime();
+
+  checkExpGain(message);
+
+  if (channel_name != cache.settings.specific_channel) return;
 
   if (
     cache.monster_spawn.current_spawn &&
     command.match(prefix_regex('catch|キャッチ|抓住|capture')) &&
-    channel_name == cache.settings.specific_channel &&
     splitMsg.length > 1
   ) {
     catchMonster(message, cache);
-  }
-
-  if (timestamp - cache.time > 3) {
+  } else if (timestamp - GCD > 3) {
     if (command.match(prefix_regex('unique'))) {
       const tempdex = await userDex(message);
       message.reply(
@@ -57,123 +56,65 @@ export async function monsterParser(
     }
 
     if (
-      (command.match(prefix_regex('bal')) &&
-        channel_name == cache.settings.specific_channel) ||
-      (command.match(prefix_regex('balance')) &&
-        channel_name == cache.settings.specific_channel) ||
-      (command.match(prefix_regex('currency')) &&
-        channel_name == cache.settings.specific_channel) ||
-      (command.match(prefix_regex('bank')) &&
-        channel_name == cache.settings.specific_channel)
+      command.match(prefix_regex('bal')) ||
+      command.match(prefix_regex('balance')) ||
+      command.match(prefix_regex('currency')) ||
+      command.match(prefix_regex('bank'))
     ) {
-      cache.time = getCurrentTime();
-
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       msgBalance(message);
     }
 
-    if (
-      command.match(prefix_regex('item')) &&
-      channel_name == cache.settings.specific_channel &&
-      splitMsg.length > 1
-    ) {
-      cache.time = getCurrentTime();
+    if (command.match(prefix_regex('pokedex'))) {
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
+      checkPokedex(message);
+    }
+
+    if (command.match(prefix_regex('item')) && splitMsg.length > 1) {
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       parseItems(message);
     }
 
-    if (
-      command.match(prefix_regex('trade|t')) &&
-      channel_name == cache.settings.specific_channel &&
-      splitMsg.length > 1
-    ) {
-      cache.time = getCurrentTime();
-
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
+    if (command.match(prefix_regex('trade|t')) && splitMsg.length > 1) {
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       parseTrade(message);
     }
 
-    if (
-      command.match(prefix_regex('dex|d')) &&
-      channel_name == cache.settings.specific_channel &&
-      splitMsg.length > 1
-    ) {
-      cache.time = getCurrentTime();
-
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
+    if (command.match(prefix_regex('dex|d')) && splitMsg.length > 1) {
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       monsterDex(message);
     }
 
-    if (
-      command.match(prefix_regex('search')) &&
-      channel_name == cache.settings.specific_channel &&
-      splitMsg.length > 1
-    ) {
-      cache.time = getCurrentTime();
-
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
+    if (command.match(prefix_regex('search')) && splitMsg.length > 1) {
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       searchMonsters(message);
     }
     if (
       command.match(prefix_regex('pokemon|p')) &&
-      channel_name == cache.settings.specific_channel
+      !message.content.match(/pokedex/i)
     ) {
-      cache.time = getCurrentTime();
-
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       checkMonsters(message);
     }
 
     if (
       message.content.match(prefix_regex('(info|i) (\\d+)')) &&
-      !message.content.match(/info latest/i) &&
-      channel_name == cache.settings.specific_channel
+      !message.content.match(/info latest/i)
     ) {
-      cache.time = getCurrentTime();
-
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       monsterInfo(message);
     }
 
-    if (
-      message.content.match(prefix_regex('info latest|i l')) &&
-      channel_name == cache.settings.specific_channel
-    ) {
-      cache.time = getCurrentTime();
-
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
+    if (message.content.match(prefix_regex('info latest|i l'))) {
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       monsterInfoLatest(message);
     }
@@ -181,111 +122,47 @@ export async function monsterParser(
     if (
       command.match(prefix_regex('info|i')) &&
       splitMsg.length == 1 &&
-      !splitMsg[0].match(/item/i) &&
-      channel_name == cache.settings.specific_channel
+      !splitMsg[0].match(/item/i)
     ) {
-      cache.time = getCurrentTime();
-
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       currentMonsterInfo(message);
     }
 
-    if (
-      command.match(prefix_regex('release')) &&
-      channel_name == cache.settings.specific_channel
-    ) {
-      cache.time = getCurrentTime();
-
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
+    if (command.match(prefix_regex('release')) || command == '~r') {
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       releaseMonster(message);
     }
 
-    if (
-      command.match(prefix_regex('recover')) &&
-      channel_name == cache.settings.specific_channel
-    ) {
-      cache.time = getCurrentTime();
-
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
+    if (command.match(prefix_regex('recover'))) {
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       recoverMonster(message);
     }
 
-    if (
-      command.match(prefix_regex('select')) &&
-      channel_name == cache.settings.specific_channel
-    ) {
-      cache.time = getCurrentTime();
-
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
+    if (command.match(prefix_regex('select'))) {
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       selectMonster(message);
     }
 
-    if (
-      command.match(prefix_regex('favorites|favourites')) &&
-      channel_name == cache.settings.specific_channel
-    ) {
-      cache.time = getCurrentTime();
-
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
+    if (command.match(prefix_regex('favorites|favourites'))) {
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       checkFavorites(message);
     }
 
-    if (
-      command.match(prefix_regex('favorite|favourite')) &&
-      channel_name == cache.settings.specific_channel
-    ) {
-      cache.time = getCurrentTime();
-
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
+    if (command.match(prefix_regex('favorite|favourite'))) {
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       setFavorite(message);
     }
 
-    if (
-      command.match(prefix_regex('unfavorite|unfavourite')) &&
-      channel_name == cache.settings.specific_channel
-    ) {
-      cache.time = getCurrentTime();
-
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
+    if (command.match(prefix_regex('unfavorite|unfavourite'))) {
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       unFavorite(message);
-    }
-
-    checkExpGain(message);
-  } else {
-    if (
-      command.match(/~|p!|!/i) &&
-      channel_name == cache.settings.specific_channel
-    ) {
-      logger.debug(`${message.guild.name} - Cooldown present.`);
-      return;
     }
   }
 }

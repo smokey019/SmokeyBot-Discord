@@ -115,10 +115,11 @@ PokeDex.forEach((element) => {
   }
 });
 let mon = undefined;
-for (let index = 0; index < 125; index++) {
+for (let index = 0; index < 80; index++) {
   Gens.one.forEach((element) => {
     mon = findMonsterByID(element);
     if (mon) {
+      MonsterPool.push(mon);
       MonsterPool.push(mon);
     }
   });
@@ -126,6 +127,7 @@ for (let index = 0; index < 125; index++) {
   Gens.two.forEach((element) => {
     mon = findMonsterByID(element);
     if (mon) {
+      MonsterPool.push(mon);
       MonsterPool.push(mon);
     }
   });
@@ -169,18 +171,19 @@ for (let index = 0; index < 125; index++) {
     mon = findMonsterByID(element);
     if (mon) {
       MonsterPool.push(mon);
+      MonsterPool.push(mon);
     }
   });
 }
 
 Gens.alola.forEach((element) => {
-  for (let index = 0; index < 50; index++) {
+  for (let index = 0; index < 75; index++) {
     MonsterPool.push(element);
   }
 });
 
 Gens.galar.forEach((element) => {
-  for (let index = 0; index < 50; index++) {
+  for (let index = 0; index < 75; index++) {
     MonsterPool.push(element);
   }
 });
@@ -252,7 +255,7 @@ export async function selectMonster(message: Message): Promise<boolean> {
       .update({ current_monster: parseInt(splitMsg[1]) });
 
     if (updateUser) {
-      message.reply(`selected ${dex.name.english}!`);
+      message.reply(`selected **Level ${monster.level} ${dex.name.english}**!`);
       return true;
     } else {
       return false;
@@ -266,6 +269,8 @@ export async function setFavorite(message: Message): Promise<boolean> {
   const splitMsg = message.content.split(' ');
 
   const monster: IMonsterModel = await getUserMonster(splitMsg[1]);
+  if (!monster) return undefined;
+  const dex = findMonsterByID(monster.monster_id);
 
   if (monster && message.author.id == monster.uid) {
     const updatedMonster = await databaseClient<IMonsterModel>(MonsterTable)
@@ -273,7 +278,9 @@ export async function setFavorite(message: Message): Promise<boolean> {
       .update({ favorite: 1 });
 
     if (updatedMonster) {
-      message.reply(`favorited monster id ${monster.id}!`);
+      message.reply(
+        `favorited monster **Level ${monster.level} ${dex.name.english}**!`,
+      );
       return true;
     } else {
       return false;

@@ -1,7 +1,7 @@
 import { Client, Message } from 'discord.js';
 import { getLogger } from './logger';
-import { cacheClient, ICache, cacheTwitter } from './cache';
-import { getGuildSettings, putGuildSettings, IGuildSettings } from './database';
+import { ICache, getGCD, getCache } from './cache';
+import { getGuildSettings, IGuildSettings } from './database';
 import { getCurrentTime, getRndInteger } from '../utils';
 import { spawnMonster } from '../plugins/pokemon/spawn-monster';
 import { monsterParser } from '../plugins/pokemon/parser';
@@ -9,7 +9,6 @@ import { smokeybotParser } from '../plugins/smokeybot/parser';
 
 const logger = getLogger('DiscordClient');
 let rateLimited = false;
-const do_not_cache = [];
 
 export const discordClient = new Client({ retryLimit: 5 });
 
@@ -47,49 +46,16 @@ async function parseMessage(message: Message) {
     return;
   }
 
-  const cache: ICache =
-    message.guild != null ? await cacheClient.get(message.guild.id) : undefined;
+  const settings: IGuildSettings = await getGuildSettings(message);
 
-  if (cache == null) {
-    if (!do_not_cache.includes(message.guild?.id)) {
-      do_not_cache.push(message.guild?.id);
+  const cache: ICache = await getCache(message, settings);
 
-      const settings: IGuildSettings =
-        message.guild != null
-          ? await getGuildSettings(message.guild.id)
-          : undefined;
+  const GCD: number = await getGCD(message.guild.id);
 
-      if (settings == null) {
-        putGuildSettings(message);
-      } else {
-        message.guild != null
-          ? cacheClient.set(message.guild.id, {
-              tweet: [],
-              monster_spawn: {
-                current_spawn: undefined,
-                last_spawn: undefined,
-                last_spawn_time: timestamp,
-                msg: message,
-              },
-              settings: {
-                id: settings.id,
-                guild_id: settings.guild_id,
-                smokemon_enabled: settings.smokemon_enabled,
-                specific_channel: settings.specific_channel,
-              },
-              time: timestamp - 15,
-            })
-          : undefined;
-
-        await cacheTwitter.set(message.guild.id, 'summit1g');
-
-        logger.info(`Initialized cache for ${message.guild.name}.`);
-      }
-    }
-  } else {
+  if (cache && settings) {
     if (message.author.bot) return;
 
-    if (timestamp - cache.time > 3) {
+    if (timestamp - GCD > 5) {
       smokeybotParser(message, cache);
     }
 
@@ -102,5 +68,13 @@ async function parseMessage(message: Message) {
         spawnMonster(message, cache);
       }
     }
+  } else if (!cache) {
+    logger.error(
+      `Missing cache for ${message.guild.id} - ${message.guild.name}.`,
+    );
+  } else if (!settings) {
+    logger.error(
+      `Missing settings for ${message.guild.id} - ${message.guild.name}.`,
+    );
   }
 }

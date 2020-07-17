@@ -10,9 +10,6 @@ import {
   findMonsterByName,
 } from './monsters';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
-import { getLogger } from 'log4js';
-
-const logger = getLogger('Items');
 
 export type Iitem = typeof Items[1];
 
@@ -191,7 +188,7 @@ export async function checkItemEvolution(
     if (monster_dex.evos) {
       monster_dex.evos.forEach((evo) => {
         const tmpEvo = findMonsterByName(evo);
-        if (!tmpEvo.evoItem) return;
+        if (!tmpEvo || !tmpEvo.evoItem) return;
         if (tmpEvo.evoItem == item.name.english) {
           evolve = tmpEvo;
         }
@@ -199,7 +196,7 @@ export async function checkItemEvolution(
     } else if (monster_dex.otherFormes) {
       monster_dex.otherFormes.forEach((evo) => {
         const tmpEvo = findMonsterByName(evo);
-        if (!tmpEvo.evoItem) return;
+        if (!tmpEvo || !tmpEvo.evoItem) return;
         if (tmpEvo.evoItem == item.name.english) {
           evolve = tmpEvo;
         }
@@ -250,7 +247,7 @@ export async function checkItemEvolution(
           .then(() => {
             return;
           })
-          .catch(logger.error);
+          .catch(console.error);
       }
     }
   }

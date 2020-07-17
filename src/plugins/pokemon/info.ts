@@ -237,6 +237,13 @@ export async function TESTmonsterEmbed(
     favorite = ' 💟';
   }
 
+  let legendary = ``;
+  if (monster.special) {
+    legendary = ` 💠`;
+  } else {
+    legendary = '';
+  }
+
   let released = ``;
   if (monster_db.released) {
     released = '\n***RELEASED***\n\n';
@@ -252,7 +259,7 @@ export async function TESTmonsterEmbed(
     }
     const embed = new MessageEmbed()
       .setAuthor(
-        `Level ${monster_db.level} ${monster.name.english} ⭐${favorite}`,
+        `Level ${monster_db.level} ${monster.name.english} ⭐${favorite}${legendary}`,
         img_monster_ball,
         `https://pokemondb.net/pokedex/${monster.id}`,
       )
@@ -314,7 +321,7 @@ export async function TESTmonsterEmbed(
         return message;
       })
       .catch(console.error);
-  } else if (!monster.forme && !monster_db.shiny) {
+  } else {
     const img = monster.images.normal;
     let thumbnail = ``;
     if (monster.id > 809) {
@@ -324,7 +331,7 @@ export async function TESTmonsterEmbed(
     }
     const embed = new MessageEmbed()
       .setAuthor(
-        `Level ${monster_db.level} ${monster.name.english}${favorite}`,
+        `Level ${monster_db.level} ${monster.name.english}${favorite}${legendary}`,
         img_monster_ball,
         `https://pokemondb.net/pokedex/${monster.id}`,
       )
@@ -568,9 +575,34 @@ export async function userDex(message: Message): Promise<Array<any>> {
         );
         return;
       }
-      if (!dex.includes(monster.name.english)) {
-        dex.push(monster.name.english);
+      if (!dex.includes(element.monster_id)) {
+        dex.push(element.monster_id);
       }
+    });
+  }
+
+  return dex;
+}
+
+export async function userCompleteDex(message: Message): Promise<Array<any>> {
+  const dex = [];
+
+  const pokemon = await databaseClient<IMonsterModel>(MonsterTable)
+    .select()
+    .where({
+      uid: message.author.id,
+    });
+
+  if (pokemon.length > 0) {
+    pokemon.forEach((element) => {
+      const monster = findMonsterByID(element.monster_id);
+      if (!monster) {
+        logger.error(
+          `couldn't find monster id ${element.id} MiD ${element.monster_id}`,
+        );
+        return;
+      }
+      dex.push(element.monster_id);
     });
   }
 

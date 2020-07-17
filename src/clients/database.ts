@@ -19,20 +19,46 @@ export const databaseClient = knex({
 });
 
 /**
- * Pulls guild settings from database.
+ * Pulls guild settings from database. Creates new settings if needed.
  *
- * @param guild_id Discord Guild ID
+ * @param Message Discord Message Object
  */
 export async function getGuildSettings(
-  guild_id: number | string,
+  message: Message,
 ): Promise<IGuildSettings> {
   const guild_settings = await databaseClient<IGuildSettings>(
     GuildSettingsTable,
   )
     .select()
-    .where('guild_id', guild_id);
+    .where('guild_id', message.guild.id);
 
-  return guild_settings[0];
+  if (!guild_settings[0]) {
+    const insert = await databaseClient<IGuildSettings>(
+      GuildSettingsTable,
+    ).insert({
+      guild_id: message.guild.id,
+      smokemon_enabled: 0,
+    });
+
+    if (insert) {
+      logger.info(`Created new guild settings for ${message.guild.name}.`);
+
+      const guild_settings = await databaseClient<IGuildSettings>(
+        GuildSettingsTable,
+      )
+        .select()
+        .where('guild_id', message.guild.id);
+      if (guild_settings) {
+        return guild_settings[0];
+      } else {
+        return undefined;
+      }
+    } else {
+      return undefined;
+    }
+  } else {
+    return guild_settings[0];
+  }
 }
 
 /**

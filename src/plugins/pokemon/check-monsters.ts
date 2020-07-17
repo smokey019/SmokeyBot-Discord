@@ -2,10 +2,11 @@ import { Message, MessageEmbed } from 'discord.js';
 
 import { theWord, chunk } from '../../utils';
 import { getLogger } from '../../clients/logger';
-import { findMonsterByID, getPokedex, IMonsterDex } from './monsters';
+import { findMonsterByID, getPokedex } from './monsters';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { databaseClient } from '../../clients/database';
 import { COLOR_GREEN, COLOR_WHITE } from '../../colors';
+import { userCompleteDex } from './info';
 
 const logger = getLogger('Pokemon');
 
@@ -200,6 +201,58 @@ export async function checkMonsters(message: Message): Promise<void> {
       })
       .catch(console.error);
   }
+}
+
+export async function checkPokedex(message: Message): Promise<void> {
+  const pokemon = await userCompleteDex(message);
+
+  const pokedex = getPokedex();
+
+  let msg_array = [];
+
+  const splitMsg = message.content.split(' ');
+
+  pokedex.forEach((dex) => {
+    let count = 0;
+    if (pokemon.includes(dex.id)) {
+      pokemon.forEach((monster) => {
+        if (monster == dex.id) {
+          count++;
+        }
+      });
+      msg_array.push(`**${dex.id}** - **${dex.name.english}** - **${count}**`);
+    } else {
+      msg_array.push(`**${dex.id}** - **${dex.name.english}** - **Ø**`);
+    }
+  });
+
+  const all_monsters = chunk(msg_array, 20);
+
+  if (splitMsg.length > 1) {
+    const page = parseInt(splitMsg[splitMsg.length - 1]) - 1;
+
+    if (all_monsters[page]) {
+      msg_array = all_monsters[page];
+    }
+  } else {
+    msg_array = all_monsters[0];
+  }
+
+  const new_msg = msg_array.join('\n');
+
+  const embed = new MessageEmbed()
+    .setAuthor(
+      `Pokédex - Total: ${pokedex.length} - Pages: ${all_monsters.length}`,
+      message.author.avatarURL()?.toString(),
+    )
+    .setColor(COLOR_WHITE)
+    .setDescription(new_msg);
+  await message.channel
+    .send(embed)
+    .then((message) => {
+      logger.debug(`Sent PokeDex in ${message.guild?.name}!`);
+    })
+    .catch(console.error);
 }
 
 /**

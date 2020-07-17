@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "weather": "Sunny / Clear",
+    "boosts": ["Grass", "Ground", "Fire"]
+  },
+  {
+    "id": 2,
+    "weather": "Rain",
+    "boosts": ["Water", "Electric", "Bug"]
+  },
+  {
+    "id": 3,
+    "weather": "Wind",
+    "boosts": ["Dragon", "Flying", "Psychic"]
+  },
+  {
+    "id": 4,
+    "weather": "Snow",
+    "boosts": ["Ice", "Steel"]
+  },
+  {
+    "id": 5,
+    "weather": "Fog",
+    "boosts": ["Dark", "Ghost"]
+  },
+  {
+    "id": 6,
+    "weather": "Cloudy",
+    "boosts": ["Fairy", "Fighting", "Poison"]
+  },
+  {
+    "id": 7,
+    "weather": "Partly cloudy",
+    "boosts": ["Normal", "Rock"]
+  }
+]

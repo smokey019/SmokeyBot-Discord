@@ -2,7 +2,12 @@ import { Message } from 'discord.js';
 
 import { getCurrentTime, getRndInteger, explode } from '../../utils';
 import { getLogger } from '../../clients/logger';
-import { ICache, cacheClient } from '../../clients/cache';
+import {
+  ICache,
+  cacheClient,
+  getGCD,
+  GLOBAL_COOLDOWN,
+} from '../../clients/cache';
 import { getRandomNature } from './natures';
 import { rollShiny, rollLevel, rollPerfectIV } from './utils';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
@@ -53,6 +58,7 @@ export async function catchMonster(
   cache: ICache,
 ): Promise<void> {
   const timestamp = getCurrentTime();
+  const GCD = await getGCD(message.guild.id);
 
   if (
     cache.monster_spawn.current_spawn &&
@@ -160,7 +166,7 @@ export async function catchMonster(
       if (insertMonster) {
         let response = ``;
 
-        if (shiny == 1 && !dex.includes(currentSpawn.name.english)) {
+        if (shiny == 1 && !dex.includes(currentSpawn.id)) {
           response = `_**POGGERS**_! You caught a ⭐__***SHINY***__⭐ level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}** - Added to Pokédex.`;
           logger.error(
             `${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
@@ -168,7 +174,7 @@ export async function catchMonster(
           await databaseClient<IMonsterUserModel>(MonsterUserTable)
             .where({ uid: message.author.id })
             .increment('currency', 1000);
-        } else if (shiny == 0 && !dex.includes(currentSpawn.name.english)) {
+        } else if (shiny == 0 && !dex.includes(currentSpawn.id)) {
           response = `**YOINK**! You caught a level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}** - Added to Pokédex.`;
           logger.info(
             `${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
@@ -176,12 +182,12 @@ export async function catchMonster(
           await databaseClient<IMonsterUserModel>(MonsterUserTable)
             .where({ uid: message.author.id })
             .increment('currency', 100);
-        } else if (shiny == 0 && dex.includes(currentSpawn.name.english)) {
+        } else if (shiny == 0 && dex.includes(currentSpawn.id)) {
           response = `**YOINK**! You caught a level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}**.`;
           logger.info(
             `${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
           );
-        } else if (shiny == 1 && dex.includes(currentSpawn.name.english)) {
+        } else if (shiny == 1 && dex.includes(currentSpawn.id)) {
           response = `_**POGGERS**_! You caught a ⭐__***SHINY***__⭐ level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}**.`;
           logger.error(
             `${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
@@ -204,16 +210,12 @@ export async function catchMonster(
     } catch (error) {
       logger.error(error);
     }
-  } else if (timestamp - (cache?.time || 0) > 5) {
-    cache.time = getCurrentTime();
-
-    if (message.guild) {
-      cacheClient.set(message.guild.id, cache);
-    }
+  } else if (timestamp - (GCD || 0) > 5) {
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     message
       .reply(`That is the wrong pokémon!`)
       .then(() => logger.trace(`${message.author.username} is WRONG!`))
-      .catch(logger.error);
+      .catch(console.error);
   }
 }

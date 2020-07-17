@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
 import { getCurrentTime } from '../../utils';
-import { cacheClient, ICache } from '../../clients/cache';
+import { ICache, GLOBAL_COOLDOWN } from '../../clients/cache';
 import { toggleSmokeMon } from '../pokemon/options';
 import { sync_smokemotes, sync_ffz_emotes } from './sync-emojis';
 import { getLogger } from '../../clients/logger';
@@ -33,12 +33,8 @@ export async function smokeybotParser(
       (splitMsg[1].toLowerCase() == 'disable' &&
         cache.settings.smokemon_enabled)
     ) {
-      cache.time = getCurrentTime();
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-      cacheClient.set(message.guild.id, {
-        ...cache,
-        time: getCurrentTime(),
-      });
       if (!toggleSmokeMon(message, cache)) {
         message.reply(
           'There was an error. You might not have permission to do this.',
@@ -51,12 +47,7 @@ export async function smokeybotParser(
   }
 
   if (splitMsg[0].match(prefix_regex('help|commands'))) {
-    cache.time = getCurrentTime();
-
-    cacheClient.set(message.guild.id, {
-      ...cache,
-      time: getCurrentTime(),
-    });
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     message.reply(
       'for a list of commands check this link out: https://www.smokey.gg/tutorials/smokeybot-on-discord/',
@@ -64,111 +55,60 @@ export async function smokeybotParser(
   }
 
   if (splitMsg[0].toLowerCase() == '~sync-emotes-smokemotes') {
-    cache.time = getCurrentTime();
-
-    cacheClient.set(message.guild.id, {
-      ...cache,
-      time: getCurrentTime(),
-    });
-
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
     sync_smokemotes(message);
   }
 
   if (splitMsg[0].toLowerCase() == '~sync-emotes-ffz') {
-    cache.time = getCurrentTime();
-
-    cacheClient.set(message.guild.id, {
-      ...cache,
-      time: getCurrentTime(),
-    });
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     sync_ffz_emotes(message);
   }
 
   if (message.content == '~check color roles') {
-    cache.time = getCurrentTime();
-
-    cacheClient.set(message.guild.id, {
-      ...cache,
-      time: getCurrentTime(),
-    });
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     checkColorRoles(message);
   }
 
   if (message.content == '~remove color roles') {
-    cache.time = getCurrentTime();
-
-    cacheClient.set(message.guild.id, {
-      ...cache,
-      time: getCurrentTime(),
-    });
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     removeColorRoles(message);
   }
 
   if (message.content == '~remove empty roles') {
-    cache.time = getCurrentTime();
-
-    cacheClient.set(message.guild.id, {
-      ...cache,
-      time: getCurrentTime(),
-    });
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     removeEmptyRoles(message);
   }
 
   if (message.content == '~check tweet') {
-    cache.time = getCurrentTime();
-
-    cacheClient.set(message.guild.id, {
-      ...cache,
-      time: getCurrentTime(),
-    });
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     checkTweet(message);
   }
 
   if (splitMsg[0].toLowerCase() == '~smash') {
-    cache.time = getCurrentTime();
-
-    cacheClient.set(message.guild.id, {
-      ...cache,
-      time: getCurrentTime(),
-    });
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     sumSmash(message);
   }
 
   if (message.content == '~check vase') {
-    cache.time = getCurrentTime();
-
-    cacheClient.set(message.guild.id, {
-      ...cache,
-      time: getCurrentTime(),
-    });
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     checkVase(message);
   }
 
   if (splitMsg[0].toLowerCase() == '~gtfo') {
-    cache.time = getCurrentTime();
-
-    cacheClient.set(message.guild.id, {
-      ...cache,
-      time: getCurrentTime(),
-    });
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     gtfo(message);
   }
 
   if (splitMsg[0].toLowerCase() == '~invite') {
-    cache.time = getCurrentTime();
-
-    cacheClient.set(message.guild.id, {
-      ...cache,
-      time: getCurrentTime(),
-    });
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     message.reply(
       `here is Smokey's Discord Bot invite link: https://discord.com/oauth2/authorize?client_id=458710213122457600&scope=bot&permissions=268954696`,

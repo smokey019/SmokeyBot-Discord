@@ -4,7 +4,6 @@ import {
   IGuildSettings,
 } from '../../clients/database';
 import { Message } from 'discord.js';
-import { getCurrentTime } from '../../utils';
 import { ICache, cacheClient } from '../../clients/cache';
 import { getLogger } from '../../clients/logger';
 
@@ -21,8 +20,6 @@ export async function toggleSmokeMon(
   const splitMsg = message.content.split(' ');
 
   if (splitMsg.length > 1) {
-    cache.time = getCurrentTime();
-
     if (splitMsg[1] == 'enable') {
       const updateGuild = await databaseClient<IGuildSettings>(
         GuildSettingsTable,

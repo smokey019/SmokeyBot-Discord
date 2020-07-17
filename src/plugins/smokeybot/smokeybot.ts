@@ -4,6 +4,8 @@ import {
   cacheClient,
   cacheTwitter,
   cacheToBeDeleted,
+  getGCD,
+  GLOBAL_COOLDOWN,
 } from '../../clients/cache';
 import { twitterClient } from '../../clients/twitter';
 import { getLogger } from '../../clients/logger';
@@ -23,13 +25,10 @@ export async function check_tweets(
     screen_name: user,
     count: tweet_count,
   };
+  const GCD = await getGCD(message.guild.id);
 
-  if (
-    message.member.hasPermission('ADMINISTRATOR') ||
-    timestamp - cache.time > 10
-  ) {
-    cache.time = getCurrentTime();
-    cacheClient.set(message.guild.id, cache);
+  if (message.member.hasPermission('ADMINISTRATOR') || timestamp - GCD > 10) {
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     twitterClient.get('statuses/user_timeline', params).then((tweets) => {
       if (cache.tweet) {
@@ -37,20 +36,17 @@ export async function check_tweets(
           // new tweet
 
           cache.tweet = tweets[0];
-          cache.time = timestamp;
 
           send_tweet_message(tweets[0], message);
         } else {
           // same tweet, respond tho xd
 
-          cache.time = timestamp;
           cache.tweet = tweets[0];
 
           send_tweet_message(tweets[0], message);
         }
       } else {
         cache.tweet = tweets[0];
-        cache.time = timestamp;
 
         send_tweet_message(tweets[0], message);
       }
@@ -101,7 +97,7 @@ async function send_tweet_message(
     .then((message) => {
       return message;
     })
-    .catch(logger.error);
+    .catch(console.error);
 
   //}
 }
@@ -126,7 +122,7 @@ async function send_image_message(
         setTimeout(delete_message, delete_timer, message, message.id);
       }
     })
-    .catch(logger.error);
+    .catch(console.error);
 }
 
 async function delete_message(message: Message, msg_id: any) {
@@ -135,7 +131,7 @@ async function delete_message(message: Message, msg_id: any) {
     .then((message) => {
       message.delete();
     })
-    .catch(logger.error);
+    .catch(console.error);
 }
 
 async function delete_role(value: any, message: Message) {

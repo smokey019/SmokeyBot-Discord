@@ -1,7 +1,7 @@
 import { MessageEmbed, Message } from 'discord.js';
 import { jsonFetch, getCurrentTime } from '../../utils';
 import { getLogger } from '../../clients/logger';
-import { cacheClient } from '../../clients/cache';
+import { getGCD, GLOBAL_COOLDOWN } from '../../clients/cache';
 
 export interface IFFZRoom {
   room?: {
@@ -42,7 +42,7 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
         .then((message) => {
           to_be_deleted = message.id;
         })
-        .catch(logger.error);
+        .catch(console.error);
 
       const existing_emojis = [];
 
@@ -66,13 +66,13 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
         `https://api.frankerfacez.com/v1/room/${split_msg[1].toLowerCase()}`,
       );
 
-      if (!ffz_emotes) {
+      if (!ffz_emotes || !ffz_emotes.room || !ffz_emotes.room.set) {
         message.channel.messages
           .fetch(to_be_deleted)
           .then((message) => {
             message.delete();
           })
-          .catch(logger.error);
+          .catch(console.error);
 
         embed = new MessageEmbed()
           // Set the title of the field
@@ -81,7 +81,7 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
           .setColor(0xff0000)
           // Set the main content of the embed
           .setDescription(
-            `There was an error fetching from FrankerFaceZ's API.`,
+            `There was an error fetching from FrankerFaceZ's API. \n\n Make sure the username is correct and there are no symbols. \n\n You may have to wait for FFZ's cache to update before getting certain emotes.`,
           );
         // Send the embed to the same channel as the message
         message.channel.send(embed);
@@ -132,7 +132,7 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
           .then((message) => {
             message.delete();
           })
-          .catch(logger.error);
+          .catch(console.error);
 
         embed = new MessageEmbed()
           // Set the title of the field
@@ -172,7 +172,7 @@ export async function sync_smokemotes(message: Message): Promise<void> {
       .then((message) => {
         to_be_deleted = message.id;
       })
-      .catch(logger.error);
+      .catch(console.error);
 
     const existing_emojis = [];
 
@@ -212,7 +212,7 @@ export async function sync_smokemotes(message: Message): Promise<void> {
         .then((message) => {
           message.delete();
         })
-        .catch(logger.error);
+        .catch(console.error);
 
       embed = new MessageEmbed()
         // Set the title of the field
@@ -248,7 +248,7 @@ export async function sync_smokemotes(message: Message): Promise<void> {
           .then((message) => {
             message.delete();
           })
-          .catch(logger.error);
+          .catch(console.error);
 
         embed = new MessageEmbed()
           // Set the title of the field
@@ -281,12 +281,11 @@ async function send_message(
 ): Promise<Message | boolean> {
   if (!title || !msg || !message) return false;
 
-  const cache = await cacheClient.get(message.guild.id);
   const timestamp = getCurrentTime();
+  const GCD = await getGCD(message.guild.id);
 
-  if (timestamp - cache.time > 10) {
-    cache.time = getCurrentTime();
-    cacheClient.set(message.guild.id, cache);
+  if (timestamp - GCD > 5) {
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     const embed = new MessageEmbed()
       // Set the title of the field
@@ -301,7 +300,7 @@ async function send_message(
       .then((sentMsg) => {
         return sentMsg;
       })
-      .catch(logger.error);
+      .catch(console.error);
   }
 
   return false;
