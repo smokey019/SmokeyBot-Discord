@@ -453,8 +453,26 @@ export async function checkFavorites(message: Message): Promise<void> {
  */
 export async function searchMonsters(message: Message): Promise<void> {
   const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
+  const isQuote = message.content.match('"');
+  let sort = undefined;
+  let search = undefined;
+  let page = 0;
 
-  const sort = [splitMsg[2], splitMsg[3]];
+  if (isQuote) {
+    const parseSearch = message.content.replace(/ {2,}/gm, ' ').split('"');
+    const splitSort = parseSearch[parseSearch.length - 1].split(' ');
+    search = parseSearch[1].toLowerCase();
+    if (splitSort.length == 3) {
+      sort = [splitSort[1], splitSort[2]];
+    } else if (splitSort.length == 4) {
+      sort = [splitSort[1], splitSort[2]];
+      page = parseInt(splitSort[splitSort.length - 1]) - 1;
+    }
+  } else {
+    const parseSearch = message.content.replace(/ {2,}/gm, ' ').split(' ');
+    sort = [splitMsg[2], splitMsg[3]];
+    search = parseSearch[1].toLowerCase();
+  }
 
   const pokemon = await databaseClient<IMonsterModel>(MonsterTable)
     .select()
@@ -473,11 +491,20 @@ export async function searchMonsters(message: Message): Promise<void> {
 
     pokemon.forEach((element: IMonsterModel) => {
       const monster = findMonsterByID(element.monster_id);
+      if (!monster) return;
 
       if (
-        !monster ||
-        monster.name.english.toLowerCase().replace(/♂|♀/g, '') !=
-          splitMsg[1].toLowerCase()
+        isQuote &&
+        monster.name.english.toLowerCase().replace(/♂|♀/g, '') != search
+      )
+        return;
+
+      if (
+        !isQuote &&
+        !monster.name.english
+          .toLowerCase()
+          .replace(/♂|♀/g, '')
+          .match(splitMsg[1].toLowerCase())
       )
         return;
 
@@ -578,8 +605,6 @@ export async function searchMonsters(message: Message): Promise<void> {
       all_monsters = chunk(message_contents, 10);
 
       if (splitMsg.length > 4 && all_monsters.length > 1) {
-        const page = parseInt(splitMsg[splitMsg.length - 1]) - 1;
-
         if (all_monsters[page]) {
           message_contents = all_monsters[page];
         }

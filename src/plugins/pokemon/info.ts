@@ -87,6 +87,13 @@ export async function monsterEmbed(
     released = '\n***RELEASED***\n\n';
   }
 
+  let legendary = ``;
+  if (monster.special) {
+    legendary = ` 💠`;
+  } else {
+    legendary = '';
+  }
+
   /*let original = `✅`;
   if (monster_db.uid != monster_db.original_uid) {
     original = `🔴`;
@@ -95,7 +102,7 @@ export async function monsterEmbed(
   if (monster_db.shiny) {
     const embed = new MessageEmbed()
       .setAuthor(
-        `Level ${monster_db.level} ${monster.name.english} ⭐${favorite}`,
+        `Level ${monster_db.level} ${monster.name.english} ⭐${favorite}${legendary}`,
         img_monster_ball,
         `https://pokemondb.net/pokedex/${monster.id}`,
       )
@@ -131,7 +138,7 @@ export async function monsterEmbed(
   } else if (!monster_db.shiny) {
     const embed = new MessageEmbed()
       .setAuthor(
-        `Level ${monster_db.level} ${monster.name.english}${favorite}`,
+        `Level ${monster_db.level} ${monster.name.english}${favorite}${legendary}`,
         img_monster_ball,
         `https://pokemondb.net/pokedex/${monster.id}`,
       )
@@ -516,9 +523,16 @@ export async function monsterDex(message: Message): Promise<void> {
       }
     }
 
+    let legendary = ``;
+    if (tempMonster.special) {
+      legendary = ` 💠`;
+    } else {
+      legendary = '';
+    }
+
     const embed = new MessageEmbed()
       .setAuthor(
-        '#' + tmpID + ' - ' + tempMonster.name.english,
+        '#' + tmpID + ' - ' + tempMonster.name.english + legendary,
         img_monster_ball,
         `https://pokemondb.net/pokedex/${tempMonster.id}`,
       )

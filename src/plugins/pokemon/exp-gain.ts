@@ -72,7 +72,7 @@ export async function checkExpGain(message: Message): Promise<any> {
                 }
               });
 
-              if (evolve.evoLevel) {
+              if (evolve && evolve.evoLevel) {
                 if (monster.level >= evolve.evoLevel) {
                   const updateMonster = await databaseClient<IMonsterModel>(
                     MonsterTable,

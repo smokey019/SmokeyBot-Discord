@@ -114,7 +114,7 @@ export async function catchMonster(
 
     const isPerfect = rollPerfectIV();
 
-    if (isPerfect || shiny) {
+    if (isPerfect) {
       monster.hp = getRndInteger(28, 31);
       monster.attack = getRndInteger(28, 31);
       monster.defense = getRndInteger(28, 31);

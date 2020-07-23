@@ -13,6 +13,8 @@ interface IConfig {
   TWITTER_ACCESS_TOKEN_SECRET?: string;
   SPAWN_TIME_MIN?: string;
   SPAWN_TIME_MAX?: string;
+  SHINY_ODDS_RETAIL?: string;
+  SHINY_ODDS_COMMUNITY?: string;
 }
 
 const config = dotenv.config({

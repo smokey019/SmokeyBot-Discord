@@ -72,8 +72,9 @@ export async function releaseMonster(message: Message): Promise<void> {
           .where('id', tmpMsg[1]);
       }
 
+      if (!to_release) return;
+
       if (
-        to_release &&
         !to_release[0].released &&
         to_release[0].uid == message.author.id &&
         !to_release[0].released

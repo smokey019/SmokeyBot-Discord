@@ -119,7 +119,7 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
                   value,
                 );
 
-                emote_cooldown = emote_cooldown + 1250;
+                emote_cooldown = emote_cooldown + 4000;
               }
             }
           },
@@ -238,7 +238,7 @@ export async function sync_smokemotes(message: Message): Promise<void> {
         if (!existing_emojis.includes(value.code) && value.width <= 128) {
           setTimeout(create_emoji, emote_cooldown, emote_url, message, value);
 
-          emote_cooldown = emote_cooldown + 1250;
+          emote_cooldown = emote_cooldown + 4000;
         }
       });
 

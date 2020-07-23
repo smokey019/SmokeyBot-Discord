@@ -56,16 +56,16 @@ async function parseMessage(message: Message) {
     if (message.author.bot) return;
 
     if (timestamp - GCD > 5) {
-      smokeybotParser(message, cache);
+      await smokeybotParser(message, cache);
     }
 
     if (cache.settings.smokemon_enabled) {
-      monsterParser(message, cache);
+      await monsterParser(message, cache);
 
-      const spawn_timer = getRndInteger(getRndInteger(30, 120), 1800);
+      const spawn_timer = getRndInteger(30, 1800);
 
       if (timestamp - cache.monster_spawn.last_spawn_time > spawn_timer) {
-        spawnMonster(message, cache);
+        await spawnMonster(message, cache);
       }
     }
   } else if (!cache) {

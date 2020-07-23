@@ -20,4 +20,5 @@ export interface IMonsterModel {
   released?: 0 | 1;
   favorite?: 0 | 1;
   held_item?: number | null;
+  nickname?: string;
 }

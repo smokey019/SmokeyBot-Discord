@@ -20,6 +20,7 @@ import { selectMonster, setFavorite, unFavorite } from './monsters';
 import { checkExpGain } from './exp-gain';
 import { parseTrade } from './trading';
 import { parseItems, msgBalance } from './items';
+import { battleParser } from './battle';
 
 export const prefixes = ['!', '~', 'p!'];
 
@@ -64,6 +65,12 @@ export async function monsterParser(
       await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       msgBalance(message);
+    }
+
+    if (command.match(prefix_regex('battle'))) {
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+
+      battleParser(message);
     }
 
     if (command.match(prefix_regex('pokedex'))) {
@@ -122,7 +129,8 @@ export async function monsterParser(
     if (
       command.match(prefix_regex('info|i')) &&
       splitMsg.length == 1 &&
-      !splitMsg[0].match(/item/i)
+      !splitMsg[0].match(/item/i) &&
+      !splitMsg[0].match(/invite/i)
     ) {
       await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
