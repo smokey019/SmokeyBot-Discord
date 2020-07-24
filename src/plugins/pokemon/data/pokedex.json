@@ -8551,7 +8551,8 @@
     "weightkg": 75,
     "color": "#6000ff",
     "prevo": "Golbat",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "eggGroups": ["Flying"],
     "images": {
       "normal": "https://i.imgur.com/iopSCel.png",
