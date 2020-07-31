@@ -1288,7 +1288,8 @@
     "weightkg": 6,
     "color": "#fcff00",
     "prevo": "Pichu",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "evos": ["Raichu", "Raichu-Alola"],
     "eggGroups": ["Field", "Fairy"],
     "otherFormes": [
@@ -2283,7 +2284,8 @@
     "weightkg": 7.5,
     "color": "#f000ff",
     "prevo": "Cleffa",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "evos": ["Clefable"],
     "eggGroups": ["Fairy"],
     "images": {
@@ -2523,7 +2525,8 @@
     "weightkg": 5.5,
     "color": "#f000ff",
     "prevo": "Igglybuff",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "evos": ["Wigglytuff"],
     "eggGroups": ["Fairy"],
     "images": {
@@ -3242,7 +3245,8 @@
     "weightkg": 33,
     "color": "#003cff",
     "prevo": "Alolan Meowth",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "eggGroups": ["Field"],
     "images": {
       "normal": "https://i.imgur.com/8nS7qeX.png",
@@ -7505,7 +7509,8 @@
     "weightkg": 460,
     "color": "#000000",
     "prevo": "Munchlax",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "eggGroups": ["Monster"],
     "canHatch": true,
     "otherFormes": ["Gmax Gmax Snorlax"],
@@ -8841,7 +8846,8 @@
     "weightkg": 3.2,
     "color": "#ffffff",
     "prevo": "Togepi",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "evos": ["Togekiss"],
     "eggGroups": ["Flying", "Fairy"],
     "images": {
@@ -9122,7 +9128,8 @@
     "weightkg": 8.5,
     "color": "#003cff",
     "prevo": "Azurill",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "evos": ["Azumarill"],
     "eggGroups": ["Water 1", "Fairy"],
     "canHatch": true,
@@ -9582,7 +9589,8 @@
     "weightkg": 26.5,
     "color": "#6000ff",
     "prevo": "Eevee",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "evoCondition": "during the day",
     "eggGroups": ["Field"],
     "images": {
@@ -11444,7 +11452,8 @@
     "weightkg": 46.8,
     "color": "#f000ff",
     "prevo": "Chansey",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "eggGroups": ["Fairy"],
     "images": {
       "normal": "https://i.imgur.com/RdUQF4a.png",
@@ -14471,7 +14480,8 @@
     "weightkg": 2,
     "color": "#41c600",
     "prevo": "Budew",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "evoCondition": "during the day",
     "evos": ["Roserade"],
     "eggGroups": ["Fairy", "Grass"],
@@ -16187,7 +16197,8 @@
     "weightkg": 1,
     "color": "#003cff",
     "prevo": "Chingling",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "evoCondition": "at night",
     "eggGroups": ["Amorphous"],
     "canHatch": true,
@@ -17255,8 +17266,8 @@
     "weightkg": 352,
     "color": "#003cff",
     "eggGroups": ["Undiscovered"],
-    "otherFormes": ["Kyogre-Primal"],
-    "formeOrder": ["Kyogre", "Kyogre-Primal"],
+    "otherFormes": ["Primal Kyogre"],
+    "formeOrder": ["Kyogre", "Primal Kyogre"],
     "images": {
       "normal": "https://i.imgur.com/Cb4MZrG.png",
       "shiny": "https://i.imgur.com/rUNhukI.png",
@@ -17267,7 +17278,7 @@
   {
     "id": 382.9,
     "name": {
-      "english": "Kyogre-Primal",
+      "english": "Primal Kyogre",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -17292,7 +17303,14 @@
     "weightkg": 430,
     "color": "#003cff",
     "eggGroups": ["Undiscovered"],
-    "requiredItem": "Blue Orb"
+    "evoItem": "Blue Orb",
+    "evoType": "useItem",
+    "images": {
+      "normal": "https://i.imgur.com/HrKRYVL.png",
+      "shiny": "https://i.imgur.com/wmEcKuQ.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__382-primal__oras.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_382-primal__oras.gif"
+    }
   },
   {
     "id": 383,
@@ -17320,8 +17338,8 @@
     "weightkg": 950,
     "color": "#ff0000",
     "eggGroups": ["Undiscovered"],
-    "otherFormes": ["Groudon-Primal"],
-    "formeOrder": ["Groudon", "Groudon-Primal"],
+    "otherFormes": ["Primal Groudon"],
+    "formeOrder": ["Groudon", "Primal Groudon"],
     "images": {
       "normal": "https://i.imgur.com/hSjoxiU.png",
       "shiny": "https://i.imgur.com/egd13tm.png",
@@ -17332,7 +17350,7 @@
   {
     "id": 383.9,
     "name": {
-      "english": "Groudon-Primal",
+      "english": "Primal Groudon",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -17357,7 +17375,14 @@
     "weightkg": 999.7,
     "color": "#ff0000",
     "eggGroups": ["Undiscovered"],
-    "requiredItem": "Red Orb"
+    "evoItem": "Red Orb",
+    "evoType": "useItem",
+    "images": {
+      "normal": "https://i.imgur.com/lR5MQBo.png",
+      "shiny": "https://i.imgur.com/WTLaIdI.png",
+      "gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__383-primal__oras.gif",
+      "gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_383-primal__oras.gif"
+    }
   },
   {
     "id": 384,
@@ -19178,7 +19203,8 @@
     "weightkg": 33.3,
     "color": "#983f00",
     "prevo": "Buneary",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "eggGroups": ["Field", "Human-Like"],
     "otherFormes": ["Mega Lopunny"],
     "formeOrder": ["Lopunny", "Mega Lopunny"],
@@ -19966,7 +19992,8 @@
     "weightkg": 54,
     "color": "#003cff",
     "prevo": "Riolu",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "evoCondition": "during the day",
     "eggGroups": ["Field", "Human-Like"],
     "otherFormes": ["Mega Lucario"],
@@ -23700,7 +23727,8 @@
     "weightkg": 10.5,
     "color": "#003cff",
     "prevo": "Woobat",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "eggGroups": ["Flying", "Field"],
     "images": {
       "normal": "https://i.imgur.com/zAMWdGT.png",
@@ -24236,7 +24264,8 @@
     "weightkg": 20.5,
     "color": "#fcff00",
     "prevo": "Swadloon",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "eggGroups": ["Bug"],
     "images": {
       "normal": "https://i.imgur.com/gJIoDhq.png",
@@ -24833,7 +24862,7 @@
     "heightm": 1.7,
     "weightkg": 120,
     "color": "#ffffff",
-    "prevo": "Darumaka-Galar",
+    "prevo": "Galarian Darumaka",
     "evoType": "useItem",
     "evoItem": "Ice Stone",
     "eggGroups": ["Field"],
@@ -24847,13 +24876,14 @@
   {
     "id": 555.9,
     "name": {
-      "english": "Darmanitan-Galar-Zen",
+      "english": "Zen Galarian Darmanitan",
       "japanese": "",
       "chinese": "",
       "french": ""
     },
     "baseSpecies": "Darmanitan",
-    "forme": "Galar-Zen",
+    "region": "Galar",
+    "forme": "Zen",
     "type": ["Ice", "Fire"],
     "baseStats": {
       "hp": 105,
@@ -27169,8 +27199,8 @@
     "images": {
       "normal": "https://i.imgur.com/I4YCbGJ.png",
       "shiny": "https://i.imgur.com/Xo3kWHO.png",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/618.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/618_shiny.gif"
+      "gif": "https://i.imgur.com/ZdptpEl.gif",
+      "gif-shiny": "https://i.imgur.com/dLs6liE.gif"
     }
   },
   {
@@ -33991,7 +34021,8 @@
     "weightkg": 100.5,
     "color": "#444444",
     "prevo": "Type: Null",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "eggGroups": ["Undiscovered"],
     "otherFormes": [
       "Silvally-Bug",
@@ -39082,7 +39113,8 @@
     "weightkg": 42,
     "color": "#ffffff",
     "prevo": "Snom",
-    "evoType": "levelFriendship",
+    "evoType": "useItem",
+    "evoItem": "Friendship Bracelet",
     "evoCondition": "at night",
     "eggGroups": ["Bug"],
     "images": {

@@ -1,3 +1,8 @@
+## TODO
+
+- global stats - total monsters/players/servers
+- leaderboard - highest IV n stuff
+
 ## SmokeyBot Commands
 
 - `~check color roles`

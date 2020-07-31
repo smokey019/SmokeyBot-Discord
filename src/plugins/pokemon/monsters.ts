@@ -109,7 +109,8 @@ PokeDex.forEach((element) => {
     element.name.english &&
     element.images &&
     element.id >= 0 &&
-    element.id <= 893
+    element.id <= 893 &&
+    !element.name.english.match(/Gmax/)
   ) {
     MonsterDex.push(element);
   }
@@ -121,18 +122,12 @@ for (let index = 0; index < 60; index++) {
     if (mon) {
       MonsterPool.push(mon);
       MonsterPool.push(mon);
-      if (mon.id == 76 || mon.id == 7) {
-        for (let z = 0; z < 30; z++) {
-          MonsterPool.push(mon);
-        }
-      }
     }
   });
 
   Gens.two.forEach((element) => {
     mon = findMonsterByID(element);
     if (mon) {
-      MonsterPool.push(mon);
       MonsterPool.push(mon);
     }
   });
@@ -141,6 +136,12 @@ for (let index = 0; index < 60; index++) {
     mon = findMonsterByID(element);
     if (mon) {
       MonsterPool.push(mon);
+      MonsterPool.push(mon);
+    }
+    if (mon.id == 374 || mon.id == 308) {
+      for (let z = 0; z < 30; z++) {
+        MonsterPool.push(mon);
+      }
     }
   });
 
@@ -154,6 +155,7 @@ for (let index = 0; index < 60; index++) {
   Gens.five.forEach((element) => {
     mon = findMonsterByID(element);
     if (mon) {
+      MonsterPool.push(mon);
       MonsterPool.push(mon);
     }
   });

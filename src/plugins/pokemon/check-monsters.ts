@@ -209,6 +209,7 @@ export async function checkPokedex(message: Message): Promise<void> {
   const pokedex = getPokedex();
 
   let msg_array = [];
+  let pokemon_count = 0;
 
   const splitMsg = message.content.split(' ');
 
@@ -220,15 +221,21 @@ export async function checkPokedex(message: Message): Promise<void> {
           count++;
         }
       });
-      msg_array.push(`**${dex.id}** - **${dex.name.english}** - **${count}**`);
+      if (!message.content.match(/missing/i)) {
+        msg_array.push(
+          `**${dex.id}** - **${dex.name.english}** - **${count}**`,
+        );
+        pokemon_count++;
+      }
     } else {
       msg_array.push(`**${dex.id}** - **${dex.name.english}** - **Ø**`);
+      pokemon_count++;
     }
   });
 
   const all_monsters = chunk(msg_array, 20);
 
-  if (splitMsg.length > 1) {
+  if (splitMsg.length > 1 && !splitMsg[splitMsg.length - 1].match(/missing/i)) {
     const page = parseInt(splitMsg[splitMsg.length - 1]) - 1;
 
     if (all_monsters[page]) {
@@ -242,7 +249,9 @@ export async function checkPokedex(message: Message): Promise<void> {
 
   const embed = new MessageEmbed()
     .setAuthor(
-      `Pokédex - Total: ${pokedex.length} - Pages: ${all_monsters.length}`,
+      `Pokédex - Total ${theWord()}: ${pokemon_count} - Pages: ${
+        all_monsters.length
+      }`,
       message.author.avatarURL()?.toString(),
     )
     .setColor(COLOR_WHITE)

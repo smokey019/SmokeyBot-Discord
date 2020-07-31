@@ -64,7 +64,10 @@ async function parseMessage(message: Message) {
 
       const spawn_timer = getRndInteger(30, 1800);
 
-      if (timestamp - cache.monster_spawn.last_spawn_time > spawn_timer) {
+      if (
+        timestamp - cache.monster_spawn.last_spawn_time > spawn_timer &&
+        !message.content.match(/catch/i)
+      ) {
         await spawnMonster(message, cache);
       }
     }

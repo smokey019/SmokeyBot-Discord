@@ -35,12 +35,17 @@ export async function monsterParser(
   const channel_name = (message.channel as TextChannel).name;
   const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
   const command = splitMsg[0];
+  const prefix = command.charAt(0);
   const GCD = await getGCD(message.guild.id);
   const timestamp = getCurrentTime();
 
   checkExpGain(message);
 
-  if (channel_name != cache.settings.specific_channel) return;
+  if (
+    channel_name != cache.settings.specific_channel ||
+    !prefixes.includes(prefix)
+  )
+    return;
 
   if (
     cache.monster_spawn.current_spawn &&
