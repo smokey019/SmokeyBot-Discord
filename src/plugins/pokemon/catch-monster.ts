@@ -2,12 +2,7 @@ import { Message } from 'discord.js';
 
 import { getCurrentTime, getRndInteger, explode } from '../../utils';
 import { getLogger } from '../../clients/logger';
-import {
-  ICache,
-  cacheClient,
-  getGCD,
-  GLOBAL_COOLDOWN,
-} from '../../clients/cache';
+import { getGCD, GLOBAL_COOLDOWN } from '../../clients/cache';
 import { getRandomNature } from './natures';
 import { rollShiny, rollLevel, rollPerfectIV } from './utils';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
@@ -15,6 +10,7 @@ import { databaseClient, getUser } from '../../clients/database';
 import { MonsterUserTable, IMonsterUserModel } from '../../models/MonsterUser';
 import { userDex } from './info';
 import { IMonsterDex } from './monsters';
+import { MONSTER_SPAWNS } from './spawn-monster';
 
 const logger = getLogger('Pokemon');
 
@@ -53,19 +49,14 @@ function monsterMatchesPrevious(messageContent: string, { name }: IMonsterDex) {
  * @param message
  * @param cache
  */
-export async function catchMonster(
-  message: Message,
-  cache: ICache,
-): Promise<void> {
+export async function catchMonster(message: Message): Promise<void> {
   const timestamp = getCurrentTime();
   const GCD = await getGCD(message.guild.id);
+  const spawn = await MONSTER_SPAWNS.get(message.guild.id);
 
   if (
-    cache.monster_spawn.current_spawn &&
-    monsterMatchesPrevious(
-      message.content.toLowerCase(),
-      cache.monster_spawn.current_spawn,
-    )
+    spawn.monster &&
+    monsterMatchesPrevious(message.content.toLowerCase(), spawn.monster)
   ) {
     logger.trace(
       `${message.guild?.name} - ${message.author.username} | Starting catch~`,
@@ -74,7 +65,7 @@ export async function catchMonster(
     let level = 0;
 
     const shiny = rollShiny();
-    const currentSpawn = cache.monster_spawn.current_spawn;
+    const currentSpawn = spawn.monster;
 
     if (currentSpawn.evoLevel) {
       level = rollLevel(currentSpawn.evoLevel, 60);
@@ -82,18 +73,9 @@ export async function catchMonster(
       level = rollLevel(1, 49);
     }
 
-    cache.monster_spawn.last_spawn = cache.monster_spawn.current_spawn;
-    cache.monster_spawn.current_spawn = undefined;
+    spawn.monster = undefined;
 
-    if (message.guild) {
-      cacheClient
-        .set(message.guild.id, cache)
-        .then(() =>
-          logger.trace(
-            `${message.guild?.name} - ${message.author.username} | Updated cache~`,
-          ),
-        );
-    }
+    await MONSTER_SPAWNS.set(message.guild.id, spawn);
 
     const monster: IMonsterModel = {
       monster_id: currentSpawn.id,
@@ -214,7 +196,7 @@ export async function catchMonster(
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     message
-      .reply(`That is the wrong pokémon!`)
+      .reply(`That is the wrong Pokémon!`)
       .then(() => logger.trace(`${message.author.username} is WRONG!`))
       .catch(console.error);
   }

@@ -2,6 +2,15 @@ import { MessageEmbed, Message } from 'discord.js';
 import { jsonFetch, getCurrentTime } from '../../utils';
 import { getLogger } from '../../clients/logger';
 import { getGCD, GLOBAL_COOLDOWN } from '../../clients/cache';
+import Keyv from 'keyv';
+import { getConfigValue } from '../../config';
+
+const EMOJI_COOLDOWN = new Keyv(
+  `mysql://${getConfigValue('DB_USER')}:${getConfigValue(
+    'DB_PASSWORD',
+  )}@${getConfigValue('DB_HOST')}:3306/${getConfigValue('DB_DATABASE')}`,
+  { keySize: 191, namespace: 'EMOJI_COOLDOWN' },
+);
 
 export interface IFFZRoom {
   room?: {
@@ -26,126 +35,130 @@ const logger = getLogger('SmokeyBot-Emojis');
 export async function sync_ffz_emotes(message: Message): Promise<void> {
   let embed = undefined;
   let to_be_deleted = undefined;
+  const cooldown = await EMOJI_COOLDOWN.get(message.guild.id);
 
-  if (message.content.match(/~sync-emotes-ffz/i)) {
-    if (message.member.hasPermission('ADMINISTRATOR')) {
+  if (
+    message.content.match(/~sync-emotes-ffz/i) &&
+    message.member.hasPermission('ADMINISTRATOR') &&
+    !cooldown
+  ) {
+    embed = new MessageEmbed()
+      // Set the title of the field
+      .setTitle('Emoji Manager')
+      // Set the color of the embed
+      .setColor(0xff0000)
+      // Set the main content of the embed
+      .setDescription(`Checking FrankerFaceZ API to sync emotes..`);
+    // Send the embed to the same channel as the message
+    await message.channel
+      .send(embed)
+      .then((message) => {
+        to_be_deleted = message.id;
+      })
+      .catch(console.error);
+
+    const existing_emojis = [];
+
+    const split_msg = message.content.split(' ');
+
+    if (split_msg.length != 2) {
+      return;
+    }
+
+    let emojis = undefined;
+
+    split_msg[1] = split_msg[1].toLowerCase().replace(/\W/g, '');
+
+    logger.log(
+      `fetching FFZ Emotes for Twitch channel ${split_msg[1]} (requested by ${message.member.displayName} in ${message.guild.name})..`,
+    );
+
+    // emojis.smokEmotes = await jsonFetch(`https://bot.smokey.gg/api/emotes/?channel_id=${split_msg[1]}`);
+
+    const ffz_emotes: IFFZRoom = await jsonFetch(
+      `https://api.frankerfacez.com/v1/room/${split_msg[1].toLowerCase()}`,
+    );
+
+    if (!ffz_emotes || !ffz_emotes.room || !ffz_emotes.room.set) {
+      message.channel.messages
+        .fetch(to_be_deleted)
+        .then((message) => {
+          message.delete();
+        })
+        .catch(console.error);
+
       embed = new MessageEmbed()
         // Set the title of the field
         .setTitle('Emoji Manager')
         // Set the color of the embed
         .setColor(0xff0000)
         // Set the main content of the embed
-        .setDescription(`Checking FrankerFaceZ API to sync emotes..`);
+        .setDescription(
+          `There was an error fetching from FrankerFaceZ's API. \n\n Make sure the username is correct and there are no symbols. \n\n You may have to wait for FFZ's cache to update before getting certain emotes.`,
+        );
       // Send the embed to the same channel as the message
-      await message.channel
-        .send(embed)
+      message.channel.send(embed);
+
+      return;
+    }
+
+    if (ffz_emotes.room.set) {
+      await EMOJI_COOLDOWN.set(message.guild.id, true, 86400 * 1000);
+      const set_number = ffz_emotes.room.set;
+      let emote_cooldown = 15 * 1000;
+
+      emojis = ffz_emotes.sets[set_number].emoticons;
+
+      new Map(message.guild.emojis.cache).forEach((value) => {
+        existing_emojis.push(value.name);
+      });
+
+      emojis.forEach(
+        (value: { urls: { [x: string]: string }; name: string }) => {
+          let emote_url = '';
+
+          if (value.urls['2']) {
+            emote_url = 'https:' + value.urls['2'];
+          } else {
+            emote_url = 'https:' + value.urls['4'];
+          }
+
+          if (emote_url.match(/frankerfacez/i)) {
+            if (!existing_emojis.includes(value.name)) {
+              setTimeout(
+                create_emoji,
+                emote_cooldown,
+                emote_url,
+                message,
+                value,
+              );
+
+              emote_cooldown = emote_cooldown + 15 * 1000;
+            }
+          }
+        },
+      );
+    }
+
+    if (ffz_emotes) {
+      message.channel.messages
+        .fetch(to_be_deleted)
         .then((message) => {
-          to_be_deleted = message.id;
+          message.delete();
         })
         .catch(console.error);
 
-      const existing_emojis = [];
-
-      const split_msg = message.content.split(' ');
-
-      if (split_msg.length != 2) {
-        return;
-      }
-
-      let emojis = undefined;
-
-      split_msg[1] = split_msg[1].toLowerCase().replace(/\W/g, '');
-
-      logger.log(
-        `fetching FFZ Emotes for Twitch channel ${split_msg[1]} (requested by ${message.member.displayName} in ${message.guild.name})..`,
-      );
-
-      // emojis.smokEmotes = await jsonFetch(`https://bot.smokey.gg/api/emotes/?channel_id=${split_msg[1]}`);
-
-      const ffz_emotes: IFFZRoom = await jsonFetch(
-        `https://api.frankerfacez.com/v1/room/${split_msg[1].toLowerCase()}`,
-      );
-
-      if (!ffz_emotes || !ffz_emotes.room || !ffz_emotes.room.set) {
-        message.channel.messages
-          .fetch(to_be_deleted)
-          .then((message) => {
-            message.delete();
-          })
-          .catch(console.error);
-
-        embed = new MessageEmbed()
-          // Set the title of the field
-          .setTitle('Emoji Manager')
-          // Set the color of the embed
-          .setColor(0xff0000)
-          // Set the main content of the embed
-          .setDescription(
-            `There was an error fetching from FrankerFaceZ's API. \n\n Make sure the username is correct and there are no symbols. \n\n You may have to wait for FFZ's cache to update before getting certain emotes.`,
-          );
-        // Send the embed to the same channel as the message
-        message.channel.send(embed);
-
-        return;
-      }
-
-      if (ffz_emotes.room.set) {
-        const set_number = ffz_emotes.room.set;
-        let emote_cooldown = 1000;
-
-        emojis = ffz_emotes.sets[set_number].emoticons;
-
-        new Map(message.guild.emojis.cache).forEach((value) => {
-          existing_emojis.push(value.name);
-        });
-
-        emojis.forEach(
-          (value: { urls: { [x: string]: string }; name: string }) => {
-            let emote_url = '';
-
-            if (value.urls['2']) {
-              emote_url = 'https:' + value.urls['2'];
-            } else {
-              emote_url = 'https:' + value.urls['4'];
-            }
-
-            if (emote_url.match(/frankerfacez/i)) {
-              if (!existing_emojis.includes(value.name)) {
-                setTimeout(
-                  create_emoji,
-                  emote_cooldown,
-                  emote_url,
-                  message,
-                  value,
-                );
-
-                emote_cooldown = emote_cooldown + 4000;
-              }
-            }
-          },
+      embed = new MessageEmbed()
+        // Set the title of the field
+        .setTitle('Emoji Manager')
+        // Set the color of the embed
+        .setColor(0x00bc8c)
+        // Set the main content of the embed
+        .setDescription(
+          `**Successfully synced emotes!** \n\n It will take awhile for the emojis to show up. \n\n **NOTE:** You can only do this once a day.`,
         );
-      }
-
-      if (ffz_emotes) {
-        message.channel.messages
-          .fetch(to_be_deleted)
-          .then((message) => {
-            message.delete();
-          })
-          .catch(console.error);
-
-        embed = new MessageEmbed()
-          // Set the title of the field
-          .setTitle('Emoji Manager')
-          // Set the color of the embed
-          .setColor(0x00bc8c)
-          // Set the main content of the embed
-          .setDescription(
-            `**Successfully synced emotes!** \n\n It may take a minute or two for all of emojis to show up. \n\n **NOTE:** Wide emotes won't show up properly in Discord.`,
-          );
-        // Send the embed to the same channel as the message
-        message.channel.send(embed);
-      }
+      // Send the embed to the same channel as the message
+      message.channel.send(embed);
     }
   }
 }

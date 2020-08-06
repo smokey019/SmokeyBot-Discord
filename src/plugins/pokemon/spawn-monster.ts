@@ -1,20 +1,24 @@
 import { Message, MessageEmbed } from 'discord.js';
-
 import { getLogger } from '../../clients/logger';
-import { cacheClient, ICache } from '../../clients/cache';
-import { getRandomMonster, IMonsterDex } from './monsters';
+import { ICache } from '../../clients/cache';
+import { getRandomMonster } from './monsters';
 import { getCurrentTime } from '../../utils';
 import { COLOR_PURPLE } from '../../colors';
+import { getBoostedWeatherSpawns } from './weather';
+import Keyv from 'keyv';
+import { getConfigValue } from '../../config';
 
-const logger = getLogger('Pokemon');
+export const MONSTER_SPAWNS = new Keyv(
+  `mysql://${getConfigValue('DB_USER')}:${getConfigValue(
+    'DB_PASSWORD',
+  )}@${getConfigValue('DB_HOST')}:3306/${getConfigValue('DB_DATABASE')}`,
+  { keySize: 191, namespace: 'MONSTER_SPAWNS' },
+);
+
+const logger = getLogger('Pokemon-Spawn');
 
 /**
  * Spawns a random Monster.
- *
- * @notes
- * Consider simplifying the parameters. This function should not have to
- * know about `Message` or the entire `cache`. Monster channel missing or
- * don't have a guild ID? Never call this.
  *
  * @param message
  * @param cache
@@ -31,44 +35,43 @@ export async function spawnMonster(
     return;
   }
 
-  const timestamp = getCurrentTime();
+  const spawn_data = {
+    monster: undefined,
+    spawned_at: getCurrentTime(),
+  };
 
-  cache.monster_spawn.last_spawn_time = timestamp;
-
-  cacheClient.set(message.guild.id, {
-    ...cache,
-    monster_spawn: {
-      ...cache.monster_spawn,
-      last_spawn_time: timestamp,
-    },
-  });
-
-  let monster: IMonsterDex = getRandomMonster();
+  let boostCount = 0;
+  const boost = await getBoostedWeatherSpawns(message.guild.id);
+  let isBoosted = false;
+  spawn_data.monster = getRandomMonster();
   while (
-    !monster.name.english ||
-    monster.id < 0 ||
-    monster.id > 893 ||
-    monster.forme ||
-    !monster.images
+    !spawn_data.monster.name.english ||
+    spawn_data.monster.id < 0 ||
+    spawn_data.monster.id > 893 ||
+    spawn_data.monster.forme ||
+    !spawn_data.monster.images ||
+    (boostCount < 4 && !isBoosted)
   ) {
-    logger.debug('Invalid monster found.');
-    logger.debug(monster);
-    monster = getRandomMonster();
+    logger.trace('Invalid monster found or trying to find a boosted type..');
+    spawn_data.monster = getRandomMonster();
+    spawn_data.monster.type.forEach((element) => {
+      if (boost.boosts.includes(element)) {
+        isBoosted = true;
+      }
+    });
+    boostCount++;
   }
 
-  cache.monster_spawn.current_spawn = monster;
-  cache.monster_spawn.msg = message;
-
-  if (await cacheClient.set(message.guild.id, cache)) {
+  if (await MONSTER_SPAWNS.set(message.guild.id, spawn_data)) {
     logger.info(
-      `${message.guild.name} - Monster Spawned! | ${monster.name.english}`,
+      `${message.guild.name} - Monster Spawned! | ${spawn_data.monster.name.english}`,
     );
 
     const embed = new MessageEmbed({
-      color: monster.color || COLOR_PURPLE,
+      color: spawn_data.monster.color || COLOR_PURPLE,
       description: 'Type ~catch <Pokémon> to try and catch it!',
       image: {
-        url: monster.images.normal,
+        url: spawn_data.monster.images.normal,
       },
       title: 'A wild Pokémon has appeared!',
     });

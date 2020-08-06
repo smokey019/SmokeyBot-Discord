@@ -140,7 +140,12 @@ export async function msgUserItems(message: Message): Promise<any> {
 async function removeMonsterItem(message: Message) {
   const user = await getUser(message.author.id);
   const split = explode(message.content, ' ', 3);
-  const monster = await getUserMonster(split[2]);
+  let monster: IMonsterModel = undefined;
+  if (split[2] == 'current') {
+    monster = await getUserMonster(user.current_monster);
+  } else {
+    monster = await getUserMonster(split[2]);
+  }
 
   if (
     user &&
@@ -254,16 +259,22 @@ export async function checkItemEvolution(
 }
 
 async function giveMonsterItem(message: Message) {
-  const user = await getUser(message.author.id);
+  const user: IMonsterUserModel = await getUser(message.author.id);
   const split = explode(message.content, ' ', 4);
+  let monster: IMonsterModel = undefined;
 
   if (user && split.length == 4) {
     const item = parseInt(split[2]);
-    const monster = await getUserMonster(split[3]);
+    if (split[3] == 'current') {
+      monster = await getUserMonster(user.current_monster);
+    } else {
+      monster = await getUserMonster(split[3]);
+    }
     const items = JSON.parse(user.items);
 
     if (!monster) {
       message.reply('there was an error giving item.');
+      return;
     }
 
     if (
@@ -282,20 +293,38 @@ async function giveMonsterItem(message: Message) {
             .where({ uid: message.author.id })
             .update({ items: JSON.stringify(items) });
 
-          const updateMonster = await databaseClient<IMonsterModel>(
-            MonsterTable,
-          )
-            .where({ id: monster.id })
-            .update({ held_item: item });
+          if (item == 50) {
+            const updateMonster = await databaseClient<IMonsterModel>(
+              MonsterTable,
+            )
+              .where({ id: monster.id })
+              .increment('level', 1);
 
-          if (updateUser && updateMonster) {
-            monster.held_item = item;
-            const itemDex = getItemByID(item);
-            const monsterDex = findMonsterByID(monster.monster_id);
-            message.reply(
-              `gave **${monsterDex.name.english}** an item - **${itemDex.name.english}**! Neato!`,
-            );
-            await checkItemEvolution(monster, message);
+            if (updateUser && updateMonster) {
+              const itemDex = getItemByID(item);
+              const monsterDex = findMonsterByID(monster.monster_id);
+              message.reply(
+                `gave **${monsterDex.name.english}** a **${itemDex.name.english}** and it leveled up! Neato!`,
+              );
+            }
+            return;
+          } else {
+            const updateMonster = await databaseClient<IMonsterModel>(
+              MonsterTable,
+            )
+              .where({ id: monster.id })
+              .update({ held_item: item });
+
+            if (updateUser && updateMonster) {
+              monster.held_item = item;
+              const itemDex = getItemByID(item);
+              const monsterDex = findMonsterByID(monster.monster_id);
+              message.reply(
+                `gave **${monsterDex.name.english}** an item - **${itemDex.name.english}**! Neato!`,
+              );
+              await checkItemEvolution(monster, message);
+              return;
+            }
           }
         }
       }

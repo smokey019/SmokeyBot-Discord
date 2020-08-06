@@ -15,6 +15,7 @@ interface IConfig {
   SPAWN_TIME_MAX?: string;
   SHINY_ODDS_RETAIL?: string;
   SHINY_ODDS_COMMUNITY?: string;
+  TOPGG_KEY?: string;
 }
 
 const config = dotenv.config({

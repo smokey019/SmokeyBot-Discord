@@ -21916,43 +21916,43 @@
     "color": "#ffffff",
     "eggGroups": ["Undiscovered"],
     "otherFormes": [
-      "Arceus-Bug",
-      "Arceus-Dark",
-      "Arceus-Dragon",
-      "Arceus-Electric",
-      "Arceus-Fairy",
-      "Arceus-Fighting",
-      "Arceus-Fire",
-      "Arceus-Flying",
-      "Arceus-Ghost",
-      "Arceus-Grass",
-      "Arceus-Ground",
-      "Arceus-Ice",
-      "Arceus-Poison",
-      "Arceus-Psychic",
-      "Arceus-Rock",
-      "Arceus-Steel",
-      "Arceus-Water"
+      "Arceus Bug",
+      "Arceus Dark",
+      "Arceus Dragon",
+      "Arceus Electric",
+      "Arceus Fairy",
+      "Arceus Fighting",
+      "Arceus Fire",
+      "Arceus Flying",
+      "Arceus Ghost",
+      "Arceus Grass",
+      "Arceus Ground",
+      "Arceus Ice",
+      "Arceus Poison",
+      "Arceus Psychic",
+      "Arceus Rock",
+      "Arceus Steel",
+      "Arceus Water"
     ],
     "formeOrder": [
       "Arceus",
-      "Arceus-Fighting",
-      "Arceus-Flying",
-      "Arceus-Poison",
-      "Arceus-Ground",
-      "Arceus-Rock",
-      "Arceus-Bug",
-      "Arceus-Ghost",
-      "Arceus-Steel",
-      "Arceus-Fire",
-      "Arceus-Water",
-      "Arceus-Grass",
-      "Arceus-Electric",
-      "Arceus-Psychic",
-      "Arceus-Ice",
-      "Arceus-Dragon",
-      "Arceus-Dark",
-      "Arceus-Fairy"
+      "Arceus Fighting",
+      "Arceus Flying",
+      "Arceus Poison",
+      "Arceus Ground",
+      "Arceus Rock",
+      "Arceus Bug",
+      "Arceus Ghost",
+      "Arceus Steel",
+      "Arceus Fire",
+      "Arceus Water",
+      "Arceus Grass",
+      "Arceus Electric",
+      "Arceus Psychic",
+      "Arceus Ice",
+      "Arceus Dragon",
+      "Arceus Dark",
+      "Arceus Fairy"
     ],
     "images": {
       "normal": "https://i.imgur.com/bofyvTq.png",
@@ -21962,9 +21962,9 @@
     }
   },
   {
-    "id": 493.9,
+    "id": 493.1,
     "name": {
-      "english": "Arceus-Bug",
+      "english": "Arceus Bug",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -21992,9 +21992,9 @@
     "changesFrom": "Arceus"
   },
   {
-    "id": 493.9,
+    "id": 493.2,
     "name": {
-      "english": "Arceus-Dark",
+      "english": "Arceus Dark",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -22022,9 +22022,9 @@
     "changesFrom": "Arceus"
   },
   {
-    "id": 493.9,
+    "id": 493.3,
     "name": {
-      "english": "Arceus-Dragon",
+      "english": "Arceus Dragon",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -22052,9 +22052,9 @@
     "changesFrom": "Arceus"
   },
   {
-    "id": 493.9,
+    "id": 493.4,
     "name": {
-      "english": "Arceus-Electric",
+      "english": "Arceus Electric",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -22082,9 +22082,9 @@
     "changesFrom": "Arceus"
   },
   {
-    "id": 493.9,
+    "id": 493.5,
     "name": {
-      "english": "Arceus-Fairy",
+      "english": "Arceus Fairy",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -22113,9 +22113,9 @@
     "gen": 6
   },
   {
-    "id": 493.9,
+    "id": 493.6,
     "name": {
-      "english": "Arceus-Fighting",
+      "english": "Arceus Fighting",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -22143,9 +22143,9 @@
     "changesFrom": "Arceus"
   },
   {
-    "id": 493.9,
+    "id": 493.7,
     "name": {
-      "english": "Arceus-Fire",
+      "english": "Arceus Fire",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -22173,9 +22173,9 @@
     "changesFrom": "Arceus"
   },
   {
-    "id": 493.9,
+    "id": 493.8,
     "name": {
-      "english": "Arceus-Flying",
+      "english": "Arceus Flying",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -22205,7 +22205,7 @@
   {
     "id": 493.9,
     "name": {
-      "english": "Arceus-Ghost",
+      "english": "Arceus Ghost",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -22233,9 +22233,9 @@
     "changesFrom": "Arceus"
   },
   {
-    "id": 493.9,
+    "id": 493.11,
     "name": {
-      "english": "Arceus-Grass",
+      "english": "Arceus Grass",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -22263,9 +22263,9 @@
     "changesFrom": "Arceus"
   },
   {
-    "id": 493.9,
+    "id": 493.12,
     "name": {
-      "english": "Arceus-Ground",
+      "english": "Arceus Ground",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -22293,9 +22293,9 @@
     "changesFrom": "Arceus"
   },
   {
-    "id": 493.9,
+    "id": 493.13,
     "name": {
-      "english": "Arceus-Ice",
+      "english": "Arceus Ice",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -22323,9 +22323,9 @@
     "changesFrom": "Arceus"
   },
   {
-    "id": 493.9,
+    "id": 493.14,
     "name": {
-      "english": "Arceus-Poison",
+      "english": "Arceus Poison",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -22353,9 +22353,9 @@
     "changesFrom": "Arceus"
   },
   {
-    "id": 493.9,
+    "id": 493.15,
     "name": {
-      "english": "Arceus-Psychic",
+      "english": "Arceus Psychic",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -22383,9 +22383,9 @@
     "changesFrom": "Arceus"
   },
   {
-    "id": 493.9,
+    "id": 493.16,
     "name": {
-      "english": "Arceus-Rock",
+      "english": "Arceus Rock",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -22413,9 +22413,9 @@
     "changesFrom": "Arceus"
   },
   {
-    "id": 493.9,
+    "id": 493.17,
     "name": {
-      "english": "Arceus-Steel",
+      "english": "Arceus Steel",
       "japanese": "",
       "chinese": "",
       "french": ""
@@ -22443,9 +22443,9 @@
     "changesFrom": "Arceus"
   },
   {
-    "id": 493.9,
+    "id": 493.18,
     "name": {
-      "english": "Arceus-Water",
+      "english": "Arceus Water",
       "japanese": "",
       "chinese": "",
       "french": ""

@@ -130,6 +130,11 @@ for (let index = 0; index < 60; index++) {
     if (mon) {
       MonsterPool.push(mon);
     }
+    if (mon.id == 197 || mon.id == 196) {
+      for (let z = 0; z < 50; z++) {
+        MonsterPool.push(mon);
+      }
+    }
   });
 
   Gens.three.forEach((element) => {
@@ -137,11 +142,6 @@ for (let index = 0; index < 60; index++) {
     if (mon) {
       MonsterPool.push(mon);
       MonsterPool.push(mon);
-    }
-    if (mon.id == 374 || mon.id == 308) {
-      for (let z = 0; z < 30; z++) {
-        MonsterPool.push(mon);
-      }
     }
   });
 

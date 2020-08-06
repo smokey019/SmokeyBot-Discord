@@ -1,7 +1,6 @@
 import { Message } from 'discord.js';
 import Keyv from 'keyv';
 import { getLogger } from './logger';
-import { IMonsterDex } from '../plugins/pokemon/monsters';
 import { getConfigValue } from '../config';
 import { getCurrentTime } from '../utils';
 import { IGuildSettings } from './database';
@@ -10,12 +9,6 @@ const logger = getLogger('Cache');
 
 export interface ICache {
   tweet: undefined | any;
-  monster_spawn: {
-    current_spawn?: IMonsterDex;
-    last_spawn?: IMonsterDex;
-    last_spawn_time?: number;
-    msg?: Message;
-  };
   settings: {
     id: number;
     guild_id: number | string;
@@ -61,17 +54,10 @@ export async function getCache(
   if (!settings) return undefined;
 
   let cache = await cacheClient.get(message.guild.id);
-  const timestamp = getCurrentTime();
 
   if (!cache) {
     cache = {
       tweet: [],
-      monster_spawn: {
-        current_spawn: undefined,
-        last_spawn: undefined,
-        last_spawn_time: timestamp,
-        msg: message,
-      },
       settings: {
         id: settings.id,
         guild_id: settings.guild_id,
