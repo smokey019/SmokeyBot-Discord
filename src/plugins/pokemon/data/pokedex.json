@@ -1364,8 +1364,8 @@
     "images": {
       "normal": "https://i.imgur.com/9Sfddti.png",
       "shiny": "https://i.imgur.com/5YWs0rA.png",
-      "gif": "https://bot.smokey.gg/pokemon/images/gif/25.3.gif",
-      "gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/25.3_shiny.gif"
+      "gif": "https://i.imgur.com/x8i4bS7.png",
+      "gif-shiny": "https://i.imgur.com/x8i4bS7.png"
     }
   },
   {
@@ -35380,7 +35380,7 @@
     "weightkg": 230,
     "color": "#ffffff",
     "prevo": "Cosmoem",
-    "evoLevel": 53,
+    "evoItem": "Steel Lion Statue",
     "eggGroups": ["Undiscovered"],
     "images": {
       "normal": "https://i.imgur.com/dzEMceP.png",
@@ -35415,7 +35415,7 @@
     "weightkg": 120,
     "color": "#6000ff",
     "prevo": "Cosmoem",
-    "evoLevel": 53,
+    "evoItem": "Ghostly Shadow Amulet",
     "eggGroups": ["Undiscovered"],
     "images": {
       "normal": "https://i.imgur.com/IBh3uqi.png",

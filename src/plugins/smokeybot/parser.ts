@@ -14,6 +14,7 @@ import {
   removeColorRoles,
 } from './smokeybot';
 import { prefix_regex } from '../pokemon/parser';
+import { checkForEmptyServers } from './leave-empty-servers';
 
 const logger = getLogger('SmokeyBot');
 
@@ -36,7 +37,7 @@ export async function smokeybotParser(
       await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       if (!toggleSmokeMon(message, cache)) {
-        message.reply(
+        await message.reply(
           'There was an error. You might not have permission to do this.',
         );
         logger.info(
@@ -49,68 +50,76 @@ export async function smokeybotParser(
   if (splitMsg[0].match(prefix_regex('help|commands'))) {
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-    message.reply(
+    await message.reply(
       'for a list of commands check this link out: https://www.smokey.gg/tutorials/smokeybot-on-discord/',
     );
   }
 
+  if (
+    splitMsg[0].toLowerCase() == '~check-empty-servers' &&
+    message.author.id == '90514165138989056'
+  ) {
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+    await checkForEmptyServers(message);
+  }
+
   if (splitMsg[0].toLowerCase() == '~sync-emotes-smokemotes') {
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
-    sync_smokemotes(message);
+    await sync_smokemotes(message);
   }
 
   if (splitMsg[0].toLowerCase() == '~sync-emotes-ffz') {
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-    sync_ffz_emotes(message);
+    await sync_ffz_emotes(message);
   }
 
   if (message.content == '~check color roles') {
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-    checkColorRoles(message);
+    await checkColorRoles(message);
   }
 
   if (message.content == '~remove color roles') {
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-    removeColorRoles(message);
+    await removeColorRoles(message);
   }
 
   if (message.content == '~remove empty roles') {
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-    removeEmptyRoles(message);
+    await removeEmptyRoles(message);
   }
 
   if (message.content == '~check tweet') {
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-    checkTweet(message);
+    await checkTweet(message);
   }
 
   if (splitMsg[0].toLowerCase() == '~smash') {
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-    sumSmash(message);
+    await sumSmash(message);
   }
 
   if (message.content == '~check vase') {
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-    checkVase(message);
+    await checkVase(message);
   }
 
   if (splitMsg[0].toLowerCase() == '~gtfo') {
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-    gtfo(message);
+    await gtfo(message);
   }
 
   if (splitMsg[0].toLowerCase() == '~invite') {
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-    message.reply(
+    await message.reply(
       `here is Smokey's Discord Bot invite link: https://discord.com/oauth2/authorize?client_id=458710213122457600&scope=bot&permissions=268954696`,
     );
   }

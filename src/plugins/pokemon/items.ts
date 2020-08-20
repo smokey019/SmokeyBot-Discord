@@ -293,7 +293,7 @@ async function giveMonsterItem(message: Message) {
             .where({ uid: message.author.id })
             .update({ items: JSON.stringify(items) });
 
-          if (item == 50) {
+          if (item == 50 && monster.level < 100) {
             const updateMonster = await databaseClient<IMonsterModel>(
               MonsterTable,
             )

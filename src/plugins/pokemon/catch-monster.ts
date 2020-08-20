@@ -12,7 +12,7 @@ import { userDex } from './info';
 import { IMonsterDex } from './monsters';
 import { MONSTER_SPAWNS } from './spawn-monster';
 
-const logger = getLogger('Pokemon');
+const logger = getLogger('Pokemon-Catch');
 
 /**
  * Returns true if the first value matches any of the currently spawned

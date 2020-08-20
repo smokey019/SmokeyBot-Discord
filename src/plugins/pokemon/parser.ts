@@ -24,6 +24,7 @@ import { battleParser } from './battle';
 import { getBoostedWeatherSpawns } from './weather';
 import { MONSTER_SPAWNS } from './spawn-monster';
 import { checkVote } from '../../clients/top.gg';
+import { updateDexes } from './new-dex';
 
 export const prefixes = ['!', '~', 'p!'];
 
@@ -77,6 +78,12 @@ export async function monsterParser(
       await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
       await msgBalance(message);
+    }
+
+    if (command.match(prefix_regex('admin-update-dex'))) {
+      await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+
+      await updateDexes(message);
     }
 
     if (command.match(prefix_regex('weather'))) {

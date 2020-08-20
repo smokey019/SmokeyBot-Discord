@@ -1,4 +1,6 @@
 import fetch from 'node-fetch';
+import moment from 'moment';
+import datetimeDifference from 'datetime-difference';
 
 /**
  * Random number between X and Y
@@ -21,6 +23,43 @@ export function getCurrentTime(): number {
  */
 export function theWord(): string {
   return 'POKéMON';
+}
+
+export function getTimeInterval(datetime: string): string {
+  const liveAt = new Date(moment(datetime).format('MM/DD/YYYY, hh:mm:ss A'));
+  const timeNow = new Date();
+
+  const diff = datetimeDifference(liveAt, timeNow);
+
+  const string = {
+    years: 'year',
+    months: 'month',
+    weeks: 'week',
+    days: 'day',
+    hours: 'hour',
+    minutes: 'minute',
+    seconds: 'second',
+    //milliseconds: 'millisecond'
+  };
+
+  const finishedString = [];
+
+  Object.keys(string).forEach(function(key) {
+    // do something with string[key]
+    if (diff[key] > 1) {
+      string[key] = diff[key] + ' ' + string[key] + 's';
+      finishedString.push(string[key]);
+    } else if (diff[key] == 1) {
+      string[key] = diff[key] + ' ' + string[key];
+      finishedString.push(string[key]);
+    } else {
+      delete string[key];
+    }
+  });
+
+  const actuallyFinish = finishedString.join(', ');
+
+  return actuallyFinish;
 }
 
 /**

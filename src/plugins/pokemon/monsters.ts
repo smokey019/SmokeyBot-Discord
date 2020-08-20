@@ -23,56 +23,6 @@ const MonsterDex: Array<IMonsterDex> = [];
 
 export type IMonsterDex = typeof PokeDex[0];
 
-export interface IMonsterDexTest {
-  id: number;
-  name: {
-    english: string;
-    japanese: string;
-    chinese: string;
-    french: string;
-  };
-  baseSpecies?: string;
-  special?: string;
-  baseForme?: string;
-  forme?: string;
-  region?: string;
-  type: Array<string>;
-  gender?: string;
-  genderRatio?: {
-    M: number;
-    F: number;
-  };
-  baseStats: {
-    hp: number;
-    atk: number;
-    def: number;
-    spa: number;
-    spd: number;
-    spe: number;
-  };
-  abilities?: any;
-  heightm: number;
-  weightkg: number;
-  color: string;
-  prevo?: string;
-  evoType?: string;
-  evoItem?: string;
-  evoMove?: string;
-  evos?: Array<string>;
-  evoLevel?: number;
-  eggGroups?: Array<string>;
-  images?: {
-    normal: string;
-    shiny: string;
-    gif: string;
-    'gif-shiny': string;
-  };
-  otherFormes?: Array<string>;
-  formeOrder?: Array<string>;
-  requiredItem?: string;
-  isGigantamax?: string;
-}
-
 const Gens = {
   one: [],
   two: [],
@@ -116,10 +66,11 @@ PokeDex.forEach((element) => {
   }
 });
 let mon = undefined;
-for (let index = 0; index < 60; index++) {
+for (let index = 0; index < 25; index++) {
   Gens.one.forEach((element) => {
     mon = findMonsterByID(element);
     if (mon) {
+      MonsterPool.push(mon);
       MonsterPool.push(mon);
       MonsterPool.push(mon);
     }
@@ -129,11 +80,8 @@ for (let index = 0; index < 60; index++) {
     mon = findMonsterByID(element);
     if (mon) {
       MonsterPool.push(mon);
-    }
-    if (mon.id == 197 || mon.id == 196) {
-      for (let z = 0; z < 50; z++) {
-        MonsterPool.push(mon);
-      }
+      MonsterPool.push(mon);
+      MonsterPool.push(mon);
     }
   });
 
@@ -148,6 +96,7 @@ for (let index = 0; index < 60; index++) {
   Gens.four.forEach((element) => {
     mon = findMonsterByID(element);
     if (mon) {
+      MonsterPool.push(mon);
       MonsterPool.push(mon);
     }
   });
@@ -164,12 +113,14 @@ for (let index = 0; index < 60; index++) {
     mon = findMonsterByID(element);
     if (mon) {
       MonsterPool.push(mon);
+      MonsterPool.push(mon);
     }
   });
 
   Gens.seven.forEach((element) => {
     mon = findMonsterByID(element);
     if (mon) {
+      MonsterPool.push(mon);
       MonsterPool.push(mon);
     }
   });
@@ -184,13 +135,13 @@ for (let index = 0; index < 60; index++) {
 }
 
 Gens.alola.forEach((element) => {
-  for (let index = 0; index < 45; index++) {
+  for (let index = 0; index < 20; index++) {
     MonsterPool.push(element);
   }
 });
 
 Gens.galar.forEach((element) => {
-  for (let index = 0; index < 45; index++) {
+  for (let index = 0; index < 20; index++) {
     MonsterPool.push(element);
   }
 });

@@ -8988,5 +8988,25 @@
     },
     "price": 10000,
     "limit": 0
+  },
+  {
+    "id": 965,
+    "name": {
+      "japanese": "",
+      "english": "Ghostly Shadow Amulet",
+      "chinese": ""
+    },
+    "price": 5000,
+    "limit": 0
+  },
+  {
+    "id": 966,
+    "name": {
+      "japanese": "",
+      "english": "Steel Lion Statue",
+      "chinese": ""
+    },
+    "price": 5000,
+    "limit": 0
   }
 ]

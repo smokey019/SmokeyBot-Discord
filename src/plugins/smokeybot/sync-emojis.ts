@@ -103,7 +103,7 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
     }
 
     if (ffz_emotes.room.set) {
-      await EMOJI_COOLDOWN.set(message.guild.id, true, 86400 * 1000);
+      await EMOJI_COOLDOWN.set(message.guild.id, true, 1200 * 1000);
       const set_number = ffz_emotes.room.set;
       let emote_cooldown = 15 * 1000;
 

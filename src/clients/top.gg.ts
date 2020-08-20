@@ -6,7 +6,13 @@ import { discordClient } from './discord';
 import { Message } from 'discord.js';
 import { databaseClient, getUser } from './database';
 import { IMonsterUserModel, MonsterUserTable } from '../models/MonsterUser';
-import { getCurrentTime } from '../utils';
+import TimeAgo from 'javascript-time-ago';
+import en from 'javascript-time-ago/locale/en';
+
+TimeAgo.addLocale(en);
+
+const timeAgo = new TimeAgo('en-US');
+
 export const dblClient = new DBL(getConfigValue('TOPGG_KEY'), discordClient);
 const logger = getLogger('Top.GG Client');
 const dblCache = new Keyv(
@@ -28,7 +34,7 @@ export async function checkVote(message: Message): Promise<any> {
     voted = await dblClient.hasVoted(message.author.id);
     const isWeekend = await checkWeekend();
     if (voted) {
-      await dblCache.set(message.author.id + ':voted', getCurrentTime());
+      await dblCache.set(message.author.id + ':voted', Date.now());
 
       const user = await getUser(message.author.id);
 
@@ -67,7 +73,11 @@ export async function checkVote(message: Message): Promise<any> {
     }
   } else {
     await message.reply(
-      `you voted and got credit already. Wait until 12 hours after your last vote.`,
+      `you voted ${timeAgo.format(
+        voted,
+      )} and got credit already. You can vote again ${timeAgo.format(
+        voted + 12 * 60 * 60 * 1000,
+      )}.`,
     );
 
     return false;

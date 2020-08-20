@@ -8,4 +8,5 @@ export interface IMonsterUserModel {
   latest_monster?: number;
   streak?: number;
   items?: string;
+  dex?: string;
 }

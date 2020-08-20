@@ -52,7 +52,7 @@ export async function checkExpGain(message: Message): Promise<any> {
             monster.level++;
 
             if (updateLevel) {
-              logger.debug(
+              logger.trace(
                 `User ${message.author.username}'s Monster ${monster.id} - ${monster_dex.name.english} has leveled up to ${monster.level}!`,
               );
             }
