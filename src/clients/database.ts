@@ -8,7 +8,7 @@ import { IMonsterUserModel, MonsterUserTable } from '../models/MonsterUser';
 const logger = getLogger('Database');
 
 export const databaseClient = knex({
-  client: 'mysql',
+  client: 'mysql2',
   connection: {
     database: getConfigValue('DB_DATABASE'),
     host: getConfigValue('DB_HOST'),
@@ -16,6 +16,20 @@ export const databaseClient = knex({
     user: getConfigValue('DB_USER'),
   },
   pool: { min: 0, max: 7 },
+  log: {
+    warn(message) {
+      logger.warn(message);
+    },
+    error(message) {
+      logger.error(message);
+    },
+    deprecate(message) {
+      logger.error(message);
+    },
+    debug(message) {
+      logger.debug(message);
+    },
+  },
 });
 
 /**

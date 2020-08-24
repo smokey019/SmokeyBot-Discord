@@ -795,6 +795,7 @@
       "english": "Sun Stone",
       "japanese": "たいようのいし"
     },
+    "evolve_item": true,
     "id": 80,
     "price": 1000,
     "limit": 0
@@ -805,6 +806,7 @@
       "english": "Moon Stone",
       "chinese": "月之石"
     },
+    "evolve_item": true,
     "id": 81,
     "price": 1000,
     "limit": 0
@@ -816,6 +818,7 @@
       "english": "Fire Stone",
       "chinese": "火之石"
     },
+    "evolve_item": true,
     "price": 1000,
     "limit": 0
   },
@@ -825,6 +828,7 @@
       "japanese": "かみなりのいし",
       "chinese": "雷之石"
     },
+    "evolve_item": true,
     "id": 83,
     "price": 1000,
     "limit": 0
@@ -835,6 +839,7 @@
       "japanese": "みずのいし",
       "english": "Water Stone"
     },
+    "evolve_item": true,
     "id": 84,
     "price": 1000,
     "limit": 0
@@ -846,6 +851,7 @@
       "english": "Leaf Stone",
       "japanese": "リーフのいし"
     },
+    "evolve_item": true,
     "price": 1000,
     "limit": 0
   },
@@ -1065,6 +1071,7 @@
       "japanese": "ひかりのいし",
       "english": "Shiny Stone"
     },
+    "evolve_item": true,
     "id": 107,
     "price": 1000,
     "limit": 0
@@ -1076,6 +1083,7 @@
       "japanese": "やみのいし",
       "chinese": "暗之石"
     },
+    "evolve_item": true,
     "price": 1000,
     "limit": 0
   },
@@ -1086,6 +1094,7 @@
       "english": "Dawn Stone",
       "chinese": "觉醒之石"
     },
+    "evolve_item": true,
     "price": 1000,
     "limit": 0
   },
@@ -1096,6 +1105,7 @@
       "japanese": "まんまるいし",
       "chinese": "浑圆之石"
     },
+    "evolve_item": true,
     "price": 1000,
     "limit": 0
   },
@@ -2116,6 +2126,7 @@
       "english": "Everstone",
       "japanese": "かわらずのいし"
     },
+    "evolve_item": true,
     "price": 1000,
     "limit": 0
   },
@@ -5964,6 +5975,7 @@
       "japanese": "ライトストーン",
       "chinese": "光明石"
     },
+    "evolve_item": true,
     "price": 1000,
     "limit": 0
   },
@@ -5973,6 +5985,7 @@
       "english": "Dark Stone",
       "japanese": "ダークストーン"
     },
+    "evolve_item": true,
     "id": 617,
     "price": 1000,
     "limit": 0
@@ -8215,6 +8228,7 @@
       "english": "Ice Stone",
       "chinese": "冰之石"
     },
+    "evolve_item": true,
     "id": 849,
     "price": 1000,
     "limit": 0
@@ -8945,6 +8959,7 @@
       "english": "Friendship Bracelet",
       "chinese": ""
     },
+    "evolve_item": true,
     "id": 960,
     "price": 1000,
     "limit": 0
@@ -8956,6 +8971,7 @@
       "english": "TM31-Galar",
       "chinese": "招式学习器31-Galar"
     },
+    "evolve_item": true,
     "price": 1000,
     "limit": 0
   },
@@ -8966,6 +8982,7 @@
       "english": "Friendly Bracelet of Darkness",
       "chinese": ""
     },
+    "evolve_item": true,
     "price": 1000,
     "limit": 0
   },
@@ -8976,6 +8993,7 @@
       "english": "Fairy Bracelet of Affection",
       "chinese": ""
     },
+    "evolve_item": true,
     "price": 1000,
     "limit": 0
   },
@@ -8986,6 +9004,7 @@
       "english": "Bracelet of Dragon's Ascent",
       "chinese": ""
     },
+    "evolve_item": true,
     "price": 10000,
     "limit": 0
   },
@@ -8996,6 +9015,7 @@
       "english": "Ghostly Shadow Amulet",
       "chinese": ""
     },
+    "evolve_item": true,
     "price": 5000,
     "limit": 0
   },
@@ -9006,6 +9026,7 @@
       "english": "Steel Lion Statue",
       "chinese": ""
     },
+    "evolve_item": true,
     "price": 5000,
     "limit": 0
   }

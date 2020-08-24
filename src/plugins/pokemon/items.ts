@@ -10,6 +10,7 @@ import {
   findMonsterByName,
 } from './monsters';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
+import { IItemsModel, ItemsTable } from '../../models/Items';
 
 export type Iitem = typeof Items[1];
 
@@ -84,56 +85,149 @@ async function listItems(message: Message) {
 }
 
 export async function msgUserItems(message: Message): Promise<any> {
-  const user = await getUser(message.author.id);
+  const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
+  const isQuote = message.content.match('"');
+  let sort = undefined;
+  let search = undefined;
+  let page = 0;
 
-  if (user) {
-    const items = JSON.parse(user.items);
-
-    if (items.length > 0) {
-      let item_message = [];
-
-      const splitMsg = message.content.split(' ');
-
-      items.forEach((element) => {
-        const item_dex = getItemByID(element);
-        if (!item_dex) return;
-        item_message.push(
-          `ID: **${item_dex.id}** - **${item_dex.name.english}**`,
-        );
-      });
-
-      let all_items = [];
-
-      if (item_message.length > 10) {
-        all_items = chunk(item_message, 10);
-
-        if (splitMsg.length == 3 && all_items.length > 1) {
-          const page = parseInt(splitMsg[2]) - 1;
-
-          if (all_items[page]) {
-            item_message = all_items[page];
-          }
-        } else {
-          item_message = all_items[0];
-        }
-      }
-
-      const new_msg = item_message.join('\n');
-
-      const embed = new MessageEmbed()
-        .setAuthor(
-          `${message.author.username}'s Items - Total: ${items.length} - Pages: ${all_items.length}`,
-          `https://cdn.bulbagarden.net/upload/0/03/Bag_Ultra_Ball_Sprite.png`,
-        )
-        .setColor(0xff0000)
-        .setDescription(new_msg);
-      await message.channel
-        .send(embed)
-        .then((message) => {
-          return message;
-        })
-        .catch(console.error);
+  if (isQuote) {
+    const parseSearch = message.content.replace(/ {2,}/gm, ' ').split('"');
+    const splitSort = parseSearch[parseSearch.length - 1].split(' ');
+    search = parseSearch[1].toLowerCase();
+    if (splitSort.length == 3) {
+      sort = [splitSort[1], splitSort[2]];
+    } else if (splitSort.length == 4) {
+      sort = [splitSort[1], splitSort[2]];
+      page = parseInt(splitSort[splitSort.length - 1]) - 1;
     }
+  } else {
+    const parseSearch = message.content.replace(/ {2,}/gm, ' ').split(' ');
+    sort = [splitMsg[2], splitMsg[3]];
+    search = parseSearch[1].toLowerCase();
+  }
+  const sortable_items = [];
+  const items = await getUserItems(message.author.id);
+
+  if (items && items.length > 0) {
+    let item_message = [];
+
+    const splitMsg = message.content.split(' ');
+
+    items.forEach((element) => {
+      const item_dex = getItemByID(element.item_number);
+      if (!item_dex) return;
+
+      if (
+        (isQuote && item_dex.name.english.toLowerCase() != search) ||
+        (sort[0] == 'evolve' && !item_dex?.evolve_item)
+      )
+        return;
+      const tmpMsg = `ID: **${item_dex.id}** - **${item_dex.name.english}**`;
+      item_message.push(tmpMsg);
+
+      sortable_items.push({
+        id: element.id,
+        item_number: element.item_number,
+        name: item_dex.name.english,
+        msg: tmpMsg,
+      });
+    });
+
+    if (sort[0] == 'number' && sort[1] == 'high') {
+      sortable_items.sort(function(a, b) {
+        return b.item_number - a.item_number;
+      });
+    } else if (sort[0] == 'number' && sort[1] == 'low') {
+      sortable_items.sort(function(a, b) {
+        return a.item_number - b.item_number;
+      });
+    } else if (sort[0] == 'id' && sort[1] == 'high') {
+      sortable_items.sort(function(a, b) {
+        return b.id - a.id;
+      });
+    } else if (sort[0] == 'id' && sort[1] == 'low') {
+      sortable_items.sort(function(a, b) {
+        return a.id - b.id;
+      });
+    } else if (sort[0] == 'name' && sort[1] == 'desc') {
+      sortable_items.sort(function(a, b) {
+        return b.name - a.name;
+      });
+    } else if (sort[0] == 'name' && sort[1] == 'asc') {
+      sortable_items.sort(function(a, b) {
+        return a.name - b.name;
+      });
+    } else {
+      sortable_items.sort(function(a, b) {
+        return b.id - a.id;
+      });
+    }
+
+    sortable_items.forEach((element) => {
+      item_message.push(element.msg);
+    });
+
+    let all_items = [];
+
+    if (item_message.length > 10) {
+      all_items = chunk(item_message, 10);
+
+      if (splitMsg.length == 3 && all_items.length > 1) {
+        if (all_items[page]) {
+          item_message = all_items[page];
+        }
+      } else {
+        item_message = all_items[0];
+      }
+    }
+
+    const new_msg = item_message.join('\n');
+
+    const embed = new MessageEmbed()
+      .setAuthor(
+        `${message.author.username}'s Items - Total: ${items.length} - Pages: ${all_items.length}`,
+        `https://cdn.bulbagarden.net/upload/0/03/Bag_Ultra_Ball_Sprite.png`,
+      )
+      .setColor(0xff0000)
+      .setDescription(new_msg);
+    await message.channel
+      .send(embed)
+      .then((message) => {
+        return message;
+      })
+      .catch(console.error);
+  }
+}
+
+export async function updateItems(message: Message): Promise<boolean> {
+  const user = await getUser(message.author.id);
+  const items = JSON.parse(user.items);
+
+  if (items) {
+    let updated_items = 0;
+    items.forEach(async (element) => {
+      const update = await databaseClient<IItemsModel>(ItemsTable).insert({
+        item_number: element,
+        uid: message.author.id,
+      });
+      if (update) {
+        updated_items++;
+      }
+    });
+    if (updated_items > 0) {
+      message.reply(
+        `successfully transferred ${updated_items} to the new item inventory!`,
+      );
+      await databaseClient<IMonsterUserModel>(MonsterUserTable)
+        .update('items', '[]')
+        .where('uid', message.author.id);
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
   }
 }
 
@@ -153,24 +247,20 @@ async function removeMonsterItem(message: Message) {
     monster.uid == message.author.id &&
     monster.held_item
   ) {
-    const items = JSON.parse(user.items);
-
-    items.push(monster.held_item);
-
     const itemDex = getItemByID(monster.held_item);
     const monsterDex = findMonsterByID(monster.monster_id);
 
-    const updateUser = await databaseClient<IMonsterUserModel>(MonsterUserTable)
-      .where({ uid: message.author.id })
-      .update({ items: JSON.stringify(items) });
+    const updateItem = await databaseClient<IItemsModel>(ItemsTable)
+      .where({ id: monster.held_item })
+      .update({ held_by: null });
 
     const updateMonster = await databaseClient<IMonsterModel>(MonsterTable)
       .where({ id: monster.id })
       .update({ held_item: null });
 
-    if (updateUser && updateMonster) {
+    if (updateItem && updateMonster) {
       message.reply(
-        `removed **${monsterDex.name.english}**'s item - **${itemDex.name.english}**.`,
+        `removed item **${itemDex.name.english}** from **${monsterDex.name.english}**.`,
       );
     }
   }
@@ -188,7 +278,8 @@ export async function checkItemEvolution(
     monster_dex.otherFormes
   ) {
     let evolve: IMonsterDex = undefined;
-    const item = getItemByID(monster.held_item);
+    const itemDB = await getItemDB(monster.held_item);
+    const item = getItemByID(itemDB.item_number);
 
     if (monster_dex.evos) {
       monster_dex.evos.forEach((evo) => {
@@ -229,6 +320,7 @@ export async function checkItemEvolution(
       }
 
       if (updateMonster) {
+        await deleteItemDB(monster.held_item);
         let imgs = [];
         if (monster.shiny) {
           imgs = [evolve.images.shiny, monster_dex.images.shiny];
@@ -264,68 +356,59 @@ async function giveMonsterItem(message: Message) {
   let monster: IMonsterModel = undefined;
 
   if (user && split.length == 4) {
-    const item = parseInt(split[2]);
+    const item = await getUserItemDB(parseInt(split[2]), message.author.id);
+
     if (split[3] == 'current') {
       monster = await getUserMonster(user.current_monster);
     } else {
       monster = await getUserMonster(split[3]);
     }
-    const items = JSON.parse(user.items);
 
     if (!monster) {
-      message.reply('there was an error giving item.');
+      message.reply("that monster doesn't exist..");
       return;
     }
 
-    if (
-      items.length > 0 &&
-      monster.uid == message.author.id &&
-      !monster.held_item
-    ) {
-      for (let index = 0; index < items.length; index++) {
-        const element = items[index];
-        if (element == item) {
-          items.splice(index, 1);
+    if (item && monster.uid == message.author.id && !monster.held_item) {
+      if (item.item_number == 50 && monster.level < 100) {
+        const updateMonster = await databaseClient<IMonsterModel>(MonsterTable)
+          .where({ id: monster.id })
+          .increment('level', 1);
 
-          const updateUser = await databaseClient<IMonsterUserModel>(
-            MonsterUserTable,
-          )
-            .where({ uid: message.author.id })
-            .update({ items: JSON.stringify(items) });
+        const updateItem = await databaseClient<IItemsModel>(ItemsTable)
+          .update('held_by', monster.id)
+          .where({
+            id: item.id,
+          });
 
-          if (item == 50 && monster.level < 100) {
-            const updateMonster = await databaseClient<IMonsterModel>(
-              MonsterTable,
-            )
-              .where({ id: monster.id })
-              .increment('level', 1);
+        if (updateItem && updateMonster) {
+          const itemDex = getItemByID(item);
+          const monsterDex = findMonsterByID(monster.monster_id);
+          message.reply(
+            `gave **${monsterDex.name.english}** a **${itemDex.name.english}** and it leveled up! Neato!`,
+          );
+        }
+        return;
+      } else {
+        const updateMonster = await databaseClient<IMonsterModel>(MonsterTable)
+          .where({ id: monster.id })
+          .update({ held_item: item });
 
-            if (updateUser && updateMonster) {
-              const itemDex = getItemByID(item);
-              const monsterDex = findMonsterByID(monster.monster_id);
-              message.reply(
-                `gave **${monsterDex.name.english}** a **${itemDex.name.english}** and it leveled up! Neato!`,
-              );
-            }
-            return;
-          } else {
-            const updateMonster = await databaseClient<IMonsterModel>(
-              MonsterTable,
-            )
-              .where({ id: monster.id })
-              .update({ held_item: item });
+        const updateItem = await databaseClient<IItemsModel>(ItemsTable)
+          .update('held_by', monster.id)
+          .where({
+            id: item.id,
+          });
 
-            if (updateUser && updateMonster) {
-              monster.held_item = item;
-              const itemDex = getItemByID(item);
-              const monsterDex = findMonsterByID(monster.monster_id);
-              message.reply(
-                `gave **${monsterDex.name.english}** an item - **${itemDex.name.english}**! Neato!`,
-              );
-              await checkItemEvolution(monster, message);
-              return;
-            }
-          }
+        if (updateItem && updateMonster) {
+          monster.held_item = item;
+          const itemDex = getItemByID(item);
+          const monsterDex = findMonsterByID(monster.monster_id);
+          message.reply(
+            `gave **${monsterDex.name.english}** an item - **${itemDex.name.english}**! Neato!`,
+          );
+          await checkItemEvolution(monster, message);
+          return;
         }
       }
     }
@@ -341,27 +424,29 @@ async function buyItem(message: Message) {
       getItemByID(parseInt(split[2])) || getItemByName(split[2]);
 
     if (item_to_buy && user.currency >= item_to_buy.price) {
-      const items = JSON.parse(user.items);
+      const create_item = await createItemDB({
+        item_number: item_to_buy.id,
+        uid: message.author.id,
+      });
 
-      items.push(item_to_buy.id);
+      if (create_item) {
+        const updateUser = await databaseClient<IMonsterUserModel>(
+          MonsterUserTable,
+        )
+          .where({ uid: message.author.id })
+          .decrement('currency', item_to_buy.price);
 
-      const updateUser = await databaseClient<IMonsterUserModel>(
-        MonsterUserTable,
-      )
-        .where({ uid: message.author.id })
-        .decrement('currency', item_to_buy.price)
-        .update({ items: JSON.stringify(items) });
-
-      if (updateUser) {
-        message.reply(
-          `you have purchased **${
-            item_to_buy.name.english
-          }** for **${format_number(
-            item_to_buy.price,
-          )}**! Remaining Balance: **${format_number(
-            user.currency - item_to_buy.price,
-          )}**.`,
-        );
+        if (updateUser) {
+          message.reply(
+            `you have purchased **${
+              item_to_buy.name.english
+            }** for **${format_number(
+              item_to_buy.price,
+            )}**! Remaining Balance: **${format_number(
+              user.currency - item_to_buy.price,
+            )}**.`,
+          );
+        }
       }
     }
   }
@@ -369,7 +454,6 @@ async function buyItem(message: Message) {
 
 export async function checkCurrency(uid: number | string): Promise<number> {
   const user = await getUser(uid);
-
   if (user) {
     return user.currency;
   } else {
@@ -379,7 +463,6 @@ export async function checkCurrency(uid: number | string): Promise<number> {
 
 export async function msgBalance(message: Message): Promise<any> {
   const user = await getUser(message.author.id);
-
   if (user) {
     message.reply(
       `your current balance is **${format_number(user.currency)}**.`,
@@ -405,4 +488,62 @@ export function getItemByID(item: number): Iitem {
     }
   });
   return temp;
+}
+
+async function getItemDB(id: number | string): Promise<IItemsModel> {
+  const item = await databaseClient<IItemsModel>(ItemsTable)
+    .first()
+    .where('id', id);
+  return item;
+}
+
+async function getUserItemDB(id: number, uid: string): Promise<IItemsModel> {
+  const item = await databaseClient<IItemsModel>(ItemsTable)
+    .first()
+    .where({
+      id: id,
+      uid: uid,
+    });
+  return item;
+}
+
+async function deleteItemDB(id: number | string): Promise<number> {
+  const item = await databaseClient<IItemsModel>(ItemsTable)
+    .delete()
+    .where('id', id);
+  return item;
+}
+
+async function sellItemDB(
+  item_id: number | string,
+  uid: number | string,
+  currency: number,
+): Promise<boolean> {
+  const add_currency = await databaseClient<IMonsterUserModel>(MonsterUserTable)
+    .where('uid', uid)
+    .increment('currency', currency);
+
+  if (add_currency) {
+    const deleteItem = await deleteItemDB(item_id);
+
+    if (deleteItem) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+async function createItemDB(data: IItemsModel): Promise<Array<number>> {
+  const item = await databaseClient<IItemsModel>(ItemsTable).insert(data);
+  return item;
+}
+
+async function getUserItems(uid: number | string): Promise<Array<IItemsModel>> {
+  const items = await databaseClient<IItemsModel>(ItemsTable)
+    .select()
+    .where('uid', uid);
+  return items;
 }
