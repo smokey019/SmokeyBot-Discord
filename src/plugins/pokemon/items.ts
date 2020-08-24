@@ -33,17 +33,17 @@ export async function parseItems(message: Message): Promise<any> {
     await msgUserItems(message);
   } else if (split[1] == 'shop') {
     await listItems(message);
+  } else if (split[1] == 'update') {
+    await updateItems(message);
   }
 }
 
 async function listItems(message: Message) {
-  const items = itemDB;
-
   let item_message = [];
 
   const splitMsg = message.content.split(' ');
 
-  items.forEach((element) => {
+  itemDB.forEach((element) => {
     item_message.push(
       `ID: ${element.id} - Name: ${
         element.name.english
@@ -84,7 +84,7 @@ async function listItems(message: Message) {
     .catch(console.error);
 }
 
-export async function msgUserItems(message: Message): Promise<any> {
+async function msgUserItems(message: Message): Promise<any> {
   const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
   const isQuote = message.content.match('"');
   let sort = undefined;
@@ -200,7 +200,7 @@ export async function msgUserItems(message: Message): Promise<any> {
   }
 }
 
-export async function updateItems(message: Message): Promise<boolean> {
+async function updateItems(message: Message): Promise<boolean> {
   const user = await getUser(message.author.id);
   const items = JSON.parse(user.items);
 
@@ -375,14 +375,10 @@ async function giveMonsterItem(message: Message) {
           .where({ id: monster.id })
           .increment('level', 1);
 
-        const updateItem = await databaseClient<IItemsModel>(ItemsTable)
-          .update('held_by', monster.id)
-          .where({
-            id: item.id,
-          });
+        const deleteItem = await deleteItemDB(item.id);
 
-        if (updateItem && updateMonster) {
-          const itemDex = getItemByID(item);
+        if (deleteItem && updateMonster) {
+          const itemDex = getItemByID(item.item_number);
           const monsterDex = findMonsterByID(monster.monster_id);
           message.reply(
             `gave **${monsterDex.name.english}** a **${itemDex.name.english}** and it leveled up! Neato!`,
@@ -392,7 +388,7 @@ async function giveMonsterItem(message: Message) {
       } else {
         const updateMonster = await databaseClient<IMonsterModel>(MonsterTable)
           .where({ id: monster.id })
-          .update({ held_item: item });
+          .update({ held_item: item.id });
 
         const updateItem = await databaseClient<IItemsModel>(ItemsTable)
           .update('held_by', monster.id)
@@ -401,8 +397,8 @@ async function giveMonsterItem(message: Message) {
           });
 
         if (updateItem && updateMonster) {
-          monster.held_item = item;
-          const itemDex = getItemByID(item);
+          monster.held_item = item.id;
+          const itemDex = getItemByID(item.item_number);
           const monsterDex = findMonsterByID(monster.monster_id);
           message.reply(
             `gave **${monsterDex.name.english}** an item - **${itemDex.name.english}**! Neato!`,
@@ -452,15 +448,6 @@ async function buyItem(message: Message) {
   }
 }
 
-export async function checkCurrency(uid: number | string): Promise<number> {
-  const user = await getUser(uid);
-  if (user) {
-    return user.currency;
-  } else {
-    return -1;
-  }
-}
-
 export async function msgBalance(message: Message): Promise<any> {
   const user = await getUser(message.author.id);
   if (user) {
@@ -470,7 +457,7 @@ export async function msgBalance(message: Message): Promise<any> {
   }
 }
 
-export function getItemByName(item: string): Iitem {
+function getItemByName(item: string): Iitem {
   let temp = undefined;
   Items.forEach((element) => {
     if (element.name.english.toLowerCase() == item.toLowerCase()) {
@@ -480,7 +467,7 @@ export function getItemByName(item: string): Iitem {
   return temp;
 }
 
-export function getItemByID(item: number): Iitem {
+function getItemByID(item: number): Iitem {
   let temp = undefined;
   Items.forEach((element) => {
     if (element.id == item) {

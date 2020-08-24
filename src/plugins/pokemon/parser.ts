@@ -19,7 +19,7 @@ import { releaseMonster, recoverMonster } from './release-monster';
 import { selectMonster, setFavorite, unFavorite } from './monsters';
 import { checkExpGain } from './exp-gain';
 import { parseTrade } from './trading';
-import { msgBalance } from './items';
+import { msgBalance, parseItems } from './items';
 import { battleParser } from './battle';
 import { getBoostedWeatherSpawns } from './weather';
 import { MONSTER_SPAWNS } from './spawn-monster';
@@ -149,7 +149,7 @@ export async function monsterParser(
     if (command.match(prefix_regex('item')) && splitMsg.length > 1) {
       await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-      // await parseItems(message);
+      await parseItems(message);
     }
 
     if (command.match(prefix_regex('trade|t')) && splitMsg.length > 1) {
