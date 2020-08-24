@@ -204,29 +204,24 @@ async function updateItems(message: Message): Promise<boolean> {
   const user = await getUser(message.author.id);
   const items = JSON.parse(user.items);
 
-  if (items) {
-    let updated_items = 0;
+  if (items.length > 0) {
     items.forEach(async (element) => {
-      const update = await databaseClient<IItemsModel>(ItemsTable).insert({
+      await databaseClient<IItemsModel>(ItemsTable).insert({
         item_number: element,
         uid: message.author.id,
       });
-      if (update) {
-        updated_items++;
-      }
     });
-    if (updated_items > 0) {
-      message.reply(
-        `successfully transferred ${updated_items} to the new item inventory!`,
-      );
-      await databaseClient<IMonsterUserModel>(MonsterUserTable)
-        .update('items', '[]')
-        .where('uid', message.author.id);
-      return true;
-    } else {
-      return false;
-    }
+    await databaseClient<IMonsterUserModel>(MonsterUserTable)
+      .update('items', '[]')
+      .where('uid', message.author.id);
+
+    const newItems = await getUserItems(message.author.id);
+    message.reply(
+      `successfully transferred ${newItems.length} to the new item inventory!`,
+    );
+    return true;
   } else {
+    message.reply(`you don't have any old items!`);
     return false;
   }
 }
@@ -501,7 +496,7 @@ async function deleteItemDB(id: number | string): Promise<number> {
   return item;
 }
 
-async function sellItemDB(
+/*async function sellItemDB(
   item_id: number | string,
   uid: number | string,
   currency: number,
@@ -521,9 +516,9 @@ async function sellItemDB(
   } else {
     return false;
   }
-}
+}*/
 
-async function createItemDB(data: IItemsModel): Promise<Array<number>> {
+export async function createItemDB(data: IItemsModel): Promise<Array<number>> {
   const item = await databaseClient<IItemsModel>(ItemsTable).insert(data);
   return item;
 }

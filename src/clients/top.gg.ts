@@ -4,10 +4,11 @@ import { getLogger } from './logger';
 import Keyv from 'keyv';
 import { discordClient } from './discord';
 import { Message } from 'discord.js';
-import { databaseClient, getUser } from './database';
+import { databaseClient } from './database';
 import { IMonsterUserModel, MonsterUserTable } from '../models/MonsterUser';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
+import { createItemDB } from '../plugins/pokemon/items';
 
 TimeAgo.addLocale(en);
 
@@ -36,32 +37,33 @@ export async function checkVote(message: Message): Promise<any> {
     if (voted) {
       await dblCache.set(message.author.id + ':voted', Date.now());
 
-      const user = await getUser(message.author.id);
-
-      const items = JSON.parse(user.items);
-
       if (isWeekend) {
         await message.reply(
           `Thanks for voting! It's the weekend so you recieve double! You received **10,000 currency** and **2 Rare Candy** to level up your monster(s)! You can do this every 12 hours.`,
         );
 
-        items.push(50);
-        items.push(50);
+        for (let index = 0; index < 4; index++) {
+          await createItemDB({
+            uid: message.author.id,
+            item_number: 50,
+          });
+        }
 
         await databaseClient<IMonsterUserModel>(MonsterUserTable)
           .where({ uid: message.author.id })
-          .update({ items: JSON.stringify(items) })
           .increment('currency', 10000);
       } else {
         await message.reply(
           `Thanks for voting! You received **5,000 currency** and a **Rare Candy** to level up a monster! You can do this every 12 hours.`,
         );
 
-        items.push(50);
+        await createItemDB({
+          uid: message.author.id,
+          item_number: 50,
+        });
 
         await databaseClient<IMonsterUserModel>(MonsterUserTable)
           .where({ uid: message.author.id })
-          .update({ items: JSON.stringify(items) })
           .increment('currency', 5000);
       }
 
