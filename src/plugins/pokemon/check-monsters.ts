@@ -252,7 +252,7 @@ export async function checkPokedex(message: Message): Promise<void> {
 			`Pokédex - Total ${theWord()}: ${pokemon_count} - Pages: ${
 				all_monsters.length
 			}`,
-			message.author.avatarURL()?.toString(),
+			message.author.avatarURL(),
 		)
 		.setColor(COLOR_WHITE)
 		.setDescription(new_msg);
