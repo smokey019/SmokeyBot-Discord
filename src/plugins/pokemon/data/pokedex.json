@@ -31765,8 +31765,8 @@
 		"weightkg": 9,
 		"color": "#6000ff",
 		"eggGroups": ["Undiscovered"],
-		"otherFormes": ["Hoopa-Unbound"],
-		"formeOrder": ["Hoopa", "Hoopa-Unbound"],
+		"otherFormes": ["Hoopa Unbound"],
+		"formeOrder": ["Hoopa", "Hoopa Unbound"],
 		"images": {
 			"normal": "https://i.imgur.com/F5FFgxg.png",
 			"shiny": "https://i.imgur.com/g0Omsmr.png",
@@ -31777,7 +31777,7 @@
 	{
 		"id": 720.9,
 		"name": {
-			"english": "Hoopa-Unbound",
+			"english": "Hoopa Unbound",
 			"japanese": "",
 			"chinese": "",
 			"french": ""
@@ -31801,8 +31801,16 @@
 		"heightm": 6.5,
 		"weightkg": 490,
 		"color": "#6000ff",
+		"evoType": "useItem",
+		"evoItem": "Prison Bottle",
 		"eggGroups": ["Undiscovered"],
-		"changesFrom": "Hoopa"
+		"changesFrom": "Hoopa",
+		"images": {
+			"normal": "https://cdn.discordapp.com/attachments/598028183249616934/749815642911408158/600px-720Hoopa-Unbound.png",
+			"shiny": "https://cdn.discordapp.com/attachments/598028183249616934/749818315870044231/1483109791463.png",
+			"gif": "https://i.imgur.com/hvqvOpd.gif",
+			"gif-shiny": "https://i.imgur.com/tFzzcsl.gif"
+		}
 	},
 	{
 		"id": 721,

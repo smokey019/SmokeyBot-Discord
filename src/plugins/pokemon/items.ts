@@ -408,7 +408,8 @@ async function buyItem(message: Message) {
 
 	if (user && split.length) {
 		const item_to_buy =
-			getItemByID(parseInt(split[2])) || getItemByName(split[2]);
+			getItemByID(parseInt(split[split.length - 1])) ||
+			getItemByName(split[split.length - 1]);
 
 		if (item_to_buy && user.currency >= item_to_buy.price) {
 			const create_item = await createItemDB({
