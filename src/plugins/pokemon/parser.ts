@@ -24,7 +24,6 @@ import { battleParser } from './battle';
 import { getBoostedWeatherSpawns } from './weather';
 import { MONSTER_SPAWNS } from './spawn-monster';
 import { checkVote } from '../../clients/top.gg';
-import { updateDexes } from './new-dex';
 import Keyv from 'keyv';
 import { getConfigValue } from '../../config';
 
@@ -78,12 +77,15 @@ export async function monsterParser(
 
 	if (
 		spawn.monster &&
-		command.match('catch|キャッチ|抓住|capture') &&
-		splitMsg.length > 1
+		splitMsg.length > 1 &&
+		(command == 'catch' ||
+			command == 'キャッチ' ||
+			command == '抓住' ||
+			command == 'capture')
 	) {
 		catchMonster(message);
 	} else if (timestamp - GCD > 3) {
-		if (command.match('unique')) {
+		if (command == 'unique') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			const tempdex = await userDex(message);
@@ -93,23 +95,17 @@ export async function monsterParser(
 		}
 
 		if (
-			command.match('bal') ||
-			command.match('balance') ||
-			command.match('currency') ||
-			command.match('bank')
+			command == 'bal' ||
+			command == 'balance' ||
+			command == 'currency' ||
+			command == 'bank'
 		) {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await msgBalance(message);
 		}
 
-		if (command.match('admin-update-dex')) {
-			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
-
-			await updateDexes(message);
-		}
-
-		if (command.match('weather')) {
+		if (command == 'weather') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			const boost = await getBoostedWeatherSpawns(message.guild.id);
@@ -123,7 +119,7 @@ export async function monsterParser(
 			);
 		}
 
-		if (command.match('vote')) {
+		if (command == 'vote') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await message.reply(
@@ -131,110 +127,111 @@ export async function monsterParser(
 			);
 		}
 
-		if (command.match('check-vote')) {
+		if (command == 'check-vote') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await checkVote(message);
 		}
 
-		if (command.match('battle')) {
+		if (command == 'battle') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await battleParser(message);
 		}
 
-		if (command.match('pokedex')) {
+		if (command == 'pokedex') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await checkPokedex(message);
 		}
 
-		if (command.match('item') && splitMsg.length > 1) {
+		if (command == 'item') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await parseItems(message);
 		}
 
-		if (command.match('trade|t') && splitMsg.length > 1) {
+		if (command == 'trade' || command == 't') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await parseTrade(message);
 		}
 
-		if (command.match('dex|d') && splitMsg.length > 1) {
+		if (command == 'dex' || command == 'd') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await monsterDex(message);
 		}
 
-		if (command.match('search') && splitMsg.length > 1) {
+		if (command == 'search' || command == 's') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await searchMonsters(message);
 		}
-		if (command.match('pokemon|p') && !message.content.match(/pokedex/i)) {
+		if (command == 'pokemon' || command == 'p') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await checkMonsters(message);
 		}
 
 		if (
-			message.content.match('(info|i) (\\d+)') &&
-			!message.content.match(/info latest/i)
+			(command == 'info' && args[0]?.match(/\d+/)) ||
+			(command == 'i' && args[0]?.match(/\d+/))
 		) {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await monsterInfo(message);
 		}
 
-		if (message.content.match('info latest|i l')) {
-			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
-
-			await monsterInfoLatest(message);
-		}
-
 		if (
-			command.match('info|i') &&
-			splitMsg.length == 1 &&
-			!splitMsg[0].match(/item/i) &&
-			!splitMsg[0].match(/invite/i)
+			(command == 'info' && args.length == 0) ||
+			(command == 'i' && args.length == 0)
 		) {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await currentMonsterInfo(message);
 		}
 
-		if (command.match('release') || command == '~r') {
+		if (
+			(command == 'info' && args[0] == 'latest') ||
+			(command == 'i' && args[0] == 'l')
+		) {
+			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+
+			await monsterInfoLatest(message);
+		}
+
+		if (command == 'release' || command == 'r') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await releaseMonster(message);
 		}
 
-		if (command.match('recover')) {
+		if (command == 'recover') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await recoverMonster(message);
 		}
 
-		if (command.match('select')) {
+		if (command == 'select') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await selectMonster(message);
 		}
 
-		if (command.match('favorites|favourites')) {
+		if (command == 'favorites' || command == 'favourites') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await checkFavorites(message);
 		}
 
-		if (command.match('favorite|favourite')) {
+		if (command == 'favorite' || command == 'favourite') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await setFavorite(message);
 		}
 
-		if (command.match('unfavorite|unfavourite')) {
+		if (command == 'unfavorite' || command == 'unfavourite') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await unFavorite(message);
