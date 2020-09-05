@@ -58,7 +58,7 @@ PokeDex.forEach((element) => {
 });
 
 let mon = undefined;
-for (let index = 0; index < 25; index++) {
+for (let index = 0; index < 15; index++) {
 	Gens.one.forEach((element) => {
 		mon = findMonsterByID(element);
 		if (mon) {
@@ -127,13 +127,13 @@ for (let index = 0; index < 25; index++) {
 }
 
 Gens.alola.forEach((element) => {
-	for (let index = 0; index < 20; index++) {
+	for (let index = 0; index < 15; index++) {
 		MonsterPool.push(element.id);
 	}
 });
 
 Gens.galar.forEach((element) => {
-	for (let index = 0; index < 20; index++) {
+	for (let index = 0; index < 15; index++) {
 		MonsterPool.push(element.id);
 	}
 });

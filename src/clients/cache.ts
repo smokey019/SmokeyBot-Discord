@@ -21,7 +21,7 @@ export const cacheClient = new Keyv<ICache>(
 	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
 		'DB_PASSWORD',
 	)}@${getConfigValue('DB_HOST')}:3306/${getConfigValue('DB_DATABASE')}`,
-	{ keySize: 191, namespace: 'cacheClient' },
+	{ keySize: 191, namespace: 'cacheClient', pool: { min: 0, max: 7 } },
 );
 export const xp_cache = new Keyv({ namespace: 'xp_cache' });
 export const cacheTwitter = new Keyv({ namespace: 'cacheTwitter' });
