@@ -73,7 +73,7 @@ export async function catchMonster(message: Message): Promise<void> {
 			level = rollLevel(1, 49);
 		}
 
-		spawn.monster = undefined;
+		spawn.monster = null;
 
 		await MONSTER_SPAWNS.set(message.guild.id, spawn);
 

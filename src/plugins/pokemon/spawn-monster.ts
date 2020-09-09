@@ -36,7 +36,7 @@ export async function spawnMonster(
 	}
 
 	const spawn_data = {
-		monster: undefined,
+		monster: null,
 		spawned_at: getCurrentTime(),
 	};
 
