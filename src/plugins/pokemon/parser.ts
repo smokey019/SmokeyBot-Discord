@@ -1,4 +1,4 @@
-import { Message, TextChannel } from 'discord.js';
+import { Message, TextChannel, MessageEmbed } from 'discord.js';
 import { ICache, GLOBAL_COOLDOWN, getGCD } from '../../clients/cache';
 import { catchMonster } from './catch-monster';
 import {
@@ -16,7 +16,13 @@ import {
 	checkPokedex,
 } from './check-monsters';
 import { releaseMonster, recoverMonster } from './release-monster';
-import { selectMonster, setFavorite, unFavorite } from './monsters';
+import {
+	selectMonster,
+	setFavorite,
+	unFavorite,
+	getMonsterDBCount,
+	getShinyMonsterDBCount,
+} from './monsters';
 import { checkExpGain } from './exp-gain';
 import { parseTrade } from './trading';
 import { msgBalance, parseItems } from './items';
@@ -26,6 +32,10 @@ import { MONSTER_SPAWNS } from './spawn-monster';
 import { checkVote } from '../../clients/top.gg';
 import Keyv from 'keyv';
 import { getConfigValue } from '../../config';
+import { COLOR_BLACK } from '../../colors';
+import { EmoteQueue } from '../../clients/queue';
+import { discordClient } from '../../clients/discord';
+import { getUserDBCount } from '../../clients/database';
 
 export const GUILD_PREFIXES = new Keyv(
 	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
@@ -88,6 +98,26 @@ export async function monsterParser(
 			await message.reply(
 				`You have ${tempdex.length} total unique ${theWord()} in your Pokédex.`,
 			);
+		}
+
+		if (command == 'stats') {
+			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+
+			const embed = new MessageEmbed()
+				.setColor(COLOR_BLACK)
+				.setTitle('SmokeyBot Statistics')
+				.addField('Total Guilds in Emote Queue', EmoteQueue.size, true)
+				.addField('Total Guilds', discordClient.guilds.cache.size, true)
+				.addField('Total ' + theWord(), await getMonsterDBCount(), true)
+				.addField(
+					'Total Shiny ' + theWord(),
+					await getShinyMonsterDBCount(),
+					true,
+				)
+				.addField('Total ' + theWord() + ' Users', await getUserDBCount(), true)
+				.setTimestamp();
+
+			await message.reply(embed);
 		}
 
 		if (

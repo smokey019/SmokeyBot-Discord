@@ -1,6 +1,6 @@
 import { Message, MessageEmbed } from 'discord.js';
 
-import { theWord, chunk } from '../../utils';
+import { theWord, chunk, format_number } from '../../utils';
 import { getLogger } from '../../clients/logger';
 import { findMonsterByID, getPokedex } from './monsters';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
@@ -177,7 +177,13 @@ export async function checkMonsters(message: Message): Promise<void> {
 
 		const embed = new MessageEmbed()
 			.setAuthor(
-				`${message.author.username}'s Pokémon - Total: ${pokemon.length} - Pages: ${all_monsters.length}`,
+				`${message.author.username}'s Pokémon - Total: ${format_number(
+					message_contents.length,
+				) +
+					'/' +
+					format_number(pokemon.length)} - Pages: ${format_number(
+					all_monsters.length,
+				)}`,
 				message.author.avatarURL()?.toString(),
 			)
 			.setColor(COLOR_GREEN)
@@ -432,7 +438,13 @@ export async function checkFavorites(message: Message): Promise<void> {
 
 		const embed = new MessageEmbed()
 			.setAuthor(
-				`${message.author.username}'s Pokémon - Total: ${pokemon.length} - Pages: ${all_monsters.length}`,
+				`${message.author.username}'s Pokémon - Total: ${format_number(
+					message_contents.length,
+				) +
+					'/' +
+					format_number(pokemon.length)} - Pages: ${format_number(
+					all_monsters.length,
+				)}`,
 				message.author.avatarURL()?.toString(),
 			)
 			.setColor(COLOR_WHITE)
@@ -625,7 +637,13 @@ export async function searchMonsters(message: Message): Promise<void> {
 
 			const embed = new MessageEmbed()
 				.setAuthor(
-					`${message.author.username}'s Pokémon - Total: ${pokemon.length} - Pages: ${all_monsters.length}`,
+					`${message.author.username}'s Pokémon - Total: ${format_number(
+						message_contents.length,
+					) +
+						'/' +
+						format_number(pokemon.length)} - Pages: ${format_number(
+						all_monsters.length,
+					)}`,
 					message.author.avatarURL()?.toString(),
 				)
 				.setColor(0xff0000)

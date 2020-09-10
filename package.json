@@ -20,7 +20,7 @@
 		"moment": "^2.27.0",
 		"mysql": "^2.18.1",
 		"mysql2": "^2.1.0",
-		"node-fetch": "^2.6.0",
+		"node-fetch": "^2.6.1",
 		"twitter-lite": "^0.13.0"
 	},
 	"devDependencies": {
@@ -30,7 +30,7 @@
 		"@types/node-fetch": "^2.5.7",
 		"@typescript-eslint/eslint-plugin": "^3.10.1",
 		"@typescript-eslint/parser": "^3.10.1",
-		"eslint": "^7.8.0",
+		"eslint": "^7.8.1",
 		"husky": "2.7.0",
 		"prettier": "^1.19.1",
 		"pretty-quick": "^2.0.2",

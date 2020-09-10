@@ -78,25 +78,25 @@ export async function smokeybotParser(
 		await cancel_sync(message);
 	}
 
-	if (message.content == 'check color roles') {
+	if (message.content == '~check color roles') {
 		await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 		await checkColorRoles(message);
 	}
 
-	if (message.content == 'remove color roles') {
+	if (message.content == '~remove color roles') {
 		await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 		await removeColorRoles(message);
 	}
 
-	if (message.content == 'remove empty roles') {
+	if (message.content == '~remove empty roles') {
 		await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 		await removeEmptyRoles(message);
 	}
 
-	if (message.content == 'check tweet') {
+	if (message.content == '~check tweet') {
 		await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 		await checkTweet(message);

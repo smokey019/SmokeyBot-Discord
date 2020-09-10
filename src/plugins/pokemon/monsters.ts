@@ -191,6 +191,28 @@ export function findMonsterByName(name: string): IMonsterDex {
 }
 
 /**
+ * return total monster count for stats
+ */
+export async function getMonsterDBCount(): Promise<number> {
+	const db_monster = await databaseClient<IMonsterModel>(MonsterTable).select(
+		'id',
+	);
+
+	return db_monster.length;
+}
+
+/**
+ * return total shiny monster count for stats
+ */
+export async function getShinyMonsterDBCount(): Promise<number> {
+	const db_monster = await databaseClient<IMonsterModel>(MonsterTable)
+		.select('id')
+		.where('shiny', 1);
+
+	return db_monster.length;
+}
+
+/**
  * return user's monster database info
  * @param monster_id database id
  */
