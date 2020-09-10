@@ -27,18 +27,14 @@ import { checkVote } from '../../clients/top.gg';
 import Keyv from 'keyv';
 import { getConfigValue } from '../../config';
 
-const GUILD_PREFIXES = new Keyv(
+export const GUILD_PREFIXES = new Keyv(
 	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
 		'DB_PASSWORD',
 	)}@${getConfigValue('DB_HOST')}:3306/${getConfigValue('DB_DATABASE')}`,
 	{ keySize: 191, namespace: 'GUILD_PREFIXES' },
 );
 
-const global_prefixes = ['!', '~', 'p!'];
-
-export function prefix_regex(command: string): RegExp {
-	return RegExp('(' + global_prefixes.join('|') + ')(' + command + ')', 'i');
-}
+export const global_prefixes = ['!', '~', 'p!'];
 
 export async function prefix_check(message: Message): Promise<boolean> {
 	const prefixes =
@@ -56,7 +52,6 @@ export async function monsterParser(
 	cache: ICache,
 ): Promise<void> {
 	const channel_name = (message.channel as TextChannel).name;
-	const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
 	const GCD = await getGCD(message.guild.id);
 	const timestamp = getCurrentTime();
 	const spawn = await MONSTER_SPAWNS.get(message.guild.id);
@@ -69,15 +64,16 @@ export async function monsterParser(
 	const args = message.content
 		.slice(prefix.length)
 		.trim()
+		.toLowerCase()
 		.replace(/ {2,}/gm, ' ')
 		.split(/ +/);
-	const command = args.shift().toLowerCase();
+	const command = args.shift();
 
 	checkExpGain(message);
 
 	if (
 		spawn.monster &&
-		splitMsg.length > 1 &&
+		args &&
 		(command == 'catch' ||
 			command == 'キャッチ' ||
 			command == '抓住' ||
