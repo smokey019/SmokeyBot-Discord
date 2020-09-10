@@ -14,9 +14,9 @@ export interface FFZEmotes {
 	};
 	public: boolean;
 	urls: {
-		'1': string;
-		'2': string;
-		'4': string;
+		'1'?: string;
+		'2'?: string;
+		'4'?: string;
 	};
 	width: number;
 }

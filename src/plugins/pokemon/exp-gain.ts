@@ -13,7 +13,7 @@ import {
 
 const logger = getLogger('ExpGain');
 
-export async function checkExpGain(message: Message): Promise<any> {
+export async function checkExpGain(message: Message): Promise<void> {
 	const timestamp = getCurrentTime();
 	const cacheKey = message.author.id + ':' + message.guild.id;
 	const cache = await xp_cache.get(cacheKey);
@@ -23,7 +23,7 @@ export async function checkExpGain(message: Message): Promise<any> {
 
 		return;
 	} else {
-		const should_we_exp = getRndInteger(5, 600);
+		const should_we_exp = getRndInteger(5, 300);
 		if (timestamp - parseInt(cache) > should_we_exp) {
 			const user = await getUser(message.author.id);
 			if (!user) return;

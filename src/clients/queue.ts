@@ -19,22 +19,29 @@ function runEmoteQueue() {
 		const existing = object.existing;
 		const message = object.msg;
 
+		EmoteQueue.set(message.guild.id, object);
+
 		if (emote) {
 			let emote_url = '';
 
-			if (emote[0].urls['2']) {
-				emote_url = 'https:' + emote[0].urls['2'];
+			if (emote.urls['2']) {
+				emote_url = 'https:' + emote.urls['2'];
 			} else {
-				emote_url = 'https:' + emote[0].urls['4'];
+				emote_url = 'https:' + emote.urls['4'] ?? emote.urls['1'];
 			}
 
-			if (!existing.includes(emote[0].name)) {
-				create_emoji(emote_url, message, emote[0].name);
+			if (!existing.includes(emote.name) && !emote_url.match('undefined')) {
+				logger.trace(
+					`Attempting to create emoji '${emote.name}' on ${message.guild.name}.`,
+				);
+				create_emoji(emote_url, message, emote.name);
 				setTimeout(runEmoteQueue, COOLDOWN);
 			} else {
 				setTimeout(runEmoteQueue, COOLDOWN);
 			}
 		} else {
+			const temp = EmoteQueue.first();
+			logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
 			EmoteQueue.delete(EmoteQueue.firstKey());
 			setTimeout(runEmoteQueue, COOLDOWN);
 		}
@@ -51,7 +58,9 @@ async function create_emoji(
 	await message.guild.emojis
 		.create(emote_url, name)
 		.then((emoji) => {
-			logger.debug(`Created new emoji with name ${emoji.name}!`);
+			logger.debug(
+				`Created new emoji with name ${emoji.name} in ${emoji.guild.name}.`,
+			);
 		})
 		.catch(async (err) => {
 			logger.error('Emote error:', err);
