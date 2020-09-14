@@ -1,6 +1,7 @@
 import { Collection, Message } from 'discord.js';
-import { getLogger } from './logger';
 import { FFZEmotes } from '../types/FFZ-Emotes';
+import { rateLimited } from './discord';
+import { getLogger } from './logger';
 
 const logger = getLogger('Queue');
 
@@ -13,9 +14,9 @@ const COOLDOWN = 20 * 1000;
 setTimeout(runEmoteQueue, COOLDOWN);
 
 function runEmoteQueue() {
-	if (EmoteQueue.first()) {
+	if (EmoteQueue.first() && !rateLimited) {
 		const object = EmoteQueue.first();
-		const emote: FFZEmotes = object.emotes?.shift();
+		const emote: FFZEmotes = object.emotes?.shift() ?? null;
 		const existing = object.existing;
 		const message = object.msg;
 
@@ -39,6 +40,12 @@ function runEmoteQueue() {
 			} else {
 				setTimeout(runEmoteQueue, COOLDOWN);
 			}
+
+			if (object.emotes.length == 0) {
+				const temp = EmoteQueue.first();
+				logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
+				EmoteQueue.delete(EmoteQueue.firstKey());
+			}
 		} else {
 			const temp = EmoteQueue.first();
 			logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
@@ -57,10 +64,11 @@ async function create_emoji(
 ): Promise<void> {
 	await message.guild.emojis
 		.create(emote_url, name)
-		.then((emoji) => {
+		.then(async (emoji) => {
 			logger.debug(
 				`Created new emoji with name ${emoji.name} in ${emoji.guild.name}.`,
 			);
+			return true;
 		})
 		.catch(async (err) => {
 			logger.error('Emote error:', err);
@@ -70,5 +78,6 @@ async function create_emoji(
 					`you've reached the maximum amount of emotes for the server.`,
 				);
 			}
+			return false;
 		});
 }

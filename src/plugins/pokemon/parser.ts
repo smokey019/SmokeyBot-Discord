@@ -8,7 +8,7 @@ import {
 	monsterInfoLatest,
 	currentMonsterInfo,
 } from './info';
-import { theWord, getCurrentTime } from '../../utils';
+import { theWord, getCurrentTime, format_number } from '../../utils';
 import {
 	checkMonsters,
 	checkFavorites,
@@ -102,19 +102,37 @@ export async function monsterParser(
 
 		if (command == 'stats') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+			const ping = ((message.createdTimestamp - Date.now()) / 1000).toFixed(2);
 
 			const embed = new MessageEmbed()
 				.setColor(COLOR_BLACK)
 				.setTitle('SmokeyBot Statistics')
-				.addField('Total Guilds in Emote Queue', EmoteQueue.size, true)
-				.addField('Total Guilds', discordClient.guilds.cache.size, true)
-				.addField('Total ' + theWord(), await getMonsterDBCount(), true)
+				.addField('Ping', ping + ' ms', true)
 				.addField(
-					'Total Shiny ' + theWord(),
-					await getShinyMonsterDBCount(),
+					'Total Guilds in Emote Queue',
+					format_number(EmoteQueue.size),
 					true,
 				)
-				.addField('Total ' + theWord() + ' Users', await getUserDBCount(), true)
+				.addField(
+					'Total Guilds',
+					format_number(discordClient.guilds.cache.size),
+					true,
+				)
+				.addField(
+					'Total ' + theWord(),
+					format_number(await getMonsterDBCount()),
+					true,
+				)
+				.addField(
+					'Total Shiny ' + theWord(),
+					format_number(await getShinyMonsterDBCount()),
+					true,
+				)
+				.addField(
+					'Total ' + theWord() + ' Users',
+					format_number(await getUserDBCount()),
+					true,
+				)
 				.setTimestamp();
 
 			await message.reply(embed);

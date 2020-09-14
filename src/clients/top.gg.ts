@@ -1,14 +1,14 @@
 import DBL from 'dblapi.js';
-import { getConfigValue } from '../config';
-import { getLogger } from './logger';
-import Keyv from 'keyv';
-import { discordClient } from './discord';
 import { Message } from 'discord.js';
-import { databaseClient } from './database';
-import { IMonsterUserModel, MonsterUserTable } from '../models/MonsterUser';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
+import Keyv from 'keyv';
+import { getConfigValue } from '../config';
+import { IMonsterUserModel, MonsterUserTable } from '../models/MonsterUser';
 import { createItemDB } from '../plugins/pokemon/items';
+import { databaseClient } from './database';
+import { discordClient } from './discord';
+import { getLogger } from './logger';
 
 TimeAgo.addLocale(en);
 
@@ -44,7 +44,7 @@ export async function checkVote(message: Message): Promise<any> {
 
 			if (isWeekend) {
 				await message.reply(
-					`Thanks for voting! It's the weekend so you recieve double! You received **10,000 currency** and **2 Rare Candy** to level up your monster(s)! You can do this every 12 hours.`,
+					`Thanks for voting! It's the weekend so you receive double! You received **10,000 currency** and **2 Rare Candy** to level up your monster(s)! You can do this every 12 hours.`,
 				);
 
 				for (let index = 0; index < 4; index++) {

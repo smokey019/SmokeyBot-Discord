@@ -1,4 +1,4 @@
-import { Message, TextChannel } from 'discord.js';
+import { Message } from 'discord.js';
 import { getCurrentTime } from '../../utils';
 import { ICache, GLOBAL_COOLDOWN } from '../../clients/cache';
 import { toggleSmokeMon } from '../pokemon/options';
@@ -22,12 +22,11 @@ export async function smokeybotParser(
 	message: Message,
 	cache: ICache,
 ): Promise<void> {
-	const channel_name = (message.channel as TextChannel).name;
 	const load_prefixes =
 		(await GUILD_PREFIXES.get(message.guild.id)) || global_prefixes;
 	const prefixes = RegExp(load_prefixes.join('|'));
 	const detect_prefix = message.content.match(prefixes);
-	if (channel_name != cache.settings.specific_channel || !detect_prefix) return;
+	if (!detect_prefix) return;
 	const prefix = detect_prefix.shift();
 	const args = message.content
 		.slice(prefix.length)
@@ -48,6 +47,13 @@ export async function smokeybotParser(
 				`${message.author.username} is improperly trying to enable smokemon in ${message.guild.name} - ${message.guild.id}`,
 			);
 		}
+	}
+
+	if (command === 'ping') {
+		await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+
+		const ping = ((message.createdTimestamp - Date.now()) / 1000).toFixed(2);
+		await message.reply(ping + ' ms');
 	}
 
 	if (command == 'help' || command == 'commands') {

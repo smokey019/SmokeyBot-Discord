@@ -1,16 +1,15 @@
-import { Message } from 'discord.js';
-
-import { getCurrentTime, getRndInteger, explode } from '../../utils';
-import { getLogger } from '../../clients/logger';
+import { Message, MessageEmbed } from 'discord.js';
 import { getGCD, GLOBAL_COOLDOWN } from '../../clients/cache';
-import { getRandomNature } from './natures';
-import { rollShiny, rollLevel, rollPerfectIV } from './utils';
-import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { databaseClient, getUser } from '../../clients/database';
-import { MonsterUserTable, IMonsterUserModel } from '../../models/MonsterUser';
+import { getLogger } from '../../clients/logger';
+import { IMonsterModel, MonsterTable } from '../../models/Monster';
+import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
+import { explode, getCurrentTime, getRndInteger } from '../../utils';
 import { userDex } from './info';
 import { IMonsterDex } from './monsters';
+import { getRandomNature } from './natures';
 import { MONSTER_SPAWNS } from './spawn-monster';
+import { rollLevel, rollPerfectIV, rollShiny } from './utils';
 
 const logger = getLogger('Pokemon-Catch');
 
@@ -65,7 +64,7 @@ export async function catchMonster(message: Message): Promise<void> {
 		let level = 0;
 
 		const shiny = rollShiny();
-		const currentSpawn = spawn.monster;
+		const currentSpawn: IMonsterDex = spawn.monster;
 
 		if (currentSpawn.evoLevel) {
 			level = rollLevel(currentSpawn.evoLevel, 60);
@@ -187,7 +186,18 @@ export async function catchMonster(message: Message): Promise<void> {
 					}
 				}
 
-				message.reply(response);
+				if (shiny) {
+					const embed = new MessageEmbed()
+						.setColor(currentSpawn.color)
+						.setTitle('⭐ ' + currentSpawn.name.english + ' ⭐')
+						.setDescription(response)
+						.setImage(currentSpawn.images.shiny)
+						.setTimestamp();
+
+					await message.reply(embed);
+				} else {
+					await message.reply(response);
+				}
 			}
 		} catch (error) {
 			logger.error(error);

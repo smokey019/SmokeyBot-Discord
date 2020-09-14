@@ -2,16 +2,10 @@ import { MessageEmbed, Message } from 'discord.js';
 import { jsonFetch } from '../../utils';
 import { getLogger } from '../../clients/logger';
 import Keyv from 'keyv';
-import { getConfigValue } from '../../config';
 import { EmoteQueue } from '../../clients/queue';
 import { FFZRoom } from '../../types/FFZ-Emotes';
 
-const EMOJI_COOLDOWN = new Keyv(
-	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
-		'DB_PASSWORD',
-	)}@${getConfigValue('DB_HOST')}:3306/${getConfigValue('DB_DATABASE')}`,
-	{ keySize: 191, namespace: 'EMOJI_COOLDOWN' },
-);
+const EMOJI_COOLDOWN = new Keyv({ namespace: 'EMOJI_COOLDOWN' });
 
 const logger = getLogger('Emoji Manager');
 
@@ -63,7 +57,7 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
 		command == 'sync-emotes-ffz' &&
 		channel &&
 		message.member.hasPermission('ADMINISTRATOR') &&
-		(!cooldown || message.author.id == '90514165138989056')
+		!cooldown
 	) {
 		embed = new MessageEmbed()
 			.setTitle('Emoji Manager')
@@ -130,7 +124,7 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
 					.setTitle('Emoji Manager')
 					.setColor(0x00bc8c)
 					.setDescription(
-						`**Successfully syncing emotes!** \n\n\n It will take up to 20 minutes to complete depending how many emotes you have. \n\n\n\n **NOTE:** You can try again after 20 minutes from the original sync. Type \`~cancel-sync\` to cancel.`,
+						`**Successfully syncing emotes!** \n\n\n It will take up to 20 minutes or more depending on server load to complete depending how many emotes you have. \n\n\n\n **NOTE:** You can try again after 20 minutes from the original sync. Type \`~cancel-sync\` to cancel.`,
 					);
 				await message.channel.send(embed);
 			} else {
