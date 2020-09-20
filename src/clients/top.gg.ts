@@ -19,7 +19,9 @@ const logger = getLogger('Top.GG Client');
 const dblCache = new Keyv(
 	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
 		'DB_PASSWORD',
-	)}@${getConfigValue('DB_HOST')}:3306/${getConfigValue('DB_DATABASE')}`,
+	)}@${getConfigValue('DB_HOST')}:${getConfigValue('DB_PORT')}/${getConfigValue(
+		'DB_DATABASE',
+	)}`,
 	{
 		keySize: 191,
 		namespace: 'dblCache',

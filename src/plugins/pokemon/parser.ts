@@ -40,7 +40,9 @@ import { getBoostedWeatherSpawns } from './weather';
 export const GUILD_PREFIXES = new Keyv(
 	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
 		'DB_PASSWORD',
-	)}@${getConfigValue('DB_HOST')}:3306/${getConfigValue('DB_DATABASE')}`,
+	)}@${getConfigValue('DB_HOST')}:${getConfigValue('DB_PORT')}/${getConfigValue(
+		'DB_DATABASE',
+	)}`,
 	{ keySize: 191, namespace: 'GUILD_PREFIXES' },
 );
 
@@ -103,7 +105,7 @@ export async function monsterParser(
 
 		if (command == 'stats') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
-			const ping = ((message.createdTimestamp - Date.now()) / 1000).toFixed(2);
+			const ping = Date.now() - message.createdTimestamp;
 
 			const embed = new MessageEmbed()
 				.setColor(COLOR_BLACK)

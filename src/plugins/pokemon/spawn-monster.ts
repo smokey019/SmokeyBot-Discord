@@ -1,17 +1,19 @@
 import { Message, MessageEmbed } from 'discord.js';
-import { getLogger } from '../../clients/logger';
-import { ICache } from '../../clients/cache';
-import { getRandomMonster, findMonsterByID } from './monsters';
-import { getCurrentTime } from '../../utils';
-import { COLOR_PURPLE } from '../../colors';
-import { getBoostedWeatherSpawns } from './weather';
 import Keyv from 'keyv';
+import { ICache } from '../../clients/cache';
+import { getLogger } from '../../clients/logger';
+import { COLOR_PURPLE } from '../../colors';
 import { getConfigValue } from '../../config';
+import { getCurrentTime } from '../../utils';
+import { findMonsterByID, getRandomMonster } from './monsters';
+import { getBoostedWeatherSpawns } from './weather';
 
 export const MONSTER_SPAWNS = new Keyv(
 	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
 		'DB_PASSWORD',
-	)}@${getConfigValue('DB_HOST')}:3306/${getConfigValue('DB_DATABASE')}`,
+	)}@${getConfigValue('DB_HOST')}:${getConfigValue('DB_PORT')}/${getConfigValue(
+		'DB_DATABASE',
+	)}`,
 	{ keySize: 191, namespace: 'MONSTER_SPAWNS' },
 );
 

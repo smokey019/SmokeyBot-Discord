@@ -1,20 +1,20 @@
 import { Message } from 'discord.js';
-import { getCurrentTime } from '../../utils';
-import { ICache, GLOBAL_COOLDOWN } from '../../clients/cache';
-import { toggleSmokeMon } from '../pokemon/options';
-import { sync_ffz_emotes, cancel_sync } from './sync-emojis';
+import { GLOBAL_COOLDOWN, ICache } from '../../clients/cache';
 import { getLogger } from '../../clients/logger';
+import { getCurrentTime } from '../../utils';
+import { toggleSmokeMon } from '../pokemon/options';
+import { global_prefixes, GUILD_PREFIXES } from '../pokemon/parser';
+import { checkForEmptyServers } from './leave-empty-servers';
 import {
-	sumSmash,
+	checkColorRoles,
+	checkTweet,
 	checkVase,
 	gtfo,
-	checkColorRoles,
-	removeEmptyRoles,
-	checkTweet,
 	removeColorRoles,
+	removeEmptyRoles,
+	sumSmash,
 } from './smokeybot';
-import { GUILD_PREFIXES, global_prefixes } from '../pokemon/parser';
-import { checkForEmptyServers } from './leave-empty-servers';
+import { cancel_sync, sync_ffz_emotes } from './sync-emojis';
 
 const logger = getLogger('SmokeyBot');
 
@@ -52,7 +52,7 @@ export async function smokeybotParser(
 	if (command === 'ping') {
 		await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-		const ping = ((message.createdTimestamp - Date.now()) / 1000).toFixed(2);
+		const ping = Date.now() - message.createdTimestamp;
 		await message.reply(ping + ' ms');
 	}
 

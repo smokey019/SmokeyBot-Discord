@@ -1,9 +1,8 @@
-import knex from 'knex';
-
-import { getConfigValue } from '../config';
-import { getLogger } from './logger';
 import { Message } from 'discord.js';
+import knex from 'knex';
+import { getConfigValue } from '../config';
 import { IMonsterUserModel, MonsterUserTable } from '../models/MonsterUser';
+import { getLogger } from './logger';
 
 const logger = getLogger('Database');
 
@@ -12,6 +11,7 @@ export const databaseClient = knex({
 	connection: {
 		database: getConfigValue('DB_DATABASE'),
 		host: getConfigValue('DB_HOST'),
+		port: parseInt(getConfigValue('DB_PORT')),
 		password: getConfigValue('DB_PASSWORD'),
 		user: getConfigValue('DB_USER'),
 	},

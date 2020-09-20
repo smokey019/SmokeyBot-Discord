@@ -1,9 +1,9 @@
 import { Message } from 'discord.js';
 import Keyv from 'keyv';
-import { getLogger } from './logger';
 import { getConfigValue } from '../config';
 import { getCurrentTime } from '../utils';
 import { IGuildSettings } from './database';
+import { getLogger } from './logger';
 
 const logger = getLogger('Cache');
 
@@ -20,7 +20,9 @@ export interface ICache {
 export const cacheClient = new Keyv<ICache>(
 	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
 		'DB_PASSWORD',
-	)}@${getConfigValue('DB_HOST')}:3306/${getConfigValue('DB_DATABASE')}`,
+	)}@${getConfigValue('DB_HOST')}:${getConfigValue('DB_PORT')}/${getConfigValue(
+		'DB_DATABASE',
+	)}`,
 	{ keySize: 191, namespace: 'cacheClient', pool: { min: 0, max: 7 } },
 );
 export const xp_cache = new Keyv({ namespace: 'xp_cache' });

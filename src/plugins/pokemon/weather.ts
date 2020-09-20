@@ -1,14 +1,16 @@
-import Weather from './data/weather.json';
 import Keyv from 'keyv';
-import { getRndInteger } from '../../utils';
 import { getConfigValue } from '../../config';
+import { getRndInteger } from '../../utils';
+import Weather from './data/weather.json';
 
 export type IWeather = typeof Weather[0];
 
 const WEATHER_CACHE = new Keyv(
 	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
 		'DB_PASSWORD',
-	)}@${getConfigValue('DB_HOST')}:3306/${getConfigValue('DB_DATABASE')}`,
+	)}@${getConfigValue('DB_HOST')}:${getConfigValue('DB_PORT')}/${getConfigValue(
+		'DB_DATABASE',
+	)}`,
 	{ keySize: 191, namespace: 'WEATHER_CACHE', pool: { min: 0, max: 7 } },
 );
 
