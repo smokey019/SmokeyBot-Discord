@@ -1,41 +1,41 @@
-import { Message, TextChannel, MessageEmbed } from 'discord.js';
-import { ICache, GLOBAL_COOLDOWN, getGCD } from '../../clients/cache';
+import { Message, MessageEmbed, TextChannel } from 'discord.js';
+import Keyv from 'keyv';
+import { getGCD, GLOBAL_COOLDOWN, ICache } from '../../clients/cache';
+import { getUserDBCount } from '../../clients/database';
+import { discordClient } from '../../clients/discord';
+import { EmoteQueue } from '../../clients/queue';
+import { checkVote } from '../../clients/top.gg';
+import { COLOR_BLACK } from '../../colors';
+import { getConfigValue } from '../../config';
+import { format_number, getCurrentTime, theWord } from '../../utils';
+import { battleParser } from './battle';
 import { catchMonster } from './catch-monster';
 import {
-	userDex,
+	checkFavorites,
+	checkMonsters,
+	checkPokedex,
+	searchMonsters,
+} from './check-monsters';
+import { checkExpGain } from './exp-gain';
+import {
+	currentMonsterInfo,
 	monsterDex,
 	monsterInfo,
 	monsterInfoLatest,
-	currentMonsterInfo,
+	userDex,
 } from './info';
-import { theWord, getCurrentTime, format_number } from '../../utils';
+import { msgBalance, parseItems } from './items';
 import {
-	checkMonsters,
-	checkFavorites,
-	searchMonsters,
-	checkPokedex,
-} from './check-monsters';
-import { releaseMonster, recoverMonster } from './release-monster';
-import {
+	getMonsterDBCount,
+	getShinyMonsterDBCount,
 	selectMonster,
 	setFavorite,
 	unFavorite,
-	getMonsterDBCount,
-	getShinyMonsterDBCount,
 } from './monsters';
-import { checkExpGain } from './exp-gain';
-import { parseTrade } from './trading';
-import { msgBalance, parseItems } from './items';
-import { battleParser } from './battle';
-import { getBoostedWeatherSpawns } from './weather';
+import { recoverMonster, releaseMonster } from './release-monster';
 import { MONSTER_SPAWNS } from './spawn-monster';
-import { checkVote } from '../../clients/top.gg';
-import Keyv from 'keyv';
-import { getConfigValue } from '../../config';
-import { COLOR_BLACK } from '../../colors';
-import { EmoteQueue } from '../../clients/queue';
-import { discordClient } from '../../clients/discord';
-import { getUserDBCount } from '../../clients/database';
+import { parseTrade } from './trading';
+import { getBoostedWeatherSpawns } from './weather';
 
 export const GUILD_PREFIXES = new Keyv(
 	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
@@ -61,6 +61,8 @@ export async function monsterParser(
 	message: Message,
 	cache: ICache,
 ): Promise<void> {
+	checkExpGain(message);
+
 	const channel_name = (message.channel as TextChannel).name;
 	const GCD = await getGCD(message.guild.id);
 	const timestamp = getCurrentTime();
@@ -69,6 +71,7 @@ export async function monsterParser(
 		(await GUILD_PREFIXES.get(message.guild.id)) || global_prefixes;
 	const prefixes = RegExp(load_prefixes.join('|'));
 	const detect_prefix = message.content.match(prefixes);
+
 	if (channel_name != cache.settings.specific_channel || !detect_prefix) return;
 	const prefix = detect_prefix.shift();
 	const args = message.content
@@ -78,8 +81,6 @@ export async function monsterParser(
 		.replace(/ {2,}/gm, ' ')
 		.split(/ +/);
 	const command = args.shift();
-
-	checkExpGain(message);
 
 	if (
 		spawn.monster &&
