@@ -1,12 +1,11 @@
 import { Message, MessageEmbed } from 'discord.js';
-
-import { format_number } from '../../utils';
-import { findMonsterByID, findMonsterByName } from './monsters';
-import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { databaseClient, getUser } from '../../clients/database';
-import { img_monster_ball } from './utils';
 import { COLOR_GREEN } from '../../colors';
+import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
+import { format_number } from '../../utils';
+import { findMonsterByID, findMonsterByName, IMonsterDex } from './monsters';
+import { img_monster_ball } from './utils';
 
 export async function monsterEmbed(
 	monster_db: IMonsterModel,
@@ -465,7 +464,7 @@ export async function currentMonsterInfo(message: Message): Promise<void> {
  */
 export async function monsterDex(message: Message): Promise<void> {
 	const tmpSplit = message.content.split(' ');
-	let tempMonster = undefined;
+	let tempMonster: IMonsterDex = undefined;
 
 	/**
 	 * TODO: this breaks with names with too many spaces: '~dex mega mewtwo y --shiny'
@@ -527,6 +526,8 @@ export async function monsterDex(message: Message): Promise<void> {
 			legendary = '';
 		}
 
+		const evolves = tempMonster?.evos.join('|') ?? 'None';
+
 		const embed = new MessageEmbed()
 			.setAuthor(
 				'#' + tmpID + ' - ' + tempMonster.name.english + legendary,
@@ -538,7 +539,7 @@ export async function monsterDex(message: Message): Promise<void> {
 			.setImage(image).setDescription(`**Type(s)**: ${monster_types}
 
       **National №**: ${tmpID}
-      **Dex Count**: ${count}
+      **Your PokeDex Count**: ${count}
 
     **Base Stats**
 
@@ -547,7 +548,10 @@ export async function monsterDex(message: Message): Promise<void> {
     **Defense**: ${monster_stats.defense}
     **Sp. Atk**: ${monster_stats.sp_attack}
     **Sp. Def**: ${monster_stats.sp_defense}
-    **Speed**: ${monster_stats.speed}`);
+    **Speed**: ${monster_stats.speed}
+
+    **Evolves**
+    ${evolves}`);
 		await message.channel
 			.send(embed)
 			.then((message) => {
