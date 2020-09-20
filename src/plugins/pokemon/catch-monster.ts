@@ -26,8 +26,8 @@ function monsterMatchesPrevious(messageContent: string, { name }: IMonsterDex) {
 	const monster = split[1].toLowerCase();
 
 	return (
-		monster == name.english.toLowerCase().replace(/♂|♀/g, '') ||
-		monster == name.japanese.toLowerCase().replace(/♂|♀/g, '') ||
+		monster == name.english.toLowerCase().replace(/♂|♀| RS| SS/g, '') ||
+		monster == name.japanese.toLowerCase().replace(/♂|♀| RS| SS/g, '') ||
 		monster == name.chinese.toLowerCase().replace(/♂|♀/g, '') ||
 		monster == name.french.toLowerCase().replace(/♂|♀/g, '')
 	);

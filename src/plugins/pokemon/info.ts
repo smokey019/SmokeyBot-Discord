@@ -519,14 +519,21 @@ export async function monsterDex(message: Message): Promise<void> {
 			}
 		}
 
-		let legendary = ``;
+		let legendary = '';
 		if (tempMonster.special) {
 			legendary = ` 💠`;
-		} else {
-			legendary = '';
 		}
 
-		const evolves = tempMonster?.evos.join('|') ?? 'None';
+		const evolve = tempMonster.evos?.join(' | ') ?? 'None';
+		const prevolve = tempMonster.prevo ?? 'None';
+
+		let evo_item = '';
+		if (tempMonster.evos) {
+			const tmpEvo = findMonsterByName(tempMonster.evos[0]);
+			if (tmpEvo.evoItem) {
+				evo_item = ' with item ' + tmpEvo.evoItem;
+			}
+		}
 
 		const embed = new MessageEmbed()
 			.setAuthor(
@@ -550,8 +557,8 @@ export async function monsterDex(message: Message): Promise<void> {
     **Sp. Def**: ${monster_stats.sp_defense}
     **Speed**: ${monster_stats.speed}
 
-    **Evolves**
-    ${evolves}`);
+	**Prevolve**: ${prevolve}
+    **Evolve**: ${evolve + evo_item}`);
 		await message.channel
 			.send(embed)
 			.then((message) => {
