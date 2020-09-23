@@ -25,6 +25,7 @@ import {
 	userDex,
 } from './info';
 import { msgBalance, parseItems } from './items';
+import { checkLeaderboard } from './leaderboard';
 import {
 	getMonsterDBCount,
 	getShinyMonsterDBCount,
@@ -101,6 +102,11 @@ export async function monsterParser(
 			await message.reply(
 				`You have ${tempdex.length} total unique ${theWord()} in your Pokédex.`,
 			);
+		}
+
+		if (command == 'leaderboard') {
+			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+			await checkLeaderboard(message);
 		}
 
 		if (command == 'stats') {

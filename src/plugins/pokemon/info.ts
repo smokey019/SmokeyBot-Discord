@@ -474,7 +474,7 @@ export async function monsterDex(message: Message): Promise<void> {
 			tmpSplit[1].toLowerCase() + ' ' + tmpSplit[2].toLowerCase(),
 		);
 	} else {
-		tempMonster = findMonsterByName(tmpSplit[1].toLowerCase());
+		tempMonster = findMonsterByName(tmpSplit[1]?.toLowerCase());
 	}
 
 	if (tempMonster) {

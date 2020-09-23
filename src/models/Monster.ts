@@ -21,4 +21,5 @@ export interface IMonsterModel {
 	favorite?: 0 | 1;
 	held_item?: number | null;
 	nickname?: string;
+	avg_iv?: number;
 }

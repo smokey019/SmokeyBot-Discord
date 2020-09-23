@@ -38,16 +38,15 @@ export async function spawnMonster(
 	}
 
 	const spawn_data = {
-		monster: null,
+		monster: findMonsterByID(getRandomMonster()),
 		spawned_at: getCurrentTime(),
 	};
 
 	let boostCount = 0;
 	const boost = await getBoostedWeatherSpawns(message.guild.id);
 	let isBoosted = false;
-	spawn_data.monster = findMonsterByID(getRandomMonster());
 	while (
-		!spawn_data.monster.name.english ||
+		!spawn_data.monster?.name.english ||
 		spawn_data.monster.id < 0 ||
 		spawn_data.monster.id > 893 ||
 		spawn_data.monster.forme ||
@@ -56,7 +55,7 @@ export async function spawnMonster(
 	) {
 		logger.trace('Invalid monster found or trying to find a boosted type..');
 		spawn_data.monster = findMonsterByID(getRandomMonster());
-		spawn_data.monster.type.forEach((element: string) => {
+		spawn_data.monster?.type.forEach((element: string) => {
 			if (boost.boosts.includes(element)) {
 				isBoosted = true;
 			}

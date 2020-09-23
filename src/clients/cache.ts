@@ -1,6 +1,5 @@
 import { Message } from 'discord.js';
 import Keyv from 'keyv';
-import { getConfigValue } from '../config';
 import { getCurrentTime } from '../utils';
 import { IGuildSettings } from './database';
 import { getLogger } from './logger';
@@ -17,14 +16,10 @@ export interface ICache {
 	};
 }
 
-export const cacheClient = new Keyv<ICache>(
-	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
-		'DB_PASSWORD',
-	)}@${getConfigValue('DB_HOST')}:${getConfigValue('DB_PORT')}/${getConfigValue(
-		'DB_DATABASE',
-	)}`,
-	{ keySize: 191, namespace: 'cacheClient', pool: { min: 0, max: 7 } },
-);
+export const cacheClient = new Keyv<ICache>({
+	namespace: 'cacheClient',
+	pool: { min: 0, max: 7 },
+});
 export const xp_cache = new Keyv({ namespace: 'xp_cache' });
 export const cacheTwitter = new Keyv({ namespace: 'cacheTwitter' });
 export const cacheTweets = new Keyv({ namespace: 'cacheTweets' });

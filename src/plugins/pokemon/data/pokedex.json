@@ -356,8 +356,8 @@
 		"images": {
 			"normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103266841559080/006-Mega_Y.png",
 			"shiny": "https://i.imgur.com/5MqbUQk.png",
-			"gif": "https://bot.smokey.gg/pokemon/images/gif/006.gif",
-			"gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/006_shiny.gif"
+			"gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__006-mega-y__xy.gif",
+			"gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_006-mega-y__xy.gif"
 		},
 		"evoType": "useItem",
 		"evoItem": "Charizardite Y",
@@ -973,7 +973,7 @@
 		"requiredItem": "Pidgeotite",
 		"images": {
 			"normal": "https://cdn.discordapp.com/attachments/718781413452677211/723103278648524870/018-Mega.png",
-			"shiny": "https://i.imgur.com/tdbLpeG.png",
+			"shiny": "https://i.imgur.com/YB4burd.png",
 			"gif": "https://www.pokencyclopedia.info/sprites/3ds/ani_6/3ani__018-mega__xy.gif",
 			"gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_018-mega__xy.gif"
 		},
@@ -24752,7 +24752,7 @@
 		"heightm": 0.7,
 		"weightkg": 40,
 		"color": "#ffffff",
-		"evos": ["Darmanitan-Galar"],
+		"evos": ["Galarian Darmanitan"],
 		"eggGroups": ["Field"],
 		"images": {
 			"normal": "https://i.imgur.com/3thtEgU.png",

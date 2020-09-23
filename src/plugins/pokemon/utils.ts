@@ -14,7 +14,7 @@ export function rollLevel(min: number, max: number): number {
  * Returns a randomized value for if an item is shiny. (1 is shiny, 0 is not)
  */
 export function rollShiny(): 0 | 1 {
-	return getRndInteger(1, 100) >= 100 ? 1 : 0;
+	return getRndInteger(1, 665) >= 665 ? 1 : 0;
 }
 
 export function rollPerfectIV(): 0 | 1 {

@@ -26,8 +26,14 @@ function monsterMatchesPrevious(messageContent: string, { name }: IMonsterDex) {
 	const monster = split[1].toLowerCase();
 
 	return (
-		monster == name.english.toLowerCase().replace(/♂|♀| RS| SS/g, '') ||
-		monster == name.japanese.toLowerCase().replace(/♂|♀| RS| SS/g, '') ||
+		monster ==
+			name.english
+				.toLowerCase()
+				.replace(/♂|♀| RS| SS|Galarian | Alolan/g, '') ||
+		monster ==
+			name.japanese
+				.toLowerCase()
+				.replace(/♂|♀| RS| SS|Galarian | Alolan/g, '') ||
 		monster == name.chinese.toLowerCase().replace(/♂|♀/g, '') ||
 		monster == name.french.toLowerCase().replace(/♂|♀/g, '')
 	);
@@ -102,6 +108,18 @@ export async function catchMonster(message: Message): Promise<void> {
 			monster.sp_attack = getRndInteger(28, 31);
 			monster.sp_defense = getRndInteger(28, 31);
 			monster.speed = getRndInteger(28, 31);
+			monster.avg_iv = parseInt(
+				(
+					((monster.hp +
+						monster.attack +
+						monster.defense +
+						monster.sp_attack +
+						monster.sp_defense +
+						monster.speed) /
+						186) *
+					100
+				).toFixed(2),
+			);
 		}
 
 		const averageIV = (
@@ -114,6 +132,8 @@ export async function catchMonster(message: Message): Promise<void> {
 				186) *
 			100
 		).toFixed(2);
+
+		monster.avg_iv = parseInt(averageIV);
 
 		try {
 			const dex = await userDex(message);
