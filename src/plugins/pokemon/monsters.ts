@@ -1,19 +1,19 @@
+import { Collection, Message } from 'discord.js';
+import { databaseClient } from '../../clients/database';
+import { getLogger } from '../../clients/logger';
+import { IMonsterModel, MonsterTable } from '../../models/Monster';
+import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 import { getRndInteger } from '../../utils';
 import PokeDex from './data/pokedex.json';
-import { getLogger } from '../../clients/logger';
-import { databaseClient } from '../../clients/database';
-import { IMonsterModel, MonsterTable } from '../../models/Monster';
-import { Message, Collection } from 'discord.js';
-import { MonsterUserTable, IMonsterUserModel } from '../../models/MonsterUser';
 import {
-	GenerationOne,
-	GenerationTwo,
-	GenerationThree,
-	GenerationFour,
-	GenerationFive,
-	GenerationSix,
-	GenerationSeven,
 	GenerationEight,
+	GenerationFive,
+	GenerationFour,
+	GenerationOne,
+	GenerationSeven,
+	GenerationSix,
+	GenerationThree,
+	GenerationTwo,
 } from './pokemon-list';
 
 const logger = getLogger('Pokemon');
@@ -177,6 +177,7 @@ export function findMonsterByID(id: number): IMonsterDex {
  * @param name
  */
 export function findMonsterByName(name: string): IMonsterDex {
+	if (!name) return undefined;
 	let monster = undefined;
 	MonsterDex.forEach(async (element) => {
 		if (

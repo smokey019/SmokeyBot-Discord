@@ -269,16 +269,12 @@
 		"prevo": "Charmeleon",
 		"evoLevel": 36,
 		"eggGroups": ["Monster", "Dragon"],
-		"otherFormes": [
-			"Mega Charizard-X",
-			"Mega Charizard-Y",
-			"Gmax Gmax Charizard"
-		],
+		"otherFormes": ["Mega Charizard-X", "Mega Charizard-Y", "Gmax Charizard"],
 		"formeOrder": [
 			"Charizard",
 			"Mega Charizard-X",
 			"Mega Charizard-Y",
-			"Gmax Gmax Charizard"
+			"Gmax Charizard"
 		]
 	},
 	{
@@ -659,8 +655,8 @@
 		"prevo": "Metapod",
 		"evoLevel": 10,
 		"eggGroups": ["Bug"],
-		"otherFormes": ["Gmax Gmax Butterfree"],
-		"formeOrder": ["Butterfree", "Gmax Gmax Butterfree"]
+		"otherFormes": ["Gmax Butterfree"],
+		"formeOrder": ["Butterfree", "Gmax Butterfree"]
 	},
 	{
 		"id": 12.5,
@@ -1307,7 +1303,7 @@
 			"Pikachu-Alola",
 			"Pikachu-Partner",
 			"Pikachu-Starter",
-			"Gmax Gmax Pikachu"
+			"Gmax Pikachu"
 		],
 		"formeOrder": [
 			"Pikachu",
@@ -1325,7 +1321,7 @@
 			"Pikachu-PhD",
 			"Pikachu-Libre",
 			"Pikachu-Cosplay",
-			"Gmax Gmax Pikachu"
+			"Gmax Pikachu"
 		],
 		"images": {
 			"normal": "https://i.imgur.com/Z3aqPC1.png",
@@ -3058,16 +3054,11 @@
 		"color": "#fcff00",
 		"evos": ["Persian"],
 		"eggGroups": ["Field"],
-		"otherFormes": ["Meowth-Alola", "Meowth-Galar", "Gmax Gmax Meowth"],
-		"formeOrder": [
-			"Meowth",
-			"Meowth-Alola",
-			"Meowth-Galar",
-			"Gmax Gmax Meowth"
-		],
+		"otherFormes": ["Meowth-Alola", "Meowth-Galar", "Gmax Meowth"],
+		"formeOrder": ["Meowth", "Meowth-Alola", "Meowth-Galar", "Gmax Meowth"],
 		"images": {
 			"normal": "https://i.imgur.com/XZ5Z0M3.png",
-			"shiny": "https://i.imgur.com/GgKINgo.png",
+			"shiny": "https://i.imgur.com/wt2c3xV.png",
 			"gif": "https://bot.smokey.gg/pokemon/images/gif/052.gif",
 			"gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/052_shiny.gif"
 		}
@@ -3847,8 +3838,8 @@
 		"prevo": "Machoke",
 		"evoType": "trade",
 		"eggGroups": ["Human-Like"],
-		"otherFormes": ["Gmax Gmax Machamp"],
-		"formeOrder": ["Machamp", "Gmax Gmax Machamp"],
+		"otherFormes": ["Gmax Machamp"],
+		"formeOrder": ["Machamp", "Gmax Machamp"],
 		"images": {
 			"normal": "https://i.imgur.com/3n3wXg4.png",
 			"shiny": "https://i.imgur.com/pBtP3h8.png",
@@ -5207,8 +5198,8 @@
 		"prevo": "Haunter",
 		"evoType": "trade",
 		"eggGroups": ["Amorphous"],
-		"otherFormes": ["Mega Gengar", "Gmax Gmax Gengar"],
-		"formeOrder": ["Gengar", "Mega Gengar", "Gmax Gmax Gengar"],
+		"otherFormes": ["Mega Gengar", "Gmax Gengar"],
+		"formeOrder": ["Gengar", "Mega Gengar", "Gmax Gengar"],
 		"images": {
 			"normal": "https://i.imgur.com/WJcISV8.png",
 			"shiny": "https://i.imgur.com/zYCU9Yw.png",
@@ -5452,8 +5443,8 @@
 		"prevo": "Krabby",
 		"evoLevel": 28,
 		"eggGroups": ["Water 3"],
-		"otherFormes": ["Gmax Gmax Kingler"],
-		"formeOrder": ["Kingler", "Gmax Gmax Kingler"],
+		"otherFormes": ["Gmax Kingler"],
+		"formeOrder": ["Kingler", "Gmax Kingler"],
 		"images": {
 			"normal": "https://i.imgur.com/FlUTVyz.png",
 			"shiny": "https://i.imgur.com/h7CUjhi.png",
@@ -6893,8 +6884,8 @@
 		"weightkg": 220,
 		"color": "#003cff",
 		"eggGroups": ["Monster", "Water 1"],
-		"otherFormes": ["Gmax Gmax Lapras"],
-		"formeOrder": ["Lapras", "Gmax Gmax Lapras"],
+		"otherFormes": ["Gmax Lapras"],
+		"formeOrder": ["Lapras", "Gmax Lapras"],
 		"images": {
 			"normal": "https://i.imgur.com/LygbIJm.png",
 			"shiny": "https://i.imgur.com/OaR5dmh.png",
@@ -7011,8 +7002,8 @@
 			"Sylveon"
 		],
 		"eggGroups": ["Field"],
-		"otherFormes": ["Eevee-Starter", "Gmax Gmax Eevee"],
-		"formeOrder": ["Eevee", "Eevee-Starter", "Gmax Gmax Eevee"],
+		"otherFormes": ["Eevee-Starter", "Gmax Eevee"],
+		"formeOrder": ["Eevee", "Eevee-Starter", "Gmax Eevee"],
 		"images": {
 			"normal": "https://i.imgur.com/4K64Jxs.png",
 			"shiny": "https://i.imgur.com/JhomfqJ.png",
@@ -7513,8 +7504,8 @@
 		"evoItem": "Friendship Bracelet",
 		"eggGroups": ["Monster"],
 		"canHatch": true,
-		"otherFormes": ["Gmax Gmax Snorlax"],
-		"formeOrder": ["Snorlax", "Gmax Gmax Snorlax"],
+		"otherFormes": ["Gmax Snorlax"],
+		"formeOrder": ["Snorlax", "Gmax Snorlax"],
 		"images": {
 			"normal": "https://i.imgur.com/02Yzd1v.png",
 			"shiny": "https://i.imgur.com/TBKIXmK.png",
@@ -9025,7 +9016,7 @@
 		"formeOrder": ["Ampharos", "Mega Ampharos"],
 		"images": {
 			"normal": "https://i.imgur.com/PRdtd00.png",
-			"shiny": "https://i.imgur.com/Cb4oPDe.png",
+			"shiny": "https://i.imgur.com/LX35Pqx.png",
 			"gif": "https://bot.smokey.gg/pokemon/images/gif/181.gif",
 			"gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/181_shiny.gif"
 		}
@@ -25426,8 +25417,8 @@
 		"prevo": "Trubbish",
 		"evoLevel": 36,
 		"eggGroups": ["Mineral"],
-		"otherFormes": ["Gmax Gmax Garbodor"],
-		"formeOrder": ["Garbodor", "Gmax Gmax Garbodor"],
+		"otherFormes": ["Gmax Garbodor"],
+		"formeOrder": ["Garbodor", "Gmax Garbodor"],
 		"images": {
 			"normal": "https://i.imgur.com/HjfNWHx.png",
 			"shiny": "https://i.imgur.com/P0bflF6.png",
@@ -36123,8 +36114,8 @@
 		"weightkg": 800,
 		"color": "#444444",
 		"eggGroups": ["Undiscovered"],
-		"otherFormes": ["Gmax Gmax Melmetal"],
-		"formeOrder": ["Melmetal", "Gmax Gmax Melmetal"],
+		"otherFormes": ["Gmax Melmetal"],
+		"formeOrder": ["Melmetal", "Gmax Melmetal"],
 		"images": {
 			"normal": "https://i.imgur.com/m4wz2R8.png",
 			"shiny": "https://i.imgur.com/LDfF3ij.png",
@@ -36674,8 +36665,8 @@
 		"prevo": "Corvisquire",
 		"evoLevel": 38,
 		"eggGroups": ["Flying"],
-		"otherFormes": ["Gmax Gmax Corviknight"],
-		"formeOrder": ["Corviknight", "Gmax Gmax Corviknight"],
+		"otherFormes": ["Gmax Corviknight"],
+		"formeOrder": ["Corviknight", "Gmax Corviknight"],
 		"images": {
 			"normal": "https://i.imgur.com/3YN04TX.png",
 			"shiny": "https://i.imgur.com/J59RBJb.png",
@@ -36817,8 +36808,8 @@
 		"prevo": "Dottler",
 		"evoLevel": 30,
 		"eggGroups": ["Bug"],
-		"otherFormes": ["Gmax Gmax Orbeetle"],
-		"formeOrder": ["Orbeetle", "Gmax Gmax Orbeetle"],
+		"otherFormes": ["Gmax Orbeetle"],
+		"formeOrder": ["Orbeetle", "Gmax Orbeetle"],
 		"images": {
 			"normal": "https://i.imgur.com/lHsDQqJ.png",
 			"shiny": "https://i.imgur.com/H6x4Nw1.png",
@@ -37131,8 +37122,8 @@
 		"prevo": "Chewtle",
 		"evoLevel": 22,
 		"eggGroups": ["Monster", "Water 1"],
-		"otherFormes": ["Gmax Gmax Drednaw"],
-		"formeOrder": ["Drednaw", "Gmax Gmax Drednaw"],
+		"otherFormes": ["Gmax Drednaw"],
+		"formeOrder": ["Drednaw", "Gmax Drednaw"],
 		"images": {
 			"normal": "https://i.imgur.com/lAenDef.png",
 			"shiny": "https://i.imgur.com/X6JmYWJ.png",
@@ -37341,8 +37332,8 @@
 		"prevo": "Carkol",
 		"evoLevel": 34,
 		"eggGroups": ["Mineral"],
-		"otherFormes": ["Gmax Gmax Coalossal"],
-		"formeOrder": ["Coalossal", "Gmax Gmax Coalossal"],
+		"otherFormes": ["Gmax Coalossal"],
+		"formeOrder": ["Coalossal", "Gmax Coalossal"],
 		"images": {
 			"normal": "https://i.imgur.com/LHWsJnA.png",
 			"shiny": "https://i.imgur.com/NTVAnoe.png",
@@ -37449,8 +37440,8 @@
 		"evoType": "useItem",
 		"evoItem": "Tart Apple",
 		"eggGroups": ["Grass", "Dragon"],
-		"otherFormes": ["Gmax Gmax Flapple"],
-		"formeOrder": ["Flapple", "Gmax Gmax Flapple"],
+		"otherFormes": ["Gmax Flapple"],
+		"formeOrder": ["Flapple", "Gmax Flapple"],
 		"images": {
 			"normal": "https://i.imgur.com/9aIdSrH.png",
 			"shiny": "https://i.imgur.com/9gluNNP.png",
@@ -37523,8 +37514,8 @@
 		"evoType": "useItem",
 		"evoItem": "Sweet Apple",
 		"eggGroups": ["Grass", "Dragon"],
-		"otherFormes": ["Gmax Gmax Appletun"],
-		"formeOrder": ["Appletun", "Gmax Gmax Appletun"],
+		"otherFormes": ["Gmax Appletun"],
+		"formeOrder": ["Appletun", "Gmax Appletun"],
 		"images": {
 			"normal": "https://i.imgur.com/ECarlae.png",
 			"shiny": "https://i.imgur.com/fBVCqPx.png",
@@ -37630,8 +37621,8 @@
 		"prevo": "Silicobra",
 		"evoLevel": 36,
 		"eggGroups": ["Field", "Dragon"],
-		"otherFormes": ["Gmax Gmax Sandaconda"],
-		"formeOrder": ["Sandaconda", "Gmax Gmax Sandaconda"],
+		"otherFormes": ["Gmax Sandaconda"],
+		"formeOrder": ["Sandaconda", "Gmax Sandaconda"],
 		"images": {
 			"normal": "https://i.imgur.com/1vhyL6c.png",
 			"shiny": "https://i.imgur.com/fMX9cwX.png",
@@ -37908,16 +37899,12 @@
 		"prevo": "Toxel",
 		"evoLevel": 30,
 		"eggGroups": ["Human-Like"],
-		"otherFormes": [
-			"Toxtricity-Low-Key",
-			"Gmax Gmax Toxtricity",
-			"Gmax Gmax Toxtricity"
-		],
+		"otherFormes": ["Toxtricity-Low-Key", "Gmax Toxtricity", "Gmax Toxtricity"],
 		"formeOrder": [
 			"Toxtricity",
 			"Toxtricity-Low-Key",
-			"Gmax Gmax Toxtricity",
-			"Gmax Gmax Toxtricity"
+			"Gmax Toxtricity",
+			"Gmax Toxtricity"
 		],
 		"images": {
 			"normal": "https://i.imgur.com/jGDsFaT.png",
@@ -38098,8 +38085,8 @@
 		"prevo": "Sizzlipede",
 		"evoLevel": 28,
 		"eggGroups": ["Bug"],
-		"otherFormes": ["Gmax Gmax Centiskorch"],
-		"formeOrder": ["Centiskorch", "Gmax Gmax Centiskorch"],
+		"otherFormes": ["Gmax Centiskorch"],
+		"formeOrder": ["Centiskorch", "Gmax Centiskorch"],
 		"images": {
 			"normal": "https://i.imgur.com/ZI9KPTa.png",
 			"shiny": "https://i.imgur.com/9LSKdMy.png",
@@ -38462,8 +38449,8 @@
 		"prevo": "Hattrem",
 		"evoLevel": 42,
 		"eggGroups": ["Fairy"],
-		"otherFormes": ["Gmax Gmax Hatterene"],
-		"formeOrder": ["Hatterene", "Gmax Gmax Hatterene"],
+		"otherFormes": ["Gmax Hatterene"],
+		"formeOrder": ["Hatterene", "Gmax Hatterene"],
 		"images": {
 			"normal": "https://i.imgur.com/ZMHyWoE.png",
 			"shiny": "https://i.imgur.com/gCxOLWs.png",
@@ -38609,8 +38596,8 @@
 		"prevo": "Morgrem",
 		"evoLevel": 42,
 		"eggGroups": ["Fairy", "Human-Like"],
-		"otherFormes": ["Gmax Gmax Grimmsnarl"],
-		"formeOrder": ["Grimmsnarl", "Gmax Gmax Grimmsnarl"],
+		"otherFormes": ["Gmax Grimmsnarl"],
+		"formeOrder": ["Grimmsnarl", "Gmax Grimmsnarl"],
 		"images": {
 			"normal": "https://i.imgur.com/WKpGxW0.png",
 			"shiny": "https://i.imgur.com/91NcY05.png",
@@ -38716,7 +38703,7 @@
 		"heightm": 0.8,
 		"weightkg": 28,
 		"color": "#983f00",
-		"prevo": "Meowth-Galar",
+		"prevo": "Galarian Meowth",
 		"evoLevel": 28,
 		"eggGroups": ["Field"],
 		"images": {
@@ -38932,7 +38919,7 @@
 		"evoType": "other",
 		"evoCondition": "spin while holding a Sweet",
 		"eggGroups": ["Fairy", "Amorphous"],
-		"otherFormes": ["Gmax Gmax Alcremie"],
+		"otherFormes": ["Gmax Alcremie"],
 		"cosmeticFormes": [
 			"Alcremie-Ruby-Cream",
 			"Alcremie-Matcha-Cream",
@@ -38953,7 +38940,7 @@
 			"Alcremie-Ruby-Swirl",
 			"Alcremie-Caramel-Swirl",
 			"Alcremie-Rainbow-Swirl",
-			"Gmax Gmax Alcremie"
+			"Gmax Alcremie"
 		],
 		"images": {
 			"normal": "https://i.imgur.com/IhJUtxK.png",
@@ -39432,8 +39419,8 @@
 		"prevo": "Cufant",
 		"evoLevel": 34,
 		"eggGroups": ["Field", "Mineral"],
-		"otherFormes": ["Gmax Gmax Copperajah"],
-		"formeOrder": ["Copperajah", "Gmax Gmax Copperajah"],
+		"otherFormes": ["Gmax Copperajah"],
+		"formeOrder": ["Copperajah", "Gmax Copperajah"],
 		"images": {
 			"normal": "https://i.imgur.com/gHDkCFk.png",
 			"shiny": "https://i.imgur.com/TCijqi1.png",
@@ -39638,8 +39625,8 @@
 		"weightkg": 40,
 		"color": "#ffffff",
 		"eggGroups": ["Mineral", "Dragon"],
-		"otherFormes": ["Gmax Gmax Duraludon"],
-		"formeOrder": ["Duraludon", "Gmax Gmax Duraludon"],
+		"otherFormes": ["Gmax Duraludon"],
+		"formeOrder": ["Duraludon", "Gmax Duraludon"],
 		"images": {
 			"normal": "https://i.imgur.com/8F91ClA.png",
 			"shiny": "https://i.imgur.com/kS826sw.png",

@@ -82,6 +82,6 @@ export async function spawnMonster(
 			.then(() => {
 				return;
 			})
-			.catch(console.error);
+			.catch((error) => logger.error(error));
 	}
 }

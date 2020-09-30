@@ -19,6 +19,7 @@ import {
 import { checkExpGain } from './exp-gain';
 import {
 	currentMonsterInfo,
+	currentMonsterInfoBETA,
 	monsterDex,
 	monsterInfo,
 	monsterInfoLatest,
@@ -34,7 +35,7 @@ import {
 	unFavorite,
 } from './monsters';
 import { recoverMonster, releaseMonster } from './release-monster';
-import { MONSTER_SPAWNS } from './spawn-monster';
+import { MONSTER_SPAWNS, spawnMonster } from './spawn-monster';
 import { parseTrade } from './trading';
 import { getBoostedWeatherSpawns } from './weather';
 
@@ -227,6 +228,12 @@ export async function monsterParser(
 			await checkMonsters(message);
 		}
 
+		if (command == 'spawn' && message.author.id == '90514165138989056') {
+			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+
+			await spawnMonster(message, cache);
+		}
+
 		if (
 			(command == 'info' && args[0]?.match(/\d+/)) ||
 			(command == 'i' && args[0]?.match(/\d+/))
@@ -234,6 +241,15 @@ export async function monsterParser(
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 			await monsterInfo(message);
+		}
+
+		if (
+			(command == 'infobeta' && args.length == 0) ||
+			(command == 'ib' && args.length == 0)
+		) {
+			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+
+			await currentMonsterInfoBETA(message);
 		}
 
 		if (

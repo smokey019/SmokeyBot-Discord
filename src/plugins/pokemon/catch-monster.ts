@@ -28,12 +28,12 @@ function monsterMatchesPrevious(messageContent: string, { name }: IMonsterDex) {
 	return (
 		monster ==
 			name.english
-				.toLowerCase()
-				.replace(/♂|♀| RS| SS|Galarian | Alolan/g, '') ||
+				.replace(/(♂|♀| RS| SS|Galarian |Alolan )/gi, '')
+				.toLowerCase() ||
 		monster ==
 			name.japanese
-				.toLowerCase()
-				.replace(/♂|♀| RS| SS|Galarian | Alolan/g, '') ||
+				.replace(/(♂|♀| RS| SS|Galarian |Alolan )/gi, '')
+				.toLowerCase() ||
 		monster == name.chinese.toLowerCase().replace(/♂|♀/g, '') ||
 		monster == name.french.toLowerCase().replace(/♂|♀/g, '')
 	);
@@ -159,6 +159,7 @@ export async function catchMonster(message: Message): Promise<void> {
 					current_monster: insertMonster[0],
 					latest_monster: insertMonster[0],
 					uid: message.author.id,
+					dex: '[]',
 				});
 
 				logger.debug(`Successfully inserted user ${message.author.username}`);
