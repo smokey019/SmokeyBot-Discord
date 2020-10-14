@@ -2908,8 +2908,8 @@
 		"color": "#983f00",
 		"evos": ["Dugtrio"],
 		"eggGroups": ["Field"],
-		"otherFormes": ["Diglett-Alola"],
-		"formeOrder": ["Diglett", "Diglett-Alola"],
+		"otherFormes": ["Alolan Diglett"],
+		"formeOrder": ["Diglett", "Alolan Diglett"],
 		"images": {
 			"normal": "https://i.imgur.com/cpvrNMJ.png",
 			"shiny": "https://i.imgur.com/kbwamXJ.png",
@@ -2944,7 +2944,7 @@
 		"heightm": 0.2,
 		"weightkg": 1,
 		"color": "#983f00",
-		"evos": ["Dugtrio-Alola"],
+		"evos": ["Alolan Dugtrio"],
 		"eggGroups": ["Field"],
 		"images": {
 			"normal": "https://i.imgur.com/lPkN4lm.png",
@@ -2981,8 +2981,8 @@
 		"prevo": "Diglett",
 		"evoLevel": 26,
 		"eggGroups": ["Field"],
-		"otherFormes": ["Dugtrio-Alola"],
-		"formeOrder": ["Dugtrio", "Dugtrio-Alola"],
+		"otherFormes": ["Alolan Dugtrio"],
+		"formeOrder": ["Dugtrio", "Alolan Dugtrio"],
 		"images": {
 			"normal": "https://i.imgur.com/COxs6bj.png",
 			"shiny": "https://i.imgur.com/GgKINgo.png",
@@ -3017,7 +3017,7 @@
 		"heightm": 0.7,
 		"weightkg": 66.6,
 		"color": "#983f00",
-		"prevo": "Diglett-Alola",
+		"prevo": "Alolan Diglett",
 		"evoLevel": 26,
 		"eggGroups": ["Field"],
 		"images": {
@@ -3054,8 +3054,8 @@
 		"color": "#fcff00",
 		"evos": ["Persian"],
 		"eggGroups": ["Field"],
-		"otherFormes": ["Meowth-Alola", "Meowth-Galar", "Gmax Meowth"],
-		"formeOrder": ["Meowth", "Meowth-Alola", "Meowth-Galar", "Gmax Meowth"],
+		"otherFormes": ["Alolan Meowth", "Galarian Meowth", "Gmax Meowth"],
+		"formeOrder": ["Meowth", "Alolan Meowth", "Galarian Meowth", "Gmax Meowth"],
 		"images": {
 			"normal": "https://i.imgur.com/XZ5Z0M3.png",
 			"shiny": "https://i.imgur.com/wt2c3xV.png",
@@ -3199,8 +3199,8 @@
 		"prevo": "Meowth",
 		"evoLevel": 28,
 		"eggGroups": ["Field"],
-		"otherFormes": ["Persian-Alola"],
-		"formeOrder": ["Persian", "Persian-Alola"],
+		"otherFormes": ["Alolan Persian"],
+		"formeOrder": ["Persian", "Alolan Persian"],
 		"images": {
 			"normal": "https://i.imgur.com/MULPoN0.png",
 			"shiny": "https://i.imgur.com/5cnQfGq.png",
@@ -4569,8 +4569,8 @@
 		"images": {
 			"normal": "https://i.imgur.com/qJofcVY.png",
 			"shiny": "https://i.imgur.com/xqlXidR.png",
-			"gif": "",
-			"gif-shiny": ""
+			"gif": "https://i.imgur.com/alu6n9w.gif",
+			"gif-shiny": "https://i.imgur.com/3vyxvyq.gif"
 		}
 	},
 	{
@@ -14057,7 +14057,7 @@
 		"formeOrder": ["Aggron", "Mega Aggron"],
 		"images": {
 			"normal": "https://i.imgur.com/YLttV3W.png",
-			"shiny": "https://i.imgur.com/VLitEXH.png",
+			"shiny": "https://i.imgur.com/AFggWqF.png",
 			"gif": "https://bot.smokey.gg/pokemon/images/gif/306.gif",
 			"gif-shiny": "https://bot.smokey.gg/pokemon/images/gif/306_shiny.gif"
 		}
@@ -40021,7 +40021,7 @@
 		"eggGroups": ["Undiscovered"],
 		"images": {
 			"normal": "https://i.imgur.com/oM3GqfU.png",
-			"shiny": "https://i.imgur.com/XmyJyc5.png",
+			"shiny": "https://i.imgur.com/LTG7U1X.png",
 			"gif": "https://i.imgur.com/UrLgj6V.png",
 			"gif-shiny": "https://i.imgur.com/XmyJyc5.png"
 		}
@@ -40055,10 +40055,10 @@
 		"evoItem": "Bracelet of Darkness",
 		"eggGroups": ["Undiscovered"],
 		"images": {
-			"normal": "https://i.imgur.com/9zOAr8L.png",
-			"shiny": "https://i.imgur.com/lZaDzNm.png",
-			"gif": "",
-			"gif-shiny": ""
+			"normal": "https://i.imgur.com/oSr03k2.png",
+			"shiny": "https://i.imgur.com/r38RNjY.png",
+			"gif": "https://i.imgur.com/M4CwLRz.gif",
+			"gif-shiny": "https://i.imgur.com/M4CwLRz.gif"
 		}
 	},
 	{
@@ -40090,10 +40090,10 @@
 		"evoItem": "Bracelet of Water",
 		"eggGroups": ["Undiscovered"],
 		"images": {
-			"normal": "https://i.imgur.com/3Q1bvFN.png",
-			"shiny": "https://i.imgur.com/vhtLM47.png",
-			"gif": "",
-			"gif-shiny": ""
+			"normal": "https://i.imgur.com/P97XMxX.png",
+			"shiny": "https://i.imgur.com/zHFAHJx.png",
+			"gif": "https://i.imgur.com/RAyRMmH.gif",
+			"gif-shiny": "https://i.imgur.com/CLzZxDp.gif"
 		}
 	},
 	{
@@ -40124,8 +40124,8 @@
 		"images": {
 			"normal": "https://i.imgur.com/UgA4dcG.png",
 			"shiny": "https://i.imgur.com/eIiL6IT.png",
-			"gif": "",
-			"gif-shiny": ""
+			"gif": "https://i.imgur.com/zxWINE1.gif",
+			"gif-shiny": "https://i.imgur.com/ciZeZPN.gif"
 		}
 	},
 	{

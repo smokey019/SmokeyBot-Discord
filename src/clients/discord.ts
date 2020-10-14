@@ -21,7 +21,7 @@ discordClient.on('ready', () => {
 });
 
 discordClient.on('rateLimit', (error) => {
-	logger.warn('Rate Limited', error);
+	logger.warn('Rate Limited');
 
 	rateLimited = true;
 

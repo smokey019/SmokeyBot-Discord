@@ -1,16 +1,16 @@
-import Items from './data/items.json';
 import { Message, MessageEmbed } from 'discord.js';
-import { getUser, databaseClient } from '../../clients/database';
-import { explode, format_number, chunk } from '../../utils';
-import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
-import {
-	getUserMonster,
-	findMonsterByID,
-	IMonsterDex,
-	findMonsterByName,
-} from './monsters';
-import { IMonsterModel, MonsterTable } from '../../models/Monster';
+import { databaseClient, getUser } from '../../clients/database';
 import { IItemsModel, ItemsTable } from '../../models/Items';
+import { IMonsterModel, MonsterTable } from '../../models/Monster';
+import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
+import { chunk, explode, format_number } from '../../utils';
+import Items from './data/items.json';
+import {
+	findMonsterByID,
+	findMonsterByName,
+	getUserMonster,
+	IMonsterDex,
+} from './monsters';
 
 export type Iitem = typeof Items[1];
 
@@ -292,9 +292,9 @@ export async function checkItemEvolution(
 
 		if (
 			evolve != undefined ||
-			evolve.evoItem == item.name.english ||
-			(evolve.evoType == 'levelFriendship' && monster.held_item == 960) ||
-			(evolve.evoType == 'trade' && isTrade)
+			evolve?.evoItem == item.name.english ||
+			(evolve?.evoType == 'levelFriendship' && itemDB.item_number == 960) ||
+			(evolve?.evoType == 'trade' && isTrade)
 		) {
 			let updateMonster = undefined;
 			if (!evolve.forme) {
@@ -469,7 +469,7 @@ function getItemByID(item: number): Iitem {
 	return temp;
 }
 
-async function getItemDB(id: number | string): Promise<IItemsModel> {
+export async function getItemDB(id: number | string): Promise<IItemsModel> {
 	const item = await databaseClient<IItemsModel>(ItemsTable)
 		.first()
 		.where('id', id);

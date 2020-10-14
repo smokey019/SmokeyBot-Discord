@@ -480,7 +480,7 @@ export async function monsterDex(message: Message): Promise<void> {
 		let evo_item = '';
 		if (tempMonster.evos) {
 			const tmpEvo = findMonsterByName(tempMonster.evos[0]);
-			if (tmpEvo.evoItem) {
+			if (tmpEvo?.evoItem) {
 				evo_item = ' with item ' + tmpEvo.evoItem;
 			}
 		}

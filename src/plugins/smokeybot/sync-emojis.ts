@@ -1,9 +1,9 @@
-import { MessageEmbed, Message } from 'discord.js';
-import { jsonFetch } from '../../utils';
-import { getLogger } from '../../clients/logger';
+import { Message, MessageEmbed } from 'discord.js';
 import Keyv from 'keyv';
+import { getLogger } from '../../clients/logger';
 import { EmoteQueue } from '../../clients/queue';
 import { FFZRoom } from '../../types/FFZ-Emotes';
+import { jsonFetch } from '../../utils';
 
 const EMOJI_COOLDOWN = new Keyv({ namespace: 'EMOJI_COOLDOWN' });
 
@@ -79,6 +79,8 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
 		);
 
 		if (!ffz_emotes || !ffz_emotes.room || !ffz_emotes.room.set) {
+			logger.debug(`Couldn't fetch FFZ Emotes for Twitch channel ${channel}.`);
+
 			await message.channel.messages
 				.fetch(to_be_deleted)
 				.then((message) => {
@@ -107,6 +109,8 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
 			});
 
 			if (!EmoteQueue.has(message.guild.id)) {
+				logger.debug(`Syncing ${emojis.length} total emotes for ${channel}..`);
+
 				EmoteQueue.set(message.guild.id, {
 					emotes: emojis,
 					existing: existing_emojis,
@@ -128,6 +132,8 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
 					);
 				await message.channel.send(embed);
 			} else {
+				logger.debug(`Error syncing emotes for ${channel}..`);
+
 				const currentQueue = EmoteQueue.get(message.guild.id);
 				const emotes = currentQueue.emotes.length;
 

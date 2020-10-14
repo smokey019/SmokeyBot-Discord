@@ -44,10 +44,6 @@ export async function getGCD(guild_id: string): Promise<number> {
 	}
 }
 
-export async function setGCD(guild_id: string): Promise<boolean> {
-	return await GLOBAL_COOLDOWN.set(guild_id, getCurrentTime());
-}
-
 export async function getCache(
 	message: Message,
 	settings: IGuildSettings,

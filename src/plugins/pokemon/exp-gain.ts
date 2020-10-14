@@ -1,14 +1,15 @@
 import { Message, MessageEmbed } from 'discord.js';
-import { getCurrentTime, getRndInteger } from '../../utils';
 import { xp_cache } from '../../clients/cache';
-import { getUser, databaseClient } from '../../clients/database';
-import { MonsterTable, IMonsterModel } from '../../models/Monster';
+import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
+import { IMonsterModel, MonsterTable } from '../../models/Monster';
+import { getCurrentTime, getRndInteger } from '../../utils';
+import { getItemDB } from './items';
 import {
-	getUserMonster,
 	findMonsterByID,
-	IMonsterDex,
 	getPokedex,
+	getUserMonster,
+	IMonsterDex,
 } from './monsters';
 
 const logger = getLogger('ExpGain');
@@ -32,6 +33,7 @@ export async function checkExpGain(message: Message): Promise<void> {
 					user.current_monster,
 				);
 				const monster_dex: IMonsterDex = findMonsterByID(monster.monster_id);
+				const held_item = await getItemDB(monster.held_item);
 				await xp_cache.set(cacheKey, getCurrentTime());
 				if (!monster || monster.level >= 100) return;
 				const updateExp = await databaseClient(MonsterTable)
@@ -57,7 +59,7 @@ export async function checkExpGain(message: Message): Promise<void> {
 							);
 						}
 
-						if (monster_dex.evos && monster.held_item != 229) {
+						if (monster_dex.evos && held_item?.item_number != 229) {
 							const allMonsters = getPokedex();
 
 							let evolve = undefined;
