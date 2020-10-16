@@ -157,6 +157,44 @@
 		"prevo": "Venusaur"
 	},
 	{
+		"id": 3.5,
+		"name": {
+			"english": "Gmax Venusaur",
+			"japanese": "",
+			"chinese": "",
+			"french": ""
+		},
+		"baseSpecies": "Venusaur",
+		"forme": "Gmax",
+		"type": ["Grass", "Poison"],
+		"images": {
+			"normal": "https://archives.bulbagarden.net/media/upload/thumb/8/8a/003Venusaur-Gigantamax.png/600px-003Venusaur-Gigantamax.png",
+			"shiny": "https://i.imgur.com/DzrkF5e.png",
+			"gif": "https://archives.bulbagarden.net/media/upload/thumb/5/59/003Venusaur-Gigantamax_2.png/695px-003Venusaur-Gigantamax_2.png",
+			"gif-shiny": "https://www.pokencyclopedia.info/sprites/3ds/ani_6_shiny/3ani_-S_003-mega__xy.gif"
+		},
+		"genderRatio": {
+			"M": 0.875,
+			"F": 0.125
+		},
+		"baseStats": {
+			"hp": 80,
+			"atk": 100,
+			"def": 123,
+			"spa": 122,
+			"spd": 120,
+			"spe": 80
+		},
+		"abilities": {
+			"0": "Thick Fat"
+		},
+		"heightm": 2.4,
+		"weightkg": 155.5,
+		"color": "#41c600",
+		"eggGroups": ["Monster", "Grass"],
+		"prevo": "Venusaur"
+	},
+	{
 		"id": 4,
 		"name": {
 			"english": "Charmander",
@@ -392,7 +430,7 @@
 		"eggGroups": ["Monster", "Dragon"],
 		"isGigantamax": "G-Max Wildfire",
 		"images": {
-			"normal": "https://img.pokemondb.net/artwork/large/charizard-gigantamax.jpg",
+			"normal": "https://archives.bulbagarden.net/media/upload/thumb/8/88/006Charizard-Gigantamax.png/600px-006Charizard-Gigantamax.png",
 			"shiny": "",
 			"gif": "",
 			"gif-shiny": ""

@@ -4,7 +4,7 @@ import { getGCD, GLOBAL_COOLDOWN, ICache } from '../../clients/cache';
 import { getUserDBCount } from '../../clients/database';
 import { discordClient } from '../../clients/discord';
 import { EmoteQueue } from '../../clients/queue';
-import { checkVote } from '../../clients/top.gg';
+import { checkVote, dblCache } from '../../clients/top.gg';
 import { COLOR_BLACK } from '../../colors';
 import { getConfigValue } from '../../config';
 import { format_number, getCurrentTime, theWord } from '../../utils';
@@ -34,6 +34,7 @@ import {
 	setFavorite,
 	unFavorite,
 } from './monsters';
+import { setNickname } from './nickname';
 import { recoverMonster, releaseMonster } from './release-monster';
 import { MONSTER_SPAWNS, spawnMonster } from './spawn-monster';
 import { parseTrade } from './trading';
@@ -173,12 +174,29 @@ export async function monsterParser(
 			);
 		}
 
+		if (command == 'nickname' || command == 'nick') {
+			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+
+			switch (args[0]) {
+				case 'set':
+					await setNickname(message);
+			}
+		}
+
 		if (command == 'vote') {
 			await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-			await message.reply(
-				`vote here and get free stuff for the ${theWord()} plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
-			);
+			const voted = await dblCache.get(message.author.id + ':voted');
+
+			if (!voted) {
+				await message.reply(
+					`you haven't voted yet -- vote here and get free stuff for the ${theWord()} plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
+				);
+			} else {
+				await message.reply(
+					`you've already voted, but maybe others want to vote here and get free stuff for the ${theWord()} plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
+				);
+			}
 		}
 
 		if (command == 'check-vote') {

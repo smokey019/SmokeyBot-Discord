@@ -16,7 +16,7 @@ const timeAgo = new TimeAgo('en-US');
 
 export const dblClient = new DBL(getConfigValue('TOPGG_KEY'), discordClient);
 const logger = getLogger('Top.GG Client');
-const dblCache = new Keyv(
+export const dblCache = new Keyv(
 	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
 		'DB_PASSWORD',
 	)}@${getConfigValue('DB_HOST')}:${getConfigValue('DB_PORT')}/${getConfigValue(

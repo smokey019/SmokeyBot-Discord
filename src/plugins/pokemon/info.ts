@@ -267,9 +267,15 @@ export async function monsterEmbedBeta(
 		released = '\n***RELEASED***\n\n';
 	}
 
+	let title = `Level ${monster_db.level} ${monster.name.english} ${shiny}${favorite}${legendary}`;
+
+	if (monster_db.nickname) {
+		title = `Level ${monster_db.level} '${monster_db.nickname}' - ${monster.name.english} ${shiny}${favorite}${legendary}`;
+	}
+
 	const embed = new MessageEmbed()
 		.setAuthor(
-			`Level ${monster_db.level} ${monster.name.english} ${shiny}${favorite}${legendary}`,
+			title,
 			img_monster_ball,
 			`https://pokemondb.net/pokedex/${monster.id}`,
 		)
