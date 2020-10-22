@@ -7,7 +7,7 @@ const logger = getLogger('Queue');
 
 export const EmoteQueue: Collection<
 	string,
-	{ emotes: FFZEmotes[]; existing: string[]; msg: Message }
+	{ emotes: FFZEmotes[]; msg: Message }
 > = new Collection();
 const COOLDOWN = 20 * 1000;
 
@@ -17,7 +17,6 @@ function runEmoteQueue() {
 	if (EmoteQueue.first() && !rateLimited) {
 		const object = EmoteQueue.first();
 		const emote: FFZEmotes = object.emotes?.shift() ?? null;
-		const existing = object.existing;
 		const message = object.msg;
 
 		EmoteQueue.set(message.guild.id, object);
@@ -31,7 +30,7 @@ function runEmoteQueue() {
 				emote_url = 'https:' + emote.urls['4'] ?? emote.urls['1'];
 			}
 
-			if (!existing.includes(emote.name) && !emote_url.match('undefined')) {
+			if (!emote_url.match('undefined')) {
 				logger.trace(
 					`Attempting to create emoji '${emote.name}' on ${message.guild.name}.`,
 				);
@@ -72,12 +71,24 @@ async function create_emoji(
 		})
 		.catch(async (err) => {
 			logger.error('Emote error:', err);
-			if (err.message.match(/Maximum number of emojis reached/i)) {
-				EmoteQueue.delete(message.guild.id);
-				await message.reply(
-					`you've reached the maximum amount of emotes for the server.`,
-				);
+
+			switch (err.message) {
+				case 'Maximum number of emojis reached (50)':
+				case 'Maximum number of emojis reached (75)':
+				case 'Maximum number of emojis reached (100)':
+				case 'Maximum number of emojis reached (250)':
+					EmoteQueue.delete(message.guild.id);
+					await message.reply(
+						`you've reached the maximum amount of emotes for the server.`,
+					);
+					break;
+
+				case 'Missing Permissions':
+					EmoteQueue.delete(message.guild.id);
+					await message.reply(
+						`SmokeyBot doesn't have the proper permissions. Make sure SmokeyBot can Manage Emoji in the roles section.`,
+					);
+					break;
 			}
-			return false;
 		});
 }

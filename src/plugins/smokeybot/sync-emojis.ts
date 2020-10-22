@@ -3,7 +3,7 @@ import Keyv from 'keyv';
 import { getLogger } from '../../clients/logger';
 import { EmoteQueue } from '../../clients/queue';
 import { FFZRoom } from '../../types/FFZ-Emotes';
-import { jsonFetch } from '../../utils';
+import { asyncForEach, jsonFetch } from '../../utils';
 
 const EMOJI_COOLDOWN = new Keyv({ namespace: 'EMOJI_COOLDOWN' });
 
@@ -104,33 +104,70 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
 
 			const existing_emojis = [];
 
+			const final_emojis = [];
+
 			new Map(message.guild.emojis.cache).forEach((value) => {
 				existing_emojis.push(value.name);
 			});
 
 			if (!EmoteQueue.has(message.guild.id)) {
-				logger.debug(`Syncing ${emojis.length} total emotes for ${channel}..`);
+				await asyncForEach(emojis, async (element) => {
+					let emote_url = '';
 
-				EmoteQueue.set(message.guild.id, {
-					emotes: emojis,
-					existing: existing_emojis,
-					msg: message,
+					if (element.urls['2']) {
+						emote_url = 'https:' + element.urls['2'];
+					} else {
+						emote_url = 'https:' + element.urls['4'] ?? element.urls['1'];
+					}
+					if (
+						!existing_emojis.includes(element.name) &&
+						!emote_url.match('undefined')
+					) {
+						final_emojis.push(element);
+					}
 				});
 
-				await message.channel.messages
-					.fetch(to_be_deleted)
-					.then((message) => {
-						message.delete();
-					})
-					.catch((error) => logger.error(error));
-
-				embed = new MessageEmbed()
-					.setTitle('Emoji Manager')
-					.setColor(0x00bc8c)
-					.setDescription(
-						`**Successfully syncing emotes!** \n\n\n It will take up to 20 minutes or more depending on server load to complete depending how many emotes you have. \n\n\n\n **NOTE:** You can try again after 20 minutes from the original sync. Type \`~cancel-sync\` to cancel.`,
+				if (final_emojis.length > 0) {
+					logger.debug(
+						`Syncing ${final_emojis.length}/${emojis.length} total emotes for ${channel}..`,
 					);
-				await message.channel.send(embed);
+
+					EmoteQueue.set(message.guild.id, {
+						emotes: final_emojis,
+						msg: message,
+					});
+
+					await message.channel.messages
+						.fetch(to_be_deleted)
+						.then((message) => {
+							message.delete();
+						})
+						.catch((error) => logger.error(error));
+
+					embed = new MessageEmbed()
+						.setTitle('Emoji Manager')
+						.setColor(0x00bc8c)
+						.setDescription(
+							`**Successfully syncing ${final_emojis.length}/${emojis.length} emotes!** \n\n\n It will take up to 20 minutes or more depending on server load to complete depending how many emotes you have. \n\n\n\n **NOTE:** You can try again after 20 minutes from the original sync. Type \`~cancel-sync\` to cancel.`,
+						);
+					await message.channel.send(embed);
+				} else {
+					logger.debug(`No emotes found able to be synced for ${channel}..`);
+					await message.channel.messages
+						.fetch(to_be_deleted)
+						.then((message) => {
+							message.delete();
+						})
+						.catch((error) => logger.error(error));
+
+					embed = new MessageEmbed()
+						.setTitle('Emoji Manager')
+						.setColor(0x00bc8c)
+						.setDescription(
+							`No emotes found to sync. If the emote name(s) already exist they will not be overridden.`,
+						);
+					await message.channel.send(embed);
+				}
 			} else {
 				logger.debug(`Error syncing emotes for ${channel}..`);
 

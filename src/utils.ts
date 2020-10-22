@@ -1,11 +1,17 @@
-import fetch from 'node-fetch';
-import moment from 'moment';
 import datetimeDifference from 'datetime-difference';
 import { Message, MessageEmbed } from 'discord.js';
+import moment from 'moment';
+import fetch from 'node-fetch';
 import { getGCD, GLOBAL_COOLDOWN } from './clients/cache';
 import { getLogger } from './clients/logger';
 
 const logger = getLogger('Utilities');
+
+export async function asyncForEach(array, callback): Promise<void> {
+	for (let index = 0; index < array.length; index++) {
+		await callback(array[index], index, array);
+	}
+}
 
 /**
  * Send Message on Discord
