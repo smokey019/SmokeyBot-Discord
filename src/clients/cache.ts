@@ -25,12 +25,12 @@ export const cacheTwitter = new Keyv({ namespace: 'cacheTwitter' });
 export const cacheTweets = new Keyv({ namespace: 'cacheTweets' });
 export const cacheToBeDeleted = new Keyv({ namespace: 'cacheToBeDeleted' });
 export const GLOBAL_COOLDOWN = new Keyv({ namespace: 'GLOBAL_COOLDOWN' });
+export const MONSTER_CACHE = new Keyv({
+	namespace: 'MONSTER_CACHE',
+	ttl: 10 * 1000,
+});
 
 cacheClient.on('error', (error) => logger.error(error));
-xp_cache.on('error', (error) => logger.error(error));
-cacheTwitter.on('error', (error) => logger.error(error));
-cacheTweets.on('error', (error) => logger.error(error));
-cacheToBeDeleted.on('error', (error) => logger.error(error));
 
 export async function getGCD(guild_id: string): Promise<number> {
 	const GCD = await GLOBAL_COOLDOWN.get(guild_id);

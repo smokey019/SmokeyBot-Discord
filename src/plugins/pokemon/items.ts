@@ -1,9 +1,11 @@
 import { Message, MessageEmbed } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
+import { getLogger } from '../../clients/logger';
+import { COLOR_BLUE } from '../../colors';
 import { IItemsModel, ItemsTable } from '../../models/Items';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
-import { chunk, explode, format_number } from '../../utils';
+import { asyncForEach, chunk, explode, format_number } from '../../utils';
 import Items from './data/items.json';
 import {
 	findMonsterByID,
@@ -11,29 +13,42 @@ import {
 	getUserMonster,
 	IMonsterDex,
 } from './monsters';
+// import MultiMap from 'mnemonist/multi-map';
+import { global_prefixes, GUILD_PREFIXES } from './parser';
+
+const logger = getLogger('Items');
 
 export type Iitem = typeof Items[1];
 
 export const itemDB = Items;
 
-export async function parseItems(message: Message): Promise<any> {
-	const split = message.content.split(' ');
+export async function parseItems(message: Message): Promise<void> {
+	const load_prefixes =
+		(await GUILD_PREFIXES.get(message.guild.id)) || global_prefixes;
+	const prefixes = RegExp(load_prefixes.join('|'));
+	const detect_prefix = message.content.match(prefixes);
+	const prefix = detect_prefix.shift();
+	const args = message.content
+		.slice(prefix.length)
+		.trim()
+		.toLowerCase()
+		.replace(/ {2,}/gm, ' ')
+		.split(/ +/);
+	const command = args[1];
 
-	// ~item buy
-
-	if (split[1] == 'buy') {
+	if (command == 'buy') {
 		await buyItem(message);
-	} else if (split[1] == 'remove' || split[1] == '-') {
+	} else if (command == 'remove' || command == '-') {
 		await removeMonsterItem(message);
-	} else if (split[1] == 'balance') {
+	} else if (command == 'balance') {
 		await msgBalance(message);
-	} else if (split[1] == 'give' || split[1] == '+') {
+	} else if (command == 'give' || command == '+') {
 		await giveMonsterItem(message);
-	} else if (split[1] == 'list' || split[1] == 'items' || split[1] == '=') {
+	} else if (command == 'list' || command == 'items' || command == '=') {
 		await msgUserItems(message);
-	} else if (split[1] == 'shop') {
+	} else if (command == 'shop') {
 		await listItems(message);
-	} else if (split[1] == 'update') {
+	} else if (command == 'update') {
 		await updateItems(message);
 	}
 }
@@ -81,22 +96,42 @@ async function listItems(message: Message) {
 		.then((message) => {
 			return message;
 		})
-		.catch(console.error);
+		.catch((err) => {
+			logger.error(err);
+		});
 }
 
 async function msgUserItems(message: Message): Promise<any> {
-	const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
 	const isQuote = message.content.match('"');
-	let sort = ['id', 'high'];
+	const sort = ['id', 'high'];
 	let search = undefined;
 	let page = 0;
 
-	if (splitMsg.length >= 3) {
-		search = splitMsg[2].toLowerCase();
-		page = parseInt(splitMsg[splitMsg.length - 1]) - 1;
-		if (splitMsg.length >= 4) {
-			sort = [splitMsg[3].toLowerCase(), splitMsg[2].toLowerCase()];
-		}
+	const load_prefixes =
+		(await GUILD_PREFIXES.get(message.guild.id)) || global_prefixes;
+	const prefixes = RegExp(load_prefixes.join('|'));
+	const detect_prefix = message.content.match(prefixes);
+	const prefix = detect_prefix.shift();
+	const args = message.content
+		.slice(prefix.length)
+		.trim()
+		.toLowerCase()
+		.replace(/ {2,}/gm, ' ')
+		.split(/ +/);
+
+	args.splice(0, 2);
+
+	if (!isNaN(parseInt(args[args.length - 1]))) {
+		page = parseInt(args[args.length - 1]);
+		args.splice(args.length - 1, 1);
+		search = args.join(' ');
+	} else if (args.length >= 2 && isNaN(parseInt(args[args.length - 1]))) {
+		page = 0;
+		search = args.join(' ');
+	} else if (args.includes('evolve')) {
+		search = 'Evolve Items';
+	} else {
+		search = args.join(' ');
 	}
 
 	const sortable_items = [];
@@ -105,22 +140,26 @@ async function msgUserItems(message: Message): Promise<any> {
 	if (items && items.length > 0) {
 		let item_message = [];
 
-		const splitMsg = message.content.split(' ');
-
-		items.forEach((element) => {
+		await asyncForEach(items, async (element) => {
 			const item_dex = getItemByID(element.item_number);
 			if (!item_dex) return;
 
 			if (
-				(isQuote && item_dex.name.english.toLowerCase() != search) ||
-				(sort[0] == 'evolve' && !item_dex?.evolve_item) ||
+				(isQuote &&
+					item_dex.name.english.toLowerCase() != search &&
+					search != 'Evolve Items') ||
+				(args.includes('evolve') &&
+					!item_dex?.evolve_item &&
+					search == 'Evolve Items') ||
 				(search != undefined &&
-					!item_dex.name.english.toLowerCase().match(`${search}`))
+					!item_dex.name.english.toLowerCase().match(`${search}`) &&
+					search != 'Evolve Items')
 			)
 				return;
-			const tmpMsg = `ID: **${element.id}** - **${item_dex.name.english}** i№: ${item_dex.id}`;
-			item_message.push(tmpMsg);
 
+			const tmpMsg = `ID: **${element.id}** - **${item_dex.name.english}** i№: ${item_dex.id}`;
+
+			item_message.push(tmpMsg);
 			sortable_items.push({
 				id: element.id,
 				item_number: element.item_number,
@@ -159,21 +198,25 @@ async function msgUserItems(message: Message): Promise<any> {
 			});
 		}
 
-		sortable_items.forEach((element) => {
-			item_message.push(element.msg);
+		await asyncForEach(sortable_items, async (element) => {
+			if (!item_message.includes(element.msg)) {
+				item_message.push(element.msg);
+			}
 		});
 
-		let all_items = [];
-
 		if (item_message.length > 10) {
-			all_items = chunk(item_message, 10);
+			const all_items = chunk(item_message, 10);
 
-			if (splitMsg.length == 3 && all_items.length > 1) {
+			if (page > 0 && all_items.length > 1) {
 				if (all_items[page]) {
 					item_message = all_items[page];
+
+					item_message.push(`Page: **${page}/${all_items.length}**`);
 				}
 			} else {
 				item_message = all_items[0];
+
+				item_message.push(`Page: **1/${all_items.length}**`);
 			}
 		}
 
@@ -181,17 +224,19 @@ async function msgUserItems(message: Message): Promise<any> {
 
 		const embed = new MessageEmbed()
 			.setAuthor(
-				`${message.author.username}'s Items - Total: ${items.length} - Pages: ${all_items.length}`,
+				`${message.author.username}'s search for '${search}' \nFound: ${sortable_items.length} \nTotal Items: ${items.length}`,
 				`https://cdn.bulbagarden.net/upload/0/03/Bag_Ultra_Ball_Sprite.png`,
 			)
-			.setColor(0xff0000)
+			.setColor(COLOR_BLUE)
 			.setDescription(new_msg);
 		await message.channel
 			.send(embed)
 			.then((message) => {
 				return message;
 			})
-			.catch(console.error);
+			.catch((err) => {
+				logger.error(err);
+			});
 	}
 }
 
@@ -335,7 +380,9 @@ export async function checkItemEvolution(
 					.then(() => {
 						return;
 					})
-					.catch(console.error);
+					.catch((err) => {
+						logger.error(err);
+					});
 			}
 		}
 	}

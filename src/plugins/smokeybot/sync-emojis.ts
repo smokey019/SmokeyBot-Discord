@@ -98,9 +98,171 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
 
 			return;
 		} else if (ffz_emotes.room.set) {
-			await EMOJI_COOLDOWN.set(message.guild.id, true, 1200 * 1000);
-
 			const emojis = ffz_emotes.sets[ffz_emotes.room.set].emoticons;
+
+			const existing_emojis = [];
+
+			const final_emojis = [];
+
+			new Map(message.guild.emojis.cache).forEach((value) => {
+				existing_emojis.push(value.name);
+			});
+
+			if (!EmoteQueue.has(message.guild.id)) {
+				await asyncForEach(emojis, async (element) => {
+					let emote_url = '';
+
+					if (element.urls['2']) {
+						emote_url = 'https:' + element.urls['2'];
+					} else if (element.urls['4'] && !element.urls['2']) {
+						emote_url = 'https:' + element.urls['4'];
+					} else if (
+						element.urls['1'] &&
+						!element.urls['4'] &&
+						!element.urls['2']
+					) {
+						emote_url = 'https:' + element.urls['1'];
+					}
+					if (
+						!existing_emojis.includes(element.name) &&
+						!emote_url.match('undefined') &&
+						emote_url
+					) {
+						final_emojis.push(element);
+					}
+				});
+
+				if (final_emojis.length > 0) {
+					await EMOJI_COOLDOWN.set(message.guild.id, true, 1200 * 1000);
+
+					logger.debug(
+						`Syncing ${final_emojis.length}/${emojis.length} total emotes for ${channel}..`,
+					);
+
+					EmoteQueue.set(message.guild.id, {
+						emotes: final_emojis,
+						msg: message,
+					});
+
+					await message.channel.messages
+						.fetch(to_be_deleted)
+						.then((message) => {
+							message.delete();
+						})
+						.catch((error) => logger.error(error));
+
+					embed = new MessageEmbed()
+						.setTitle('Emoji Manager')
+						.setColor(0x00bc8c)
+						.setDescription(
+							`**Successfully syncing ${final_emojis.length}/${emojis.length} emotes!** \n\n\n It will take up to 20 minutes or more depending on server load to complete depending how many emotes you have. \n\n\n\n **NOTE:** You can try again after 20 minutes from the original sync. Type \`~cancel-sync\` to cancel.`,
+						);
+					await message.channel.send(embed);
+				} else {
+					logger.debug(`No emotes found able to be synced for ${channel}..`);
+					await message.channel.messages
+						.fetch(to_be_deleted)
+						.then((message) => {
+							message.delete();
+						})
+						.catch((error) => logger.error(error));
+
+					embed = new MessageEmbed()
+						.setTitle('Emoji Manager')
+						.setColor(0x00bc8c)
+						.setDescription(
+							`No emotes found to sync. If the emote name(s) already exist they will not be overridden.`,
+						);
+					await message.channel.send(embed);
+				}
+			} else {
+				logger.debug(`Error syncing emotes for ${channel}..`);
+
+				const currentQueue = EmoteQueue.get(message.guild.id);
+				const emotes = currentQueue.emotes.length;
+
+				await message.channel.messages
+					.fetch(to_be_deleted)
+					.then((message) => {
+						message.delete();
+					})
+					.catch((error) => logger.error(error));
+
+				embed = new MessageEmbed()
+					.setTitle('Emoji Manager')
+					.setColor(0x00bc8c)
+					.setDescription(
+						`**You already have ${emotes} emotes in a queue. You cannot add more at this time.**`,
+					);
+				await message.channel.send(embed);
+			}
+		}
+	}
+}
+
+/**
+ *
+ * @param message
+ */
+export async function sync_bttv_emotes(message: Message): Promise<void> {
+	let embed = undefined;
+	let to_be_deleted = undefined;
+	const cooldown = await EMOJI_COOLDOWN.get(message.guild.id);
+	const args = message.content
+		.slice(1)
+		.trim()
+		.toLowerCase()
+		.replace(/ {2,}/gm, ' ')
+		.split(/ +/);
+	const command = args.shift();
+	const channel = args[0]?.replace(/\W/g, '');
+
+	if (
+		command == 'sync-emotes-bttv' &&
+		channel &&
+		message.member.hasPermission('ADMINISTRATOR') &&
+		!cooldown
+	) {
+		embed = new MessageEmbed()
+			.setTitle('Emoji Manager')
+			.setColor(0xff0000)
+			.setDescription(`Checking BetterTTV API to sync emotes..`);
+		await message.channel
+			.send(embed)
+			.then((message) => {
+				to_be_deleted = message.id;
+			})
+			.catch((error) => logger.error(error));
+
+		logger.debug(
+			`Fetching BTTV Emotes for Twitch channel ${channel} (requested by ${message.member.displayName} in ${message.guild.name})..`,
+		);
+
+		const emotes: FFZRoom = await jsonFetch(
+			`https://api.betterttv.net/3/cached/users/twitch/${channel}`,
+		);
+
+		if (!emotes || !emotes.room || !emotes.room.set) {
+			logger.debug(`Couldn't fetch FFZ Emotes for Twitch channel ${channel}.`);
+
+			await message.channel.messages
+				.fetch(to_be_deleted)
+				.then((message) => {
+					message.delete();
+				})
+				.catch((error) => logger.error(error));
+
+			embed = new MessageEmbed()
+				.setTitle('Emoji Manager')
+				.setColor(0xff0000)
+				.setDescription(
+					`There was an error fetching from BetterTTV's API. \n\n Make sure the username is correct and there are no symbols. \n\n You may have to wait for BTTV's cache to update before getting certain emotes. This can take up to an hour. \n\n You can try this again in 20 minutes.`,
+				);
+			await message.channel.send(embed);
+
+			return;
+		} else if (emotes.room.set) {
+			const emojis = emotes.sets[emotes.room.set].emoticons;
 
 			const existing_emojis = [];
 
@@ -128,6 +290,8 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
 				});
 
 				if (final_emojis.length > 0) {
+					await EMOJI_COOLDOWN.set(message.guild.id, true, 1200 * 1000);
+
 					logger.debug(
 						`Syncing ${final_emojis.length}/${emojis.length} total emotes for ${channel}..`,
 					);

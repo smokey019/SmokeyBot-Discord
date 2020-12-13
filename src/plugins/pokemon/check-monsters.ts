@@ -1,12 +1,11 @@
 import { Message, MessageEmbed } from 'discord.js';
-
-import { theWord, chunk, format_number } from '../../utils';
-import { getLogger } from '../../clients/logger';
-import { findMonsterByID, getPokedex } from './monsters';
-import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { databaseClient } from '../../clients/database';
+import { getLogger } from '../../clients/logger';
 import { COLOR_GREEN, COLOR_WHITE } from '../../colors';
+import { IMonsterModel, MonsterTable } from '../../models/Monster';
+import { chunk, format_number, theWord } from '../../utils';
 import { userDex } from './info';
+import { findMonsterByID, getPokedex, getUsersMonsters } from './monsters';
 
 const logger = getLogger('Pokemon');
 
@@ -25,12 +24,7 @@ export async function checkMonsters(message: Message): Promise<void> {
 
 	const sort = [splitMsg[1], splitMsg[2]];
 
-	const pokemon = await databaseClient<IMonsterModel>(MonsterTable)
-		.select()
-		.where({
-			uid: message.author.id,
-			released: 0,
-		});
+	const pokemon = await getUsersMonsters(message.author.id);
 
 	if (pokemon.length > 0) {
 		let message_contents = [];
@@ -167,9 +161,17 @@ export async function checkMonsters(message: Message): Promise<void> {
 
 				if (all_monsters[page]) {
 					message_contents = all_monsters[page];
+
+					message_contents.push(
+						`Page: **${page + 1}/${format_number(all_monsters.length)}**`,
+					);
 				}
 			} else {
 				message_contents = all_monsters[0];
+
+				message_contents.push(
+					`Page: **1/${format_number(all_monsters.length)}**`,
+				);
 			}
 		}
 
@@ -177,27 +179,27 @@ export async function checkMonsters(message: Message): Promise<void> {
 
 		const embed = new MessageEmbed()
 			.setAuthor(
-				`${message.author.username}'s Pokémon - Total: ${format_number(
+				`${message.author.username}'s ${theWord()}\nShowing: ${format_number(
 					message_contents.length,
 				) +
 					'/' +
-					format_number(pokemon.length)} - Pages: ${format_number(
-					all_monsters.length,
-				)}`,
+					format_number(pokemon.length)}`,
 				message.author.avatarURL()?.toString(),
 			)
 			.setColor(COLOR_GREEN)
 			.setDescription(new_msg);
 		await message.channel
 			.send(embed)
-			.then((message) => {
+			.then(() => {
 				logger.debug(
 					`Sent ${theWord()} for ${message.author.tag} in ${
 						message.guild?.name
 					}!`,
 				);
 			})
-			.catch(console.error);
+			.catch(async (err) => {
+				logger.error(err);
+			});
 	} else {
 		message
 			.reply(`You don't have any monsters in your Pokédex. :(`)
@@ -205,7 +207,9 @@ export async function checkMonsters(message: Message): Promise<void> {
 				logger.debug(`${message.author.username} doesn't have any Pokémon!`);
 				return;
 			})
-			.catch(console.error);
+			.catch(async (err) => {
+				logger.error(err);
+			});
 	}
 }
 
@@ -267,7 +271,9 @@ export async function checkPokedex(message: Message): Promise<void> {
 		.then((message) => {
 			logger.debug(`Sent PokeDex in ${message.guild?.name}!`);
 		})
-		.catch(console.error);
+		.catch(async (err) => {
+			logger.error(err);
+		});
 }
 
 /**
@@ -454,7 +460,9 @@ export async function checkFavorites(message: Message): Promise<void> {
 			.then((message) => {
 				logger.debug(`Sent favorites in ${message.guild?.name}!`);
 			})
-			.catch(console.error);
+			.catch(async (err) => {
+				logger.error(err);
+			});
 	} else {
 		message
 			.reply(`You don't have any favorite monsters in your Pokédex. :(`)
@@ -464,7 +472,9 @@ export async function checkFavorites(message: Message): Promise<void> {
 				);
 				return;
 			})
-			.catch(console.error);
+			.catch(async (err) => {
+				logger.error(err);
+			});
 	}
 }
 
@@ -495,12 +505,7 @@ export async function searchMonsters(message: Message): Promise<void> {
 		search = parseSearch[1].toLowerCase();
 	}
 
-	const pokemon = await databaseClient<IMonsterModel>(MonsterTable)
-		.select()
-		.where({
-			uid: message.author.id,
-			released: 0,
-		});
+	const pokemon = await getUsersMonsters(message.author.id);
 
 	if (pokemon.length > 0) {
 		let message_contents = [];
@@ -637,7 +642,9 @@ export async function searchMonsters(message: Message): Promise<void> {
 
 			const embed = new MessageEmbed()
 				.setAuthor(
-					`${message.author.username}'s Pokémon - Total: ${format_number(
+					`${
+						message.author.username
+					}'s search for '${search}' - Total: ${format_number(
 						message_contents.length,
 					) +
 						'/' +
@@ -657,13 +664,23 @@ export async function searchMonsters(message: Message): Promise<void> {
 						}!`,
 					);
 				})
-				.catch(console.error);
+				.catch(async (err) => {
+					logger.error(err);
+				});
+		} else if (message_contents.length == 0) {
+			message.reply(`cannot find '${search}'.`);
 		} else {
 			const new_msg = message_contents.join('\n');
 
 			const embed = new MessageEmbed()
 				.setAuthor(
-					`${message.author.username}'s Pokémon`,
+					`${
+						message.author.username
+					}'s search for '${search}' - Total: ${format_number(
+						message_contents.length,
+					) +
+						'/' +
+						format_number(pokemon.length)}`,
 					message.author.avatarURL()?.toString(),
 				)
 				.setColor(0xff0000)
@@ -677,7 +694,9 @@ export async function searchMonsters(message: Message): Promise<void> {
 						}!`,
 					);
 				})
-				.catch(console.error);
+				.catch(async (err) => {
+					logger.error(err);
+				});
 		}
 	} else {
 		message
@@ -686,6 +705,8 @@ export async function searchMonsters(message: Message): Promise<void> {
 				logger.debug(`${message.author.username} doesn't have any Pokémon!`);
 				return;
 			})
-			.catch(console.error);
+			.catch(async (err) => {
+				logger.error(err);
+			});
 	}
 }

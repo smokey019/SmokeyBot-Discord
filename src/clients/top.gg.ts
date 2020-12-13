@@ -35,6 +35,13 @@ dblClient.on('error', (e) => {
 	logger.error(`Oops! ${e}`);
 });
 
+setTimeout(keepAlive, 60 * 1000);
+
+async function keepAlive() {
+	await dblCache.get('123456:voted');
+	setTimeout(keepAlive, 60 * 1000);
+}
+
 export async function checkVote(message: Message): Promise<any> {
 	let voted = await dblCache.get(message.author.id + ':voted');
 
@@ -46,7 +53,7 @@ export async function checkVote(message: Message): Promise<any> {
 
 			if (isWeekend) {
 				await message.reply(
-					`Thanks for voting! It's the weekend so you receive double! You received **10,000 currency** and **2 Rare Candy** to level up your monster(s)! You can do this every 12 hours.`,
+					`Thanks for voting! It's the weekend so you receive double! You received **5,000 currency** and **2 Rare Candy** to level up your monster(s)! You can do this every 12 hours.`,
 				);
 
 				for (let index = 0; index < 4; index++) {
@@ -58,10 +65,10 @@ export async function checkVote(message: Message): Promise<any> {
 
 				await databaseClient<IMonsterUserModel>(MonsterUserTable)
 					.where({ uid: message.author.id })
-					.increment('currency', 10000);
+					.increment('currency', 5000);
 			} else {
 				await message.reply(
-					`Thanks for voting! You received **5,000 currency** and a **Rare Candy** to level up a monster! You can do this every 12 hours.`,
+					`Thanks for voting! You received **2,500 currency** and a **Rare Candy** to level up a monster! You can do this every 12 hours.`,
 				);
 
 				await createItemDB({
@@ -71,7 +78,7 @@ export async function checkVote(message: Message): Promise<any> {
 
 				await databaseClient<IMonsterUserModel>(MonsterUserTable)
 					.where({ uid: message.author.id })
-					.increment('currency', 5000);
+					.increment('currency', 2500);
 			}
 
 			return true;

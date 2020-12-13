@@ -114,7 +114,7 @@ export async function smokeybotParser(
 		await sumSmash(message);
 	}
 
-	if (message.content == 'check vase') {
+	if (message.content == '~check vase') {
 		await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
 		await checkVase(message);

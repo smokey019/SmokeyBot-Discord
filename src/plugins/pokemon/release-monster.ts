@@ -58,7 +58,9 @@ export async function releaseMonster(message: Message): Promise<void> {
 						);
 						return;
 					})
-					.catch(console.error);
+					.catch((err) => {
+						logger.error(err);
+					});
 			}
 		} else {
 			let to_release = undefined;
@@ -99,7 +101,9 @@ export async function releaseMonster(message: Message): Promise<void> {
 							logger.trace(`Successfully released monster. :(`);
 							return;
 						})
-						.catch(console.error);
+						.catch((err) => {
+							logger.error(err);
+						});
 				}
 			}
 		}

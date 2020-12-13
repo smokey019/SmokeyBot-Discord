@@ -106,7 +106,9 @@ export async function checkExpGain(message: Message): Promise<void> {
 											.then(() => {
 												return;
 											})
-											.catch(console.error);
+											.catch((err) => {
+												logger.error(err);
+											});
 									}
 								}
 							}

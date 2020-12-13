@@ -19,7 +19,7 @@ import {
 const logger = getLogger('Pokemon');
 
 const MonsterPool: Array<number> = [];
-const MonsterDex: Collection<number, IMonsterDex> = new Collection();
+export const MonsterDex: Collection<number, IMonsterDex> = new Collection();
 
 export type IMonsterDex = typeof PokeDex[0];
 
@@ -50,7 +50,7 @@ PokeDex.forEach((element) => {
 		element.name.english &&
 		element.images &&
 		element.id >= 0 &&
-		element.id <= 893 &&
+		element.id <= 898 &&
 		!element.name.english.match(/Gmax/)
 	) {
 		MonsterDex.set(element.id, element);
@@ -58,7 +58,7 @@ PokeDex.forEach((element) => {
 });
 
 let mon = undefined;
-for (let index = 0; index < 7; index++) {
+for (let index = 0; index < 5; index++) {
 	Gens.one.forEach((element) => {
 		mon = findMonsterByID(element);
 		if (mon) {
@@ -127,13 +127,13 @@ for (let index = 0; index < 7; index++) {
 }
 
 Gens.alola.forEach((element) => {
-	for (let index = 0; index < 7; index++) {
+	for (let index = 0; index < 5; index++) {
 		MonsterPool.push(element.id);
 	}
 });
 
 Gens.galar.forEach((element) => {
-	for (let index = 0; index < 7; index++) {
+	for (let index = 0; index < 5; index++) {
 		MonsterPool.push(element.id);
 	}
 });
@@ -229,6 +229,16 @@ export async function getUserMonster(
 	} else {
 		return undefined;
 	}
+}
+
+export async function getUsersMonsters(uid: string): Promise<IMonsterModel[]> {
+	const monsters = await databaseClient<IMonsterModel>(MonsterTable)
+		.select()
+		.where({
+			uid: uid,
+			released: 0,
+		});
+	return monsters;
 }
 
 export async function selectMonster(message: Message): Promise<boolean> {

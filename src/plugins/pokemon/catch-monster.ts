@@ -84,12 +84,12 @@ export async function catchMonster(message: Message): Promise<void> {
 
 		const monster: IMonsterModel = {
 			monster_id: currentSpawn.id,
-			hp: getRndInteger(getRndInteger(1, 3), 31),
-			attack: getRndInteger(getRndInteger(1, 3), 31),
-			defense: getRndInteger(getRndInteger(1, 3), 31),
-			sp_attack: getRndInteger(getRndInteger(1, 3), 31),
-			sp_defense: getRndInteger(getRndInteger(1, 3), 31),
-			speed: getRndInteger(getRndInteger(1, 3), 31),
+			hp: getRndInteger(1, 31),
+			attack: getRndInteger(1, 31),
+			defense: getRndInteger(1, 31),
+			sp_attack: getRndInteger(1, 31),
+			sp_defense: getRndInteger(1, 31),
+			speed: getRndInteger(1, 31),
 			nature: getRandomNature(),
 			experience: level * 1250,
 			level: level,
@@ -169,7 +169,7 @@ export async function catchMonster(message: Message): Promise<void> {
 				let response = ``;
 
 				if (shiny == 1 && !dex.includes(currentSpawn.id)) {
-					response = `_**POGGERS**_! You caught a ⭐__***SHINY***__⭐ level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}** - Added to Pokédex.`;
+					response = `_**POGGERS**_! You caught a ⭐__***SHINY***__⭐ level **${level} ${currentSpawn.name.english}**! \n\n Avg IV: **${averageIV}**% \nID: **${insertMonster[0]}** \n\nAdded to Pokédex.`;
 					logger.error(
 						`${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
 					);
@@ -190,7 +190,7 @@ export async function catchMonster(message: Message): Promise<void> {
 						`${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
 					);
 				} else if (shiny == 1 && dex.includes(currentSpawn.id)) {
-					response = `_**POGGERS**_! You caught a ⭐__***SHINY***__⭐ level **${level} ${currentSpawn.name.english}**! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}**.`;
+					response = `_**POGGERS**_! You caught a ⭐__***SHINY***__⭐ level **${level} ${currentSpawn.name.english}**! \n\n Avg IV: **${averageIV}**% \nID: **${insertMonster[0]}**.`;
 					logger.error(
 						`${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
 					);
@@ -229,6 +229,8 @@ export async function catchMonster(message: Message): Promise<void> {
 		message
 			.reply(`That is the wrong Pokémon!`)
 			.then(() => logger.trace(`${message.author.username} is WRONG!`))
-			.catch(console.error);
+			.catch((err) => {
+				logger.error(err);
+			});
 	}
 }

@@ -9,7 +9,7 @@ export const EmoteQueue: Collection<
 	string,
 	{ emotes: FFZEmotes[]; msg: Message }
 > = new Collection();
-const COOLDOWN = 20 * 1000;
+const COOLDOWN = 30 * 1000;
 
 setTimeout(runEmoteQueue, COOLDOWN);
 
@@ -70,14 +70,15 @@ async function create_emoji(
 			return true;
 		})
 		.catch(async (err) => {
-			logger.error('Emote error:', err);
-
 			switch (err.message) {
 				case 'Maximum number of emojis reached (50)':
 				case 'Maximum number of emojis reached (75)':
 				case 'Maximum number of emojis reached (100)':
 				case 'Maximum number of emojis reached (250)':
 					EmoteQueue.delete(message.guild.id);
+					logger.info(
+						`Maximum emojis reached for server '${message.guild.name}'.`,
+					);
 					await message.reply(
 						`you've reached the maximum amount of emotes for the server.`,
 					);
@@ -85,9 +86,17 @@ async function create_emoji(
 
 				case 'Missing Permissions':
 					EmoteQueue.delete(message.guild.id);
+					logger.info(
+						`Improper permissions for server '${message.guild.name}'.`,
+					);
 					await message.reply(
 						`SmokeyBot doesn't have the proper permissions. Make sure SmokeyBot can Manage Emoji in the roles section.`,
 					);
+					break;
+
+				default:
+					logger.error('Emote error:', err);
+
 					break;
 			}
 		});

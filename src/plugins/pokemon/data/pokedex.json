@@ -36058,6 +36058,223 @@
 		}
 	},
 	{
+		"id": 894,
+		"name": {
+			"english": "Regieleki",
+			"japanese": "レジエレキ",
+			"chinese": "",
+			"french": ""
+		},
+		"special": "Legendary",
+		"type": ["Electric"],
+		"gender": "N",
+		"baseStats": {
+			"hp": 80,
+			"atk": 100,
+			"def": 50,
+			"spa": 100,
+			"spd": 50,
+			"spe": 200
+		},
+		"abilities": { "0": "Transistor" },
+		"heightm": 1.2,
+		"weightkg": 145,
+		"color": "#f0d048",
+		"eggGroups": ["Undiscovered"],
+		"images": {
+			"normal": "https://i.imgur.com/qJLKLlk.png",
+			"shiny": "",
+			"gif": "",
+			"gif-shiny": ""
+		}
+	},
+	{
+		"id": 895,
+		"name": {
+			"english": "Regidrago",
+			"japanese": "レジドラゴ",
+			"chinese": "",
+			"french": ""
+		},
+		"special": "Legendary",
+		"type": ["Dragon"],
+		"gender": "N",
+		"baseStats": {
+			"hp": 200,
+			"atk": 100,
+			"def": 50,
+			"spa": 100,
+			"spd": 50,
+			"spe": 80
+		},
+		"abilities": { "0": "Dragon's Maw" },
+		"heightm": 2.1,
+		"weightkg": 200,
+		"color": "#40b868",
+		"eggGroups": ["Undiscovered"],
+		"images": {
+			"normal": "https://i.imgur.com/QIBINBJ.png",
+			"shiny": "",
+			"gif": "",
+			"gif-shiny": ""
+		}
+	},
+	{
+		"id": 896,
+		"name": {
+			"english": "Glastrier",
+			"japanese": "ブリザポス",
+			"chinese": "",
+			"french": ""
+		},
+		"special": "Legendary",
+		"type": ["Ice"],
+		"gender": "N",
+		"baseStats": {
+			"hp": 100,
+			"atk": 145,
+			"def": 130,
+			"spa": 65,
+			"spd": 110,
+			"spe": 30
+		},
+		"abilities": { "0": "Chilling Neigh" },
+		"heightm": 2.2,
+		"weightkg": 800,
+		"color": "#ffffff",
+		"eggGroups": ["Undiscovered"],
+		"images": {
+			"normal": "https://i.imgur.com/V3okAn4.png",
+			"shiny": "",
+			"gif": "",
+			"gif-shiny": ""
+		}
+	},
+	{
+		"id": 897,
+		"name": {
+			"english": "Spectrier",
+			"japanese": "レイスポス",
+			"chinese": "",
+			"french": ""
+		},
+		"special": "Legendary",
+		"type": ["Ghost"],
+		"gender": "N",
+		"baseStats": {
+			"hp": 100,
+			"atk": 65,
+			"def": 60,
+			"spa": 145,
+			"spd": 80,
+			"spe": 130
+		},
+		"abilities": { "0": "Grim Neigh" },
+		"heightm": 2,
+		"weightkg": 44.5,
+		"color": "#000000",
+		"eggGroups": ["Undiscovered"],
+		"images": {
+			"normal": "https://i.imgur.com/a7KUpVw.png",
+			"shiny": "",
+			"gif": "",
+			"gif-shiny": ""
+		}
+	},
+	{
+		"id": 898,
+		"name": {
+			"english": "Calyrex",
+			"japanese": "バドレックス",
+			"chinese": "",
+			"french": ""
+		},
+		"special": "Legendary",
+		"type": ["Psychic", "Grass"],
+		"gender": "N",
+		"baseStats": {
+			"hp": 100,
+			"atk": 80,
+			"def": 80,
+			"spa": 80,
+			"spd": 80,
+			"spe": 80
+		},
+		"abilities": { "0": "Unnerve" },
+		"heightm": 1.1,
+		"weightkg": 7.7,
+		"color": "#40b868",
+		"eggGroups": ["Undiscovered"],
+		"images": {
+			"normal": "https://i.imgur.com/guxMG3S.png",
+			"shiny": "",
+			"gif": "",
+			"gif-shiny": ""
+		}
+	},
+	{
+		"id": 898.1,
+		"name": {
+			"english": "Ice Rider Calyrex",
+			"japanese": "バドレックス",
+			"chinese": "",
+			"french": ""
+		},
+		"special": "Legendary",
+		"type": ["Psychic", "Ice"],
+		"gender": "N",
+		"baseStats": {
+			"hp": 100,
+			"atk": 165,
+			"def": 150,
+			"spa": 85,
+			"spd": 130,
+			"spe": 50
+		},
+		"abilities": { "0": "Unnerve" },
+		"heightm": 1.1,
+		"weightkg": 7.7,
+		"color": "#40b868",
+		"eggGroups": ["Undiscovered"],
+		"images": {
+			"normal": "https://i.imgur.com/ZAjea8U.png",
+			"shiny": "",
+			"gif": "",
+			"gif-shiny": ""
+		}
+	},
+	{
+		"id": 898.2,
+		"name": {
+			"english": "Shadow Rider Calyrex",
+			"japanese": "バドレックス",
+			"chinese": "",
+			"french": ""
+		},
+		"special": "Legendary",
+		"type": ["Psychic", "Ghost"],
+		"gender": "N",
+		"baseStats": {
+			"hp": 100,
+			"atk": 85,
+			"def": 80,
+			"spa": 165,
+			"spd": 100,
+			"spe": 150
+		},
+		"abilities": { "0": "Unnerve" },
+		"heightm": 1.1,
+		"weightkg": 7.7,
+		"color": "#40b868",
+		"eggGroups": ["Undiscovered"],
+		"images": {
+			"normal": "https://i.imgur.com/AlGYuGP.png",
+			"shiny": "",
+			"gif": "",
+			"gif-shiny": ""
+		}
+	},
+	{
 		"id": 0,
 		"name": {
 			"english": "MissingNo.",

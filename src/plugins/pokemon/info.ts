@@ -4,7 +4,12 @@ import { getLogger } from '../../clients/logger';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 import { format_number, theWord } from '../../utils';
-import { findMonsterByID, findMonsterByName, IMonsterDex } from './monsters';
+import {
+	findMonsterByID,
+	findMonsterByName,
+	IMonsterDex,
+	MonsterDex,
+} from './monsters';
 import { img_monster_ball } from './utils';
 
 const logger = getLogger('Info');
@@ -132,7 +137,9 @@ export async function monsterEmbed(
 			.then((message) => {
 				return message;
 			})
-			.catch(console.error);
+			.catch((err) => {
+				logger.error(err);
+			});
 	} else if (!monster_db.shiny) {
 		const embed = new MessageEmbed()
 			.setAuthor(
@@ -167,14 +174,18 @@ export async function monsterEmbed(
 			.then((message) => {
 				return message;
 			})
-			.catch(console.error);
+			.catch((err) => {
+				logger.error(err);
+			});
 	}
 }
 
 export async function checkUniqueMonsters(message: Message): Promise<void> {
 	const tempdex = await userDex(message);
 	await message.reply(
-		`You have ${tempdex.length} total unique ${theWord()} in your Pokédex.`,
+		`You have ${tempdex.length}/${
+			MonsterDex.size
+		} total unique ${theWord()} in your Pokédex.`,
 	);
 }
 
@@ -527,7 +538,9 @@ export async function monsterDex(message: Message): Promise<void> {
 			.then((message) => {
 				return message;
 			})
-			.catch(console.error);
+			.catch((err) => {
+				logger.error(err);
+			});
 	}
 }
 

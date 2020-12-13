@@ -12,10 +12,59 @@ import {
 	theWord,
 } from '../../utils';
 import { getMonsterDBCount, getShinyMonsterDBCount } from './monsters';
+import { global_prefixes, GUILD_PREFIXES } from './parser';
 import { getBoostedWeatherSpawns } from './weather';
 
 // const SHINY_ODDS_RETAIL = parseInt(getConfigValue('SHINY_ODDS_RETAIL'));
 // const SHINY_ODDS_COMMUNITY = parseInt(getConfigValue('SHINY_ODDS_COMMUNITY'));
+
+export async function parseArgs(
+	message: Message,
+): Promise<{
+	search: string;
+	page: number;
+	sort: any;
+	isQuote: RegExpMatchArray;
+	args: any;
+}> {
+	const isQuote = message.content.match('"');
+	const sort = ['id', 'high'];
+	let search = undefined;
+	let page = 0;
+
+	const load_prefixes =
+		(await GUILD_PREFIXES.get(message.guild.id)) || global_prefixes;
+	const prefixes = RegExp(load_prefixes.join('|'));
+	const detect_prefix = message.content.match(prefixes);
+	const prefix = detect_prefix.shift();
+	const args = message.content
+		.slice(prefix.length)
+		.trim()
+		.toLowerCase()
+		.replace(/ {2,}/gm, ' ')
+		.split(/ +/);
+
+	args.splice(0, 2);
+
+	if (!isNaN(parseInt(args[args.length - 1]))) {
+		page = parseInt(args[args.length - 1]);
+		args.splice(args.length - 1, 1);
+		search = args.join(' ');
+	} else if (args.length >= 2 && isNaN(parseInt(args[args.length - 1]))) {
+		page = 0;
+		search = args.join(' ');
+	} else {
+		search = args.join(' ');
+	}
+
+	return {
+		search: search,
+		page: page,
+		sort: sort,
+		isQuote: isQuote,
+		args: args,
+	};
+}
 
 /**
  * Returns a randomized level.
@@ -28,11 +77,11 @@ export function rollLevel(min: number, max: number): number {
  * Returns a randomized value for if an item is shiny. (1 is shiny, 0 is not)
  */
 export function rollShiny(): 0 | 1 {
-	return getRndInteger(1, 665) >= 665 ? 1 : 0;
+	return getRndInteger(1, 75) >= 75 ? 1 : 0;
 }
 
 export function rollPerfectIV(): 0 | 1 {
-	return getRndInteger(1, 100) >= 100 ? 1 : 0;
+	return getRndInteger(1, 50) >= 50 ? 1 : 0;
 }
 
 export async function voteCommand(message: Message): Promise<void> {
