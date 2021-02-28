@@ -5,12 +5,12 @@ import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 import { ITrade, TradeTable } from '../../models/Trades';
 import { getCurrentTime, theWord } from '../../utils';
-import { checkItemEvolution } from './items';
+import { checkItemEvolution, getItemDB } from './items';
 import {
-	findMonsterByID,
-	findMonsterByName,
-	getUserMonster,
-	IMonsterDex,
+  findMonsterByID,
+  findMonsterByName,
+  getUserMonster,
+  IMonsterDex
 } from './monsters';
 
 const logger = getLogger('Pokemon-Trade');
@@ -95,9 +95,10 @@ export async function checkEvolves(
 		});
 
 	if (db_monster.length) {
-		const monster: IMonsterDex = findMonsterByID(db_monster[0].monster_id);
+    const monster: IMonsterDex = findMonsterByID(db_monster[0].monster_id);
+    const item = await getItemDB(db_monster[0].held_item);
 
-		if (monster.evos && db_monster[0].held_item != 229) {
+		if (monster.evos && item.item_number != 229) {
 			const evolution: IMonsterDex = findMonsterByName(monster.evos[0]);
 
 			if (evolution) {

@@ -9029,5 +9029,38 @@
     "evolve_item": true,
     "price": 5000,
     "limit": 0
+  },
+  {
+    "id": 967,
+    "name": {
+      "japanese": "",
+      "english": "Attack Stone",
+      "chinese": ""
+    },
+    "evolve_item": true,
+    "price": 5000,
+    "limit": 0
+  },
+  {
+    "id": 968,
+    "name": {
+      "japanese": "",
+      "english": "Defensive Stone",
+      "chinese": ""
+    },
+    "evolve_item": true,
+    "price": 5000,
+    "limit": 0
+  },
+  {
+    "id": 966,
+    "name": {
+      "japanese": "",
+      "english": "Top Stone",
+      "chinese": ""
+    },
+    "evolve_item": true,
+    "price": 5000,
+    "limit": 0
   }
 ]

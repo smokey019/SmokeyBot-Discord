@@ -6,13 +6,13 @@ import { EmoteQueue } from '../../clients/queue';
 import { dblCache } from '../../clients/top.gg';
 import { COLOR_BLACK } from '../../colors';
 import {
-	format_number,
-	getCurrentTime,
-	getRndInteger,
-	theWord,
+  format_number,
+  getCurrentTime,
+  getRndInteger,
+  theWord
 } from '../../utils';
 import { getMonsterDBCount, getShinyMonsterDBCount } from './monsters';
-import { global_prefixes, GUILD_PREFIXES } from './parser';
+import { default_prefixes, GUILD_PREFIXES } from './parser';
 import { getBoostedWeatherSpawns } from './weather';
 
 // const SHINY_ODDS_RETAIL = parseInt(getConfigValue('SHINY_ODDS_RETAIL'));
@@ -33,7 +33,7 @@ export async function parseArgs(
 	let page = 0;
 
 	const load_prefixes =
-		(await GUILD_PREFIXES.get(message.guild.id)) || global_prefixes;
+		(await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
 	const prefixes = RegExp(load_prefixes.join('|'));
 	const detect_prefix = message.content.match(prefixes);
 	const prefix = detect_prefix.shift();
@@ -42,9 +42,7 @@ export async function parseArgs(
 		.trim()
 		.toLowerCase()
 		.replace(/ {2,}/gm, ' ')
-		.split(/ +/);
-
-	args.splice(0, 2);
+		.split(/ +/gm);
 
 	if (!isNaN(parseInt(args[args.length - 1]))) {
 		page = parseInt(args[args.length - 1]);

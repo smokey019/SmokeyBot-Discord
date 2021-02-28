@@ -13,7 +13,7 @@ import {
 	GenerationSeven,
 	GenerationSix,
 	GenerationThree,
-	GenerationTwo,
+	GenerationTwo
 } from './pokemon-list';
 
 const logger = getLogger('Pokemon');
@@ -57,8 +57,22 @@ PokeDex.forEach((element) => {
 	}
 });
 
+for (let index = 0; index < 500; index++) {
+  let monster = findMonsterByID(130);
+  MonsterPool.push(monster.id);
+  monster = findMonsterByID(588);
+  MonsterPool.push(monster.id);
+  monster = findMonsterByID(796);
+  MonsterPool.push(monster.id);
+  monster = findMonsterByID(895);
+  MonsterPool.push(monster.id);
+  MonsterPool.push(monster.id);
+  monster = findMonsterByID(717);
+  MonsterPool.push(monster.id);
+}
+
 let mon = undefined;
-for (let index = 0; index < 5; index++) {
+for (let index = 0; index < 3; index++) {
 	Gens.one.forEach((element) => {
 		mon = findMonsterByID(element);
 		if (mon) {
@@ -69,7 +83,7 @@ for (let index = 0; index < 5; index++) {
 	});
 
 	Gens.two.forEach((element) => {
-		mon = findMonsterByID(element);
+    mon = findMonsterByID(element);
 		if (mon) {
 			MonsterPool.push(mon.id);
 			MonsterPool.push(mon.id);
@@ -82,12 +96,14 @@ for (let index = 0; index < 5; index++) {
 		if (mon) {
 			MonsterPool.push(mon.id);
 			MonsterPool.push(mon.id);
+			MonsterPool.push(mon.id);
 		}
 	});
 
 	Gens.four.forEach((element) => {
 		mon = findMonsterByID(element);
 		if (mon) {
+			MonsterPool.push(mon.id);
 			MonsterPool.push(mon.id);
 			MonsterPool.push(mon.id);
 		}
@@ -98,12 +114,14 @@ for (let index = 0; index < 5; index++) {
 		if (mon) {
 			MonsterPool.push(mon.id);
 			MonsterPool.push(mon.id);
+			MonsterPool.push(mon.id);
 		}
 	});
 
 	Gens.six.forEach((element) => {
 		mon = findMonsterByID(element);
 		if (mon) {
+			MonsterPool.push(mon.id);
 			MonsterPool.push(mon.id);
 			MonsterPool.push(mon.id);
 		}
@@ -114,6 +132,7 @@ for (let index = 0; index < 5; index++) {
 		if (mon) {
 			MonsterPool.push(mon.id);
 			MonsterPool.push(mon.id);
+			MonsterPool.push(mon.id);
 		}
 	});
 
@@ -122,18 +141,19 @@ for (let index = 0; index < 5; index++) {
 		if (mon) {
 			MonsterPool.push(mon.id);
 			MonsterPool.push(mon.id);
+			MonsterPool.push(mon.id);
 		}
 	});
 }
 
 Gens.alola.forEach((element) => {
-	for (let index = 0; index < 5; index++) {
+	for (let index = 0; index < 3; index++) {
 		MonsterPool.push(element.id);
 	}
 });
 
 Gens.galar.forEach((element) => {
-	for (let index = 0; index < 5; index++) {
+	for (let index = 0; index < 3; index++) {
 		MonsterPool.push(element.id);
 	}
 });

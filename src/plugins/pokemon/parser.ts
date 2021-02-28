@@ -7,19 +7,19 @@ import { getCurrentTime } from '../../utils';
 import { battleParser } from './battle';
 import { catchMonster } from './catch-monster';
 import {
-	checkFavorites,
-	checkMonsters,
-	checkPokedex,
-	searchMonsters,
+  checkFavorites,
+  checkMonsters,
+  checkPokedex,
+  searchMonsters
 } from './check-monsters';
 import { checkExpGain } from './exp-gain';
 import {
-	checkUniqueMonsters,
-	currentMonsterInfo,
-	currentMonsterInfoBETA,
-	monsterDex,
-	monsterInfo,
-	monsterInfoLatest,
+  checkUniqueMonsters,
+  currentMonsterInfo,
+  currentMonsterInfoBETA,
+  monsterDex,
+  monsterInfo,
+  monsterInfoLatest
 } from './info';
 import { msgBalance, parseItems } from './items';
 import { checkLeaderboard } from './leaderboard';
@@ -28,7 +28,12 @@ import { setNickname } from './nickname';
 import { recoverMonster, releaseMonster } from './release-monster';
 import { MONSTER_SPAWNS, spawnMonster } from './spawn-monster';
 import { parseTrade } from './trading';
-import { checkServerWeather, getBotStats, voteCommand } from './utils';
+import {
+  checkServerWeather,
+  getBotStats,
+  parseArgs,
+  voteCommand
+} from './utils';
 
 export const GUILD_PREFIXES = new Keyv(
 	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
@@ -36,14 +41,140 @@ export const GUILD_PREFIXES = new Keyv(
 	)}@${getConfigValue('DB_HOST')}:${getConfigValue('DB_PORT')}/${getConfigValue(
 		'DB_DATABASE',
 	)}`,
-	{ keySize: 191, namespace: 'GUILD_PREFIXES' },
+	{ keySize: 191, namespace: 'GUILD_PREFIXES2' },
 );
 
-export const global_prefixes = ['!', '~', 'p!'];
+export const default_prefixes = ['!', '~', 'p!'];
+
+export async function set_prefix(message: Message): Promise<void> {
+	let i = 0;
+	const parse = await parseArgs(message);
+	const prefixes =
+		(await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
+
+	if (!parse.args[1] || !parse.args[2] && parse.args[1] != 'default') {
+		await message.reply(
+			'not enough parameters. Example: `!prefix enable !`. Type `!prefix help` for more information.',
+		);
+		return;
+	}
+
+	if (parse.args[1] == 'enable') {
+		switch (parse.args[2]) {
+			case '!':
+				if (!prefixes.includes('!')) {
+					prefixes.push('!');
+					await GUILD_PREFIXES.set(message.guild.id, prefixes);
+					await message.reply('successfully added `!` as a prefix. Your prefixes are now: `' + prefixes.join(' ') + '`.');
+				}
+
+				break;
+			case '?':
+				if (!prefixes.includes('\\?')) {
+					prefixes.push('\\?');
+					await GUILD_PREFIXES.set(message.guild.id, prefixes);
+					await message.reply('successfully added `?` as a prefix.  Your prefixes are now: `' + prefixes.join(' ') + '`.');
+				}
+
+				break;
+			case '~':
+				if (!prefixes.includes('~')) {
+					prefixes.push('~');
+					await GUILD_PREFIXES.set(message.guild.id, prefixes);
+					await message.reply('successfully added `~` as a prefix.  Your prefixes are now: `' + prefixes.join(' ') + '`.');
+				}
+
+				break;
+			case 'p!':
+				if (!prefixes.includes('p!')) {
+					prefixes.push('p!');
+					await GUILD_PREFIXES.set(message.guild.id, prefixes);
+					await message.reply('successfully added `p!` as a prefix.  Your prefixes are now: `' + prefixes.join(' ') + '`.');
+				}
+
+				break;
+
+			default:
+				await message.reply(
+					'you can enable/disable these prefixes: ' + prefixes,
+				);
+				break;
+		}
+	} else if (parse.args[1] == 'disable') {
+		switch (parse.args[2]) {
+			case '!':
+				if (prefixes.includes('!') && prefixes.length > 1) {
+					for (i = 0; i < prefixes.length; i++) {
+						if (prefixes[i] === '!') {
+							prefixes.splice(i, 1);
+						}
+					}
+					await message.reply('successfully removed `!` as a prefix.  Your prefixes are now: `' + prefixes.join(' ') + '`.');
+					await GUILD_PREFIXES.set(message.guild.id, prefixes);
+				}
+
+				break;
+			case '?':
+				if (prefixes.includes('\\?') && prefixes.length > 1) {
+					for (i = 0; i < prefixes.length; i++) {
+						if (prefixes[i] === '\\?') {
+							prefixes.splice(i, 1);
+						}
+					}
+					await message.reply('successfully removed `?` as a prefix.  Your prefixes are now: `' + prefixes.join(' ') + '`.');
+					await GUILD_PREFIXES.set(message.guild.id, prefixes);
+				}
+
+				break;
+			case '~':
+				if (prefixes.includes('~') && prefixes.length > 1) {
+					for (i = 0; i < prefixes.length; i++) {
+						if (prefixes[i] === '~') {
+							prefixes.splice(i, 1);
+						}
+					}
+					await message.reply('successfully removed `~` as a prefix.  Your prefixes are now: `' + prefixes.join(' ') + '`.');
+					await GUILD_PREFIXES.set(message.guild.id, prefixes);
+				}
+
+				break;
+			case 'p!':
+				if (prefixes.includes('p!') && prefixes.length > 1) {
+					for (i = 0; i < prefixes.length; i++) {
+						if (prefixes[i] === 'p!') {
+							prefixes.splice(i, 1);
+						}
+					}
+					await message.reply('successfully removed `p!` as a prefix.  Your prefixes are now: `' + prefixes.join(' ') + '`.');
+					await GUILD_PREFIXES.set(message.guild.id, prefixes);
+				}
+
+				break;
+
+			default:
+				await message.reply(
+					'you can enable/disable these prefixes: ' + prefixes,
+				);
+				break;
+		}
+	} else if (parse.args[1] == 'default') {
+		await GUILD_PREFIXES.set(message.guild.id, default_prefixes);
+		await message.reply(
+			'successfully reset prefixes back to default: ' +
+				default_prefixes.join(', '),
+		);
+	} else if (parse.args[1] == 'help') {
+		await message.reply(
+			'enable/disable prefixes: `!prefix disable ~` or `!prefix enable p!`. By default SmokeyBot uses: `' +
+				default_prefixes.join(' ') +
+				'`.',
+		);
+	}
+}
 
 export async function prefix_check(message: Message): Promise<boolean> {
 	const prefixes =
-		(await GUILD_PREFIXES.get(message.guild.id)) || global_prefixes;
+		(await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
 
 	if (prefixes.includes(message.content.charAt(0))) {
 		return true;
@@ -56,14 +187,14 @@ export async function monsterParser(
 	message: Message,
 	cache: ICache,
 ): Promise<void> {
-	checkExpGain(message);
+	await checkExpGain(message);
 
 	const channel_name = (message.channel as TextChannel).name;
 	const GCD = await getGCD(message.guild.id);
 	const timestamp = getCurrentTime();
 	const spawn = await MONSTER_SPAWNS.get(message.guild.id);
 	const load_prefixes =
-		(await GUILD_PREFIXES.get(message.guild.id)) || global_prefixes;
+		(await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
 	const prefixes = RegExp(load_prefixes.join('|'));
 	const detect_prefix = message.content.match(prefixes);
 
@@ -88,6 +219,7 @@ export async function monsterParser(
 		await catchMonster(message);
 	} else if (timestamp - GCD > 3) {
 		switch (command) {
+
 			case 'unique':
 				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 				await checkUniqueMonsters(message);

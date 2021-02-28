@@ -5,14 +5,14 @@ import { COLOR_GREEN } from '../../colors';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { theWord } from '../../utils';
 import { findMonsterByID, findMonsterByName } from './monsters';
-import { global_prefixes, GUILD_PREFIXES } from './parser';
+import { default_prefixes, GUILD_PREFIXES } from './parser';
 
 const logger = getLogger('Pokemon-Leaderboard');
 
 export async function checkLeaderboard(message: Message): Promise<void> {
 	let search = undefined;
 	const load_prefixes =
-		(await GUILD_PREFIXES.get(message.guild.id)) || global_prefixes;
+		(await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
 	const prefixes = RegExp(load_prefixes.join('|'));
 	const detect_prefix = message.content.match(prefixes);
 	const prefix = detect_prefix.shift();
@@ -21,7 +21,7 @@ export async function checkLeaderboard(message: Message): Promise<void> {
 		.trim()
 		.toLowerCase()
 		.replace(/ {2,}/gm, ' ')
-		.split(/ +/);
+		.split(/ +/gm);
 
 	args.splice(0, 1);
 

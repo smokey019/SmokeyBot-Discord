@@ -250,18 +250,22 @@ export async function checkPokedex(message: Message): Promise<void> {
 
 		if (all_monsters[page]) {
 			msg_array = all_monsters[page];
+
+			msg_array.push(
+				`Page: **${page + 1}/${format_number(all_monsters.length)}**`,
+			);
 		}
 	} else {
 		msg_array = all_monsters[0];
+
+		msg_array.push(`Page: **1/${format_number(all_monsters.length)}**`);
 	}
 
 	const new_msg = msg_array.join('\n');
 
 	const embed = new MessageEmbed()
 		.setAuthor(
-			`Pokédex - Total ${theWord()}: ${pokemon_count} - Pages: ${
-				all_monsters.length
-			}`,
+			`Pokédex - Total ${theWord()}: ${pokemon_count}`,
 			message.author.avatarURL(),
 		)
 		.setColor(COLOR_WHITE)
@@ -434,9 +438,17 @@ export async function checkFavorites(message: Message): Promise<void> {
 
 				if (all_monsters[page]) {
 					message_contents = all_monsters[page];
+
+					message_contents.push(
+						`Page: **${page + 1}/${format_number(all_monsters.length)}**`,
+					);
 				}
 			} else {
 				message_contents = all_monsters[0];
+
+				message_contents.push(
+					`Page: **1/${format_number(all_monsters.length)}**`,
+				);
 			}
 		}
 
@@ -444,12 +456,12 @@ export async function checkFavorites(message: Message): Promise<void> {
 
 		const embed = new MessageEmbed()
 			.setAuthor(
-				`${message.author.username}'s Pokémon - Total: ${format_number(
+				`${message.author.username}'s Favorites\nShowing: ${format_number(
 					message_contents.length,
 				) +
 					'/' +
-					format_number(pokemon.length)} - Pages: ${format_number(
-					all_monsters.length,
+					format_number(pokemon.length)}\nTotal: ${format_number(
+					pokemon.length,
 				)}`,
 				message.author.avatarURL()?.toString(),
 			)
@@ -485,7 +497,7 @@ export async function checkFavorites(message: Message): Promise<void> {
 export async function searchMonsters(message: Message): Promise<void> {
 	const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
 	const isQuote = message.content.match('"');
-	let sort = undefined;
+	let sort = ['iv', 'high'];
 	let search = undefined;
 	let page = 0;
 
@@ -540,16 +552,16 @@ export async function searchMonsters(message: Message): Promise<void> {
 				shiny = '';
 			}
 
-			if (monster.special) {
-				legendary = ` 💠`;
-			} else {
-				legendary = '';
-			}
-
 			if (element.favorite) {
 				favorite = ' 💟';
 			} else {
 				favorite = '';
+			}
+
+			if (monster.special) {
+				legendary = ` 💠`;
+			} else {
+				legendary = '';
 			}
 
 			const averageIV = (

@@ -51,7 +51,7 @@ export async function spawnMonster(
 		spawn_data.monster.id > 893 ||
 		spawn_data.monster.forme ||
 		!spawn_data.monster.images ||
-		(boostCount < 4 && !isBoosted)
+		(boostCount < 7 && !isBoosted)
 	) {
 		logger.trace('Invalid monster found or trying to find a boosted type..');
 		spawn_data.monster = findMonsterByID(getRandomMonster());

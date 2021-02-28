@@ -2,7 +2,7 @@ import { Client, Message } from 'discord.js';
 import { monsterParser } from '../plugins/pokemon/parser';
 import { MONSTER_SPAWNS, spawnMonster } from '../plugins/pokemon/spawn-monster';
 import { smokeybotParser } from '../plugins/smokeybot/parser';
-import { getCurrentTime, getRndInteger } from '../utils';
+import { format_number, getCurrentTime, getRndInteger } from '../utils';
 import { getCache, getGCD, ICache } from './cache';
 import { getGuildSettings, IGuildSettings } from './database';
 import { getLogger } from './logger';
@@ -21,12 +21,13 @@ discordClient.on('ready', () => {
 });
 
 discordClient.on('rateLimit', (error) => {
-	logger.warn('Rate Limited');
+	const timeoutStr = error.timeout / 1000;
+	logger.warn(`Rate Limited.. waiting ${format_number(timeoutStr / 60)} minutes.`);
 
 	rateLimited = true;
 
 	setTimeout(() => {
-		logger.info('Rate limit timeout elapsed.');
+		logger.warn('Rate limit timeout elapsed.');
 		rateLimited = false;
 	}, error.timeout);
 });

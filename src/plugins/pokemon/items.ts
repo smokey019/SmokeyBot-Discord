@@ -8,13 +8,13 @@ import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 import { asyncForEach, chunk, explode, format_number } from '../../utils';
 import Items from './data/items.json';
 import {
-	findMonsterByID,
-	findMonsterByName,
-	getUserMonster,
-	IMonsterDex,
+    findMonsterByID,
+    findMonsterByName,
+    getUserMonster,
+    IMonsterDex
 } from './monsters';
 // import MultiMap from 'mnemonist/multi-map';
-import { global_prefixes, GUILD_PREFIXES } from './parser';
+import { default_prefixes, GUILD_PREFIXES } from './parser';
 
 const logger = getLogger('Items');
 
@@ -24,7 +24,7 @@ export const itemDB = Items;
 
 export async function parseItems(message: Message): Promise<void> {
 	const load_prefixes =
-		(await GUILD_PREFIXES.get(message.guild.id)) || global_prefixes;
+		(await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
 	const prefixes = RegExp(load_prefixes.join('|'));
 	const detect_prefix = message.content.match(prefixes);
 	const prefix = detect_prefix.shift();
@@ -108,7 +108,7 @@ async function msgUserItems(message: Message): Promise<any> {
 	let page = 0;
 
 	const load_prefixes =
-		(await GUILD_PREFIXES.get(message.guild.id)) || global_prefixes;
+		(await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
 	const prefixes = RegExp(load_prefixes.join('|'));
 	const detect_prefix = message.content.match(prefixes);
 	const prefix = detect_prefix.shift();

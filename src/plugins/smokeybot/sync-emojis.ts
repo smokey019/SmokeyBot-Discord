@@ -24,7 +24,7 @@ export async function cancel_sync(message: Message): Promise<boolean> {
 	if (
 		command == 'cancel-sync' &&
 		EmoteQueue.has(message.guild.id) &&
-		message.member.hasPermission('ADMINISTRATOR')
+		message.member.hasPermission('MANAGE_EMOJIS')
 	) {
 		EmoteQueue.delete(message.guild.id);
 		await message.reply(
@@ -56,7 +56,7 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
 	if (
 		command == 'sync-emotes-ffz' &&
 		channel &&
-		message.member.hasPermission('ADMINISTRATOR') &&
+		message.member.hasPermission('MANAGE_EMOJIS') &&
 		!cooldown
 	) {
 		embed = new MessageEmbed()
@@ -104,12 +104,13 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
 
 			const final_emojis = [];
 
-			new Map(message.guild.emojis.cache).forEach((value) => {
+			message.guild.emojis.cache.forEach((value) => {
 				existing_emojis.push(value.name);
-			});
+      });
 
 			if (!EmoteQueue.has(message.guild.id)) {
-				await asyncForEach(emojis, async (element) => {
+
+        emojis.forEach(element => {
 					let emote_url = '';
 
 					if (element.urls['2']) {
@@ -129,8 +130,10 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
 						emote_url
 					) {
 						final_emojis.push(element);
-					}
-				});
+					}else{
+            logger.debug('emote already detected, not uploading..');
+          }
+        });
 
 				if (final_emojis.length > 0) {
 					await EMOJI_COOLDOWN.set(message.guild.id, true, 1200 * 1000);
@@ -220,7 +223,7 @@ export async function sync_bttv_emotes(message: Message): Promise<void> {
 	if (
 		command == 'sync-emotes-bttv' &&
 		channel &&
-		message.member.hasPermission('ADMINISTRATOR') &&
+		message.member.hasPermission('MANAGE_EMOJIS') &&
 		!cooldown
 	) {
 		embed = new MessageEmbed()

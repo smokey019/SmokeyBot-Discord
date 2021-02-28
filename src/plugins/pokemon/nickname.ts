@@ -1,11 +1,11 @@
 import { Message } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
-import { global_prefixes, GUILD_PREFIXES } from './parser';
+import { default_prefixes, GUILD_PREFIXES } from './parser';
 
 export async function setNickname(message: Message): Promise<void> {
 	const load_prefixes =
-		(await GUILD_PREFIXES.get(message.guild.id)) || global_prefixes;
+		(await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
 	const prefixes = RegExp(load_prefixes.join('|'));
 	const detect_prefix = message.content.match(prefixes);
 	const prefix = detect_prefix.shift();

@@ -3,16 +3,20 @@ import { GLOBAL_COOLDOWN, ICache } from '../../clients/cache';
 import { getLogger } from '../../clients/logger';
 import { getCurrentTime } from '../../utils';
 import { toggleSmokeMon } from '../pokemon/options';
-import { global_prefixes, GUILD_PREFIXES } from '../pokemon/parser';
+import {
+  default_prefixes,
+  GUILD_PREFIXES,
+  set_prefix
+} from '../pokemon/parser';
 import { checkForEmptyServers } from './leave-empty-servers';
 import {
-	checkColorRoles,
-	checkTweet,
-	checkVase,
-	gtfo,
-	removeColorRoles,
-	removeEmptyRoles,
-	sumSmash,
+  checkColorRoles,
+  checkTweet,
+  checkVase,
+  gtfo,
+  removeColorRoles,
+  removeEmptyRoles,
+  sumSmash
 } from './smokeybot';
 import { cancel_sync, sync_ffz_emotes } from './sync-emojis';
 
@@ -23,7 +27,7 @@ export async function smokeybotParser(
 	cache: ICache,
 ): Promise<void> {
 	const load_prefixes =
-		(await GUILD_PREFIXES.get(message.guild.id)) || global_prefixes;
+		(await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
 	const prefixes = RegExp(load_prefixes.join('|'));
 	const detect_prefix = message.content.match(prefixes);
 	if (!detect_prefix) return;
@@ -35,6 +39,12 @@ export async function smokeybotParser(
 		.replace(/ {2,}/gm, ' ')
 		.split(/ +/);
 	const command = args.shift();
+
+	if (command == prefix) {
+		if (!message.member.hasPermission('ADMINISTRATOR')) return;
+		await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+		await set_prefix(message);
+	}
 
 	if (command == 'smokemon' && (args[0] == 'enable' || args[0] == 'disable')) {
 		await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
