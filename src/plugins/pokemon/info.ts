@@ -5,10 +5,10 @@ import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 import { format_number, theWord } from '../../utils';
 import {
-	findMonsterByID,
-	findMonsterByName,
-	IMonsterDex,
-	MonsterDex
+  findMonsterByID,
+  findMonsterByName,
+  IMonsterDex,
+  MonsterDex
 } from './monsters';
 import { img_monster_ball } from './utils';
 
@@ -97,11 +97,6 @@ export async function monsterEmbed(
 		legendary = '';
 	}
 
-	/*let original = `✅`;
-  if (monster_db.uid != monster_db.original_uid) {
-    original = `🔴`;
-  }*/
-
 	if (monster_db.shiny) {
 		const embed = new MessageEmbed()
 			.setAuthor(
@@ -112,7 +107,7 @@ export async function monsterEmbed(
 			.setColor(monster.color)
 			.setImage(monster.images.shiny)
 			.setThumbnail(monster.images['gif-shiny'])
-			.setDescription(`⭐ __**SHINY**__ ⭐\n${released}
+			.setDescription(`⭐ __**SHINY**__ ⭐${released}
 
     **ID**: ${monster_db.id}
     **National №**: ${tmpID}

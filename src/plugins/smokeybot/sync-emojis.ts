@@ -131,7 +131,7 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
 					) {
 						final_emojis.push(element);
 					}else{
-            logger.debug('emote already detected, not uploading..');
+            logger.trace('emote already detected, not uploading..');
           }
         });
 
