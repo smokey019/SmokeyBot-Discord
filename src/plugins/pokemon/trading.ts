@@ -1,6 +1,7 @@
 import { Message, MessageEmbed } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
+import { COLOR_BLUE } from '../../colors';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 import { ITrade, TradeTable } from '../../models/Trades';
@@ -40,9 +41,49 @@ export async function startTrade(message: Message): Promise<any> {
 			});
 
 			if (insertTrade) {
-				message.reply(
-					`initiated trade with <@${to_user}> - if they want to accept the trade type ~trade accept!`,
-				);
+
+        const monsterDB = await getUserMonster(traded_monster);
+        const monster = findMonsterByID(monsterDB.monster_id);
+
+        const imgs = [];
+        if (monsterDB.shiny){
+          imgs[0] = monster.images.shiny;
+          imgs[1] = monster.images['gif-shiny'];
+        }else{
+          imgs[0] = monster.images.normal;
+          imgs[1] = monster.images.gif;
+        }
+
+        const iv_avg =
+          ((monsterDB.hp +
+            monsterDB.attack +
+            monsterDB.defense +
+            monsterDB.sp_attack +
+            monsterDB.sp_defense +
+            monsterDB.speed) /
+            186) *
+          100;
+
+				const embed = new MessageEmbed({
+					color: COLOR_BLUE,
+					description: `Successfully initiated trade with <@${to_user}>\nIf they want to accept the trade type ~trade accept!\n\n**Average IV:** ${iv_avg}`,
+					image: {
+						url: imgs[0],
+					},
+					thumbnail: {
+						url: imgs[1],
+					},
+					title: `Trading ${monster.name.english}..`,
+				});
+
+				await message.channel
+					.send(embed)
+					.then(() => {
+						return;
+					})
+					.catch((err) => {
+						logger.error(err);
+					});
 			} else {
 				logger.error(`DB error while inserting trade.`);
 			}
@@ -95,8 +136,8 @@ export async function checkEvolves(
 		});
 
 	if (db_monster.length) {
-    const monster: IMonsterDex = findMonsterByID(db_monster[0].monster_id);
-    const item = await getItemDB(db_monster[0].held_item);
+		const monster: IMonsterDex = findMonsterByID(db_monster[0].monster_id);
+		const item = await getItemDB(db_monster[0].held_item);
 
 		if (monster.evos && item.item_number != 229) {
 			const evolution: IMonsterDex = findMonsterByName(monster.evos[0]);
@@ -177,8 +218,8 @@ export async function confirmTrade(message: Message): Promise<any> {
 			.update({ uid: message.author.id, favorite: 0 });
 
 		if (updateMonster) {
-			const monster_db = await getUserMonster(trade.monster_id);
-			const monster = findMonsterByID(monster_db.monster_id);
+			const monsterDB = await getUserMonster(trade.monster_id);
+			const monster = findMonsterByID(monsterDB.monster_id);
 			message.reply(
 				`successfully traded over monster **${monster.name.english}**! Nice dude.`,
 			);

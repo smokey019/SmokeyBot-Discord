@@ -224,6 +224,7 @@ export async function checkPokedex(message: Message): Promise<void> {
 	const splitMsg = message.content.split(' ');
 
 	pokedex.forEach((dex) => {
+    if (!dex.images || !dex.images.normal) return;
 		let count = 0;
 		if (pokemon.includes(dex.id)) {
 			pokemon.forEach((monster) => {

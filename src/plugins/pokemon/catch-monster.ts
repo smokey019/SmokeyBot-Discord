@@ -35,7 +35,9 @@ function monsterMatchesPrevious(messageContent: string, { name }: IMonsterDex) {
 				.replace(/(♂|♀| RS| SS|Galarian |Alolan )/gi, '')
 				.toLowerCase() ||
 		monster == name.chinese.toLowerCase().replace(/♂|♀/g, '') ||
-		monster == name.french.toLowerCase().replace(/♂|♀/g, '')
+		monster == name.french.toLowerCase().replace(/♂|♀/g, '') ||
+		monster == name.english.toLowerCase() ||
+		monster == name.japanese.toLowerCase()
 	);
 }
 
@@ -167,23 +169,27 @@ export async function catchMonster(message: Message): Promise<void> {
 
 			if (insertMonster) {
 				let response = ``;
-        let shiny_msg = '';
-        let legendary = '';
+				let shiny_msg = '';
+				let legendary = '';
 
-        if (shiny) {
-          shiny_msg = ' ⭐';
-        } else {
-          shiny_msg = '';
-        }
+				if (shiny) {
+					shiny_msg = ' ⭐';
+				} else {
+					shiny_msg = '';
+				}
 
-        if (currentSpawn.special) {
-          legendary = ` 💠`;
-        } else {
-          legendary = '';
-        }
+				if (currentSpawn.special) {
+					legendary = ` 💠`;
+				} else {
+					legendary = '';
+				}
 
 				if (shiny == 1 && !dex.includes(currentSpawn.id)) {
-					response = `_**POGGERS**_! You caught a __***SHINY***__ level **${level} ${currentSpawn.name.english}**${shiny_msg + legendary}! \n\n Avg IV: **${averageIV}**% \nID: **${insertMonster[0]}** \n\nAdded to Pokédex.`;
+					response = `_**POGGERS**_! You caught a __***SHINY***__ level **${level} ${
+						currentSpawn.name.english
+					}**${shiny_msg + legendary}! \n\n Avg IV: **${averageIV}**% \nID: **${
+						insertMonster[0]
+					}** \n\nAdded to Pokédex.`;
 					logger.error(
 						`${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
 					);
@@ -191,7 +197,11 @@ export async function catchMonster(message: Message): Promise<void> {
 						.where({ uid: message.author.id })
 						.increment('currency', 1000);
 				} else if (shiny == 0 && !dex.includes(currentSpawn.id)) {
-					response = `**YOINK**! You caught a level **${level} ${currentSpawn.name.english}**${shiny_msg + legendary}! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}** - Added to Pokédex.`;
+					response = `**YOINK**! You caught a level **${level} ${
+						currentSpawn.name.english
+					}**${shiny_msg + legendary}! Avg IV: **${averageIV}**% - ID: **${
+						insertMonster[0]
+					}** - Added to Pokédex.`;
 					logger.info(
 						`${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
 					);
@@ -199,12 +209,20 @@ export async function catchMonster(message: Message): Promise<void> {
 						.where({ uid: message.author.id })
 						.increment('currency', 100);
 				} else if (shiny == 0 && dex.includes(currentSpawn.id)) {
-					response = `**YOINK**! You caught a level **${level} ${currentSpawn.name.english}**${shiny_msg + legendary}! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}**.`;
+					response = `**YOINK**! You caught a level **${level} ${
+						currentSpawn.name.english
+					}**${shiny_msg + legendary}! Avg IV: **${averageIV}**% - ID: **${
+						insertMonster[0]
+					}**.`;
 					logger.info(
 						`${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
 					);
 				} else if (shiny == 1 && dex.includes(currentSpawn.id)) {
-					response = `_**POGGERS**_! You caught a __***SHINY***__ level **${level} ${currentSpawn.name.english}${shiny_msg + legendary}**! \n\n Avg IV: **${averageIV}**% \nID: **${insertMonster[0]}**.`;
+					response = `_**POGGERS**_! You caught a __***SHINY***__ level **${level} ${
+						currentSpawn.name.english
+					}${shiny_msg + legendary}**! \n\n Avg IV: **${averageIV}**% \nID: **${
+						insertMonster[0]
+					}**.`;
 					logger.error(
 						`${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
 					);

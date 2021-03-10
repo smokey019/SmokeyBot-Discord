@@ -8,7 +8,7 @@ import {
 	findMonsterByID,
 	findMonsterByName,
 	IMonsterDex,
-	MonsterDex,
+	MonsterDex
 } from './monsters';
 import { img_monster_ball } from './utils';
 
@@ -117,6 +117,7 @@ export async function monsterEmbed(
     **ID**: ${monster_db.id}
     **National №**: ${tmpID}
     **Dex Count**: ${count}
+    **Original Owner**: <@${monster_db.original_uid}>
 
     **Exp**: ${format_number(monster_db.experience)} / ${format_number(
 			next_level_xp,
@@ -154,6 +155,7 @@ export async function monsterEmbed(
 		}
     **National №**: ${tmpID}
     **Dex Count**: ${count}
+    **Original Owner**: <@${monster_db.original_uid}>
 
     **Exp**: ${format_number(monster_db.experience)} / ${format_number(
 			next_level_xp,
@@ -312,6 +314,12 @@ export async function monsterEmbedBeta(
 					format_number(monster_db.experience) +
 					' / ' +
 					format_number(next_level_xp),
+				inline: false,
+			},
+			{
+				name: '**Original Owner**',
+				value:
+					`<@${monster_db.original_uid}>`,
 				inline: false,
 			},
 			{ name: '**Type**', value: monster_types, inline: false },

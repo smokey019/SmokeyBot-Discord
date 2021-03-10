@@ -125,7 +125,7 @@ export function format_number(num: number): string {
  * Fetch json from URL.
  * @param {string} url URL String
  */
-export const jsonFetch = (url: string): Promise<unknown> =>
+export const jsonFetch = (url: string): Promise<any> =>
 	fetch(url, {
 		method: 'GET',
 	}).then(async (res) => res.json());

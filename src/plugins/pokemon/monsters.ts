@@ -3,25 +3,75 @@ import { databaseClient } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
-import { getRndInteger } from '../../utils';
-import PokeDex from './data/pokedex.json';
+import { getRndInteger, jsonFetch } from '../../utils';
 import {
-	GenerationEight,
-	GenerationFive,
-	GenerationFour,
-	GenerationOne,
-	GenerationSeven,
-	GenerationSix,
-	GenerationThree,
-	GenerationTwo
+  GenerationEight,
+  GenerationFive,
+  GenerationFour,
+  GenerationOne,
+  GenerationSeven,
+  GenerationSix,
+  GenerationThree,
+  GenerationTwo
 } from './pokemon-list';
 
 const logger = getLogger('Pokemon');
+const sampleMonster = [
+	{
+		id: 1,
+		name: {
+			english: 'Bulbasaur',
+			japanese: 'フシギダネ',
+			chinese: '妙蛙种子',
+			french: 'Bulbizarre',
+		},
+		type: ['Grass', 'Poison'],
+		genderRatio: {
+			M: 0.875,
+			F: 0.125,
+		},
+		baseStats: {
+			hp: 45,
+			atk: 49,
+			def: 49,
+			spa: 65,
+			spd: 65,
+			spe: 45,
+		},
+		abilities: {
+			'0': 'Overgrow',
+			H: 'Chlorophyll',
+		},
+		heightm: 0.7,
+		weightkg: 6.9,
+		color: '#41c600',
+		evos: ['Ivysaur'],
+		eggGroups: ['Monster', 'Grass'],
+		images: {
+			normal:
+				'https://cdn.discordapp.com/attachments/718781413452677211/812846012380479529/8140e2790dff77470f10b70c589ff6b3.png',
+			shiny:
+				'https://cdn.discordapp.com/attachments/718781413452677211/812846018034008084/139ddadd9fe23ac920d4cb87cd44ac30.png',
+			gif:
+				'https://cdn.discordapp.com/attachments/718781413452677211/812846024581316628/aee757d5f251d822a3a146396cd3137b.gif',
+			'gif-shiny':
+				'https://cdn.discordapp.com/attachments/718781413452677211/812846030587953182/2cd4223c3c5c1bd8942996a418e0cb22.gif',
+		},
+		forme: '',
+		region: '',
+		special: '',
+		prevo: '',
+		evoItem: '',
+    otherFormes: [],
+    evoType: '',
+    evoLevel: 0,
+	},
+];
 
 const MonsterPool: Array<number> = [];
 export const MonsterDex: Collection<number, IMonsterDex> = new Collection();
 
-export type IMonsterDex = typeof PokeDex[0];
+export type IMonsterDex = typeof sampleMonster[0];
 
 let Gens = {
 	one: GenerationOne,
@@ -36,132 +86,140 @@ let Gens = {
 	alola: [],
 };
 
-PokeDex.forEach((element) => {
-	if (!element.forme) {
-		MonsterPool.push(element.id);
-	}
-	if (element.region == 'Alola') {
-		Gens.alola.push(element);
-	}
-	if (element.region == 'Galar') {
-		Gens.galar.push(element);
-	}
-	if (
-		element.name.english &&
-		element.images &&
-		element.id >= 0 &&
-		element.id <= 898 &&
-		!element.name.english.match(/Gmax/)
-	) {
-		MonsterDex.set(element.id, element);
-	}
-});
+async function formDex(): Promise<void> {
+  logger.info('Forming Pokedex..');
+	const PokeDex: Array<IMonsterDex> = await jsonFetch(
+		'https://api.smokey.gg/pokemon/pokedex/all',
+	);
+	PokeDex.forEach((element) => {
+		if (!element.forme) {
+			MonsterPool.push(element.id);
+		}
+		if (element.region == 'Alola') {
+			Gens.alola.push(element);
+		}
+		if (element.region == 'Galar') {
+			Gens.galar.push(element);
+		}
+		if (
+			element.name.english &&
+			element.images &&
+			element.images.normal &&
+			!element.name.english.match(/Gmax/)
+		) {
+			MonsterDex.set(element.id, element);
+		}
+	});
 
-for (let index = 0; index < 500; index++) {
-  let monster = findMonsterByID(130);
-  MonsterPool.push(monster.id);
-  monster = findMonsterByID(588);
-  MonsterPool.push(monster.id);
-  monster = findMonsterByID(796);
-  MonsterPool.push(monster.id);
-  monster = findMonsterByID(895);
-  MonsterPool.push(monster.id);
-  MonsterPool.push(monster.id);
-  monster = findMonsterByID(717);
-  MonsterPool.push(monster.id);
+  for (let index = 0; index < 125; index++) {
+    MonsterPool.push(130);
+    MonsterPool.push(588);
+    MonsterPool.push(796);
+    MonsterPool.push(895);
+    MonsterPool.push(717);
+  }
+
+  let mon = undefined;
+  for (let index = 0; index < 2; index++) {
+    Gens.one.forEach((element) => {
+      mon = findMonsterByID(element);
+      if (mon) {
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+      }
+    });
+
+    Gens.two.forEach((element) => {
+      mon = findMonsterByID(element);
+      if (mon) {
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+      }
+    });
+
+    Gens.three.forEach((element) => {
+      mon = findMonsterByID(element);
+      if (mon) {
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+      }
+    });
+
+    Gens.four.forEach((element) => {
+      mon = findMonsterByID(element);
+      if (mon) {
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+      }
+    });
+
+    Gens.five.forEach((element) => {
+      mon = findMonsterByID(element);
+      if (mon) {
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+      }
+    });
+
+    Gens.six.forEach((element) => {
+      mon = findMonsterByID(element);
+      if (mon) {
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+      }
+    });
+
+    Gens.seven.forEach((element) => {
+      mon = findMonsterByID(element);
+      if (mon) {
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+      }
+    });
+
+    Gens.eight.forEach((element) => {
+      mon = findMonsterByID(element);
+      if (mon) {
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+        MonsterPool.push(mon.id);
+      }
+    });
+  }
+
+  Gens.alola.forEach((element) => {
+    for (let index = 0; index < 3; index++) {
+      MonsterPool.push(element.id);
+    }
+  });
+
+  Gens.galar.forEach((element) => {
+    for (let index = 0; index < 3; index++) {
+      MonsterPool.push(element.id);
+    }
+  });
+
+  /**
+   * clear to save some memory
+   */
+  Gens = undefined;
+
+  logger.info('Finished forming Pokedex.');
 }
 
-let mon = undefined;
-for (let index = 0; index < 3; index++) {
-	Gens.one.forEach((element) => {
-		mon = findMonsterByID(element);
-		if (mon) {
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-		}
-	});
-
-	Gens.two.forEach((element) => {
-    mon = findMonsterByID(element);
-		if (mon) {
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-		}
-	});
-
-	Gens.three.forEach((element) => {
-		mon = findMonsterByID(element);
-		if (mon) {
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-		}
-	});
-
-	Gens.four.forEach((element) => {
-		mon = findMonsterByID(element);
-		if (mon) {
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-		}
-	});
-
-	Gens.five.forEach((element) => {
-		mon = findMonsterByID(element);
-		if (mon) {
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-		}
-	});
-
-	Gens.six.forEach((element) => {
-		mon = findMonsterByID(element);
-		if (mon) {
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-		}
-	});
-
-	Gens.seven.forEach((element) => {
-		mon = findMonsterByID(element);
-		if (mon) {
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-		}
-	});
-
-	Gens.eight.forEach((element) => {
-		mon = findMonsterByID(element);
-		if (mon) {
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-			MonsterPool.push(mon.id);
-		}
-	});
-}
-
-Gens.alola.forEach((element) => {
-	for (let index = 0; index < 3; index++) {
-		MonsterPool.push(element.id);
-	}
-});
-
-Gens.galar.forEach((element) => {
-	for (let index = 0; index < 3; index++) {
-		MonsterPool.push(element.id);
-	}
-});
 
 /**
- * clear to save some memory
+ * have to do this inside of a function :)
  */
-Gens = undefined;
+
+formDex();
 
 /**
  * return monster spawn pool
@@ -329,9 +387,3 @@ export async function unFavorite(message: Message): Promise<boolean> {
 		return false;
 	}
 }
-
-logger.info(`Total MonsterPool: ${getAllMonsters().length}.`);
-logger.info(`Total Monsters: ${MonsterDex.size}.`);
-logger.info(
-	`Random Monster: ${findMonsterByID(getRandomMonster()).name.english}.`,
-);

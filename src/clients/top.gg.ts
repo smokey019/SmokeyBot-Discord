@@ -46,6 +46,7 @@ export async function checkVote(message: Message): Promise<any> {
 	let voted = await dblCache.get(message.author.id + ':voted');
 
 	if (!voted) {
+    await dblCache.set(message.author.id + ':voted', Date.now(), 1500);
 		voted = await dblClient.hasVoted(message.author.id);
 		const isWeekend = await checkWeekend();
 		if (voted) {

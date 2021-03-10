@@ -47,10 +47,9 @@ export async function spawnMonster(
 	let isBoosted = false;
 	while (
 		!spawn_data.monster?.name.english ||
-		spawn_data.monster.id < 0 ||
-		spawn_data.monster.id > 893 ||
-		spawn_data.monster.forme ||
+		spawn_data.monster.forme == "Mega" ||
 		!spawn_data.monster.images ||
+		!spawn_data.monster.images.normal ||
 		(boostCount < 7 && !isBoosted)
 	) {
 		logger.trace('Invalid monster found or trying to find a boosted type..');

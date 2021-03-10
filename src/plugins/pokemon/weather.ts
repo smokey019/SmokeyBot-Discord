@@ -24,7 +24,7 @@ export async function getBoostedWeatherSpawns(
 		await WEATHER_CACHE.set(
 			channel_id,
 			boost,
-			getRndInteger(600, 3600) * 1000,
+			getRndInteger(300, 3600) * 1000,
 		);
 		return boost;
 	} else {
