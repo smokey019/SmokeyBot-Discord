@@ -284,7 +284,7 @@ async function removeMonsterItem(message: Message) {
 	) {
 		const item = await getItemDB(monster.held_item);
 		const itemDex = getItemByID(item.item_number);
-		const monsterDex = findMonsterByID(monster.monster_id);
+		const monsterDex = await findMonsterByID(monster.monster_id);
 
 		const updateItem = await databaseClient<IItemsModel>(ItemsTable)
 			.where({ id: monster.held_item })
@@ -307,7 +307,7 @@ export async function checkItemEvolution(
 	message: Message,
 	isTrade = false,
 ): Promise<any> {
-	const monster_dex: IMonsterDex = findMonsterByID(monster.monster_id);
+	const monster_dex: IMonsterDex = await findMonsterByID(monster.monster_id);
 
 	if (
 		(monster_dex.evos && monster.held_item != 229) ||
@@ -417,7 +417,7 @@ async function giveMonsterItem(message: Message) {
 
 				if (deleteItem && updateMonster) {
 					const itemDex = getItemByID(item.item_number);
-					const monsterDex = findMonsterByID(monster.monster_id);
+					const monsterDex = await findMonsterByID(monster.monster_id);
 					message.reply(
 						`gave **${monsterDex.name.english}** a **${itemDex.name.english}** and it leveled up! Neato!`,
 					);
@@ -437,7 +437,7 @@ async function giveMonsterItem(message: Message) {
 				if (updateItem && updateMonster) {
 					monster.held_item = item.id;
 					const itemDex = getItemByID(item.item_number);
-					const monsterDex = findMonsterByID(monster.monster_id);
+					const monsterDex = await findMonsterByID(monster.monster_id);
 					message.reply(
 						`gave **${monsterDex.name.english}** an item - **${itemDex.name.english}**! Neato!`,
 					);
@@ -548,10 +548,8 @@ async function deleteItemDB(id: number | string): Promise<number> {
   const add_currency = await databaseClient<IMonsterUserModel>(MonsterUserTable)
     .where('uid', uid)
     .increment('currency', currency);
-
   if (add_currency) {
     const deleteItem = await deleteItemDB(item_id);
-
     if (deleteItem) {
       return true;
     } else {

@@ -5,7 +5,7 @@ import { COLOR_GREEN, COLOR_WHITE } from '../../colors';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { chunk, format_number, theWord } from '../../utils';
 import { userDex } from './info';
-import { findMonsterByID, getPokedex, getUsersMonsters } from './monsters';
+import { findMonsterByIDLocal, getPokedex, getUsersMonsters } from './monsters';
 
 const logger = getLogger('Pokemon');
 
@@ -37,7 +37,7 @@ export async function checkMonsters(message: Message): Promise<void> {
 		const temp_monsters = [];
 
 		pokemon.forEach((element: IMonsterModel) => {
-			const monster = findMonsterByID(element.monster_id);
+			const monster = findMonsterByIDLocal(element.monster_id);
 
 			if (!monster) return;
 
@@ -315,7 +315,7 @@ export async function checkFavorites(message: Message): Promise<void> {
 		const temp_monsters = [];
 
 		pokemon.forEach((element: IMonsterModel) => {
-			const monster = findMonsterByID(element.monster_id);
+			const monster = findMonsterByIDLocal(element.monster_id);
 
 			if (!monster) return;
 
@@ -529,7 +529,7 @@ export async function searchMonsters(message: Message): Promise<void> {
 		const temp_monsters = [];
 
 		pokemon.forEach((element: IMonsterModel) => {
-			const monster = findMonsterByID(element.monster_id);
+			const monster = findMonsterByIDLocal(element.monster_id);
 			if (!monster) return;
 
 			if (

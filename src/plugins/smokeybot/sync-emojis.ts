@@ -106,34 +106,36 @@ export async function sync_ffz_emotes(message: Message): Promise<void> {
 
 			message.guild.emojis.cache.forEach((value) => {
 				existing_emojis.push(value.name);
-      });
+			});
 
 			if (!EmoteQueue.has(message.guild.id)) {
-
-        emojis.forEach(element => {
+				emojis.forEach((element) => {
 					let emote_url = '';
+
+					if (element.name == 'butterW') {
+						console.log(element.urls);
+					}
 
 					if (element.urls['2']) {
 						emote_url = 'https:' + element.urls['2'];
-					} else if (element.urls['4'] && !element.urls['2']) {
+					}
+					if (element.urls['4'] && !element.urls['2']) {
 						emote_url = 'https:' + element.urls['4'];
-					} else if (
-						element.urls['1'] &&
-						!element.urls['4'] &&
-						!element.urls['2']
-					) {
+					}
+					if (element.urls['1'] && !element.urls['2'] && !element.urls['4']) {
 						emote_url = 'https:' + element.urls['1'];
 					}
+
 					if (
 						!existing_emojis.includes(element.name) &&
 						!emote_url.match('undefined') &&
 						emote_url
 					) {
 						final_emojis.push(element);
-					}else{
-            logger.trace('emote already detected, not uploading..');
-          }
-        });
+					} else {
+						logger.trace('emote already detected, not uploading..');
+					}
+				});
 
 				if (final_emojis.length > 0) {
 					await EMOJI_COOLDOWN.set(message.guild.id, true, 1200 * 1000);

@@ -6,10 +6,10 @@ import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { getCurrentTime, getRndInteger } from '../../utils';
 import { getItemDB } from './items';
 import {
-	findMonsterByID,
-	getPokedex,
-	getUserMonster,
-	IMonsterDex,
+    findMonsterByID,
+    getPokedex,
+    getUserMonster,
+    IMonsterDex
 } from './monsters';
 
 const logger = getLogger('ExpGain');
@@ -32,7 +32,7 @@ export async function checkExpGain(message: Message): Promise<void> {
 				const monster: IMonsterModel = await getUserMonster(
 					user.current_monster,
 				);
-				const monster_dex: IMonsterDex = findMonsterByID(monster.monster_id);
+				const monster_dex: IMonsterDex = await findMonsterByID(monster.monster_id);
 				const held_item = await getItemDB(monster.held_item);
 				await xp_cache.set(cacheKey, getCurrentTime());
 				if (!monster || monster.level >= 100) return;

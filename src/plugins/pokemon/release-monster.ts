@@ -84,7 +84,7 @@ export async function releaseMonster(message: Message): Promise<void> {
 				to_release[0].uid == message.author.id &&
 				!to_release[0].released
 			) {
-				const monster = findMonsterByID(to_release[0].monster_id);
+				const monster = await findMonsterByID(to_release[0].monster_id);
 
 				const released_monster = await databaseClient<IMonsterModel>(
 					MonsterTable,
@@ -133,7 +133,7 @@ export async function recoverMonster(message: Message): Promise<void> {
 			to_release[0].released &&
 			to_release[0].uid == message.author.id
 		) {
-			const monster = findMonsterByID(to_release[0].monster_id);
+			const monster = await findMonsterByID(to_release[0].monster_id);
 
 			const released_monster = await databaseClient<IMonsterModel>(MonsterTable)
 				.where('id', to_release[0].id)

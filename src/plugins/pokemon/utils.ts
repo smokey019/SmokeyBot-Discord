@@ -72,6 +72,15 @@ export function rollLevel(min: number, max: number): number {
 }
 
 /**
+ *
+ * @returns Gender in M or F
+ */
+export function rollGender(): string {
+  const genders = ["M", "F"];
+  return genders[getRndInteger(0,1)];
+}
+
+/**
  * Returns a randomized value for if an item is shiny. (1 is shiny, 0 is not)
  */
 export function rollShiny(): 0 | 1 {

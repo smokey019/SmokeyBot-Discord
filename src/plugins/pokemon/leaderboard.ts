@@ -4,7 +4,7 @@ import { databaseClient } from '../../clients/database';
 import { COLOR_GREEN } from '../../colors';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { theWord } from '../../utils';
-import { findMonsterByID, findMonsterByName } from './monsters';
+import { findMonsterByIDLocal, findMonsterByName } from './monsters';
 import { default_prefixes, GUILD_PREFIXES } from './parser';
 
 const logger = getLogger('Pokemon-Leaderboard');
@@ -46,7 +46,7 @@ export async function checkLeaderboard(message: Message): Promise<void> {
 		const temp_monsters = [];
 
 		monsters.forEach((element: IMonsterModel) => {
-			const monster = findMonsterByID(element.monster_id);
+			const monster = findMonsterByIDLocal(element.monster_id);
 
 			if (!monster) return;
 
@@ -73,7 +73,7 @@ export async function checkLeaderboard(message: Message): Promise<void> {
 				100
 			).toFixed(2);
 
-			const tmpMsg = `**${element.id}** - **${monster.name.english}${shiny}${legendary}** - **Level ${element.level}** - **Avg IV ${averageIV}%**`;
+			const tmpMsg = `**${element.id} - ${monster.name.english}${shiny}${legendary} - Level ${element.level} - Avg IV ${averageIV}% - Owner: <@${element.uid}>**`;
 
 			temp_monsters.push({
 				id: element.id,

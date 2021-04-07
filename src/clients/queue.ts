@@ -24,11 +24,15 @@ function runEmoteQueue() {
 		if (emote) {
 			let emote_url = '';
 
-			if (emote.urls['2']) {
-				emote_url = 'https:' + emote.urls['2'];
-			} else {
-				emote_url = 'https:' + emote.urls['4'] ?? emote.urls['1'];
-			}
+      if (emote.urls['2']) {
+        emote_url = 'https:' + emote.urls['2'];
+      }
+      if (emote.urls['4'] && !emote.urls['2']) {
+        emote_url = 'https:' + emote.urls['4'];
+      }
+      if (emote.urls['1'] && !emote.urls['2'] && !emote.urls['4']) {
+        emote_url = 'https:' + emote.urls['1'];
+      }
 
 			if (!emote_url.match('undefined')) {
 				logger.trace(
@@ -37,6 +41,9 @@ function runEmoteQueue() {
 				create_emoji(emote_url, message, emote.name);
 				setTimeout(runEmoteQueue, COOLDOWN);
 			} else {
+				logger.trace(
+					`Failed to create emoji '${emote.name}' on ${message.guild.name}.`,
+				);
 				setTimeout(runEmoteQueue, COOLDOWN);
 			}
 

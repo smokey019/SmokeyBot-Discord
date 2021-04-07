@@ -22,4 +22,5 @@ export interface IMonsterModel {
 	held_item?: number | null;
 	nickname?: string;
 	avg_iv?: number;
+  gender?: string;
 }

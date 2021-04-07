@@ -8,10 +8,10 @@ import { ITrade, TradeTable } from '../../models/Trades';
 import { getCurrentTime, theWord } from '../../utils';
 import { checkItemEvolution, getItemDB } from './items';
 import {
-  findMonsterByID,
-  findMonsterByName,
-  getUserMonster,
-  IMonsterDex
+    findMonsterByID,
+    findMonsterByName,
+    getUserMonster,
+    IMonsterDex
 } from './monsters';
 
 const logger = getLogger('Pokemon-Trade');
@@ -43,7 +43,7 @@ export async function startTrade(message: Message): Promise<any> {
 			if (insertTrade) {
 
         const monsterDB = await getUserMonster(traded_monster);
-        const monster = findMonsterByID(monsterDB.monster_id);
+        const monster = await findMonsterByID(monsterDB.monster_id);
 
         const imgs = [];
         if (monsterDB.shiny){
@@ -66,7 +66,7 @@ export async function startTrade(message: Message): Promise<any> {
 
 				const embed = new MessageEmbed({
 					color: COLOR_BLUE,
-					description: `Successfully initiated trade with <@${to_user}>\nIf they want to accept the trade type ~trade accept!\n\n**Average IV:** ${iv_avg}`,
+					description: `Successfully initiated trade with <@${to_user}>\nIf they want to accept the trade type ~trade accept!\n\n**Average IV:** ${iv_avg.toFixed(2)}%`,
 					image: {
 						url: imgs[0],
 					},
@@ -136,7 +136,7 @@ export async function checkEvolves(
 		});
 
 	if (db_monster.length) {
-		const monster: IMonsterDex = findMonsterByID(db_monster[0].monster_id);
+		const monster: IMonsterDex = await findMonsterByID(db_monster[0].monster_id);
 		const item = await getItemDB(db_monster[0].held_item);
 
 		if (monster.evos && item.item_number != 229) {
@@ -219,11 +219,11 @@ export async function confirmTrade(message: Message): Promise<any> {
 
 		if (updateMonster) {
 			const monsterDB = await getUserMonster(trade.monster_id);
-			const monster = findMonsterByID(monsterDB.monster_id);
+			const monster = await findMonsterByID(monsterDB.monster_id);
 			message.reply(
 				`successfully traded over monster **${monster.name.english}**! Nice dude.`,
 			);
-			checkEvolves(trade.monster_id, message);
+			await checkEvolves(trade.monster_id, message);
 
 			await databaseClient<ITrade>(TradeTable)
 				.where({ id: trade.id })

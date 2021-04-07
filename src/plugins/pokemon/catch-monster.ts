@@ -9,7 +9,7 @@ import { userDex } from './info';
 import { IMonsterDex } from './monsters';
 import { getRandomNature } from './natures';
 import { MONSTER_SPAWNS } from './spawn-monster';
-import { rollLevel, rollPerfectIV, rollShiny } from './utils';
+import { rollGender, rollLevel, rollPerfectIV, rollShiny } from './utils';
 
 const logger = getLogger('Pokemon-Catch');
 
@@ -72,6 +72,7 @@ export async function catchMonster(message: Message): Promise<void> {
 		let level = 0;
 
 		const shiny = rollShiny();
+    let gender = rollGender();
 		const currentSpawn: IMonsterDex = spawn.monster;
 
 		if (currentSpawn.evoLevel) {
@@ -79,6 +80,10 @@ export async function catchMonster(message: Message): Promise<void> {
 		} else {
 			level = rollLevel(1, 49);
 		}
+
+    if (currentSpawn.gender == "N"){
+      gender = "N";
+    }
 
 		spawn.monster = null;
 
@@ -99,6 +104,7 @@ export async function catchMonster(message: Message): Promise<void> {
 			original_uid: message.author.id,
 			shiny: shiny,
 			captured_at: timestamp,
+      gender: gender,
 		};
 
 		const isPerfect = rollPerfectIV();

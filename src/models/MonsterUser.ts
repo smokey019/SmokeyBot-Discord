@@ -7,6 +7,7 @@ export interface IMonsterUserModel {
 	current_monster?: number;
 	latest_monster?: number;
 	streak?: number;
+  info_style?: number;
 	items?: string;
 	dex?: string;
 }

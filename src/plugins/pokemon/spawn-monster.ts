@@ -38,7 +38,7 @@ export async function spawnMonster(
 	}
 
 	const spawn_data = {
-		monster: findMonsterByID(getRandomMonster()),
+		monster: await findMonsterByID(getRandomMonster()),
 		spawned_at: getCurrentTime(),
 	};
 
@@ -53,7 +53,7 @@ export async function spawnMonster(
 		(boostCount < 7 && !isBoosted)
 	) {
 		logger.trace('Invalid monster found or trying to find a boosted type..');
-		spawn_data.monster = findMonsterByID(getRandomMonster());
+		spawn_data.monster = await findMonsterByID(getRandomMonster());
 		spawn_data.monster?.type.forEach((element: string) => {
 			if (boost.boosts.includes(element)) {
 				isBoosted = true;

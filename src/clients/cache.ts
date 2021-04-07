@@ -29,6 +29,14 @@ export const MONSTER_CACHE = new Keyv({
 	namespace: 'MONSTER_CACHE',
 	ttl: 10 * 1000,
 });
+export const SMOKEYBOT_GLOBAL_SETTINGS_CACHE = new Keyv({
+	namespace: 'SMOKEYBOT_GLOBAL_SETTINGS_CACHE',
+	ttl: 10 * 1000,
+});
+export const CACHE_POKEDEX = new Keyv({
+	namespace: 'CACHE_POKEDEX',
+	ttl: 300 * 1000,
+});
 
 cacheClient.on('error', (error) => logger.error(error));
 
