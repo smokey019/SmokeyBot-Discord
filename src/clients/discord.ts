@@ -15,9 +15,9 @@ export let rateLimited = false;
 export const discordClient = new Client({ retryLimit: 5 });
 
 discordClient.on('ready', async () => {
-	logger.info('Fully initialized.');
   logger.info(`Total MonsterPool: ${getAllMonsters().length}.`);
   logger.info(`Total Monsters: ${MonsterDex.size}.`);
+	logger.info('Fully initialized.');
 	setInterval(async () => {
 		await dblClient.postStats(discordClient.guilds.cache.size);
 	}, 1800000);

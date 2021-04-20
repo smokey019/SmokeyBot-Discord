@@ -99,14 +99,20 @@ async function formDex(): Promise<void> {
     'https://api.smokey.gg/pokemon/pokedex/all',
   );
   PokeDex.forEach(async (element) => {
-    if (!element.forme) {
+    // !element.forme &&
+    if (
+      element.name &&
+      element.type &&
+      element.images &&
+      !element.name.english.match(/Gmax/)
+    ) {
       MonsterPool.push(element.id);
-    }
-    if (element.region == 'Alola') {
-      Gens.alola.push(element);
-    }
-    if (element.region == 'Galar') {
-      Gens.galar.push(element);
+      if (element.region == 'Alola') {
+        Gens.alola.push(element);
+      }
+      if (element.region == 'Galar') {
+        Gens.galar.push(element);
+      }
     }
     if (
       element.name.english &&
@@ -160,7 +166,7 @@ async function formDex(): Promise<void> {
 		MonsterPool.push(895);
 	}*/
 
-  for (let index = 0; index < 2; index++) {
+  for (let index = 0; index < 1; index++) {
     Gens.one.forEach((element) => {
       MonsterPool.push(element);
       MonsterPool.push(element);
@@ -174,12 +180,6 @@ async function formDex(): Promise<void> {
     Gens.three.forEach((element) => {
       MonsterPool.push(element);
       MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
     });
 
     Gens.four.forEach((element) => {
@@ -188,6 +188,18 @@ async function formDex(): Promise<void> {
     });
 
     Gens.five.forEach((element) => {
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
       MonsterPool.push(element);
       MonsterPool.push(element);
     });

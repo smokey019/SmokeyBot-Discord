@@ -47,14 +47,14 @@ export async function spawnMonster(
 	let isBoosted = false;
 	while (
 		!spawn_data.monster?.name.english ||
-		spawn_data.monster.forme == "Mega" ||
+		// spawn_data.monster.forme == "Mega" ||
 		!spawn_data.monster.images ||
 		!spawn_data.monster.images.normal ||
-		(boostCount < 7 && !isBoosted)
+		(boostCount < 10 && !isBoosted)
 	) {
 		logger.trace('Invalid monster found or trying to find a boosted type..');
 		spawn_data.monster = await findMonsterByID(getRandomMonster());
-		spawn_data.monster?.type.forEach((element: string) => {
+		spawn_data.monster.type?.forEach((element: string) => {
 			if (boost.boosts.includes(element)) {
 				isBoosted = true;
 			}
