@@ -1,5 +1,5 @@
 import { Message, MessageEmbed } from 'discord.js';
-import { GLOBAL_COOLDOWN } from '../../clients/cache';
+import { GLOBAL_COOLDOWN, ICache } from '../../clients/cache';
 import { getUserDBCount } from '../../clients/database';
 import { discordClient } from '../../clients/discord';
 import { EmoteQueue } from '../../clients/queue';
@@ -105,8 +105,8 @@ export async function voteCommand(message: Message): Promise<void> {
 	}
 }
 
-export async function checkServerWeather(message: Message): Promise<void> {
-	const boost = await getBoostedWeatherSpawns(message.guild.id);
+export async function checkServerWeather(message: Message, cache: ICache): Promise<void> {
+	const boost = await getBoostedWeatherSpawns(message, cache);
 
 	await message.reply(
 		`the current weather is **${

@@ -104,8 +104,12 @@ async function formDex(): Promise<void> {
       element.name &&
       element.type &&
       element.images &&
+      element.images.normal &&
       !element.name.english.match(/Gmax/)
     ) {
+      if (element.forme){
+        if (element.forme != 'Mega') return;
+      }
       MonsterPool.push(element.id);
       if (element.region == 'Alola') {
         Gens.alola.push(element);

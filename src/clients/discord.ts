@@ -11,6 +11,7 @@ import { dblClient } from './top.gg';
 
 const logger = getLogger('DiscordClient');
 export let rateLimited = false;
+export let initializing = true;
 
 export const discordClient = new Client({ retryLimit: 5 });
 
@@ -18,6 +19,7 @@ discordClient.on('ready', async () => {
   logger.info(`Total MonsterPool: ${getAllMonsters().length}.`);
   logger.info(`Total Monsters: ${MonsterDex.size}.`);
 	logger.info('Fully initialized.');
+  initializing = false;
 	setInterval(async () => {
 		await dblClient.postStats(discordClient.guilds.cache.size);
 	}, 1800000);

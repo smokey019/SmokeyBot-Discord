@@ -1,9 +1,14 @@
+import { Message } from 'discord.js';
 import Keyv from 'keyv';
+import { getLogger } from 'log4js';
+import { ICache } from '../../clients/cache';
+import { initializing, rateLimited } from '../../clients/discord';
 import { getConfigValue } from '../../config';
 import { getRndInteger } from '../../utils';
 import Weather from './data/weather.json';
 
 export type IWeather = typeof Weather[0];
+const logger = getLogger('Weather-Boosts');
 
 const WEATHER_CACHE = new Keyv(
 	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
@@ -15,17 +20,36 @@ const WEATHER_CACHE = new Keyv(
 );
 
 export async function getBoostedWeatherSpawns(
-	channel_id: string,
+  message: Message,
+  cache: ICache,
 ): Promise<IWeather> {
-	let boost: IWeather = await WEATHER_CACHE.get(channel_id);
+	let boost: IWeather = await WEATHER_CACHE.get(message.guild.id);
 
 	if (!boost) {
 		boost = Weather[getRndInteger(0, Weather.length - 1)];
 		await WEATHER_CACHE.set(
-			channel_id,
+			message.guild.id,
 			boost,
 			getRndInteger(300, 3600) * 1000,
 		);
+    const monsterChannel = message.guild?.channels.cache.find(
+      (ch) => ch.name === cache.settings.specific_channel,
+    );
+
+    if (!monsterChannel || !message.guild || rateLimited || initializing) {
+      return boost;
+    }
+
+    await (monsterChannel as any)
+    .send(`The weather has changed!  It is now **${
+			boost.weather
+		}**.  You will find increased spawns of **${boost.boosts.join(
+			' / ',
+		)}** on this server.`)
+    .then(() => {
+      return;
+    })
+    .catch((error) => logger.error(error));
 		return boost;
 	} else {
 		return boost;

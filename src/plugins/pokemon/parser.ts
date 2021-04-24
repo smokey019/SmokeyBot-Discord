@@ -26,7 +26,7 @@ import { checkLeaderboard } from './leaderboard';
 import { selectMonster, setFavorite, unFavorite } from './monsters';
 import { setNickname } from './nickname';
 import { recoverMonster, releaseMonster } from './release-monster';
-import { MONSTER_SPAWNS, spawnMonster } from './spawn-monster';
+import { forceSpawn, MONSTER_SPAWNS, spawnMonster } from './spawn-monster';
 import { parseTrade } from './trading';
 import {
   checkServerWeather,
@@ -36,376 +36,414 @@ import {
 } from './utils';
 
 export const GUILD_PREFIXES = new Keyv(
-	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
-		'DB_PASSWORD',
-	)}@${getConfigValue('DB_HOST')}:${getConfigValue('DB_PORT')}/${getConfigValue(
-		'DB_DATABASE',
-	)}`,
-	{ keySize: 191, namespace: 'GUILD_PREFIXES2' },
+  `mysql://${getConfigValue('DB_USER')}:${getConfigValue(
+    'DB_PASSWORD',
+  )}@${getConfigValue('DB_HOST')}:${getConfigValue('DB_PORT')}/${getConfigValue(
+    'DB_DATABASE',
+  )}`,
+  { keySize: 191, namespace: 'GUILD_PREFIXES2' },
 );
 
 export const default_prefixes = ['!', '~', 'p!'];
 
 export async function set_prefix(message: Message): Promise<void> {
-	let i = 0;
-	const parse = await parseArgs(message);
-	const prefixes =
-		(await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
+  let i = 0;
+  const parse = await parseArgs(message);
+  const prefixes =
+    (await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
 
-	if (!parse.args[1] || !parse.args[2] && parse.args[1] != 'default') {
-		await message.reply(
-			'not enough parameters. Example: `!prefix enable !`. Type `!prefix help` for more information.',
-		);
-		return;
-	}
+  if (!parse.args[1] || (!parse.args[2] && parse.args[1] != 'default')) {
+    await message.reply(
+      'not enough parameters. Example: `!prefix enable !`. Type `!prefix help` for more information.',
+    );
+    return;
+  }
 
-	if (parse.args[1] == 'enable') {
-		switch (parse.args[2]) {
-			case '!':
-				if (!prefixes.includes('!')) {
-					prefixes.push('!');
-					await GUILD_PREFIXES.set(message.guild.id, prefixes);
-					await message.reply('successfully added `!` as a prefix. Your prefixes are now: `' + prefixes.join(' ') + '`.');
-				}
+  if (parse.args[1] == 'enable') {
+    switch (parse.args[2]) {
+      case '!':
+        if (!prefixes.includes('!')) {
+          prefixes.push('!');
+          await GUILD_PREFIXES.set(message.guild.id, prefixes);
+          await message.reply(
+            'successfully added `!` as a prefix. Your prefixes are now: `' +
+              prefixes.join(' ') +
+              '`.',
+          );
+        }
 
-				break;
-			case '?':
-				if (!prefixes.includes('\\?')) {
-					prefixes.push('\\?');
-					await GUILD_PREFIXES.set(message.guild.id, prefixes);
-					await message.reply('successfully added `?` as a prefix.  Your prefixes are now: `' + prefixes.join(' ') + '`.');
-				}
+        break;
+      case '?':
+        if (!prefixes.includes('\\?')) {
+          prefixes.push('\\?');
+          await GUILD_PREFIXES.set(message.guild.id, prefixes);
+          await message.reply(
+            'successfully added `?` as a prefix.  Your prefixes are now: `' +
+              prefixes.join(' ') +
+              '`.',
+          );
+        }
 
-				break;
-			case '~':
-				if (!prefixes.includes('~')) {
-					prefixes.push('~');
-					await GUILD_PREFIXES.set(message.guild.id, prefixes);
-					await message.reply('successfully added `~` as a prefix.  Your prefixes are now: `' + prefixes.join(' ') + '`.');
-				}
+        break;
+      case '~':
+        if (!prefixes.includes('~')) {
+          prefixes.push('~');
+          await GUILD_PREFIXES.set(message.guild.id, prefixes);
+          await message.reply(
+            'successfully added `~` as a prefix.  Your prefixes are now: `' +
+              prefixes.join(' ') +
+              '`.',
+          );
+        }
 
-				break;
-			case 'p!':
-				if (!prefixes.includes('p!')) {
-					prefixes.push('p!');
-					await GUILD_PREFIXES.set(message.guild.id, prefixes);
-					await message.reply('successfully added `p!` as a prefix.  Your prefixes are now: `' + prefixes.join(' ') + '`.');
-				}
+        break;
+      case 'p!':
+        if (!prefixes.includes('p!')) {
+          prefixes.push('p!');
+          await GUILD_PREFIXES.set(message.guild.id, prefixes);
+          await message.reply(
+            'successfully added `p!` as a prefix.  Your prefixes are now: `' +
+              prefixes.join(' ') +
+              '`.',
+          );
+        }
 
-				break;
+        break;
 
-			default:
-				await message.reply(
-					'you can enable/disable these prefixes: ' + prefixes,
-				);
-				break;
-		}
-	} else if (parse.args[1] == 'disable') {
-		switch (parse.args[2]) {
-			case '!':
-				if (prefixes.includes('!') && prefixes.length > 1) {
-					for (i = 0; i < prefixes.length; i++) {
-						if (prefixes[i] === '!') {
-							prefixes.splice(i, 1);
-						}
-					}
-					await message.reply('successfully removed `!` as a prefix.  Your prefixes are now: `' + prefixes.join(' ') + '`.');
-					await GUILD_PREFIXES.set(message.guild.id, prefixes);
-				}
+      default:
+        await message.reply(
+          'you can enable/disable these prefixes: ' + prefixes,
+        );
+        break;
+    }
+  } else if (parse.args[1] == 'disable') {
+    switch (parse.args[2]) {
+      case '!':
+        if (prefixes.includes('!') && prefixes.length > 1) {
+          for (i = 0; i < prefixes.length; i++) {
+            if (prefixes[i] === '!') {
+              prefixes.splice(i, 1);
+            }
+          }
+          await message.reply(
+            'successfully removed `!` as a prefix.  Your prefixes are now: `' +
+              prefixes.join(' ') +
+              '`.',
+          );
+          await GUILD_PREFIXES.set(message.guild.id, prefixes);
+        }
 
-				break;
-			case '?':
-				if (prefixes.includes('\\?') && prefixes.length > 1) {
-					for (i = 0; i < prefixes.length; i++) {
-						if (prefixes[i] === '\\?') {
-							prefixes.splice(i, 1);
-						}
-					}
-					await message.reply('successfully removed `?` as a prefix.  Your prefixes are now: `' + prefixes.join(' ') + '`.');
-					await GUILD_PREFIXES.set(message.guild.id, prefixes);
-				}
+        break;
+      case '?':
+        if (prefixes.includes('\\?') && prefixes.length > 1) {
+          for (i = 0; i < prefixes.length; i++) {
+            if (prefixes[i] === '\\?') {
+              prefixes.splice(i, 1);
+            }
+          }
+          await message.reply(
+            'successfully removed `?` as a prefix.  Your prefixes are now: `' +
+              prefixes.join(' ') +
+              '`.',
+          );
+          await GUILD_PREFIXES.set(message.guild.id, prefixes);
+        }
 
-				break;
-			case '~':
-				if (prefixes.includes('~') && prefixes.length > 1) {
-					for (i = 0; i < prefixes.length; i++) {
-						if (prefixes[i] === '~') {
-							prefixes.splice(i, 1);
-						}
-					}
-					await message.reply('successfully removed `~` as a prefix.  Your prefixes are now: `' + prefixes.join(' ') + '`.');
-					await GUILD_PREFIXES.set(message.guild.id, prefixes);
-				}
+        break;
+      case '~':
+        if (prefixes.includes('~') && prefixes.length > 1) {
+          for (i = 0; i < prefixes.length; i++) {
+            if (prefixes[i] === '~') {
+              prefixes.splice(i, 1);
+            }
+          }
+          await message.reply(
+            'successfully removed `~` as a prefix.  Your prefixes are now: `' +
+              prefixes.join(' ') +
+              '`.',
+          );
+          await GUILD_PREFIXES.set(message.guild.id, prefixes);
+        }
 
-				break;
-			case 'p!':
-				if (prefixes.includes('p!') && prefixes.length > 1) {
-					for (i = 0; i < prefixes.length; i++) {
-						if (prefixes[i] === 'p!') {
-							prefixes.splice(i, 1);
-						}
-					}
-					await message.reply('successfully removed `p!` as a prefix.  Your prefixes are now: `' + prefixes.join(' ') + '`.');
-					await GUILD_PREFIXES.set(message.guild.id, prefixes);
-				}
+        break;
+      case 'p!':
+        if (prefixes.includes('p!') && prefixes.length > 1) {
+          for (i = 0; i < prefixes.length; i++) {
+            if (prefixes[i] === 'p!') {
+              prefixes.splice(i, 1);
+            }
+          }
+          await message.reply(
+            'successfully removed `p!` as a prefix.  Your prefixes are now: `' +
+              prefixes.join(' ') +
+              '`.',
+          );
+          await GUILD_PREFIXES.set(message.guild.id, prefixes);
+        }
 
-				break;
+        break;
 
-			default:
-				await message.reply(
-					'you can enable/disable these prefixes: ' + prefixes,
-				);
-				break;
-		}
-	} else if (parse.args[1] == 'default') {
-		await GUILD_PREFIXES.set(message.guild.id, default_prefixes);
-		await message.reply(
-			'successfully reset prefixes back to default: ' +
-				default_prefixes.join(', '),
-		);
-	} else if (parse.args[1] == 'help') {
-		await message.reply(
-			'enable/disable prefixes: `!prefix disable ~` or `!prefix enable p!`. By default SmokeyBot uses: `' +
-				default_prefixes.join(' ') +
-				'`.',
-		);
-	}
+      default:
+        await message.reply(
+          'you can enable/disable these prefixes: ' + prefixes,
+        );
+        break;
+    }
+  } else if (parse.args[1] == 'default') {
+    await GUILD_PREFIXES.set(message.guild.id, default_prefixes);
+    await message.reply(
+      'successfully reset prefixes back to default: ' +
+        default_prefixes.join(', '),
+    );
+  } else if (parse.args[1] == 'help') {
+    await message.reply(
+      'enable/disable prefixes: `!prefix disable ~` or `!prefix enable p!`. By default SmokeyBot uses: `' +
+        default_prefixes.join(' ') +
+        '`.',
+    );
+  }
 }
 
 export async function prefix_check(message: Message): Promise<boolean> {
-	const prefixes =
-		(await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
+  const prefixes =
+    (await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
 
-	if (prefixes.includes(message.content.charAt(0))) {
-		return true;
-	} else {
-		return false;
-	}
+  if (prefixes.includes(message.content.charAt(0))) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 export async function monsterParser(
-	message: Message,
-	cache: ICache,
+  message: Message,
+  cache: ICache,
 ): Promise<void> {
-	await checkExpGain(message);
+  await checkExpGain(message);
 
-	const channel_name = (message.channel as TextChannel).name;
-	const GCD = await getGCD(message.guild.id);
-	const timestamp = getCurrentTime();
-	const spawn = await MONSTER_SPAWNS.get(message.guild.id);
-	const load_prefixes =
-		(await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
-	const prefixes = RegExp(load_prefixes.join('|'));
-	const detect_prefix = message.content.match(prefixes);
+  const channel_name = (message.channel as TextChannel).name;
+  const GCD = await getGCD(message.guild.id);
+  const timestamp = getCurrentTime();
+  const spawn = await MONSTER_SPAWNS.get(message.guild.id);
+  const load_prefixes =
+    (await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
+  const prefixes = RegExp(load_prefixes.join('|'));
+  const detect_prefix = message.content.match(prefixes);
 
-	if (channel_name != cache.settings.specific_channel || !detect_prefix) return;
-	const prefix = detect_prefix.shift();
-	const args = message.content
-		.slice(prefix.length)
-		.trim()
-		.toLowerCase()
-		.replace(/ {2,}/gm, ' ')
-		.split(/ +/);
-	const command = args.shift();
+  if (channel_name != cache.settings.specific_channel || !detect_prefix) return;
+  const prefix = detect_prefix.shift();
+  const args = message.content
+    .slice(prefix.length)
+    .trim()
+    .toLowerCase()
+    .replace(/ {2,}/gm, ' ')
+    .split(/ +/);
+  const command = args.shift();
 
-	if (
-		spawn.monster &&
-		args &&
-		(command == 'catch' ||
-			command == 'キャッチ' ||
-			command == '抓住' ||
-			command == 'capture')
-	) {
-		await catchMonster(message);
-	} else if (timestamp - GCD > 3) {
-		switch (command) {
+  if (
+    spawn.monster &&
+    args &&
+    (command == 'catch' ||
+      command == 'キャッチ' ||
+      command == '抓住' ||
+      command == 'capture')
+  ) {
+    await catchMonster(message);
+  } else if (timestamp - GCD > 3) {
+    switch (command) {
+      case 'unique':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        await checkUniqueMonsters(message);
 
-			case 'unique':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
-				await checkUniqueMonsters(message);
+        break;
 
-				break;
+      case 'leaderboard':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        await checkLeaderboard(message);
 
-			case 'leaderboard':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
-				await checkLeaderboard(message);
+        break;
 
-				break;
+      case 'stats':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        await getBotStats(message);
 
-			case 'stats':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
-				await getBotStats(message);
+        break;
 
-				break;
+      case 'bal':
+      case 'balance':
+      case 'currency':
+      case 'bank':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-			case 'bal':
-			case 'balance':
-			case 'currency':
-			case 'bank':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        await msgBalance(message);
 
-				await msgBalance(message);
+        break;
 
-				break;
+      case 'weather':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        await checkServerWeather(message, cache);
 
-			case 'weather':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
-				await checkServerWeather(message);
+        break;
 
-				break;
+      case 'nickname':
+      case 'nick':
+        if (args[0] == 'set') {
+          await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+          await setNickname(message);
+        }
 
-			case 'nickname':
-			case 'nick':
-				if (args[0] == 'set') {
-					await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
-					await setNickname(message);
-				}
+        break;
 
-				break;
+      case 'vote':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        await voteCommand(message);
 
-			case 'vote':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
-				await voteCommand(message);
+        break;
 
-				break;
+      case 'check-vote':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-			case 'check-vote':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        await checkVote(message);
 
-				await checkVote(message);
+        break;
 
-				break;
+      case 'pokedex':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-			case 'pokedex':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        await checkPokedex(message);
 
-				await checkPokedex(message);
+        break;
 
-				break;
+      case 'item':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-			case 'item':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        await parseItems(message);
 
-				await parseItems(message);
+        break;
 
-				break;
+      case 'trade':
+      case 't':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-			case 'trade':
-			case 't':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        await parseTrade(message);
 
-				await parseTrade(message);
+        break;
 
-				break;
+      case 'dex':
+      case 'd':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-			case 'dex':
-			case 'd':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        await monsterDex(message);
 
-				await monsterDex(message);
+        break;
 
-				break;
+      case 'search':
+      case 's':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-			case 'search':
-			case 's':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        await searchMonsters(message);
 
-				await searchMonsters(message);
+        break;
 
-				break;
+      case 'pokemon':
+      case 'p':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-			case 'pokemon':
-			case 'p':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        await checkMonsters(message);
 
-				await checkMonsters(message);
+        break;
 
-				break;
+      case 'spawn':
+        if (message.author.id == '90514165138989056') {
+          await spawnMonster(message, cache);
+        }
 
-			case 'spawn':
-				if (message.author.id == '90514165138989056') {
-					await spawnMonster(message, cache);
-				}
+        break;
 
-				break;
+      case 'fspawn':
+        if (message.author.id == '90514165138989056') {
+          await forceSpawn(message, cache);
+        }
 
-			case 'info':
-			case 'i':
-				if (args[0]?.match(/\d+/)) {
-					await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        break;
 
-					await monsterInfo(message);
-				} else if (args.length == 0) {
-					await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+      case 'info':
+      case 'i':
+        if (args[0]?.match(/\d+/)) {
+          await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-					await currentMonsterInfo(message);
-				} else if (args[0] == 'latest' || args[0] == 'l') {
-					await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+          await monsterInfo(message);
+        } else if (args.length == 0) {
+          await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-					await monsterInfoLatest(message);
-				}
+          await currentMonsterInfo(message);
+        } else if (args[0] == 'latest' || args[0] == 'l') {
+          await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-				break;
+          await monsterInfoLatest(message);
+        }
 
-			case 'ib':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        break;
 
-				await currentMonsterInfoBETA(message);
+      case 'ib':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-				break;
+        await currentMonsterInfoBETA(message);
 
-			case 'release':
-			case 'r':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        break;
 
-				await releaseMonster(message);
+      case 'release':
+      case 'r':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-				break;
+        await releaseMonster(message);
 
-			case 'recover':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        break;
 
-				await recoverMonster(message);
+      case 'recover':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-				break;
+        await recoverMonster(message);
 
-			case 'select':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        break;
 
-				await selectMonster(message);
+      case 'select':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-				break;
+        await selectMonster(message);
 
-			case 'favorites':
-			case 'favourites':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        break;
 
-				await checkFavorites(message);
+      case 'favorites':
+      case 'favourites':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-				break;
+        await checkFavorites(message);
 
-			case 'favorite':
-			case 'favourite':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        break;
 
-				await setFavorite(message);
+      case 'favorite':
+      case 'favourite':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-				break;
+        await setFavorite(message);
 
-			case 'unfavorite':
-			case 'unfavourite':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        break;
 
-				await unFavorite(message);
+      case 'unfavorite':
+      case 'unfavourite':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-				break;
+        await unFavorite(message);
 
-			case 'battle':
-				await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+        break;
 
-				await battleParser(message);
+      case 'battle':
+        await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-				break;
-		}
-	}
+        await battleParser(message);
+
+        break;
+    }
+  }
 }

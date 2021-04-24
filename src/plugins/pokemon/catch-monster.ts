@@ -116,7 +116,7 @@ export async function catchMonster(message: Message): Promise<void> {
 			monster.sp_attack = getRndInteger(28, 31);
 			monster.sp_defense = getRndInteger(28, 31);
 			monster.speed = getRndInteger(28, 31);
-			monster.avg_iv = parseInt(
+			monster.avg_iv = parseFloat(
 				(
 					((monster.hp +
 						monster.attack +
@@ -141,7 +141,7 @@ export async function catchMonster(message: Message): Promise<void> {
 			100
 		).toFixed(2);
 
-		monster.avg_iv = parseInt(averageIV);
+		monster.avg_iv = parseFloat(averageIV);
 
 		try {
 			const dex = await userDex(message);
@@ -182,7 +182,9 @@ export async function catchMonster(message: Message): Promise<void> {
 					shiny_msg = ' ⭐';
 				} else {
 					shiny_msg = '';
-				}
+        }
+
+        currentSpawn.id = parseFloat(currentSpawn.id.toString());
 
 				if (currentSpawn.special) {
 					legendary = ` 💠`;
@@ -197,7 +199,7 @@ export async function catchMonster(message: Message): Promise<void> {
 						insertMonster[0]
 					}** \n\nAdded to Pokédex.`;
 					logger.error(
-						`${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
+						`'${message.guild?.name}' - '${message.author.username}' -> CAUGHT A RARE POKéMON~`,
 					);
 					await databaseClient<IMonsterUserModel>(MonsterUserTable)
 						.where({ uid: message.author.id })
@@ -209,7 +211,7 @@ export async function catchMonster(message: Message): Promise<void> {
 						insertMonster[0]
 					}** - Added to Pokédex.`;
 					logger.info(
-						`${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
+						`'${message.guild?.name}' - '${message.author.username}' -> Caught POKéMON~`,
 					);
 					await databaseClient<IMonsterUserModel>(MonsterUserTable)
 						.where({ uid: message.author.id })
@@ -221,7 +223,7 @@ export async function catchMonster(message: Message): Promise<void> {
 						insertMonster[0]
 					}**.`;
 					logger.info(
-						`${message.guild?.name} - ${message.author.username} | Caught POKéMON~`,
+						`'${message.guild?.name}' - '${message.author.username}' -> Caught POKéMON~`,
 					);
 				} else if (shiny == 1 && dex.includes(currentSpawn.id)) {
 					response = `_**POGGERS**_! You caught a __***SHINY***__ level **${level} ${
@@ -230,7 +232,7 @@ export async function catchMonster(message: Message): Promise<void> {
 						insertMonster[0]
 					}**.`;
 					logger.error(
-						`${message.guild?.name} - ${message.author.username} | CAUGHT A RARE POKéMON~`,
+						`'${message.guild?.name}' - '${message.author.username}' -> CAUGHT A RARE POKéMON~`,
 					);
 				}
 
