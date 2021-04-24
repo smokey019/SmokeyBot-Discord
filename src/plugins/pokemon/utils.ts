@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Message, MessageEmbed } from 'discord.js';
 import { GLOBAL_COOLDOWN, ICache } from '../../clients/cache';
 import { getUserDBCount } from '../../clients/database';

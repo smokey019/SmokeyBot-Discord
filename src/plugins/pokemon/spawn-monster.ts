@@ -78,6 +78,7 @@ export async function spawnMonster(
         title: 'A wild Pokémon has appeared!',
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (monsterChannel as any)
         .send(embed)
         .then(() => {

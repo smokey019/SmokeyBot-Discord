@@ -40,6 +40,7 @@ export async function getBoostedWeatherSpawns(
       return boost;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (monsterChannel as any)
     .send(`The weather has changed!  It is now **${
 			boost.weather
