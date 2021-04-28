@@ -46,17 +46,32 @@ export function queueMsg(
   switch (priority) {
     // low priority
     case 0:
-      MsgQueue.push({ outgoingMsg: outgoingMsg, msg: msg, reply: reply, spawn: spawn });
+      MsgQueue.push({
+        outgoingMsg: outgoingMsg,
+        msg: msg,
+        reply: reply,
+        spawn: spawn,
+      });
       return true;
 
     // high priority
     case 1:
-      MsgQueue.unshift({ outgoingMsg: outgoingMsg, msg: msg, reply: reply, spawn: spawn });
+      MsgQueue.unshift({
+        outgoingMsg: outgoingMsg,
+        msg: msg,
+        reply: reply,
+        spawn: spawn,
+      });
       return true;
 
     // low priority
     default:
-      MsgQueue.push({ outgoingMsg: outgoingMsg, msg: msg, reply: reply, spawn: spawn });
+      MsgQueue.push({
+        outgoingMsg: outgoingMsg,
+        msg: msg,
+        reply: reply,
+        spawn: spawn,
+      });
       return true;
   }
 }
@@ -66,13 +81,13 @@ function runMsgQueue() {
     const object = MsgQueue.shift();
 
     try {
-      if (!object.reply) {
+      if (!object.reply && !object.spawn) {
         object.msg.channel
           .send(object.outgoingMsg)
           .then(() =>
             logger.trace(`Sent a message in ${object.msg.guild.name}.`),
           );
-      } else if (object.spawn) {
+      } else if (!object.reply && object.spawn) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (object.spawn as any).send(object.outgoingMsg);
       } else {

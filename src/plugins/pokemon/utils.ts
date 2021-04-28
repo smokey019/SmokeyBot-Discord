@@ -127,12 +127,12 @@ export async function getBotStats(message: Message): Promise<void> {
 		.setTitle('SmokeyBot Statistics')
 		.addField('Ping', ping + ' ms', true)
 		.addField(
-			'Total Guilds in Emote Queue',
+			'Total Servers in Emote Queue',
 			format_number(EmoteQueue.size),
 			true,
 		)
 		.addField(
-			'Total Guilds',
+			'Total Servers',
 			format_number(discordClient.guilds.cache.size),
 			true,
 		)
