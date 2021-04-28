@@ -3,6 +3,7 @@ import Keyv from 'keyv';
 import { ICache } from '../../clients/cache';
 import { initializing, rateLimited } from '../../clients/discord';
 import { getLogger } from '../../clients/logger';
+import { queueMsg } from '../../clients/queue';
 import { COLOR_PURPLE } from '../../colors';
 import { getConfigValue } from '../../config';
 import { getCurrentTime } from '../../utils';
@@ -78,13 +79,7 @@ export async function spawnMonster(
         title: 'A wild Pokémon has appeared!',
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (monsterChannel as any)
-        .send(embed)
-        .then(() => {
-          return;
-        })
-        .catch((error) => logger.error(error));
+      queueMsg(embed, message, false, 0, monsterChannel);
     }
   } catch (error) {
     logger.error(error);
@@ -109,19 +104,18 @@ export async function forceSpawn(
     return;
   }
 
-	const args = message.content
-		.slice(1)
-		.trim()
-		.toLowerCase()
-		.replace(/ {2,}/gm, ' ')
-		.split(/ +/gm);
+  const args = message.content
+    .slice(1)
+    .trim()
+    .toLowerCase()
+    .replace(/ {2,}/gm, ' ')
+    .split(/ +/gm);
 
   const spawn_data = {
     monster: await findMonsterByID(parseFloat(args[1])),
     spawned_at: getCurrentTime(),
   };
   try {
-
     if (await MONSTER_SPAWNS.set(message.guild.id, spawn_data)) {
       logger.info(
         `'${message.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`,
@@ -136,12 +130,7 @@ export async function forceSpawn(
         title: 'A wild Pokémon has appeared!',
       });
 
-      await (monsterChannel as any)
-        .send(embed)
-        .then(() => {
-          return;
-        })
-        .catch((error) => logger.error(error));
+      queueMsg(embed, message, false, 0, monsterChannel);
     }
   } catch (error) {
     logger.error(error);

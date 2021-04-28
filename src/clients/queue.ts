@@ -1,4 +1,10 @@
-import { Collection, Message } from 'discord.js';
+import {
+  APIMessage,
+  Collection,
+  GuildChannel,
+  Message,
+  StringResolvable
+} from 'discord.js';
 import { FFZEmotes } from '../types/FFZ-Emotes';
 import { rateLimited } from './discord';
 import { getLogger } from './logger';
@@ -6,23 +12,101 @@ import { getLogger } from './logger';
 const logger = getLogger('Queue');
 
 export const EmoteQueue: Collection<
-	string,
-	{ emotes: FFZEmotes[]; msg: Message }
+  string,
+  { emotes: FFZEmotes[]; msg: Message }
 > = new Collection();
 const COOLDOWN = 30 * 1000;
 
+/*export const MsgQueue: Collection<
+  string,
+  { outgoingMsg: StringResolvable | APIMessage; msg: Message; reply: boolean }
+> = new Collection();*/
+
+interface MsgQueueType {
+  outgoingMsg: StringResolvable | APIMessage;
+  msg: Message;
+  reply?: boolean;
+  spawn?: GuildChannel;
+}
+
+const MsgQueue: MsgQueueType[] = [];
+
 setTimeout(runEmoteQueue, COOLDOWN);
+setTimeout(runMsgQueue, 10000);
+
+export function queueMsg(
+  outgoingMsg: StringResolvable | APIMessage,
+  msg: Message,
+  reply = false,
+  priority = 0,
+  spawn?: GuildChannel,
+): boolean {
+  if (outgoingMsg.toString().length >= 2000) return false;
+
+  switch (priority) {
+    // low priority
+    case 0:
+      MsgQueue.push({ outgoingMsg: outgoingMsg, msg: msg, reply: reply, spawn: spawn });
+      return true;
+
+    // high priority
+    case 1:
+      MsgQueue.unshift({ outgoingMsg: outgoingMsg, msg: msg, reply: reply, spawn: spawn });
+      return true;
+
+    // low priority
+    default:
+      MsgQueue.push({ outgoingMsg: outgoingMsg, msg: msg, reply: reply, spawn: spawn });
+      return true;
+  }
+}
+
+function runMsgQueue() {
+  if (MsgQueue.length > 0 && !rateLimited) {
+    const object = MsgQueue.shift();
+
+    try {
+      if (!object.reply) {
+        object.msg.channel
+          .send(object.outgoingMsg)
+          .then(() =>
+            logger.trace(`Sent a message in ${object.msg.guild.name}.`),
+          );
+      } else if (object.spawn) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (object.spawn as any).send(object.outgoingMsg);
+      } else {
+        object.msg
+          .reply(object.outgoingMsg)
+          .then(() =>
+            logger.trace(
+              `Sent a reply to ${object.msg.author.username} in ${object.msg.guild.name}.`,
+            ),
+          );
+      }
+      setTimeout(runMsgQueue, 250);
+    } catch (error) {
+      logger.error(error);
+    }
+  } else {
+    if (rateLimited) {
+      setTimeout(runMsgQueue, 10000);
+    } else {
+      setTimeout(runMsgQueue, 100);
+    }
+  }
+}
 
 function runEmoteQueue() {
-	if (EmoteQueue.first() && !rateLimited) {
-		const object = EmoteQueue.first();
-		const emote: FFZEmotes = object.emotes?.shift() ?? null;
-		const message = object.msg;
+  if (EmoteQueue.first() && !rateLimited) {
+    const object = EmoteQueue.first();
+    const emote: FFZEmotes = object.emotes?.shift() ?? null;
+    const message = object.msg;
 
-		EmoteQueue.set(message.guild.id, object);
+    EmoteQueue.set(message.guild.id, object);
 
-		if (emote) {
-			let emote_url = '';
+    if (emote) {
+      let emote_url = '';
 
       if (emote.urls['2']) {
         emote_url = 'https:' + emote.urls['2'];
@@ -34,77 +118,71 @@ function runEmoteQueue() {
         emote_url = 'https:' + emote.urls['1'];
       }
 
-			if (!emote_url.match('undefined')) {
-				logger.trace(
-					`Attempting to create emoji '${emote.name}' on ${message.guild.name}.`,
-				);
-				create_emoji(emote_url, message, emote.name);
-				setTimeout(runEmoteQueue, COOLDOWN);
-			} else {
-				logger.trace(
-					`Failed to create emoji '${emote.name}' on ${message.guild.name}.`,
-				);
-				setTimeout(runEmoteQueue, COOLDOWN);
-			}
-
-			if (object.emotes.length == 0) {
-				const temp = EmoteQueue.first();
-				logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
-				EmoteQueue.delete(EmoteQueue.firstKey());
-			}
-		} else {
-			const temp = EmoteQueue.first();
-			logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
-			EmoteQueue.delete(EmoteQueue.firstKey());
-			setTimeout(runEmoteQueue, COOLDOWN);
-		}
-	} else {
-		setTimeout(runEmoteQueue, COOLDOWN);
-	}
+      if (!emote_url.match('undefined')) {
+        logger.trace(
+          `Attempting to create emoji '${emote.name}' on ${message.guild.name}.`,
+        );
+        create_emoji(emote_url, message, emote.name);
+        setTimeout(runEmoteQueue, COOLDOWN);
+      } else {
+        logger.trace(
+          `Failed to create emoji '${emote.name}' on ${message.guild.name}.`,
+        );
+        setTimeout(runEmoteQueue, COOLDOWN);
+      }
+    } else {
+      const temp = EmoteQueue.first();
+      logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
+      EmoteQueue.delete(EmoteQueue.firstKey());
+      setTimeout(runEmoteQueue, COOLDOWN);
+    }
+  } else {
+    setTimeout(runEmoteQueue, COOLDOWN);
+  }
 }
 
 async function create_emoji(
-	emote_url: string,
-	message: Message,
-	name: string,
+  emote_url: string,
+  message: Message,
+  name: string,
 ): Promise<void> {
-	await message.guild.emojis
-		.create(emote_url, name)
-		.then(async (emoji) => {
-			logger.debug(
-				`Created new emoji with name ${emoji.name} in ${emoji.guild.name}.`,
-			);
-			return true;
-		})
-		.catch(async (err) => {
-			switch (err.message) {
-				case 'Maximum number of emojis reached (50)':
-				case 'Maximum number of emojis reached (75)':
-				case 'Maximum number of emojis reached (100)':
-				case 'Maximum number of emojis reached (250)':
-					EmoteQueue.delete(message.guild.id);
-					logger.info(
-						`Maximum emojis reached for server '${message.guild.name}'.`,
-					);
-					await message.reply(
-						`you've reached the maximum amount of emotes for the server.`,
-					);
-					break;
+  await message.guild.emojis
+    .create(emote_url, name)
+    .then(async (emoji) => {
+      logger.debug(
+        `Created new emoji with name ${emoji.name} in ${emoji.guild.name}.`,
+      );
+      return true;
+    })
+    .catch(async (err) => {
+      switch (err.message) {
+        case 'Maximum number of emojis reached (50)':
+        case 'Maximum number of emojis reached (75)':
+        case 'Maximum number of emojis reached (100)':
+        case 'Maximum number of emojis reached (250)':
+          EmoteQueue.delete(message.guild.id);
+          logger.info(
+            `Maximum emojis reached for server '${message.guild.name}'.`,
+          );
+          await message.reply(
+            `you've reached the maximum amount of emotes for the server.`,
+          );
+          break;
 
-				case 'Missing Permissions':
-					EmoteQueue.delete(message.guild.id);
-					logger.info(
-						`Improper permissions for server '${message.guild.name}'.`,
-					);
-					await message.reply(
-						`SmokeyBot doesn't have the proper permissions. Make sure SmokeyBot can Manage Emoji in the roles section.`,
-					);
-					break;
+        case 'Missing Permissions':
+          EmoteQueue.delete(message.guild.id);
+          logger.info(
+            `Improper permissions for server '${message.guild.name}'.`,
+          );
+          await message.reply(
+            `SmokeyBot doesn't have the proper permissions. Make sure SmokeyBot can Manage Emoji in the roles section.`,
+          );
+          break;
 
-				default:
-					logger.error('Emote error:', err);
+        default:
+          logger.error('Emote error:', err);
 
-					break;
-			}
-		});
+          break;
+      }
+    });
 }

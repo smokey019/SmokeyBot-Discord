@@ -18,6 +18,11 @@ const loggers: { [category: string]: log4js.Logger } = {};
 
 const defaultLogger = '$default';
 
+/**
+ * Spawn a logger.
+ * @param category Whatever you want to call the logger
+ * @returns
+ */
 export function getLogger(category = defaultLogger): log4js.Logger {
   if (!loggers[category]) {
     loggers[category] = log4js.getLogger(

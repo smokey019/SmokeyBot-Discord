@@ -85,11 +85,11 @@ export function rollGender(): string {
  * Returns a randomized value for if an item is shiny. (1 is shiny, 0 is not)
  */
 export function rollShiny(): 0 | 1 {
-	return getRndInteger(1, 75) >= 75 ? 1 : 0;
+	return getRndInteger(1, 50) >= 50 ? 1 : 0;
 }
 
 export function rollPerfectIV(): 0 | 1 {
-	return getRndInteger(1, 50) >= 50 ? 1 : 0;
+	return getRndInteger(1, 45) >= 45 ? 1 : 0;
 }
 
 export async function voteCommand(message: Message): Promise<void> {
