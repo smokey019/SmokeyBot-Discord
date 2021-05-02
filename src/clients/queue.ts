@@ -34,6 +34,15 @@ const MsgQueue: MsgQueueType[] = [];
 setTimeout(runEmoteQueue, COOLDOWN);
 setTimeout(runMsgQueue, 10000);
 
+/**
+ * Add a message to the message queue.
+ * @param outgoingMsg String or Embed
+ * @param msg Message to use for data.
+ * @param reply Are we replying to the user?
+ * @param priority 0 = Low, 1 = High
+ * @param spawn Spawn channel. If undefined it won't send to a spawn channel.
+ * @returns TRUE if added to the queue.
+ */
 export function queueMsg(
   outgoingMsg: StringResolvable | APIMessage,
   msg: Message,

@@ -79,7 +79,7 @@ export async function spawnMonster(
         title: 'A wild Pokémon has appeared!',
       });
 
-      queueMsg(embed, message, false, 0, monsterChannel);
+      queueMsg(embed, message, false, 1, monsterChannel);
     }
   } catch (error) {
     logger.error(error);
