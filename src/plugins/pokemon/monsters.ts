@@ -194,18 +194,6 @@ async function formDex(): Promise<void> {
     Gens.five.forEach((element) => {
       MonsterPool.push(element);
       MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
     });
 
     Gens.six.forEach((element) => {
@@ -219,6 +207,18 @@ async function formDex(): Promise<void> {
     });
 
     Gens.eight.forEach((element) => {
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
       MonsterPool.push(element);
       MonsterPool.push(element);
     });
