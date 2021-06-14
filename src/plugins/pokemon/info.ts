@@ -271,15 +271,7 @@ export async function monsterEmbedBeta(
 
   let released = ``;
   if (monster_db.released) {
-    const release_time = new Date(monster_db.released_at * 1000).toLocaleDateString(
-      'en-us',
-      {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        timeZone: 'utc'
-      }
-    );
+    const release_time = new Date(monster_db.released_at).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     released = `\n***Released on ${release_time}***\n\n`;
   }
 

@@ -3,7 +3,7 @@ import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel } from '../../models/MonsterUser';
-import { explode, getCurrentTime } from '../../utils';
+import { explode } from '../../utils';
 import { findMonsterByID } from './monsters';
 
 const logger = getLogger('Pokemon');
@@ -40,7 +40,7 @@ export async function releaseMonster(message: Message): Promise<void> {
               MonsterTable,
             )
               .where('id', to_release[0].id)
-              .update({ released: 1, released_at: getCurrentTime() });
+              .update({ released: 1, released_at: Date.now() });
 
             if (released_monster) {
               logger.trace(`Successfully released a monster.`);

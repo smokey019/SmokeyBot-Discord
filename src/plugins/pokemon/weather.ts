@@ -29,7 +29,7 @@ export async function getBoostedWeatherSpawns(
     await WEATHER_CACHE.set(
       message.guild.id,
       boost,
-      getRndInteger(600, 3600) * 1000,
+      getRndInteger(1200, 3600) * 1000,
     );
     const monsterChannel = message.guild?.channels.cache.find(
       (ch) => ch.name === cache.settings.specific_channel,
