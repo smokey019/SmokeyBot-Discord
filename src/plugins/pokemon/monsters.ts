@@ -209,18 +209,6 @@ async function formDex(): Promise<void> {
     Gens.eight.forEach((element) => {
       MonsterPool.push(element);
       MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
     });
   }
 
@@ -228,11 +216,23 @@ async function formDex(): Promise<void> {
     for (let index = 0; index < 2; index++) {
       MonsterPool.push(element.id);
       MonsterPool.push(element.id);
+      MonsterPool.push(element.id);
+      MonsterPool.push(element.id);
+      MonsterPool.push(element.id);
+      MonsterPool.push(element.id);
+      MonsterPool.push(element.id);
+      MonsterPool.push(element.id);
     }
   });
 
   Gens.galar.forEach((element) => {
     for (let index = 0; index < 2; index++) {
+      MonsterPool.push(element.id);
+      MonsterPool.push(element.id);
+      MonsterPool.push(element.id);
+      MonsterPool.push(element.id);
+      MonsterPool.push(element.id);
+      MonsterPool.push(element.id);
       MonsterPool.push(element.id);
       MonsterPool.push(element.id);
     }

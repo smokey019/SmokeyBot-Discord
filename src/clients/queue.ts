@@ -15,7 +15,7 @@ export const EmoteQueue: Collection<
   string,
   { emotes: FFZEmotes[]; msg: Message }
 > = new Collection();
-const COOLDOWN = 30 * 1000;
+let COOLDOWN = 30 * 1000;
 
 /*export const MsgQueue: Collection<
   string,
@@ -39,9 +39,9 @@ setTimeout(runMsgQueue, 10000);
  * @param outgoingMsg String or Embed
  * @param msg Message to use for data.
  * @param reply Are we replying to the user?
- * @param priority 0 = Low, 1 = High
+ * @param priority `0` = Low, `1` = High
  * @param spawn Spawn channel. If undefined it won't send to a spawn channel.
- * @returns TRUE if added to the queue.
+ * @returns `TRUE` if added to the queue.
  */
 export function queueMsg(
   outgoingMsg: StringResolvable | APIMessage,
@@ -85,6 +85,9 @@ export function queueMsg(
   }
 }
 
+/**
+ * Repeating timed function to run the message queue.
+ */
 function runMsgQueue() {
   if (MsgQueue.length > 0 && !rateLimited) {
     const object = MsgQueue.shift();
@@ -121,7 +124,10 @@ function runMsgQueue() {
   }
 }
 
-function runEmoteQueue() {
+/**
+ * Repeating timed function to run the emote upload queue.
+ */
+async function runEmoteQueue() {
   if (EmoteQueue.first() && !rateLimited) {
     const object = EmoteQueue.first();
     const emote: FFZEmotes = object.emotes?.shift() ?? null;
@@ -146,8 +152,12 @@ function runEmoteQueue() {
         logger.trace(
           `Attempting to create emoji '${emote.name}' on ${message.guild.name}.`,
         );
-        create_emoji(emote_url, message, emote.name);
-        setTimeout(runEmoteQueue, COOLDOWN);
+        if (await create_emoji(emote_url, message, emote.name)) {
+          COOLDOWN = COOLDOWN + 5000;
+          setTimeout(runEmoteQueue, COOLDOWN);
+        } else {
+          setTimeout(runEmoteQueue, COOLDOWN);
+        }
       } else {
         logger.trace(
           `Failed to create emoji '${emote.name}' on ${message.guild.name}.`,
@@ -165,48 +175,57 @@ function runEmoteQueue() {
   }
 }
 
+/**
+ * Function to create an emoji in a Discord server.
+ * @param emote_url Emote URL (256kb limit)
+ * @param message Discord Message Object
+ * @param name String
+ * @returns true/false
+ */
 async function create_emoji(
   emote_url: string,
   message: Message,
   name: string,
-): Promise<void> {
-  await message.guild.emojis
-    .create(emote_url, name)
-    .then(async (emoji) => {
-      logger.debug(
-        `Created new emoji with name ${emoji.name} in ${emoji.guild.name}.`,
-      );
+): Promise<boolean> {
+  try {
+    if (
+      await message.guild.emojis.create(emote_url, name).then(async (emoji) => {
+        logger.debug(
+          `Created new emoji with name ${emoji.name} in ${emoji.guild.name}.`,
+        );
+        return true;
+      })
+    ) {
       return true;
-    })
-    .catch(async (err) => {
-      switch (err.message) {
-        case 'Maximum number of emojis reached (50)':
-        case 'Maximum number of emojis reached (75)':
-        case 'Maximum number of emojis reached (100)':
-        case 'Maximum number of emojis reached (250)':
-          EmoteQueue.delete(message.guild.id);
-          logger.info(
-            `Maximum emojis reached for server '${message.guild.name}'.`,
-          );
-          await message.reply(
-            `you've reached the maximum amount of emotes for the server.`,
-          );
-          break;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    switch (err.message) {
+      case 'Maximum number of emojis reached (50)':
+      case 'Maximum number of emojis reached (75)':
+      case 'Maximum number of emojis reached (100)':
+      case 'Maximum number of emojis reached (250)':
+        EmoteQueue.delete(message.guild.id);
+        logger.info(
+          `Maximum emojis reached for server '${message.guild.name}'.`,
+        );
+        await message.reply(
+          `you've reached the maximum amount of emotes for the server.`,
+        );
+        return false;
 
-        case 'Missing Permissions':
-          EmoteQueue.delete(message.guild.id);
-          logger.info(
-            `Improper permissions for server '${message.guild.name}'.`,
-          );
-          await message.reply(
-            `SmokeyBot doesn't have the proper permissions. Make sure SmokeyBot can Manage Emoji in the roles section.`,
-          );
-          break;
+      case 'Missing Permissions':
+        EmoteQueue.delete(message.guild.id);
+        logger.info(`Improper permissions for server '${message.guild.name}'.`);
+        await message.reply(
+          `SmokeyBot doesn't have the proper permissions. Make sure SmokeyBot can Manage Emoji in the roles section.`,
+        );
+        return false;
 
-        default:
-          logger.error('Emote error:', err);
-
-          break;
-      }
-    });
+      default:
+        logger.error('Emote error:', err);
+        return false;
+    }
+  }
 }
