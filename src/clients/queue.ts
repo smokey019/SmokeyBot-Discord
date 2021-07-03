@@ -15,7 +15,7 @@ export const EmoteQueue: Collection<
   string,
   { emotes: FFZEmotes[]; msg: Message }
 > = new Collection();
-let COOLDOWN = 30 * 1000;
+const COOLDOWN = 35 * 1000;
 
 /*export const MsgQueue: Collection<
   string,
@@ -152,12 +152,8 @@ async function runEmoteQueue() {
         logger.trace(
           `Attempting to create emoji '${emote.name}' on ${message.guild.name}.`,
         );
-        if (await create_emoji(emote_url, message, emote.name)) {
-          COOLDOWN = COOLDOWN + 5000;
-          setTimeout(runEmoteQueue, COOLDOWN);
-        } else {
-          setTimeout(runEmoteQueue, COOLDOWN);
-        }
+        await create_emoji(emote_url, message, emote.name)
+        setTimeout(runEmoteQueue, COOLDOWN);
       } else {
         logger.trace(
           `Failed to create emoji '${emote.name}' on ${message.guild.name}.`,
