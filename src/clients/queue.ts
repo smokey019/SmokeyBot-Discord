@@ -152,7 +152,7 @@ async function runEmoteQueue() {
         logger.trace(
           `Attempting to create emoji '${emote.name}' on ${message.guild.name}.`,
         );
-        await create_emoji(emote_url, message, emote.name)
+        create_emoji(emote_url, message, emote.name);
         setTimeout(runEmoteQueue, COOLDOWN);
       } else {
         logger.trace(
