@@ -1,9 +1,9 @@
 import {
-  APIMessage,
   Collection,
   GuildChannel,
   Message,
-  StringResolvable
+  TextBasedChannels,
+  TextChannel,
 } from 'discord.js';
 import { FFZEmotes } from '../types/FFZ-Emotes';
 import { rateLimited } from './discord';
@@ -19,14 +19,15 @@ const COOLDOWN = 35 * 1000;
 
 /*export const MsgQueue: Collection<
   string,
-  { outgoingMsg: StringResolvable | APIMessage; msg: Message; reply: boolean }
+  { outgoingMsg: any; msg: Message; reply: boolean }
 > = new Collection();*/
 
 interface MsgQueueType {
-  outgoingMsg: StringResolvable | APIMessage;
+  outgoingMsg: any;
   msg: Message;
   reply?: boolean;
-  spawn?: GuildChannel;
+  spawn?: GuildChannel | TextChannel | TextBasedChannels;
+  embed?: boolean;
 }
 
 const MsgQueue: MsgQueueType[] = [];
@@ -44,11 +45,12 @@ setTimeout(runMsgQueue, 10000);
  * @returns `TRUE` if added to the queue.
  */
 export function queueMsg(
-  outgoingMsg: StringResolvable | APIMessage,
+  outgoingMsg: any,
   msg: Message,
   reply = false,
   priority = 0,
-  spawn?: GuildChannel,
+  spawn?: GuildChannel | TextChannel | TextBasedChannels,
+  embed?: boolean,
 ): boolean {
   if (outgoingMsg.toString().length >= 2000) return false;
 
@@ -60,6 +62,7 @@ export function queueMsg(
         msg: msg,
         reply: reply,
         spawn: spawn,
+        embed: embed,
       });
       return true;
 
@@ -70,6 +73,7 @@ export function queueMsg(
         msg: msg,
         reply: reply,
         spawn: spawn,
+        embed: embed,
       });
       return true;
 
@@ -80,6 +84,7 @@ export function queueMsg(
         msg: msg,
         reply: reply,
         spawn: spawn,
+        embed: embed,
       });
       return true;
   }
@@ -99,9 +104,10 @@ function runMsgQueue() {
           .then(() =>
             logger.trace(`Sent a message in ${object.msg.guild.name}.`),
           );
+      } else if (!object.reply && object.spawn && object.embed) {
+        (object.spawn as TextChannel).send({ embeds: [object.outgoingMsg] });
       } else if (!object.reply && object.spawn) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (object.spawn as any).send(object.outgoingMsg);
+        (object.spawn as TextChannel).send(object.outgoingMsg);
       } else {
         object.msg
           .reply(object.outgoingMsg)

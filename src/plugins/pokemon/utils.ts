@@ -10,7 +10,7 @@ import {
   format_number,
   getCurrentTime,
   getRndInteger,
-  theWord
+  theWord,
 } from '../../utils';
 import { getMonsterDBCount, getShinyMonsterDBCount } from './monsters';
 import { default_prefixes, GUILD_PREFIXES } from './parser';
@@ -20,56 +20,56 @@ import { getBoostedWeatherSpawns } from './weather';
 // const SHINY_ODDS_COMMUNITY = parseInt(getConfigValue('SHINY_ODDS_COMMUNITY'));
 
 export async function parseArgs(
-	message: Message,
+  message: Message,
 ): Promise<{
-	search: string;
-	page: number;
-	sort: any;
-	isQuote: RegExpMatchArray;
-	args: any;
+  search: string;
+  page: number;
+  sort: any;
+  isQuote: RegExpMatchArray;
+  args: any;
 }> {
-	const isQuote = message.content.match('"');
-	const sort = ['id', 'high'];
-	let search = undefined;
-	let page = 0;
+  const isQuote = message.content.match('"');
+  const sort = ['id', 'high'];
+  let search = undefined;
+  let page = 0;
 
-	const load_prefixes =
-		(await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
-	const prefixes = RegExp(load_prefixes.join('|'));
-	const detect_prefix = message.content.match(prefixes);
-	const prefix = detect_prefix.shift();
-	const args = message.content
-		.slice(prefix.length)
-		.trim()
-		.toLowerCase()
-		.replace(/ {2,}/gm, ' ')
-		.split(/ +/gm);
+  const load_prefixes =
+    (await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
+  const prefixes = RegExp(load_prefixes.join('|'));
+  const detect_prefix = message.content.match(prefixes);
+  const prefix = detect_prefix.shift();
+  const args = message.content
+    .slice(prefix.length)
+    .trim()
+    .toLowerCase()
+    .replace(/ {2,}/gm, ' ')
+    .split(/ +/gm);
 
-	if (!isNaN(parseInt(args[args.length - 1]))) {
-		page = parseInt(args[args.length - 1]);
-		args.splice(args.length - 1, 1);
-		search = args.join(' ');
-	} else if (args.length >= 2 && isNaN(parseInt(args[args.length - 1]))) {
-		page = 0;
-		search = args.join(' ');
-	} else {
-		search = args.join(' ');
-	}
+  if (!isNaN(parseInt(args[args.length - 1]))) {
+    page = parseInt(args[args.length - 1]);
+    args.splice(args.length - 1, 1);
+    search = args.join(' ');
+  } else if (args.length >= 2 && isNaN(parseInt(args[args.length - 1]))) {
+    page = 0;
+    search = args.join(' ');
+  } else {
+    search = args.join(' ');
+  }
 
-	return {
-		search: search,
-		page: page,
-		sort: sort,
-		isQuote: isQuote,
-		args: args,
-	};
+  return {
+    search: search,
+    page: page,
+    sort: sort,
+    isQuote: isQuote,
+    args: args,
+  };
 }
 
 /**
  * Returns a randomized level.
  */
 export function rollLevel(min: number, max: number): number {
-	return getRndInteger(min, max);
+  return getRndInteger(min, max);
 }
 
 /**
@@ -77,83 +77,86 @@ export function rollLevel(min: number, max: number): number {
  * @returns Gender in M or F
  */
 export function rollGender(): string {
-  const genders = ["M", "F"];
-  return genders[getRndInteger(0,1)];
+  const genders = ['M', 'F'];
+  return genders[getRndInteger(0, 1)];
 }
 
 /**
  * Returns a randomized value for if an item is shiny. (1 is shiny, 0 is not)
  */
 export function rollShiny(): 0 | 1 {
-	return getRndInteger(1, 50) >= 50 ? 1 : 0;
+  return getRndInteger(1, 30) >= 30 ? 1 : 0;
 }
 
 export function rollPerfectIV(): 0 | 1 {
-	return getRndInteger(1, 45) >= 45 ? 1 : 0;
+  return getRndInteger(1, 45) >= 45 ? 1 : 0;
 }
 
 export async function voteCommand(message: Message): Promise<void> {
-	const voted = await dblCache.get(message.author.id + ':voted');
+  const voted = await dblCache.get(message.author.id + ':voted');
 
-	if (!voted) {
-		await message.reply(
-			`you haven't voted yet -- vote here and get free stuff for the ${theWord()} plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
-		);
-	} else {
-		await message.reply(
-			`you've already voted, but maybe others want to vote here and get free stuff for the ${theWord()} plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
-		);
-	}
+  if (!voted) {
+    await message.reply(
+      `you haven't voted yet -- vote here and get free stuff for the ${theWord()} plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
+    );
+  } else {
+    await message.reply(
+      `you've already voted, but maybe others want to vote here and get free stuff for the ${theWord()} plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
+    );
+  }
 }
 
-export async function checkServerWeather(message: Message, cache: ICache): Promise<void> {
-	const boost = await getBoostedWeatherSpawns(message, cache);
+export async function checkServerWeather(
+  message: Message,
+  cache: ICache,
+): Promise<void> {
+  const boost = await getBoostedWeatherSpawns(message, cache);
 
-	await message.reply(
-		`the current weather is **${
-			boost.weather
-		}**.  You will find increased spawns of **${boost.boosts.join(
-			' / ',
-		)}** on this server.`,
-	);
+  await message.reply(
+    `the current weather is **${
+      boost.weather
+    }**.  You will find increased spawns of **${boost.boosts.join(
+      ' / ',
+    )}** on this server.`,
+  );
 }
 
 export async function getBotStats(message: Message): Promise<void> {
-	await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
-	const ping = Date.now() - message.createdTimestamp;
+  await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+  const ping = Date.now() - message.createdTimestamp;
 
-	const embed = new MessageEmbed()
-		.setColor(COLOR_BLACK)
-		.setTitle('SmokeyBot Statistics')
-		.addField('Ping', ping + ' ms', true)
-		.addField(
-			'Total Servers in Emote Queue',
-			format_number(EmoteQueue.size),
-			true,
-		)
-		.addField(
-			'Total Servers',
-			format_number(discordClient.guilds.cache.size),
-			true,
-		)
-		.addField(
-			'Total ' + theWord(),
-			format_number(await getMonsterDBCount()),
-			true,
-		)
-		.addField(
-			'Total Shiny ' + theWord(),
-			format_number(await getShinyMonsterDBCount()),
-			true,
-		)
-		.addField(
-			'Total ' + theWord() + ' Users',
-			format_number(await getUserDBCount()),
-			true,
-		)
-		.setTimestamp();
+  const embed = new MessageEmbed()
+    .setColor(COLOR_BLACK)
+    .setTitle('SmokeyBot Statistics')
+    .addField('Ping', ping + ' ms', true)
+    .addField(
+      'Total Servers in Emote Queue',
+      format_number(EmoteQueue.size),
+      true,
+    )
+    .addField(
+      'Total Servers',
+      format_number(discordClient.guilds.cache.size),
+      true,
+    )
+    .addField(
+      'Total ' + theWord(),
+      format_number(await getMonsterDBCount()),
+      true,
+    )
+    .addField(
+      'Total Shiny ' + theWord(),
+      format_number(await getShinyMonsterDBCount()),
+      true,
+    )
+    .addField(
+      'Total ' + theWord() + ' Users',
+      format_number(await getUserDBCount()),
+      true,
+    )
+    .setTimestamp();
 
-	await message.reply(embed);
+  await message.reply({ embeds: [embed] });
 }
 
 export const img_monster_ball = `https://cdn.discordapp.com/attachments/550103813587992586/721256683665621092/pokeball2.png`;

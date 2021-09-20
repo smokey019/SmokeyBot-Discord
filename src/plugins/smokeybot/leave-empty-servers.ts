@@ -1,6 +1,6 @@
-import { getLogger } from '../../clients/logger';
-import { discordClient } from '../../clients/discord';
 import { Message } from 'discord.js';
+import { discordClient } from '../../clients/discord';
+import { getLogger } from '../../clients/logger';
 
 const logger = getLogger('SmokeyBot');
 
@@ -10,7 +10,7 @@ export async function checkForEmptyServers(message: Message): Promise<any> {
   let timeout = 5;
 
   all_guilds.forEach((element) => {
-    if (element.memberCount < 5 && element.ownerID != '90514165138989056') {
+    if (element.memberCount < 5 && element.ownerId != '90514165138989056') {
       setTimeout(() => {
         if (element.leave()) {
           logger.debug(

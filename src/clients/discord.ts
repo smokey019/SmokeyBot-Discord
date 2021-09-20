@@ -1,4 +1,4 @@
-import { Client, Message } from 'discord.js';
+import { Client, Intents, Message } from 'discord.js';
 import { getAllMonsters, MonsterDex } from '../plugins/pokemon/monsters';
 import { monsterParser } from '../plugins/pokemon/parser';
 import { MONSTER_SPAWNS, spawnMonster } from '../plugins/pokemon/spawn-monster';
@@ -13,7 +13,15 @@ const logger = getLogger('DiscordClient');
 export let rateLimited = false;
 export let initializing = true;
 
-export const discordClient = new Client({ retryLimit: 5 });
+export const discordClient = new Client({
+  intents: [
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.DIRECT_MESSAGES,
+    Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
+  ],
+  shards: 'auto',
+});
 
 discordClient.on('ready', async () => {
   logger.info(`Total MonsterPool: ${getAllMonsters().length}.`);
@@ -41,7 +49,11 @@ discordClient.on('rateLimit', (error) => {
   }, error.timeout);
 });
 
-discordClient.on('message', async (message) => {
+discordClient.on('shardError', (error) => {
+  console.error('A websocket connection encountered an error:', error);
+});
+
+discordClient.on('messageCreate', async (message) => {
   try {
     await parseMessage(message);
   } catch (error) {
@@ -83,7 +95,7 @@ async function parseMessage(message: Message) {
         await MONSTER_SPAWNS.set(message.guild.id, spawn);
         await monsterParser(message, cache);
       } else {
-        const spawn_timer = getRndInteger(getRndInteger(30, 120), 1800);
+        const spawn_timer = getRndInteger(getRndInteger(15, 120), 300);
 
         if (
           timestamp - spawn.spawned_at > spawn_timer &&

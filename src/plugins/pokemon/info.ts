@@ -1,6 +1,7 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { EmbedFieldData, Message, MessageEmbed } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
+import { COLOR_PURPLE } from '../../colors';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 import { format_number, theWord } from '../../utils';
@@ -8,174 +9,11 @@ import {
   findMonsterByID,
   findMonsterByName,
   IMonsterDex,
-  MonsterDex
+  MonsterDex,
 } from './monsters';
 import { img_monster_ball } from './utils';
 
 const logger = getLogger('Info');
-
-export async function monsterEmbed(
-  monster_db: IMonsterModel,
-  message: Message,
-): Promise<void> {
-  if (!monster_db) {
-    return;
-  }
-
-  const monster = await findMonsterByID(monster_db.monster_id);
-
-  const monster_types = monster.type.join(' | ');
-
-  const tmpID = `${monster.id}`.padStart(3, '0');
-
-  const monster_nature = monster_db.nature;
-
-  const next_level_xp = monster_db.level * 1250 + 1250;
-
-  const count = format_number(
-    await monsterCount(monster.id, message.author.id),
-  );
-
-  const monster_stats = {
-    hp: Math.round(
-      2 * monster.baseStats.hp +
-        (monster_db.hp * monster_db.level) / 100 +
-        monster_db.level +
-        10,
-    ),
-    attack: Math.round(
-      2 * monster.baseStats.atk +
-        (monster_db.attack * monster_db.level) / 100 +
-        5,
-    ),
-    defense: Math.round(
-      2 * monster.baseStats.def +
-        (monster_db.defense * monster_db.level) / 100 +
-        5,
-    ),
-    sp_attack: Math.round(
-      2 * monster.baseStats.spa +
-        (monster_db.sp_attack * monster_db.level) / 100 +
-        5,
-    ),
-    sp_defense: Math.round(
-      2 * monster.baseStats.spd +
-        (monster_db.sp_defense * monster_db.level) / 100 +
-        5,
-    ),
-    speed: Math.round(
-      2 * monster.baseStats.spe +
-        (monster_db.speed * monster_db.level) / 100 +
-        5,
-    ),
-  };
-
-  const iv_avg =
-    ((monster_db.hp +
-      monster_db.attack +
-      monster_db.defense +
-      monster_db.sp_attack +
-      monster_db.sp_defense +
-      monster_db.speed) /
-      186) *
-    100;
-
-  let favorite = ``;
-  if (monster_db.favorite) {
-    favorite = ' 💟';
-  }
-
-  let released = ``;
-  if (monster_db.released) {
-    released = '\n***RELEASED***\n\n';
-  }
-
-  let legendary = ``;
-  if (monster.special) {
-    legendary = ` 💠`;
-  } else {
-    legendary = '';
-  }
-
-  if (monster_db.shiny) {
-    const embed = new MessageEmbed()
-      .setAuthor(
-        `Level ${monster_db.level} ${monster.name.english} ⭐${favorite}${legendary}`,
-        img_monster_ball,
-        `https://pokemondb.net/pokedex/${monster.id}`,
-      )
-      .setColor(monster.color)
-      .setImage(monster.images.shiny)
-      .setThumbnail(monster.images['gif-shiny'])
-      .setDescription(`⭐ __**SHINY**__ ⭐${released}
-
-    **ID**: ${monster_db.id}
-    **National №**: ${tmpID}
-    **Dex Count**: ${count}
-    **Original Owner**: <@${monster_db.original_uid}>
-
-    **Exp**: ${format_number(monster_db.experience)} / ${format_number(
-      next_level_xp,
-    )}
-    **Type**: ${monster_types}
-    **Nature**: ${monster_nature}
-
-    **HP**: ${monster_stats.hp} - IV: ${monster_db.hp}/31
-    **Attack**: ${monster_stats.attack} - IV: ${monster_db.attack}/31
-    **Defense**: ${monster_stats.defense} - IV: ${monster_db.defense}/31
-    **Sp. Atk**: ${monster_stats.sp_attack} - IV: ${monster_db.sp_attack}/31
-    **Sp. Def**: ${monster_stats.sp_defense} - IV: ${monster_db.sp_defense}/31
-    **Speed**: ${monster_stats.speed} - IV: ${monster_db.speed}/31
-
-    **Total IV %**: ${iv_avg.toFixed(2)}%`);
-    await message.channel
-      .send(embed)
-      .then((message) => {
-        return message;
-      })
-      .catch((err) => {
-        logger.error(err);
-      });
-  } else if (!monster_db.shiny) {
-    const embed = new MessageEmbed()
-      .setAuthor(
-        `Level ${monster_db.level} ${monster.name.english}${favorite}${legendary}`,
-        img_monster_ball,
-        `https://pokemondb.net/pokedex/${monster.id}`,
-      )
-      .setColor(monster.color)
-      .setThumbnail(monster.images.gif)
-      .setImage(monster.images.normal).setDescription(`${released}**ID**: ${
-      monster_db.id
-    }
-    **National №**: ${tmpID}
-    **Dex Count**: ${count}
-    **Original Owner**: <@${monster_db.original_uid}>
-
-    **Exp**: ${format_number(monster_db.experience)} / ${format_number(
-      next_level_xp,
-    )}
-    **Type**: ${monster_types}
-    **Nature**: ${monster_nature}
-
-    **HP**: ${monster_stats.hp} - IV: ${monster_db.hp}/31
-    **Attack**: ${monster_stats.attack} - IV: ${monster_db.attack}/31
-    **Defense**: ${monster_stats.defense} - IV: ${monster_db.defense}/31
-    **Sp. Atk**: ${monster_stats.sp_attack} - IV: ${monster_db.sp_attack}/31
-    **Sp. Def**: ${monster_stats.sp_defense} - IV: ${monster_db.sp_defense}/31
-    **Speed**: ${monster_stats.speed} - IV: ${monster_db.speed}/31
-
-    **Total IV %**: ${iv_avg.toFixed(2)}%`);
-    await message.channel
-      .send(embed)
-      .then((message) => {
-        return message;
-      })
-      .catch((err) => {
-        logger.error(err);
-      });
-  }
-}
 
 export async function checkUniqueMonsters(message: Message): Promise<void> {
   const tempdex = await userDex(message);
@@ -186,7 +24,7 @@ export async function checkUniqueMonsters(message: Message): Promise<void> {
   );
 }
 
-export async function monsterEmbedBeta(
+export async function monsterEmbed(
   monster_db: IMonsterModel,
   message: Message,
 ): Promise<void> {
@@ -269,18 +107,26 @@ export async function monsterEmbedBeta(
     legendary = ` 💠`;
   }
 
-  let released = ``;
+  let released = ` `;
   if (monster_db.released) {
-    const release_time = new Date(monster_db.released_at).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const release_time = new Date(monster_db.released_at).toLocaleDateString(
+      'en-US',
+      {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      },
+    );
     released = `\n***Released on ${release_time}***\n\n`;
   }
 
   let gender = ``;
   if ((monster.gender && monster.gender != 'N') || monster.genderRatio) {
-    if (monster_db.gender == "M"){
+    if (monster_db.gender == 'M') {
       gender = '♂️ ';
-    }else if (monster_db.gender == "F"){
-      gender = '♀️ '
+    } else if (monster_db.gender == 'F') {
+      gender = '♀️ ';
     }
   }
 
@@ -290,13 +136,17 @@ export async function monsterEmbedBeta(
     title = `Level ${monster_db.level} '${monster_db.nickname}' - ${monster.name.english} ${gender}${shiny}${favorite}${legendary}`;
   }
 
-  const embedFields = [];
+  const embedFields: EmbedFieldData[] = [];
 
-  embedFields.push({ name: '**ID**', value: monster_db.id, inline: true });
+  embedFields.push({
+    name: '**ID**',
+    value: monster_db.id.toString(),
+    inline: true,
+  });
   embedFields.push({ name: '**National №**', value: tmpID, inline: true });
   embedFields.push({
     name: '**Level**',
-    value: monster_db.level,
+    value: monster_db.level.toString(),
     inline: true,
   });
   embedFields.push({
@@ -362,13 +212,13 @@ export async function monsterEmbedBeta(
       img_monster_ball,
       `https://pokemondb.net/pokedex/${monster.id}`,
     )
-    .setColor(monster.color)
+    .setColor(COLOR_PURPLE)
     .setImage(img)
     .setThumbnail(thumbnail)
     .setDescription(released)
     .addFields(embedFields);
   try {
-    await message.channel.send(embed);
+    await message.channel.send({ embeds: [embed] });
   } catch (error) {
     logger.error(error);
   }
@@ -391,7 +241,7 @@ export async function monsterInfoLatest(message: Message): Promise<void> {
 
       if (!tmpMonster) return;
 
-      monsterEmbedBeta(tmpMonster[0], message);
+      monsterEmbed(tmpMonster[0], message);
     }
   }
 }
@@ -411,7 +261,7 @@ export async function currentMonsterInfoBETA(message: Message): Promise<void> {
 
   if (!tmpMonster) return;
 
-  await monsterEmbedBeta(tmpMonster[0], message);
+  await monsterEmbed(tmpMonster[0], message);
 }
 
 /**
@@ -428,7 +278,7 @@ export async function monsterInfo(message: Message): Promise<void> {
 
     if (!tmpMonster) return;
 
-    monsterEmbedBeta(tmpMonster[0], message);
+    monsterEmbed(tmpMonster[0], message);
   }
 }
 
@@ -447,7 +297,7 @@ export async function currentMonsterInfo(message: Message): Promise<void> {
 
   if (!tmpMonster) return;
 
-  monsterEmbedBeta(tmpMonster[0], message);
+  monsterEmbed(tmpMonster[0], message);
 }
 
 /**
@@ -533,7 +383,7 @@ export async function monsterDex(message: Message): Promise<void> {
         img_monster_ball,
         `https://pokemondb.net/pokedex/${tempMonster.id}`,
       )
-      .setColor(tempMonster.color)
+      .setColor(COLOR_PURPLE)
       .setThumbnail(thumbnail)
       .setImage(image).setDescription(`**Type(s)**: ${monster_types}
 
@@ -552,7 +402,7 @@ export async function monsterDex(message: Message): Promise<void> {
 	**Prevolve**: ${prevolve}
     **Evolve**: ${evolve + evo_item}`);
     await message.channel
-      .send(embed)
+      .send({ embeds: [embed] })
       .then((message) => {
         return message;
       })

@@ -1,10 +1,9 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { Message, MessageEmbed, Permissions } from 'discord.js';
 import {
-	cacheClient,
-	cacheToBeDeleted,
-	cacheTwitter,
-	getGCD,
-	GLOBAL_COOLDOWN,
+  cacheClient,
+  cacheTwitter,
+  getGCD,
+  GLOBAL_COOLDOWN,
 } from '../../clients/cache';
 import { getLogger } from '../../clients/logger';
 import { twitterClient } from '../../clients/twitter';
@@ -13,45 +12,48 @@ import { getCurrentTime } from '../../utils';
 const logger = getLogger('SmokeyBot');
 
 export async function check_tweets(
-	user: string,
-	message: Message,
-	tweet_count = 1,
+  user: string,
+  message: Message,
+  tweet_count = 1,
 ): Promise<void> {
-	const timestamp = getCurrentTime();
+  const timestamp = getCurrentTime();
 
-	const cache = await cacheClient.get(message.guild.id);
+  const cache = await cacheClient.get(message.guild.id);
 
-	const params = {
-		screen_name: user,
-		count: tweet_count,
-	};
-	const GCD = await getGCD(message.guild.id);
+  const params = {
+    screen_name: user,
+    count: tweet_count,
+  };
+  const GCD = await getGCD(message.guild.id);
 
-	if (message.member.hasPermission('ADMINISTRATOR') || timestamp - GCD > 10) {
-		await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+  if (
+    message.member.permissions.has([Permissions.FLAGS.ADMINISTRATOR]) ||
+    timestamp - GCD > 10
+  ) {
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-		twitterClient.get('statuses/user_timeline', params).then((tweets) => {
-			if (cache.tweet) {
-				if (cache.tweet.id != tweets[0].id) {
-					// new tweet
+    twitterClient.get('statuses/user_timeline', params).then((tweets) => {
+      if (cache.tweet) {
+        if (cache.tweet.id != tweets[0].id) {
+          // new tweet
 
-					cache.tweet = tweets[0];
+          cache.tweet = tweets[0];
 
-					send_tweet_message(tweets[0], message);
-				} else {
-					// same tweet, respond tho xd
+          send_tweet_message(tweets[0], message);
+        } else {
+          // same tweet, respond tho xd
 
-					cache.tweet = tweets[0];
+          cache.tweet = tweets[0];
 
-					send_tweet_message(tweets[0], message);
-				}
-			} else {
-				cache.tweet = tweets[0];
+          send_tweet_message(tweets[0], message);
+        }
+      } else {
+        cache.tweet = tweets[0];
 
-				send_tweet_message(tweets[0], message);
-			}
-		});
-	}
+        send_tweet_message(tweets[0], message);
+      }
+    });
+  }
 }
 
 /**
@@ -60,86 +62,86 @@ export async function check_tweets(
  * @param message
  */
 async function send_tweet_message(
-	tweet: {
-		user: {
-			profile_background_color: string;
-			name: string;
-			profile_image_url_https: string;
-		};
-		text: string;
-		id_str: string;
-		created_at: number | Date;
-	},
-	message: Message,
+  tweet: {
+    user: {
+      profile_background_color: string;
+      name: string;
+      profile_image_url_https: string;
+    };
+    text: string;
+    id_str: string;
+    created_at: number | Date;
+  },
+  message: Message,
 ): Promise<void> {
-	//if (tweet.text.charAt(0) != "@") {
+  //if (tweet.text.charAt(0) != "@") {
 
-	const embed = new MessageEmbed()
-		.setTitle(`*Latest Tweet*`)
-		.setColor(`0x${tweet.user.profile_background_color}`)
-		.setDescription(
-			tweet.text +
-				`\n\n *https://twitter.com/${tweet.user.name}/status/${tweet.id_str}*`,
-		)
-		.setAuthor(
-			tweet.user.name,
-			tweet.user.profile_image_url_https,
-			`https://twitter.com/${tweet.user.name}`,
-		)
-		.setTimestamp(tweet.created_at)
-		.setFooter(
-			'Twitter',
-			'https://abs.twimg.com/icons/apple-touch-icon-192x192.png',
-		);
-	// .setURL(`https://twitter.com/${tweet.user.name}/status/${tweet.id_str}`);
-	await message.channel
-		.send(embed)
-		.then((message) => {
-			return message;
-		})
-		.catch((err) => {
-			logger.error(err);
-		});
+  const embed = new MessageEmbed()
+    .setTitle(`*Latest Tweet*`)
+    .setColor('BLUE')
+    .setDescription(
+      tweet.text +
+        `\n\n *https://twitter.com/${tweet.user.name}/status/${tweet.id_str}*`,
+    )
+    .setAuthor(
+      tweet.user.name,
+      tweet.user.profile_image_url_https,
+      `https://twitter.com/${tweet.user.name}`,
+    )
+    .setTimestamp(tweet.created_at)
+    .setFooter(
+      'Twitter',
+      'https://abs.twimg.com/icons/apple-touch-icon-192x192.png',
+    );
+  // .setURL(`https://twitter.com/${tweet.user.name}/status/${tweet.id_str}`);
+  await message.channel
+    .send({ embeds: [embed] })
+    .then((message) => {
+      return message;
+    })
+    .catch((err) => {
+      logger.error(err);
+    });
 
-	//}
+  //}
 }
 
 async function send_image_message(
-	message: Message,
-	image: string,
-	color = 0x00bc8c,
-	delete_after = false,
-	delete_timer = 6000,
+  message: Message,
+  image: string,
+  color = 0x00bc8c,
+  delete_after = false,
+  delete_timer = 6000,
 ) {
-	const embed = new MessageEmbed()
-		// .setTitle('<:sumSmash:454911973868699648>')
-		.setColor(color)
-		// .setDescription()
-		.setImage(image);
-	await message.channel
-		.send(embed)
-		.then((tmpMsg) => {
-			if (delete_after && delete_timer > 1000) {
-				setTimeout(delete_message, delete_timer, message, tmpMsg.id);
-				setTimeout(delete_message, delete_timer, message, message.id);
-			}
-		})
-		.catch((err) => {
-			logger.error(err);
-		});
+  const embed = new MessageEmbed()
+    // .setTitle('<:sumSmash:454911973868699648>')
+    .setColor(color)
+    // .setDescription()
+    .setImage(image);
+  await message.channel
+    .send({ embeds: [embed] })
+    .then((tmpMsg) => {
+      if (delete_after && delete_timer > 1000) {
+        setTimeout(delete_message, delete_timer, message, tmpMsg.id);
+        setTimeout(delete_message, delete_timer, message, message.id);
+      }
+    })
+    .catch((err) => {
+      logger.error(err);
+    });
 }
 
 async function delete_message(message: Message, msg_id: any) {
-	message.channel.messages
-		.fetch(msg_id)
-		.then((message) => {
-			message.delete();
-		})
-		.catch((err) => {
-			logger.error(err);
-		});
+  message.channel.messages
+    .fetch(msg_id)
+    .then((message) => {
+      message.delete();
+    })
+    .catch((err) => {
+      logger.error(err);
+    });
 }
-
+/*
 async function delete_role(value: any, message: Message) {
 	value
 		.delete(
@@ -147,14 +149,14 @@ async function delete_role(value: any, message: Message) {
 		)
 		.then((deleted) => logger.debug(`Deleted role ${deleted.name}`))
 		.catch((err) => logger.error(err));
-}
+}*/
 
 export async function checkTweet(message: Message): Promise<void> {
-	const twitter = await cacheTwitter.get(message.guild.id);
+  const twitter = await cacheTwitter.get(message.guild.id);
 
-	check_tweets(twitter, message);
+  check_tweets(twitter, message);
 }
-
+/*
 export async function checkColorRoles(message: Message): Promise<void> {
 	logger.info(
 		`Checking for color roles -> requested by ${message.member.displayName} in ${message.guild.name}..`,
@@ -172,7 +174,7 @@ export async function checkColorRoles(message: Message): Promise<void> {
 		.setDescription(`Checking for color roles.`);
 	// Send the embed to the same channel as the message
 	await message.channel
-		.send(embed)
+		.send({ embeds: [embed] })
 		.then(async (message) => {
 			await cacheToBeDeleted.set(message.guild.id, message.id);
 		})
@@ -202,7 +204,7 @@ export async function checkColorRoles(message: Message): Promise<void> {
 			// Set the main content of the embed
 			.setDescription(`There are ${color_roles} color role(s).`);
 		// Send the embed to the same channel as the message
-		message.channel.send(embed);
+		message.channel.send({ embeds: [embed] });
 	} else {
 		embed = new MessageEmbed()
 			// Set the title of the field
@@ -212,7 +214,7 @@ export async function checkColorRoles(message: Message): Promise<void> {
 			// Set the main content of the embed
 			.setDescription(`There were no color roles.`);
 		// Send the embed to the same channel as the message
-		message.channel.send(embed);
+		message.channel.send({ embeds: [embed] });
 	}
 }
 
@@ -233,7 +235,7 @@ export async function removeColorRoles(message: Message): Promise<void> {
 		.setDescription(`Checking for color roles.`);
 	// Send the embed to the same channel as the message
 	await message.channel
-		.send(embed)
+		.send({ embeds: [embed] })
 		.then(async (message) => {
 			await cacheToBeDeleted.set(message.guild.id, message.id);
 		})
@@ -279,7 +281,7 @@ export async function removeColorRoles(message: Message): Promise<void> {
 			// Set the main content of the embed
 			.setDescription(`Successfully removed ${color_roles} color role(s).`);
 		// Send the embed to the same channel as the message
-		message.channel.send(embed);
+		message.channel.send({ embeds: [embed] });
 	} else {
 		embed = new MessageEmbed()
 			// Set the title of the field
@@ -289,7 +291,7 @@ export async function removeColorRoles(message: Message): Promise<void> {
 			// Set the main content of the embed
 			.setDescription(`There were no color roles to remove.`);
 		// Send the embed to the same channel as the message
-		message.channel.send(embed);
+		message.channel.send({ embeds: [embed] });
 	}
 }
 
@@ -310,7 +312,7 @@ export async function removeEmptyRoles(message: Message): Promise<void> {
 		.setDescription(`Checking for empty roles.`);
 	// Send the embed to the same channel as the message
 	await message.channel
-		.send(embed)
+		.send({ embeds: [embed] })
 		.then(async (message) => {
 			await cacheToBeDeleted.set(message.guild.id, message.id);
 		})
@@ -323,12 +325,6 @@ export async function removeEmptyRoles(message: Message): Promise<void> {
 			value.name != '-BUFFER ZONE-' &&
 			!value.name.match(/Twitch Subscriber/i)
 		) {
-			/*value
-        .delete(
-          `Empty role. Deleted by SmokeyBot - initiated by ${message.author}.`,
-        )
-        .then((deleted) => logger.info(`Deleted role ${deleted.name}`))
-        .catch((err) => logger.error(err));*/
 			empty_roles++;
 		}
 	});
@@ -349,7 +345,7 @@ export async function removeEmptyRoles(message: Message): Promise<void> {
 			// Set the main content of the embed
 			.setDescription(`Successfully removed ${empty_roles} empty role(s).`);
 		// Send the embed to the same channel as the message
-		message.channel.send(embed);
+		message.channel.send({ embeds: [embed] });
 	} else {
 		embed = new MessageEmbed()
 			// Set the title of the field
@@ -359,36 +355,36 @@ export async function removeEmptyRoles(message: Message): Promise<void> {
 			// Set the main content of the embed
 			.setDescription(`There were no empty roles to remove.`);
 		// Send the embed to the same channel as the message
-		message.channel.send(embed);
+		message.channel.send({ embeds: [embed] });
 	}
-}
+}*/
 
 export async function checkVase(message: Message): Promise<void> {
-	setTimeout(
-		send_image_message,
-		250,
-		message,
-		'https://media.discordapp.net/attachments/238772427960614912/698266752542572624/mHXydsWErf.gif',
-		0x00bc8c,
-		true,
-		7000,
-	);
+  setTimeout(
+    send_image_message,
+    250,
+    message,
+    'https://media.discordapp.net/attachments/238772427960614912/698266752542572624/mHXydsWErf.gif',
+    0x00bc8c,
+    true,
+    7000,
+  );
 }
 
 export async function gtfo(message: Message): Promise<void> {
-	setTimeout(
-		send_image_message,
-		250,
-		message,
-		'https://cdn.discordapp.com/attachments/238494640758587394/699139113605136404/VsSMgcJwSp.gif',
-	);
+  setTimeout(
+    send_image_message,
+    250,
+    message,
+    'https://cdn.discordapp.com/attachments/238494640758587394/699139113605136404/VsSMgcJwSp.gif',
+  );
 }
 
 export async function sumSmash(message: Message): Promise<void> {
-	setTimeout(
-		send_image_message,
-		250,
-		message,
-		'https://i.imgur.com/0Ns0tYf.gif',
-	);
+  setTimeout(
+    send_image_message,
+    250,
+    message,
+    'https://i.imgur.com/0Ns0tYf.gif',
+  );
 }

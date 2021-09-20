@@ -1,8 +1,9 @@
 import { Message, MessageEmbed } from 'discord.js';
-import { getGCD, GLOBAL_COOLDOWN } from '../../clients/cache';
+import { getGCD, GLOBAL_COOLDOWN, ICache } from '../../clients/cache';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { queueMsg } from '../../clients/queue';
+import { COLOR_PURPLE } from '../../colors';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 import { explode, getCurrentTime, getRndInteger } from '../../utils';
@@ -57,7 +58,10 @@ function monsterMatchesPrevious(messageContent: string, { name }: IMonsterDex) {
  * @param message
  * @param cache
  */
-export async function catchMonster(message: Message): Promise<void> {
+export async function catchMonster(
+  message: Message,
+  cache: ICache,
+): Promise<void> {
   const timestamp = getCurrentTime();
   const GCD = await getGCD(message.guild.id);
   const spawn = await MONSTER_SPAWNS.get(message.guild.id);
@@ -175,6 +179,7 @@ export async function catchMonster(message: Message): Promise<void> {
       }
 
       if (insertMonster) {
+        const random_grats = ['YOINK', 'YOINKERS', 'NICE', 'NOICE', 'Congrats'];
         let response = ``;
         let shiny_msg = '';
         let legendary = '';
@@ -199,32 +204,34 @@ export async function catchMonster(message: Message): Promise<void> {
           }**${shiny_msg + legendary}! \n\n Avg IV: **${averageIV}**% \nID: **${
             insertMonster[0]
           }** \n\nAdded to Pokédex.`;
-          logger.error(
-            `'${message.guild?.name}' - '${message.author.username}' -> CAUGHT A RARE POKéMON~`,
-          );
+          logger.error(`'${message.guild?.name}' - `);
           await databaseClient<IMonsterUserModel>(MonsterUserTable)
             .where({ uid: message.author.id })
             .increment('currency', 1000);
         } else if (shiny == 0 && !dex.includes(currentSpawn.id)) {
-          response = `**YOINK**! You caught a level **${level} ${
+          response = `**${
+            random_grats[getRndInteger(0, random_grats.length - 1)]
+          }**! You caught a level **${level} ${
             currentSpawn.name.english
           }**${shiny_msg + legendary}! Avg IV: **${averageIV}**% - ID: **${
             insertMonster[0]
           }** - Added to Pokédex.`;
           logger.info(
-            `'${message.guild?.name}' - '${message.author.username}' -> Caught POKéMON~`,
+            `'${message.guild?.name}' - Caught POKéMON~ -> '${message.author.username}'`,
           );
           await databaseClient<IMonsterUserModel>(MonsterUserTable)
             .where({ uid: message.author.id })
             .increment('currency', 100);
         } else if (shiny == 0 && dex.includes(currentSpawn.id)) {
-          response = `**YOINK**! You caught a level **${level} ${
+          response = `**${
+            random_grats[getRndInteger(0, random_grats.length - 1)]
+          }**! You caught a level **${level} ${
             currentSpawn.name.english
           }**${shiny_msg + legendary}! Avg IV: **${averageIV}**% - ID: **${
             insertMonster[0]
           }**.`;
           logger.info(
-            `'${message.guild?.name}' - '${message.author.username}' -> Caught POKéMON~`,
+            `'${message.guild?.name}' - Caught POKéMON~ -> '${message.author.username}'`,
           );
         } else if (shiny == 1 && dex.includes(currentSpawn.id)) {
           response = `_**POGGERS**_! You caught a __***SHINY***__ level **${level} ${
@@ -233,7 +240,7 @@ export async function catchMonster(message: Message): Promise<void> {
             insertMonster[0]
           }**.`;
           logger.error(
-            `'${message.guild?.name}' - '${message.author.username}' -> CAUGHT A RARE POKéMON~`,
+            `'${message.guild?.name}' - CAUGHT A RARE POKéMON~ -> '${message.author.username}'`,
           );
         }
 
@@ -250,16 +257,18 @@ export async function catchMonster(message: Message): Promise<void> {
 
         if (shiny) {
           const embed = new MessageEmbed()
-            .setColor(currentSpawn.color)
+            .setColor(COLOR_PURPLE)
             .setTitle('⭐ ' + currentSpawn.name.english + ' ⭐')
             .setDescription(response)
             .setImage(currentSpawn.images.shiny)
             .setTimestamp();
 
-          // await message.reply(embed);
-          queueMsg(embed, message, true, 1);
+          const monsterChannel = message.guild?.channels.cache.find(
+            (ch) => ch.name === cache.settings.specific_channel,
+          );
+
+          queueMsg(embed, message, false, 1, monsterChannel, true);
         } else {
-          // await message.reply(response);
           queueMsg(response, message, true, 1);
         }
       }

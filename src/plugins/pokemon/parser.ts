@@ -10,7 +10,7 @@ import {
   checkFavorites,
   checkMonsters,
   checkPokedex,
-  searchMonsters
+  searchMonsters,
 } from './check-monsters';
 import { checkExpGain } from './exp-gain';
 import {
@@ -19,7 +19,7 @@ import {
   currentMonsterInfoBETA,
   monsterDex,
   monsterInfo,
-  monsterInfoLatest
+  monsterInfoLatest,
 } from './info';
 import { msgBalance, parseItems } from './items';
 import { checkLeaderboard } from './leaderboard';
@@ -32,7 +32,7 @@ import {
   checkServerWeather,
   getBotStats,
   parseArgs,
-  voteCommand
+  voteCommand,
 } from './utils';
 
 export const GUILD_PREFIXES = new Keyv(
@@ -248,7 +248,7 @@ export async function monsterParser(
       command == '抓住' ||
       command == 'capture')
   ) {
-    await catchMonster(message);
+    await catchMonster(message, cache);
   } else if (timestamp - GCD > 3) {
     switch (command) {
       case 'unique':

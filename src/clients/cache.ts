@@ -63,9 +63,10 @@ export const cacheTwitter = loadCache('cacheTwitter');
 export const cacheTweets = loadCache('cacheTweets');
 export const cacheToBeDeleted = loadCache('cacheToBeDeleted');
 export const GLOBAL_COOLDOWN = loadCache('GLOBAL_COOLDOWN');
-export const MONSTER_CACHE = loadCache('MONSTER_CACHE', 10);
-export const SMOKEYBOT_GLOBAL_SETTINGS_CACHE = loadCache('SMOKEYBOT_GLOBAL_SETTINGS_CACHE', 10);
-export const CACHE_POKEDEX = loadCache('CACHE_POKEDEX', 180);
+export const SMOKEYBOT_GLOBAL_SETTINGS_CACHE = loadCache(
+  'SMOKEYBOT_GLOBAL_SETTINGS_CACHE',
+  10,
+);
 
 cacheClient.on('error', (error) => logger.error(error));
 

@@ -49,6 +49,7 @@ export async function getBoostedWeatherSpawns(
       false,
       0,
       monsterChannel,
+      false,
     );
     return boost;
   } else {

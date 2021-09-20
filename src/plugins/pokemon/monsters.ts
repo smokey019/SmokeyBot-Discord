@@ -1,10 +1,10 @@
 import { Collection, Message } from 'discord.js';
-import { CACHE_POKEDEX } from '../../clients/cache';
 import { databaseClient } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 import { getRndInteger, jsonFetch } from '../../utils';
+import PokeDex from './data/pokedex.json';
 import {
   GenerationEight,
   GenerationFive,
@@ -13,72 +13,15 @@ import {
   GenerationSeven,
   GenerationSix,
   GenerationThree,
-  GenerationTwo
+  GenerationTwo,
 } from './pokemon-list';
 
 const logger = getLogger('Pokemon');
-const sampleMonster = [
-  {
-    id: 1,
-    name: {
-      english: 'Bulbasaur',
-      japanese: 'フシギダネ',
-      chinese: '妙蛙种子',
-      french: 'Bulbizarre',
-    },
-    type: ['Grass', 'Poison'],
-    genderRatio: {
-      M: 0.875,
-      F: 0.125,
-    },
-    baseStats: {
-      hp: 45,
-      atk: 49,
-      def: 49,
-      spa: 65,
-      spd: 65,
-      spe: 45,
-    },
-    abilities: {
-      '0': 'Overgrow',
-      H: 'Chlorophyll',
-    },
-    heightm: 0.7,
-    weightkg: 6.9,
-    color: '#41c600',
-    evos: ['Ivysaur'],
-    eggGroups: ['Monster', 'Grass'],
-    images: {
-      normal:
-        'https://cdn.discordapp.com/attachments/718781413452677211/812846012380479529/8140e2790dff77470f10b70c589ff6b3.png',
-      shiny:
-        'https://cdn.discordapp.com/attachments/718781413452677211/812846018034008084/139ddadd9fe23ac920d4cb87cd44ac30.png',
-      gif:
-        'https://cdn.discordapp.com/attachments/718781413452677211/812846024581316628/aee757d5f251d822a3a146396cd3137b.gif',
-      'gif-shiny':
-        'https://cdn.discordapp.com/attachments/718781413452677211/812846030587953182/2cd4223c3c5c1bd8942996a418e0cb22.gif',
-    },
-    forme: '',
-    region: '',
-    special: '',
-    prevo: '',
-    evoItem: '',
-    otherFormes: [],
-    evoType: '',
-    evoLevel: 0,
-
-    evoCondition: '',
-    baseForme: '',
-    formeOrder: [],
-    gender: '',
-    cosmeticFormes: [],
-  },
-];
 
 const MonsterPool: Array<number> = [];
 export const MonsterDex: Collection<number, IMonsterDex> = new Collection();
 
-export type IMonsterDex = typeof sampleMonster[0];
+export type IMonsterDex = typeof PokeDex[0];
 
 let Gens = {
   one: GenerationOne,
@@ -95,9 +38,6 @@ let Gens = {
 
 async function formDex(): Promise<void> {
   logger.info('Forming Pokedex..');
-  const PokeDex: Array<IMonsterDex> = await jsonFetch(
-    'https://api.smokey.gg/pokemon/pokedex/all',
-  );
   PokeDex.forEach(async (element) => {
     // !element.forme &&
     if (
@@ -107,7 +47,7 @@ async function formDex(): Promise<void> {
       element.images.normal &&
       !element.name.english.match(/Gmax/)
     ) {
-      if (element.forme){
+      if (element.forme) {
         if (element.forme != 'Mega') return;
       }
       MonsterPool.push(element.id);
@@ -156,21 +96,17 @@ async function formDex(): Promise<void> {
     }
   });
 
-  /*for (let index = 0; index < 100; index++) {
-		MonsterPool.push(130);
-		MonsterPool.push(133);
-		MonsterPool.push(146);
-		MonsterPool.push(197);
-		MonsterPool.push(255);
-		MonsterPool.push(325);
-		MonsterPool.push(588);
-		MonsterPool.push(717);
-		MonsterPool.push(796);
-		MonsterPool.push(894);
-		MonsterPool.push(895);
-	}*/
+  /**
+   * Specific Monster Boosts
+   */
 
-  for (let index = 0; index < 1; index++) {
+  for (let index = 0; index < 500; index++) {
+    MonsterPool.push(92);
+    MonsterPool.push(193);
+    MonsterPool.push(66);
+  }
+
+  for (let index = 0; index < 2; index++) {
     Gens.one.forEach((element) => {
       MonsterPool.push(element);
       MonsterPool.push(element);
@@ -210,33 +146,17 @@ async function formDex(): Promise<void> {
       MonsterPool.push(element);
       MonsterPool.push(element);
     });
+
+    Gens.alola.forEach((element) => {
+      MonsterPool.push(element.id);
+      MonsterPool.push(element.id);
+    });
+
+    Gens.galar.forEach((element) => {
+      MonsterPool.push(element.id);
+      MonsterPool.push(element.id);
+    });
   }
-
-  Gens.alola.forEach((element) => {
-    for (let index = 0; index < 2; index++) {
-      MonsterPool.push(element.id);
-      MonsterPool.push(element.id);
-      MonsterPool.push(element.id);
-      MonsterPool.push(element.id);
-      MonsterPool.push(element.id);
-      MonsterPool.push(element.id);
-      MonsterPool.push(element.id);
-      MonsterPool.push(element.id);
-    }
-  });
-
-  Gens.galar.forEach((element) => {
-    for (let index = 0; index < 2; index++) {
-      MonsterPool.push(element.id);
-      MonsterPool.push(element.id);
-      MonsterPool.push(element.id);
-      MonsterPool.push(element.id);
-      MonsterPool.push(element.id);
-      MonsterPool.push(element.id);
-      MonsterPool.push(element.id);
-      MonsterPool.push(element.id);
-    }
-  });
 
   /**
    * clear to save some memory
@@ -277,15 +197,16 @@ export function getRandomMonster(): number {
  * get monster's dex info by it's number
  * @param id monster number
  */
+export async function findMonsterByID_DB(id: number): Promise<IMonsterDex> {
+  return await jsonFetch(`https://api.smokey.gg/pokemon/pokedex/${id}`);
+}
+
+/**
+ * get monster's dex info by it's number
+ * @param id monster number
+ */
 export async function findMonsterByID(id: number): Promise<IMonsterDex> {
-  let monster: IMonsterDex = await CACHE_POKEDEX.get(id.toString());
-  if (!monster) {
-    monster = await jsonFetch(`https://api.smokey.gg/pokemon/pokedex/${id}`);
-    await CACHE_POKEDEX.set(id.toString(), monster);
-    return monster;
-  } else {
-    return monster;
-  }
+  return MonsterDex.get(id);
 }
 
 export function findMonsterByIDLocal(id: number): IMonsterDex {

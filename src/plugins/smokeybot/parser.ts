@@ -6,18 +6,10 @@ import { toggleSmokeMon } from '../pokemon/options';
 import {
   default_prefixes,
   GUILD_PREFIXES,
-  set_prefix
+  set_prefix,
 } from '../pokemon/parser';
 import { checkForEmptyServers } from './leave-empty-servers';
-import {
-  checkColorRoles,
-  checkTweet,
-  checkVase,
-  gtfo,
-  removeColorRoles,
-  removeEmptyRoles,
-  sumSmash
-} from './smokeybot';
+import { checkTweet, checkVase, gtfo, sumSmash } from './smokeybot';
 import { cancel_sync, sync_ffz_emotes } from './sync-emojis';
 
 const logger = getLogger('SmokeyBot');
@@ -41,7 +33,7 @@ export async function smokeybotParser(
   const command = args.shift();
 
   if (command == prefix) {
-    if (!message.member.hasPermission('ADMINISTRATOR')) return;
+    if (!message.member.permissions.has) return;
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
     await set_prefix(message);
   }
@@ -107,19 +99,19 @@ export async function smokeybotParser(
   if (message.content == '~check color roles') {
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-    await checkColorRoles(message);
+    //await checkColorRoles(message);
   }
 
   if (message.content == '~remove color roles') {
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-    await removeColorRoles(message);
+    //await removeColorRoles(message);
   }
 
   if (message.content == '~remove empty roles') {
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
-    await removeEmptyRoles(message);
+    //await removeEmptyRoles(message);
   }
 
   if (message.content == '~check tweet') {

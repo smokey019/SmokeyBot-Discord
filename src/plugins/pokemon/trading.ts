@@ -12,7 +12,7 @@ import {
   findMonsterByID,
   findMonsterByName,
   getUserMonster,
-  IMonsterDex
+  IMonsterDex,
 } from './monsters';
 
 const logger = getLogger('Pokemon-Trade');
@@ -79,7 +79,7 @@ export async function startTrade(message: Message): Promise<void> {
         });
 
         await message.channel
-          .send(embed)
+          .send({ embeds: [embed] })
           .then(() => {
             return;
           })
@@ -130,7 +130,7 @@ export async function parseTrade(message: Message): Promise<void> {
 export async function checkEvolves(
   monster_id: number,
   message: Message,
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
   const db_monster = await databaseClient<IMonsterModel>(MonsterTable)
     .select()
