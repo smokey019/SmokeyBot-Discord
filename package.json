@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "start": "ts-node ./src/index.ts",
-    "update": "npm update"
+    "force-update": "npm update",
+    "force-install": "npm install"
   },
   "dependencies": {
     "@keyv/mysql": "^1.1.4",
