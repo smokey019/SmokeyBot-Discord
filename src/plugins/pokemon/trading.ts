@@ -6,7 +6,7 @@ import { COLOR_BLUE } from '../../colors';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 import { ITrade, TradeTable } from '../../models/Trades';
-import { getCurrentTime, theWord } from '../../utils';
+import { getCurrentTime } from '../../utils';
 import { checkItemEvolution, getItemDB } from './items';
 import {
   findMonsterByID,
@@ -91,15 +91,15 @@ export async function startTrade(message: Message): Promise<void> {
       }
     } else if (!recipient) {
       message.reply(
-        `could not find user <@${to_user}>, make them catch a ${theWord()} first!`,
+        `Could not find user <@${to_user}>, make them catch a Pokémon first!`,
       );
     } else if (check_trade) {
       message.reply(
-        `a trade with this ${theWord()} or user exists already. Close that one and try again.`,
+        `A trade with this Pokémon or user exists already. Close that one and try again.`,
       );
     }
   } else {
-    message.reply(`you need to mention someone m8.`);
+    message.reply(`You need to mention someone m8.`);
   }
 }
 
@@ -223,7 +223,7 @@ export async function confirmTrade(message: Message): Promise<void> {
       const monsterDB = await getUserMonster(trade.monster_id);
       const monster = await findMonsterByID(monsterDB.monster_id);
       message.reply(
-        `successfully traded over monster **${monster.name.english}**! Nice dude.`,
+        `Successfully traded over monster **${monster.name.english}**! Nice dude.`,
       );
       await checkEvolves(trade.monster_id, message);
 
@@ -240,7 +240,7 @@ export async function confirmTrade(message: Message): Promise<void> {
       );
     }
   } else {
-    message.reply(`you don't have any trades to accept m8.`);
+    message.reply(`You don't have any trades to accept m8.`);
   }
 }
 
@@ -265,11 +265,11 @@ export async function cancelTrade(message: Message): Promise<void> {
 
     if (cancelTrade) {
       message.reply(
-        `successfully cancelled trade with monster #${trade.monster_id}.`,
+        `Successfully cancelled trade with monster #${trade.monster_id}.`,
       );
     }
   } else {
-    message.reply(`you don't have any trades to cancel m8.`);
+    message.reply(`You don't have any trades to cancel m8.`);
   }
 }
 

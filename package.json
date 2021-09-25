@@ -9,7 +9,6 @@
     "force-install": "npm install"
   },
   "dependencies": {
-    "@keyv/mysql": "^1.1.4",
     "@top-gg/sdk": "^3.1.2",
     "@types/node": "^14.17.12",
     "datetime-difference": "^1.0.2",
@@ -17,7 +16,6 @@
     "discord.js": "^13.1.0",
     "dotenv": "^8.6.0",
     "javascript-time-ago": "^2.3.8",
-    "keyv": "^4.0.3",
     "knex": "^0.95.10",
     "log4js": "^6.3.0",
     "luxon": "^1.28.0",
@@ -29,7 +27,6 @@
   },
   "devDependencies": {
     "@types/javascript-time-ago": "^2.0.3",
-    "@types/keyv": "^3.1.3",
     "@types/node-fetch": "^2.5.12",
     "@typescript-eslint/eslint-plugin": "^3.10.1",
     "@typescript-eslint/parser": "^3.10.1",

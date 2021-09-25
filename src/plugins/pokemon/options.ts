@@ -44,7 +44,7 @@ export async function toggleSmokeMon(
         );
 
         message.reply(
-          'SmokeMon enabled! This plugin is for fun and SmokeyBot does not own the rights to any images/data and images/data are copyrighted by the Pokémon Company and its affiliates.',
+          'smokeMon enabled! This plugin is for fun and SmokeyBot does not own the rights to any images/data and images/data are copyrighted by the Pokémon Company and its affiliates.',
         );
 
         cache.settings.smokemon_enabled = 1;
@@ -71,10 +71,10 @@ export async function toggleSmokeMon(
 
       if (updateGuild) {
         logger.info(
-          `SmokeMon disabled in ${message.guild.name} | ${message.guild.id}.`,
+          `smokeMon disabled in ${message.guild.name} | ${message.guild.id}.`,
         );
 
-        message.reply('SmokeMon disabled!');
+        message.reply('smokeMon disabled!');
 
         cache.settings.smokemon_enabled = 0;
 

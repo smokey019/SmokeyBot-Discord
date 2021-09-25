@@ -3,16 +3,14 @@ import { getLogger } from 'log4js';
 import { databaseClient } from '../../clients/database';
 import { COLOR_GREEN } from '../../colors';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
-import { theWord } from '../../utils';
 import { findMonsterByIDLocal, findMonsterByName } from './monsters';
-import { default_prefixes, GUILD_PREFIXES } from './parser';
+import { getPrefixes } from './parser';
 
 const logger = getLogger('Pokemon-Leaderboard');
 
 export async function checkLeaderboard(message: Message): Promise<void> {
   let search = undefined;
-  const load_prefixes =
-    (await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
+  const load_prefixes = await getPrefixes(message.guild.id);
   const prefixes = RegExp(load_prefixes.join('|'));
   const detect_prefix = message.content.match(prefixes);
   const prefix = detect_prefix.shift();
@@ -92,7 +90,7 @@ export async function checkLeaderboard(message: Message): Promise<void> {
     const new_msg = message_contents.join('\n');
 
     const embed = new MessageEmbed()
-      .setAuthor(`Top 25 ${theWord()}`)
+      .setAuthor(`Top 25 Pokémon`)
       .setColor(COLOR_GREEN)
       .setDescription(new_msg);
     await message.channel

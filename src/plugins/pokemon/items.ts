@@ -14,7 +14,7 @@ import {
   IMonsterDex,
 } from './monsters';
 // import MultiMap from 'mnemonist/multi-map';
-import { default_prefixes, GUILD_PREFIXES } from './parser';
+import { getPrefixes } from './parser';
 
 const logger = getLogger('Items');
 
@@ -23,8 +23,7 @@ export type Iitem = typeof Items[1];
 export const itemDB = Items;
 
 export async function parseItems(message: Message): Promise<void> {
-  const load_prefixes =
-    (await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
+  const load_prefixes = await getPrefixes(message.guild.id);
   const prefixes = RegExp(load_prefixes.join('|'));
   const detect_prefix = message.content.match(prefixes);
   const prefix = detect_prefix.shift();
@@ -101,14 +100,13 @@ async function listItems(message: Message) {
     });
 }
 
-async function msgUserItems(message: Message): Promise<any> {
+async function msgUserItems(message: Message): Promise<void> {
   const isQuote = message.content.match('"');
   const sort = ['id', 'high'];
   let search = undefined;
   let page = 0;
 
-  const load_prefixes =
-    (await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
+  const load_prefixes = await getPrefixes(message.guild.id);
   const prefixes = RegExp(load_prefixes.join('|'));
   const detect_prefix = message.content.match(prefixes);
   const prefix = detect_prefix.shift();
@@ -257,11 +255,11 @@ async function updateItems(message: Message): Promise<boolean> {
 
     const newItems = await getUserItems(message.author.id);
     message.reply(
-      `successfully transferred ${newItems.length} to the new item inventory!`,
+      `Successfully transferred ${newItems.length} to the new item inventory!`,
     );
     return true;
   } else {
-    message.reply(`you don't have any old items!`);
+    message.reply(`You don't have any old items!`);
     return false;
   }
 }
@@ -296,7 +294,7 @@ async function removeMonsterItem(message: Message) {
 
     if (updateItem && updateMonster) {
       message.reply(
-        `removed item **${itemDex.name.english}** from **${monsterDex.name.english}**.`,
+        `Removed item **${itemDex.name.english}** from **${monsterDex.name.english}**.`,
       );
     }
   }
@@ -306,7 +304,7 @@ export async function checkItemEvolution(
   monster: IMonsterModel,
   message: Message,
   isTrade = false,
-): Promise<any> {
+): Promise<void> {
   const monster_dex: IMonsterDex = await findMonsterByID(monster.monster_id);
 
   if (
@@ -403,7 +401,7 @@ async function giveMonsterItem(message: Message) {
     }
 
     if (!monster) {
-      message.reply("that monster doesn't exist..");
+      message.reply("That monster doesn't exist..");
       return;
     }
 
@@ -419,7 +417,7 @@ async function giveMonsterItem(message: Message) {
           const itemDex = getItemByID(item.item_number);
           const monsterDex = await findMonsterByID(monster.monster_id);
           message.reply(
-            `gave **${monsterDex.name.english}** a **${itemDex.name.english}** and it leveled up! Neato!`,
+            `Gave **${monsterDex.name.english}** a **${itemDex.name.english}** and it leveled up! Neato!`,
           );
         }
         return;
@@ -439,7 +437,7 @@ async function giveMonsterItem(message: Message) {
           const itemDex = getItemByID(item.item_number);
           const monsterDex = await findMonsterByID(monster.monster_id);
           message.reply(
-            `gave **${monsterDex.name.english}** an item - **${itemDex.name.english}**! Neato!`,
+            `Gave **${monsterDex.name.english}** an item - **${itemDex.name.english}**! Neato!`,
           );
           await checkItemEvolution(monster, message);
           return;
@@ -473,7 +471,7 @@ async function buyItem(message: Message) {
 
         if (updateUser) {
           message.reply(
-            `you have purchased **${
+            `You have purchased **${
               item_to_buy.name.english
             }** for **${format_number(
               item_to_buy.price,
@@ -487,11 +485,11 @@ async function buyItem(message: Message) {
   }
 }
 
-export async function msgBalance(message: Message): Promise<any> {
+export async function msgBalance(message: Message): Promise<void> {
   const user = await getUser(message.author.id);
   if (user) {
     message.reply(
-      `your current balance is **${format_number(user.currency)}**.`,
+      `Your current balance is **${format_number(user.currency)}**.`,
     );
   }
 }

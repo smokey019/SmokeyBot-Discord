@@ -3,14 +3,11 @@ import { clearCache, GLOBAL_COOLDOWN, ICache } from '../../clients/cache';
 import { getLogger } from '../../clients/logger';
 import { getCurrentTime } from '../../utils';
 import { toggleSmokeMon } from '../pokemon/options';
-import {
-  default_prefixes,
-  GUILD_PREFIXES,
-  set_prefix,
-} from '../pokemon/parser';
+import { getPrefixes, set_prefix } from '../pokemon/parser';
+import { sync_7tv_emotes } from './emote-sync/sync-7tv-emotes';
+import { cancel_sync, sync_ffz_emotes } from './emote-sync/sync-ffz-emotes';
 import { checkForEmptyServers } from './leave-empty-servers';
 import { checkTweet, checkVase, gtfo, sumSmash } from './smokeybot';
-import { cancel_sync, sync_ffz_emotes } from './sync-emojis';
 
 const logger = getLogger('SmokeyBot');
 
@@ -18,8 +15,7 @@ export async function smokeybotParser(
   message: Message,
   cache: ICache,
 ): Promise<void> {
-  const load_prefixes =
-    (await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
+  const load_prefixes = await getPrefixes(message.guild.id);
   const prefixes = RegExp(load_prefixes.join('|'));
   const detect_prefix = message.content.match(prefixes);
   if (!detect_prefix) return;
@@ -72,7 +68,7 @@ export async function smokeybotParser(
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     await message.reply(
-      'for a list of commands check this link out: https://www.smokey.gg/tutorials/smokeybot-on-discord/',
+      'For a list of commands check this link out: https://www.smokey.gg/tutorials/smokeybot-on-discord/',
     );
   }
 
@@ -88,6 +84,12 @@ export async function smokeybotParser(
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     await sync_ffz_emotes(message);
+  }
+
+  if (command == 'sync-emotes-7tv') {
+    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+
+    await sync_7tv_emotes(message);
   }
 
   if (command == 'cancel-sync') {
@@ -142,7 +144,7 @@ export async function smokeybotParser(
     await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     await message.reply(
-      `here is Smokey's Discord Bot invite link: https://discord.com/oauth2/authorize?client_id=458710213122457600&scope=bot&permissions=268954696`,
+      `Here is Smokey's Discord Bot invite link: https://discord.com/oauth2/authorize?client_id=458710213122457600&scope=bot&permissions=268954696`,
     );
   }
 }

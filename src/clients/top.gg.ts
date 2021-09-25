@@ -2,10 +2,10 @@ import DBL from 'dblapi.js';
 import { Message } from 'discord.js';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
-import Keyv from 'keyv';
 import { getConfigValue } from '../config';
 import { IMonsterUserModel, MonsterUserTable } from '../models/MonsterUser';
 import { createItemDB } from '../plugins/pokemon/items';
+import { loadCache } from './cache';
 import { databaseClient } from './database';
 import { discordClient } from './discord';
 import { getLogger } from './logger';
@@ -16,99 +16,94 @@ const timeAgo = new TimeAgo('en-US');
 
 export const dblClient = new DBL(getConfigValue('TOPGG_KEY'), discordClient);
 const logger = getLogger('Top.GG Client');
-export const dblCache = new Keyv(
-	`mysql://${getConfigValue('DB_USER')}:${getConfigValue(
-		'DB_PASSWORD',
-	)}@${getConfigValue('DB_HOST')}:${getConfigValue('DB_PORT')}/${getConfigValue(
-		'DB_DATABASE',
-	)}`,
-	{
-		keySize: 191,
-		namespace: 'dblCache',
-		ttl: 43200 * 1000,
-		pool: { min: 0, max: 7 },
-	},
-);
-const API_CACHE = new Keyv({ namespace: 'DBL_API_CACHE', ttl: 60 * 1000 });
+export const dblCache = loadCache('dblCache');
+const API_CACHE = loadCache('API_CACHE');
 
 dblClient.on('error', (e) => {
-	logger.error(`Oops! ${e}`);
+  logger.error(`Oops! ${e}`);
 });
 
-setTimeout(keepAlive, 60 * 1000);
+export async function checkVote(message: Message): Promise<boolean> {
+  const voted = (await dblCache.get(message.author.id)) ?? {
+    voted: false,
+    checked_at: Date.now() - 86401337,
+  };
 
-async function keepAlive() {
-	await dblCache.get('123456:voted');
-	setTimeout(keepAlive, 60 * 1000);
+  if (!voted.voted || Date.now() - voted.checked_at > 43200000) {
+    const check = await dblClient.hasVoted(message.author.id);
+    dblCache.set(message.author.id, { voted: check, checked_at: Date.now() });
+
+    if (check) {
+      const isWeekend = await checkWeekend();
+
+      if (isWeekend) {
+        await message.reply(
+          `Thanks for voting! It's the weekend so you receive double! You received **5,000 currency** and **2 Rare Candy** to level up your monster(s)! You can do this every 12 hours.`,
+        );
+
+        for (let index = 0; index < 4; index++) {
+          await createItemDB({
+            uid: message.author.id,
+            item_number: 50,
+          });
+        }
+
+        await databaseClient<IMonsterUserModel>(MonsterUserTable)
+          .where({ uid: message.author.id })
+          .increment('currency', 5000);
+
+        return true;
+      } else {
+        await message.reply(
+          `Thanks for voting! You received **2,500 currency** and a **Rare Candy** to level up a monster! You can do this every 12 hours.`,
+        );
+
+        await createItemDB({
+          uid: message.author.id,
+          item_number: 50,
+        });
+
+        await databaseClient<IMonsterUserModel>(MonsterUserTable)
+          .where({ uid: message.author.id })
+          .increment('currency', 2500);
+
+        return true;
+      }
+    } else {
+      await message.reply(`you haven't voted yet, m8. WeirdChamp`);
+
+      return false;
+    }
+  } else if (voted.voted) {
+    await message.reply(
+      `you voted ${timeAgo.format(
+        voted.checked_at,
+      )} and got credit already. You can vote again ${timeAgo.format(
+        voted.checked_at + 12 * 60 * 60 * 1000,
+      )}.`,
+    );
+
+    return false;
+  } else {
+    logger.error('unknown top.gg error');
+    return false;
+  }
 }
 
-export async function checkVote(message: Message): Promise<any> {
-	let voted = await dblCache.get(message.author.id + ':voted');
+async function checkWeekend(): Promise<boolean> {
+  const weekend = API_CACHE.get('weekend');
 
-	if (!voted) {
-    await dblCache.set(message.author.id + ':voted', Date.now(), 1500);
-		voted = await dblClient.hasVoted(message.author.id);
-		const isWeekend = await checkWeekend();
-		if (voted) {
-			await dblCache.set(message.author.id + ':voted', Date.now());
-
-			if (isWeekend) {
-				await message.reply(
-					`Thanks for voting! It's the weekend so you receive double! You received **5,000 currency** and **2 Rare Candy** to level up your monster(s)! You can do this every 12 hours.`,
-				);
-
-				for (let index = 0; index < 4; index++) {
-					await createItemDB({
-						uid: message.author.id,
-						item_number: 50,
-					});
-				}
-
-				await databaseClient<IMonsterUserModel>(MonsterUserTable)
-					.where({ uid: message.author.id })
-					.increment('currency', 5000);
-			} else {
-				await message.reply(
-					`Thanks for voting! You received **2,500 currency** and a **Rare Candy** to level up a monster! You can do this every 12 hours.`,
-				);
-
-				await createItemDB({
-					uid: message.author.id,
-					item_number: 50,
-				});
-
-				await databaseClient<IMonsterUserModel>(MonsterUserTable)
-					.where({ uid: message.author.id })
-					.increment('currency', 2500);
-			}
-
-			return true;
-		} else {
-			await message.reply(`you haven't voted yet, m8. WeirdChamp`);
-
-			return false;
-		}
-	} else {
-		await message.reply(
-			`you voted ${timeAgo.format(
-				voted,
-			)} and got credit already. You can vote again ${timeAgo.format(
-				voted + 12 * 60 * 60 * 1000,
-			)}.`,
-		);
-
-		return false;
-	}
-}
-
-async function checkWeekend() {
-	const weekend = await API_CACHE.get('weekend');
-
-	if (!weekend) {
-		const data = await dblClient.isWeekend();
-		await API_CACHE.set('weekend', data);
-		return data;
-	} else {
-		return weekend;
-	}
+  if (!weekend) {
+    const data = await dblClient.isWeekend();
+    API_CACHE.set('weekend', { weekend: data, time: Date.now() });
+    return data;
+  } else {
+    if (Date.now() - weekend.time > 60) {
+      const data = await dblClient.isWeekend();
+      API_CACHE.set('weekend', { weekend: data, time: Date.now() });
+      return data;
+    } else {
+      return weekend.weekend;
+    }
+  }
 }

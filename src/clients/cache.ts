@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Collection, Message } from 'discord.js';
-import Keyv from 'keyv';
+import { LRUCache } from 'mnemonist';
 import { getCurrentTime } from '../utils';
 import { IGuildSettings } from './database';
-import { getLogger } from './logger';
 
-const logger = getLogger('Cache');
-
-export const caches: Collection<string, Keyv> = new Collection();
+export const caches: Collection<
+  string,
+  LRUCache<string, any>
+> = new Collection();
 
 const defaultCache = '$default';
 
@@ -14,16 +15,16 @@ const defaultCache = '$default';
  * Spawn/load a cache.
  * @param category Cache name.
  * @param ttl TTL in seconds.
- * @returns Keyv
+ * @returns LRUCache
  */
-export function loadCache(category = defaultCache, ttl = 0): Keyv {
+export function loadCache(
+  category = defaultCache,
+  maximum = 100,
+): LRUCache<string, any> {
   if (!caches.has(category)) {
-    const newCache = new Keyv({
-      namespace: category,
-      ttl: ttl * 1000,
-    });
+    const newCache = new LRUCache<string, any>(maximum);
     caches.set(category, newCache);
-    return caches.get(category);
+    return newCache;
   } else {
     return caches.get(category);
   }
@@ -36,10 +37,14 @@ export function loadCache(category = defaultCache, ttl = 0): Keyv {
  */
 export async function clearCache(category = defaultCache): Promise<boolean> {
   if (category == 'all') {
-    caches.clear();
+    caches.forEach((element) => {
+      element.clear();
+    });
     return true;
   } else {
-    if (caches.delete(category)) {
+    if (caches.has(category)) {
+      const cache = caches.get(category);
+      cache.clear();
       return true;
     } else {
       return false;
@@ -57,18 +62,15 @@ export interface ICache {
   };
 }
 
-export const cacheClient = loadCache('cacheClient');
-export const xp_cache = loadCache('xp_cache');
-export const cacheTwitter = loadCache('cacheTwitter');
-export const cacheTweets = loadCache('cacheTweets');
-export const cacheToBeDeleted = loadCache('cacheToBeDeleted');
-export const GLOBAL_COOLDOWN = loadCache('GLOBAL_COOLDOWN');
+export const cacheClient = loadCache('cacheClient', 100);
+export const xp_cache = loadCache('xp_cache', 50);
+export const cacheTwitter = loadCache('cacheTwitter', 15);
+export const cacheTweets = loadCache('cacheTweets', 15);
+export const cacheToBeDeleted = loadCache('cacheToBeDeleted', 15);
+export const GLOBAL_COOLDOWN = loadCache('GLOBAL_COOLDOWN', 15);
 export const SMOKEYBOT_GLOBAL_SETTINGS_CACHE = loadCache(
   'SMOKEYBOT_GLOBAL_SETTINGS_CACHE',
-  10,
 );
-
-cacheClient.on('error', (error) => logger.error(error));
 
 export async function getGCD(guild_id: string): Promise<number> {
   const GCD = await GLOBAL_COOLDOWN.get(guild_id);
@@ -100,8 +102,8 @@ export async function getCache(
         specific_channel: settings.specific_channel,
       },
     };
-    await cacheClient.set(message.guild.id, cache);
-    await cacheTwitter.set(message.guild.id, 'summit1g');
+    cacheClient.set(message.guild.id, cache);
+    cacheTwitter.set(message.guild.id, 'summit1g');
     return cache;
   } else {
     return cache;

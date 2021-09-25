@@ -4,7 +4,7 @@ import { getLogger } from '../../clients/logger';
 import { COLOR_PURPLE } from '../../colors';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
-import { format_number, theWord } from '../../utils';
+import { format_number } from '../../utils';
 import {
   findMonsterByID,
   findMonsterByName,
@@ -18,9 +18,7 @@ const logger = getLogger('Info');
 export async function checkUniqueMonsters(message: Message): Promise<void> {
   const tempdex = await userDex(message);
   await message.reply(
-    `You have ${tempdex.length}/${
-      MonsterDex.size
-    } total unique ${theWord()} in your Pokédex.`,
+    `You have ${tempdex.length}/${MonsterDex.size} total unique Pokémon in your Pokédex.`,
   );
 }
 

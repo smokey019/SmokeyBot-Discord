@@ -5,7 +5,6 @@ import {
   TextBasedChannels,
   TextChannel,
 } from 'discord.js';
-import { FFZEmotes } from '../types/FFZ-Emotes';
 import { rateLimited } from './discord';
 import { getLogger } from './logger';
 
@@ -13,7 +12,7 @@ const logger = getLogger('Queue');
 
 export const EmoteQueue: Collection<
   string,
-  { emotes: FFZEmotes[]; msg: Message }
+  { emotes: any[]; msg: Message }
 > = new Collection();
 const COOLDOWN = 35 * 1000;
 
@@ -136,36 +135,17 @@ function runMsgQueue() {
 async function runEmoteQueue() {
   if (EmoteQueue.first() && !rateLimited) {
     const object = EmoteQueue.first();
-    const emote: FFZEmotes = object.emotes?.shift() ?? null;
+    const emote = object.emotes?.shift() ?? null;
     const message = object.msg;
 
     EmoteQueue.set(message.guild.id, object);
 
     if (emote) {
-      let emote_url = '';
-
-      if (emote.urls['2']) {
-        emote_url = 'https:' + emote.urls['2'];
-      }
-      if (emote.urls['4'] && !emote.urls['2']) {
-        emote_url = 'https:' + emote.urls['4'];
-      }
-      if (emote.urls['1'] && !emote.urls['2'] && !emote.urls['4']) {
-        emote_url = 'https:' + emote.urls['1'];
-      }
-
-      if (!emote_url.match('undefined')) {
-        logger.trace(
-          `Attempting to create emoji '${emote.name}' on ${message.guild.name}.`,
-        );
-        create_emoji(emote_url, message, emote.name);
-        setTimeout(runEmoteQueue, COOLDOWN);
-      } else {
-        logger.trace(
-          `Failed to create emoji '${emote.name}' on ${message.guild.name}.`,
-        );
-        setTimeout(runEmoteQueue, COOLDOWN);
-      }
+      logger.trace(
+        `Attempting to create emoji '${emote.name}' on ${message.guild.name}.`,
+      );
+      create_emoji(emote.url, message, emote.name);
+      setTimeout(runEmoteQueue, COOLDOWN);
     } else {
       const temp = EmoteQueue.first();
       logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
@@ -226,7 +206,7 @@ async function create_emoji(
         return false;
 
       default:
-        logger.error('Emote error:', err);
+        logger.error(`'${err.message.trim().replace('\n', '')}'`);
         return false;
     }
   }

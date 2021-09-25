@@ -13,7 +13,7 @@ import {
   theWord,
 } from '../../utils';
 import { getMonsterDBCount, getShinyMonsterDBCount } from './monsters';
-import { default_prefixes, GUILD_PREFIXES } from './parser';
+import { getPrefixes } from './parser';
 import { getBoostedWeatherSpawns } from './weather';
 
 // const SHINY_ODDS_RETAIL = parseInt(getConfigValue('SHINY_ODDS_RETAIL'));
@@ -33,8 +33,7 @@ export async function parseArgs(
   let search = undefined;
   let page = 0;
 
-  const load_prefixes =
-    (await GUILD_PREFIXES.get(message.guild.id)) || default_prefixes;
+  const load_prefixes = await getPrefixes(message.guild.id);
   const prefixes = RegExp(load_prefixes.join('|'));
   const detect_prefix = message.content.match(prefixes);
   const prefix = detect_prefix.shift();
@@ -85,7 +84,7 @@ export function rollGender(): string {
  * Returns a randomized value for if an item is shiny. (1 is shiny, 0 is not)
  */
 export function rollShiny(): 0 | 1 {
-  return getRndInteger(1, 30) >= 30 ? 1 : 0;
+  return getRndInteger(1, 40) >= 40 ? 1 : 0;
 }
 
 export function rollPerfectIV(): 0 | 1 {
@@ -93,15 +92,15 @@ export function rollPerfectIV(): 0 | 1 {
 }
 
 export async function voteCommand(message: Message): Promise<void> {
-  const voted = await dblCache.get(message.author.id + ':voted');
+  const voted = (await dblCache.get(message.author.id)) ?? { voted: false };
 
-  if (!voted) {
+  if (!voted.voted) {
     await message.reply(
-      `you haven't voted yet -- vote here and get free stuff for the ${theWord()} plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
+      `You haven't voted yet -- vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
     );
   } else {
     await message.reply(
-      `you've already voted, but maybe others want to vote here and get free stuff for the ${theWord()} plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
+      `You've already voted, but maybe others want to vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
     );
   }
 }
@@ -113,7 +112,7 @@ export async function checkServerWeather(
   const boost = await getBoostedWeatherSpawns(message, cache);
 
   await message.reply(
-    `the current weather is **${
+    `The current weather is **${
       boost.weather
     }**.  You will find increased spawns of **${boost.boosts.join(
       ' / ',

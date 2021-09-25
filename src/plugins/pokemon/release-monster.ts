@@ -4,9 +4,45 @@ import { getLogger } from '../../clients/logger';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel } from '../../models/MonsterUser';
 import { explode } from '../../utils';
-import { findMonsterByID } from './monsters';
+import { findMonsterByID, getUserMonster } from './monsters';
 
 const logger = getLogger('Pokemon');
+
+/**
+ * Release a monster
+ * @param monster_id
+ * @returns true on success
+ */
+async function release(monster_id: number | string): Promise<boolean> {
+  const released_monster = await databaseClient<IMonsterModel>(MonsterTable)
+    .where('id', monster_id)
+    .update({ released: 1, released_at: Date.now() });
+
+  if (released_monster) {
+    logger.trace(`Successfully released a monster.`);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Recover a monster
+ * @param monster_id
+ * @returns true on success
+ */
+async function recover(monster_id: number | string): Promise<boolean> {
+  const recover = await databaseClient<IMonsterModel>(MonsterTable)
+    .where('id', monster_id)
+    .update({ released: 0 });
+
+  if (recover) {
+    logger.trace(`Successfully recovered a monster.`);
+    return true;
+  } else {
+    return false;
+  }
+}
 
 export async function releaseMonster(message: Message): Promise<void> {
   const tmpMsg = explode(message.content, ' ', 2);
@@ -25,26 +61,16 @@ export async function releaseMonster(message: Message): Promise<void> {
         multi_dump.forEach(async (element) => {
           if (isNaN(element)) return;
 
-          const to_release = await databaseClient<IMonsterModel>(MonsterTable)
-            .select()
-            .where('id', element);
+          const to_release = await getUserMonster(element);
 
-          if (!to_release[0]) return;
+          if (!to_release) return;
 
           if (
             to_release &&
-            !to_release[0].released &&
-            to_release[0].uid == message.author.id
+            !to_release.released &&
+            to_release.uid == message.author.id
           ) {
-            const released_monster = await databaseClient<IMonsterModel>(
-              MonsterTable,
-            )
-              .where('id', to_release[0].id)
-              .update({ released: 1, released_at: Date.now() });
-
-            if (released_monster) {
-              logger.trace(`Successfully released a monster.`);
-            }
+            await release(to_release.id);
           }
         });
 
@@ -67,30 +93,22 @@ export async function releaseMonster(message: Message): Promise<void> {
 
       if (tmpMsg[1] == '^') {
         const user: IMonsterUserModel = await getUser(message.author.id);
-        to_release = await databaseClient<IMonsterModel>(MonsterTable)
-          .select()
-          .where('id', user.latest_monster);
+        to_release = await getUserMonster(user.latest_monster);
       } else {
         if (isNaN(parseInt(tmpMsg[1]))) return;
-        to_release = await databaseClient<IMonsterModel>(MonsterTable)
-          .select()
-          .where('id', tmpMsg[1]);
+        to_release = await getUserMonster(tmpMsg[1]);
       }
 
       if (!to_release) return;
 
       if (
-        !to_release[0].released &&
-        to_release[0].uid == message.author.id &&
-        !to_release[0].released
+        !to_release.released &&
+        to_release.uid == message.author.id &&
+        !to_release.released
       ) {
-        const monster = await findMonsterByID(to_release[0].monster_id);
+        const monster = await findMonsterByID(to_release.monster_id);
 
-        const released_monster = await databaseClient<IMonsterModel>(
-          MonsterTable,
-        )
-          .where('id', to_release[0].id)
-          .update({ released: 1 });
+        const released_monster = await release(to_release.id);
 
         if (released_monster) {
           message
@@ -109,7 +127,7 @@ export async function releaseMonster(message: Message): Promise<void> {
     }
   } else {
     message
-      .reply(`not enough things in ur msg there m8`)
+      .reply(`Not enough things in ur msg there m8`)
       .then(() => {
         logger.debug(
           `${message.author.username} not enough things in ur msg there m8`,
@@ -124,20 +142,16 @@ export async function recoverMonster(message: Message): Promise<void> {
   const tmpMsg = message.content.split(' ');
 
   if (tmpMsg.length > 1) {
-    const to_release = await databaseClient<IMonsterModel>(MonsterTable)
-      .select()
-      .where('id', tmpMsg[1]);
+    const to_release = await getUserMonster(tmpMsg[1]);
 
     if (
       to_release &&
-      to_release[0].released &&
-      to_release[0].uid == message.author.id
+      to_release.released &&
+      to_release.uid == message.author.id
     ) {
-      const monster = await findMonsterByID(to_release[0].monster_id);
+      const monster = await findMonsterByID(to_release.monster_id);
 
-      const released_monster = await databaseClient<IMonsterModel>(MonsterTable)
-        .where('id', to_release[0].id)
-        .update({ released: 0 });
+      const released_monster = await recover(to_release.id);
 
       if (released_monster) {
         message

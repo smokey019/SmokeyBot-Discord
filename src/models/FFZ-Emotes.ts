@@ -1,40 +1,50 @@
+/**
+ * FrankerFaceZ Emote Structure
+ */
 export interface FFZEmotes {
-	css: null;
-	height: number;
-	hidden: boolean;
-	id: number;
-	margins: null;
-	modifier: boolean;
-	name: string;
-	offset: null;
-	owner: {
-		_id: number;
-		display_name: string;
-		name: string;
-	};
-	public: boolean;
-	urls: {
-		'1'?: string;
-		'2'?: string;
-		'4'?: string;
-	};
-	width: number;
+  css: null;
+  height: number;
+  hidden: boolean;
+  id: number;
+  margins: null;
+  modifier: boolean;
+  name: string;
+  offset: null;
+  owner: {
+    _id: number;
+    display_name: string;
+    name: string;
+  };
+  public: boolean;
+  urls: {
+    '1'?: string;
+    '2'?: string;
+    '4'?: string;
+  };
+  width: number;
 }
 
+/**
+ * FrankerFaceZ Emote Room Structure
+ */
 export interface FFZRoom {
-	room?: {
-		_id: number;
-		css: null;
-		display_name: string;
-		id: string;
-		is_group: boolean;
-		moderator_badge: null;
-		set: number;
-		twitch_id: number;
-	};
-	sets?: unknown;
+  room?: {
+    _id: number;
+    css: null;
+    display_name: string;
+    id: string;
+    is_group: boolean;
+    moderator_badge: null;
+    set: number;
+    twitch_id: number;
+  };
+  sets?: unknown;
 }
-/*const example = {
+
+/**
+ * Example
+ *
+const example = {
 	room: {
 		_id: 117715,
 		css: null,
@@ -84,4 +94,5 @@ export interface FFZRoom {
 			title: 'Channel: Smokey',
 		},
 	},
-};*/
+};
+ */

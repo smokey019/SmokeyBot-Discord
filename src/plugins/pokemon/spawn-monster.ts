@@ -1,28 +1,18 @@
 import { Message, MessageEmbed } from 'discord.js';
-import Keyv from 'keyv';
-import { ICache } from '../../clients/cache';
+import { ICache, loadCache } from '../../clients/cache';
 import {
   databaseClient,
   GuildSettingsTable,
   IGuildSettings,
 } from '../../clients/database';
-import { initializing, rateLimited } from '../../clients/discord';
 import { getLogger } from '../../clients/logger';
 import { queueMsg } from '../../clients/queue';
 import { COLOR_PURPLE } from '../../colors';
-import { getConfigValue } from '../../config';
 import { getCurrentTime } from '../../utils';
 import { findMonsterByID, getRandomMonster } from './monsters';
 import { getBoostedWeatherSpawns } from './weather';
 
-export const MONSTER_SPAWNS = new Keyv(
-  `mysql://${getConfigValue('DB_USER')}:${getConfigValue(
-    'DB_PASSWORD',
-  )}@${getConfigValue('DB_HOST')}:${getConfigValue('DB_PORT')}/${getConfigValue(
-    'DB_DATABASE',
-  )}`,
-  { keySize: 191, namespace: 'MONSTER_SPAWNS' },
-);
+export const MONSTER_SPAWNS = loadCache('MONSTER_SPAWNS', 500);
 
 const logger = getLogger('Pokemon-Spawn');
 
@@ -39,10 +29,6 @@ export async function spawnMonster(
   const monsterChannel = message.guild?.channels.cache.find(
     (ch) => ch.name === cache.settings.specific_channel,
   );
-
-  if (rateLimited || initializing) {
-    return;
-  }
 
   if (!monsterChannel) {
     const updateGuild = await databaseClient<IGuildSettings>(GuildSettingsTable)
@@ -83,23 +69,23 @@ export async function spawnMonster(
         boostCount++;
       }
 
-      if (await MONSTER_SPAWNS.set(message.guild.id, spawn_data)) {
-        logger.info(
-          `'${message.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`,
-        );
+      MONSTER_SPAWNS.set(message.guild.id, spawn_data);
 
-        const embed = new MessageEmbed({
-          color: COLOR_PURPLE,
-          description: 'Type ~catch <Pokémon> to try and catch it!',
-          image: {
-            url: spawn_data.monster.images.normal,
-          },
-          title: 'A wild Pokémon has appeared!',
-        });
+      logger.info(
+        `'${message.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`,
+      );
 
-        // (monsterChannel as TextChannel).send({ embeds: [embed] });
-        queueMsg(embed, message, false, 1, monsterChannel, true);
-      }
+      const embed = new MessageEmbed({
+        color: COLOR_PURPLE,
+        description: 'Type ~catch <Pokémon> to try and catch it!',
+        image: {
+          url: spawn_data.monster.images.normal,
+        },
+        title: 'A wild Pokémon has appeared!',
+      });
+
+      // (monsterChannel as TextChannel).send({ embeds: [embed] });
+      queueMsg(embed, message, false, 1, monsterChannel, true);
     } catch (error) {
       logger.error(error);
       // console.log(spawn_data.monster);
@@ -119,10 +105,6 @@ export async function forceSpawn(
   const monsterChannel = message.guild?.channels.cache.find(
     (ch) => ch.name === cache.settings.specific_channel,
   );
-
-  if (!monsterChannel || !message.guild || rateLimited || initializing) {
-    return;
-  }
 
   const args = message.content
     .slice(1)

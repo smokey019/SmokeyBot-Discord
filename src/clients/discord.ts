@@ -53,6 +53,14 @@ discordClient.on('shardError', (error) => {
   console.error('A websocket connection encountered an error:', error);
 });
 
+discordClient.on('error', (error) => {
+  console.error('Discord Client Error:', error);
+});
+
+discordClient.on('shardReady', (id: number) => {
+  console.error(`Shard ${id} is ready.`);
+});
+
 discordClient.on('messageCreate', async (message) => {
   try {
     await parseMessage(message);
@@ -92,14 +100,17 @@ async function parseMessage(message: Message) {
           monster: undefined,
           spawned_at: getCurrentTime() - 30,
         };
-        await MONSTER_SPAWNS.set(message.guild.id, spawn);
+        MONSTER_SPAWNS.set(message.guild.id, spawn);
         await monsterParser(message, cache);
       } else {
         const spawn_timer = getRndInteger(getRndInteger(15, 120), 300);
 
         if (
           timestamp - spawn.spawned_at > spawn_timer &&
-          !message.content.match(/catch/i)
+          !message.content.match(/catch/i) &&
+          !message.content.match(/spawn/i) &&
+          !rateLimited &&
+          !initializing
         ) {
           await spawnMonster(message, cache);
         }

@@ -4,7 +4,7 @@ import { getLogger } from '../../clients/logger';
 import { COLOR_GREEN, COLOR_WHITE } from '../../colors';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel } from '../../models/MonsterUser';
-import { chunk, format_number, theWord } from '../../utils';
+import { chunk, format_number } from '../../utils';
 import { userDex } from './info';
 import { findMonsterByIDLocal, getPokedex, getUsersMonsters } from './monsters';
 
@@ -16,9 +16,7 @@ const logger = getLogger('Pokemon');
  */
 export async function checkMonsters(message: Message): Promise<void> {
   logger.debug(
-    `Fetching ${theWord()} for ${message.author.username} in ${
-      message.guild?.name
-    }..`,
+    `Fetching Pokémon for ${message.author.username} in ${message.guild?.name}..`,
   );
 
   const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
@@ -192,7 +190,7 @@ export async function checkMonsters(message: Message): Promise<void> {
 
     const embed = new MessageEmbed()
       .setAuthor(
-        `${message.author.username}'s ${theWord()}\nShowing: ${format_number(
+        `${message.author.username}'s Pokémon\nShowing: ${format_number(
           message_contents.length,
         ) +
           '/' +
@@ -205,9 +203,7 @@ export async function checkMonsters(message: Message): Promise<void> {
       .send({ embeds: [embed] })
       .then(() => {
         logger.debug(
-          `Sent ${theWord()} for ${message.author.tag} in ${
-            message.guild?.name
-          }!`,
+          `Sent Pokémon for ${message.author.tag} in ${message.guild?.name}!`,
         );
       })
       .catch(async (err) => {
@@ -252,7 +248,7 @@ export async function checkPokedex(message: Message): Promise<void> {
         pokemon_count++;
       }
     } else {
-      msg_array.push(`**${dex.id}** - **${dex.name.english}** - **Ø**`);
+      msg_array.push(`**${dex.id}** - **${dex.name.english}** - **0**`);
       pokemon_count++;
     }
   });
@@ -279,7 +275,7 @@ export async function checkPokedex(message: Message): Promise<void> {
 
   const embed = new MessageEmbed()
     .setAuthor(
-      `Pokédex - Total ${theWord()}: ${pokemon_count}`,
+      `Pokédex - Total Pokémon: ${pokemon_count}`,
       message.author.avatarURL(),
     )
     .setColor(COLOR_WHITE)
@@ -300,9 +296,7 @@ export async function checkPokedex(message: Message): Promise<void> {
  */
 export async function checkFavorites(message: Message): Promise<void> {
   logger.debug(
-    `Fetching Favorite ${theWord()} for ${message.author.tag} in ${
-      message.guild?.name
-    }..`,
+    `Fetching Favorite Pokémon for ${message.author.tag} in ${message.guild?.name}..`,
   );
 
   const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
@@ -685,16 +679,14 @@ export async function searchMonsters(message: Message): Promise<void> {
         .send({ embeds: [embed] })
         .then(() => {
           logger.debug(
-            `Sent ${theWord()} for ${message.author.username} in ${
-              message.guild?.name
-            }!`,
+            `Sent Pokémon for ${message.author.username} in ${message.guild?.name}!`,
           );
         })
         .catch(async (err) => {
           logger.error(err);
         });
     } else if (message_contents.length == 0) {
-      message.reply(`cannot find '${search}'.`);
+      message.reply(`Cannot find '${search}'.`);
     } else {
       const new_msg = message_contents.join('\n');
 
@@ -715,9 +707,7 @@ export async function searchMonsters(message: Message): Promise<void> {
         .send({ embeds: [embed] })
         .then(() => {
           logger.debug(
-            `Sent ${theWord()} for ${message.author.username} in ${
-              message.guild?.name
-            }!`,
+            `Sent Pokémon for ${message.author.username} in ${message.guild?.name}!`,
           );
         })
         .catch(async (err) => {

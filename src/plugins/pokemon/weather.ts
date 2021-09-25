@@ -1,58 +1,54 @@
-import { Message } from 'discord.js';
-import Keyv from 'keyv';
-import { ICache } from '../../clients/cache';
-import { initializing, rateLimited } from '../../clients/discord';
-import { queueMsg } from '../../clients/queue';
-import { getConfigValue } from '../../config';
+import { Message, TextChannel } from 'discord.js';
+import { ICache, loadCache } from '../../clients/cache';
 import { getRndInteger } from '../../utils';
 import Weather from './data/weather.json';
 
 export type IWeather = typeof Weather[0];
 
-const WEATHER_CACHE = new Keyv(
-  `mysql://${getConfigValue('DB_USER')}:${getConfigValue(
-    'DB_PASSWORD',
-  )}@${getConfigValue('DB_HOST')}:${getConfigValue('DB_PORT')}/${getConfigValue(
-    'DB_DATABASE',
-  )}`,
-  { keySize: 191, namespace: 'WEATHER_CACHE', pool: { min: 0, max: 7 } },
-);
+const WEATHER_CACHE = loadCache('weather', 100);
 
 export async function getBoostedWeatherSpawns(
   message: Message,
   cache: ICache,
 ): Promise<IWeather> {
-  let boost: IWeather = await WEATHER_CACHE.get(message.guild.id);
+  const boost = await WEATHER_CACHE.get(message.guild.id);
 
   if (!boost) {
-    boost = Weather[getRndInteger(0, Weather.length - 1)];
-    await WEATHER_CACHE.set(
-      message.guild.id,
-      boost,
-      getRndInteger(1200, 3600) * 1000,
-    );
-    const monsterChannel = message.guild?.channels.cache.find(
-      (ch) => ch.name === cache.settings.specific_channel,
-    );
+    const weather = await change_weather(message, cache);
 
-    if (!monsterChannel || !message.guild || rateLimited || initializing) {
-      return boost;
-    }
-
-    queueMsg(
-      `The weather has changed!  It is now **${
-        boost.weather
-      }**.  You will find increased spawns of **${boost.boosts.join(
-        ' / ',
-      )}** on this server.`,
-      message,
-      false,
-      0,
-      monsterChannel,
-      false,
-    );
-    return boost;
+    return weather;
   } else {
-    return boost;
+    if (Date.now() - boost.time > 60 * 1000 * getRndInteger(5, 15)) {
+      const weather = await change_weather(message, cache);
+
+      return weather;
+    } else {
+      return boost.weather;
+    }
   }
+}
+
+async function change_weather(
+  message: Message,
+  cache: ICache,
+): Promise<IWeather> {
+  const boost = {
+    weather: Weather[getRndInteger(0, Weather.length - 1)],
+    time: Date.now(),
+  };
+  WEATHER_CACHE.set(message.guild.id, boost);
+
+  const monsterChannel = message.guild?.channels.cache.find(
+    (ch) => ch.name === cache.settings.specific_channel,
+  );
+
+  (monsterChannel as TextChannel).send(
+    `The weather has changed!  It is now **${
+      boost.weather.weather
+    }**.  You will find increased spawns of **${boost.weather.boosts.join(
+      ' / ',
+    )}** on this server.`,
+  );
+
+  return boost.weather;
 }

@@ -204,7 +204,9 @@ export async function catchMonster(
           }**${shiny_msg + legendary}! \n\n Avg IV: **${averageIV}**% \nID: **${
             insertMonster[0]
           }** \n\nAdded to Pokédex.`;
-          logger.error(`'${message.guild?.name}' - `);
+          logger.error(
+            `'${message.guild?.name}' - Caught A SHINY POKéMON~ -> '${message.author.username}'`,
+          );
           await databaseClient<IMonsterUserModel>(MonsterUserTable)
             .where({ uid: message.author.id })
             .increment('currency', 1000);
@@ -240,7 +242,7 @@ export async function catchMonster(
             insertMonster[0]
           }**.`;
           logger.error(
-            `'${message.guild?.name}' - CAUGHT A RARE POKéMON~ -> '${message.author.username}'`,
+            `'${message.guild?.name}' - CAUGHT A SHINY POKéMON~ -> '${message.author.username}'`,
           );
         }
 

@@ -48,7 +48,7 @@ async function formDex(): Promise<void> {
       !element.name.english.match(/Gmax/)
     ) {
       if (element.forme) {
-        if (element.forme != 'Mega') return;
+        if (!element.forme.match('Mega')) return;
       }
       MonsterPool.push(element.id);
       if (element.region == 'Alola') {
@@ -100,14 +100,22 @@ async function formDex(): Promise<void> {
    * Specific Monster Boosts
    */
 
-  for (let index = 0; index < 500; index++) {
+  /*for (let index = 0; index < 150; index++) {
     MonsterPool.push(92);
     MonsterPool.push(193);
     MonsterPool.push(66);
-  }
+  }*/
 
   for (let index = 0; index < 2; index++) {
     Gens.one.forEach((element) => {
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
       MonsterPool.push(element);
       MonsterPool.push(element);
     });
@@ -206,7 +214,8 @@ export async function findMonsterByID_DB(id: number): Promise<IMonsterDex> {
  * @param id monster number
  */
 export async function findMonsterByID(id: number): Promise<IMonsterDex> {
-  return MonsterDex.get(id);
+  const monster = MonsterDex.find((mon) => mon.id === id);
+  return monster;
 }
 
 export function findMonsterByIDLocal(id: number): IMonsterDex {
@@ -295,7 +304,7 @@ export async function selectMonster(message: Message): Promise<boolean> {
       .update({ current_monster: parseInt(splitMsg[1]) });
 
     if (updateUser) {
-      message.reply(`selected **Level ${monster.level} ${dex.name.english}**!`);
+      message.reply(`Selected **Level ${monster.level} ${dex.name.english}**!`);
       return true;
     } else {
       return false;
@@ -319,7 +328,7 @@ export async function setFavorite(message: Message): Promise<boolean> {
 
     if (updatedMonster) {
       message.reply(
-        `favorited monster **Level ${monster.level} ${dex.name.english}**!`,
+        `Favorited monster **Level ${monster.level} ${dex.name.english}**!`,
       );
       return true;
     } else {
@@ -341,7 +350,7 @@ export async function unFavorite(message: Message): Promise<boolean> {
       .update({ favorite: 0 });
 
     if (updatedMonster) {
-      message.reply(`unfavorited monster id ${monster.id}!`);
+      message.reply(`Unfavorited monster id ${monster.id}!`);
       return true;
     } else {
       return false;

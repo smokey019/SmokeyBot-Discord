@@ -22,7 +22,7 @@ export const databaseClient = knex({
       logger.warn(message);
     },
     error(message) {
-      logger.error(message);
+      console.error(message);
     },
     deprecate(message) {
       logger.error(message);
@@ -180,4 +180,5 @@ export interface IGuildSettings {
   guild_id: number | string;
   smokemon_enabled: number;
   specific_channel: string;
+  prefixes: string;
 }
