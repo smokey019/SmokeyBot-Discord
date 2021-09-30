@@ -40,7 +40,7 @@ export async function monsterParser(
   message: Message,
   cache: ICache,
 ): Promise<void> {
-  checkExpGain(message);
+  await checkExpGain(message);
 
   const channel_name = (message.channel as TextChannel).name;
   const GCD = await getGCD(message.guild.id);

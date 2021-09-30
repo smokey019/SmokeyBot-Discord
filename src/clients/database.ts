@@ -39,7 +39,7 @@ export async function loadGlobalSetting(which: string): Promise<any> {
   if (!settings) {
     settings = await databaseClient('global_smokeybot_settings').first();
 
-    await SMOKEYBOT_GLOBAL_SETTINGS_CACHE.set('main', settings);
+    SMOKEYBOT_GLOBAL_SETTINGS_CACHE.set('main', settings);
 
     switch (which) {
       case 'pokemon_user_boost':

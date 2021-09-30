@@ -23,6 +23,7 @@
     "moment": "^2.29.1",
     "mysql2": "^2.3.0",
     "node-fetch": "^2.6.1",
+    "simple-lru-cache": "^0.0.2",
     "twitter-lite": "^0.13.0"
   },
   "devDependencies": {

@@ -1721,6 +1721,11 @@
   "resolved" "https://registry.npmjs.org/signal-exit/-/signal-exit-3.0.4.tgz"
   "version" "3.0.4"
 
+"simple-lru-cache@^0.0.2":
+  "integrity" "sha1-1ZzDoZPBpdAyD4Tucy9uRxPlEd0="
+  "resolved" "https://registry.npmjs.org/simple-lru-cache/-/simple-lru-cache-0.0.2.tgz"
+  "version" "0.0.2"
+
 "slash@^3.0.0":
   "integrity" "sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q=="
   "resolved" "https://registry.npmjs.org/slash/-/slash-3.0.0.tgz"

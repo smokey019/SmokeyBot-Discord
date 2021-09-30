@@ -1,28 +1,35 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Collection, Message } from 'discord.js';
-import { LRUCache } from 'mnemonist';
+import Cache from 'simple-lru-cache';
 import { getCurrentTime } from '../utils';
 import { IGuildSettings } from './database';
 
-export const caches: Collection<
-  string,
-  LRUCache<string, any>
-> = new Collection();
+export const caches: Collection<string, Cache<string, any>> = new Collection();
 
 const defaultCache = '$default';
+
+export const cacheClient = loadCache('cacheClient', 100);
+export const xp_cache = loadCache('xp_cache', 50);
+export const cacheTwitter = loadCache('cacheTwitter', 15);
+export const cacheTweets = loadCache('cacheTweets', 15);
+export const cacheToBeDeleted = loadCache('cacheToBeDeleted', 15);
+export const GLOBAL_COOLDOWN = loadCache('GLOBAL_COOLDOWN', 15);
+export const SMOKEYBOT_GLOBAL_SETTINGS_CACHE = loadCache(
+  'GLOBAL_SETTINGS_CACHE',
+);
 
 /**
  * Spawn/load a cache.
  * @param category Cache name.
  * @param ttl TTL in seconds.
- * @returns LRUCache
+ * @returns Lru
  */
 export function loadCache(
   category = defaultCache,
   maximum = 100,
-): LRUCache<string, any> {
+): Cache<string, any> {
   if (!caches.has(category)) {
-    const newCache = new LRUCache<string, any>(maximum);
+    const newCache = new Cache<string, any>({ maxSize: maximum });
     caches.set(category, newCache);
     return newCache;
   } else {
@@ -62,16 +69,11 @@ export interface ICache {
   };
 }
 
-export const cacheClient = loadCache('cacheClient', 100);
-export const xp_cache = loadCache('xp_cache', 50);
-export const cacheTwitter = loadCache('cacheTwitter', 15);
-export const cacheTweets = loadCache('cacheTweets', 15);
-export const cacheToBeDeleted = loadCache('cacheToBeDeleted', 15);
-export const GLOBAL_COOLDOWN = loadCache('GLOBAL_COOLDOWN', 15);
-export const SMOKEYBOT_GLOBAL_SETTINGS_CACHE = loadCache(
-  'SMOKEYBOT_GLOBAL_SETTINGS_CACHE',
-);
-
+/**
+ * Retrieve cached GCD if available.
+ * @param guild_id
+ * @returns
+ */
 export async function getGCD(guild_id: string): Promise<number> {
   const GCD = await GLOBAL_COOLDOWN.get(guild_id);
   const timestamp = getCurrentTime();
