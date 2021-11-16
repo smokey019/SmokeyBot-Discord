@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { ColorResolvable, Message, MessageEmbed } from 'discord.js';
 import { ICache, loadCache } from '../../clients/cache';
 import {
   databaseClient,
@@ -76,7 +76,7 @@ export async function spawnMonster(
       );
 
       const embed = new MessageEmbed({
-        color: COLOR_PURPLE,
+        color: spawn_data.monster.color as ColorResolvable,
         description: 'Type ~catch <Pokémon> to try and catch it!',
         image: {
           url: spawn_data.monster.images.normal,

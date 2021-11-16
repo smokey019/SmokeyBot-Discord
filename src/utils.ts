@@ -32,7 +32,7 @@ export async function send_message(
   const GCD = await getGCD(message.guild.id);
 
   if (timestamp - GCD > 3) {
-    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+    GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     const embed = new MessageEmbed()
       // Set the title of the field
@@ -95,7 +95,7 @@ export function getTimeInterval(datetime: string): string {
 
   const finishedString = [];
 
-  Object.keys(string).forEach(function(key) {
+  Object.keys(string).forEach(function (key) {
     // do something with string[key]
     if (diff[key] > 1) {
       string[key] = diff[key] + ' ' + string[key] + 's';

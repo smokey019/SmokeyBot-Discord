@@ -10,11 +10,10 @@ import { getLogger } from './logger';
 
 const logger = getLogger('Queue');
 
-export const EmoteQueue: Collection<
-  string,
-  { emotes: any[]; msg: Message }
-> = new Collection();
-const COOLDOWN = 35 * 1000;
+export const EmoteQueue: Collection<string, { emotes: any[]; msg: Message }> =
+  new Collection();
+const EMOTE_COOLDOWN = 35 * 1000;
+const MSG_COOLDOWN = 10 * 1000;
 
 /*export const MsgQueue: Collection<
   string,
@@ -31,8 +30,36 @@ interface MsgQueueType {
 
 const MsgQueue: MsgQueueType[] = [];
 
-setTimeout(runEmoteQueue, COOLDOWN);
-setTimeout(runMsgQueue, 10000);
+let timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
+let timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
+
+/**
+ * Reset and clear a queue.
+ * @param queue 'emote' or 'message' queues.
+ */
+export async function resetQueue(
+  queue = 'emote',
+  message: Message,
+): Promise<void> {
+  switch (queue) {
+    case 'emote':
+      clearTimeout(timerEmoteQ);
+      EmoteQueue.clear();
+      timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
+      await message.reply('Successfully reset emote queue.');
+      logger.error('Reset emote queue.');
+
+      break;
+    case 'message':
+      clearTimeout(timerMsgQ);
+      EmoteQueue.clear();
+      timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
+      await message.reply('Successfully reset message queue.');
+      logger.error('Reset message queue.');
+
+      break;
+  }
+}
 
 /**
  * Add a message to the message queue.
@@ -95,13 +122,14 @@ export function queueMsg(
 function runMsgQueue() {
   if (MsgQueue.length > 0 && !rateLimited) {
     const object = MsgQueue.shift();
+    if (!object) return;
 
     try {
       if (!object.reply && !object.spawn) {
         object.msg.channel
           .send(object.outgoingMsg)
           .then(() =>
-            logger.trace(`Sent a message in ${object.msg.guild.name}.`),
+            logger.trace(`Sent a message in ${object.msg.guild?.name}.`),
           );
       } else if (!object.reply && object.spawn && object.embed) {
         (object.spawn as TextChannel).send({ embeds: [object.outgoingMsg] });
@@ -112,19 +140,19 @@ function runMsgQueue() {
           .reply(object.outgoingMsg)
           .then(() =>
             logger.trace(
-              `Sent a reply to ${object.msg.author.username} in ${object.msg.guild.name}.`,
+              `Sent a reply to ${object.msg.author.username} in ${object.msg.guild?.name}.`,
             ),
           );
       }
-      setTimeout(runMsgQueue, 250);
+      timerMsgQ = setTimeout(runMsgQueue, 250);
     } catch (error) {
       logger.error(error);
     }
   } else {
     if (rateLimited) {
-      setTimeout(runMsgQueue, 10000);
+      timerMsgQ = setTimeout(runMsgQueue, 10000);
     } else {
-      setTimeout(runMsgQueue, 100);
+      timerMsgQ = setTimeout(runMsgQueue, 100);
     }
   }
 }
@@ -145,15 +173,15 @@ async function runEmoteQueue() {
         `Attempting to create emoji '${emote.name}' on ${message.guild.name}.`,
       );
       create_emoji(emote.url, message, emote.name);
-      setTimeout(runEmoteQueue, COOLDOWN);
+      timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
     } else {
       const temp = EmoteQueue.first();
       logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
       EmoteQueue.delete(EmoteQueue.firstKey());
-      setTimeout(runEmoteQueue, COOLDOWN);
+      timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
     }
   } else {
-    setTimeout(runEmoteQueue, COOLDOWN);
+    timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
   }
 }
 

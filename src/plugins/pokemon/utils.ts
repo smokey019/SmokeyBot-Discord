@@ -19,9 +19,7 @@ import { getBoostedWeatherSpawns } from './weather';
 // const SHINY_ODDS_RETAIL = parseInt(getConfigValue('SHINY_ODDS_RETAIL'));
 // const SHINY_ODDS_COMMUNITY = parseInt(getConfigValue('SHINY_ODDS_COMMUNITY'));
 
-export async function parseArgs(
-  message: Message,
-): Promise<{
+export async function parseArgs(message: Message): Promise<{
   search: string;
   page: number;
   sort: any;
@@ -121,7 +119,7 @@ export async function checkServerWeather(
 }
 
 export async function getBotStats(message: Message): Promise<void> {
-  await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+  GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
   const ping = Date.now() - message.createdTimestamp;
 
   const embed = new MessageEmbed()

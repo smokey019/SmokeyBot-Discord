@@ -30,7 +30,7 @@ export async function check_tweets(
     message.member.permissions.has([Permissions.FLAGS.ADMINISTRATOR]) ||
     timestamp - GCD > 10
   ) {
-    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+    GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     twitterClient.get('statuses/user_timeline', params).then((tweets) => {
       if (cache.tweet) {

@@ -27,12 +27,7 @@ import { setNickname } from './nickname';
 import { recoverMonster, releaseMonster } from './release-monster';
 import { forceSpawn, MONSTER_SPAWNS, spawnMonster } from './spawn-monster';
 import { parseTrade } from './trading';
-import {
-  checkServerWeather,
-  getBotStats,
-  parseArgs,
-  voteCommand,
-} from './utils';
+import { checkServerWeather, parseArgs, voteCommand } from './utils';
 
 export const default_prefixes = ['!', '~', 'p!'];
 
@@ -41,6 +36,7 @@ export async function monsterParser(
   cache: ICache,
 ): Promise<void> {
   await checkExpGain(message);
+  if (!message.guild || !message.member) return;
 
   const channel_name = (message.channel as TextChannel).name;
   const GCD = await getGCD(message.guild.id);
@@ -53,7 +49,7 @@ export async function monsterParser(
   if (channel_name != cache.settings.specific_channel || !detect_prefix) return;
   const prefix = detect_prefix.shift();
   const args = message.content
-    .slice(prefix.length)
+    .slice(prefix?.length)
     .trim()
     .toLowerCase()
     .replace(/ {2,}/gm, ' ')
@@ -80,12 +76,6 @@ export async function monsterParser(
       case 'leaderboard':
         GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
         await checkLeaderboard(message);
-
-        break;
-
-      case 'stats':
-        GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
-        await getBotStats(message);
 
         break;
 

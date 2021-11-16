@@ -7,7 +7,6 @@ import { format_number, getCurrentTime, getRndInteger } from '../utils';
 import { getCache, getGCD, ICache } from './cache';
 import { getGuildSettings, IGuildSettings } from './database';
 import { getLogger } from './logger';
-import { dblClient } from './top.gg';
 
 const logger = getLogger('DiscordClient');
 export let rateLimited = false;
@@ -28,9 +27,6 @@ discordClient.on('ready', async () => {
   logger.info(`Total Monsters: ${MonsterDex.size}.`);
   logger.info('Fully initialized.');
   initializing = false;
-  setInterval(async () => {
-    await dblClient.postStats(discordClient.guilds.cache.size);
-  }, 1800000);
 });
 
 discordClient.on('rateLimit', (error) => {

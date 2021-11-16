@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Collection, Message } from 'discord.js';
-import Cache from 'simple-lru-cache';
+import { LRUCache } from 'mnemonist';
 import { getCurrentTime } from '../utils';
 import { IGuildSettings } from './database';
 
-export const caches: Collection<string, Cache<string, any>> = new Collection();
+export const caches: Collection<
+  string,
+  LRUCache<string, any>
+> = new Collection();
 
 const defaultCache = '$default';
 
@@ -21,20 +24,31 @@ export const SMOKEYBOT_GLOBAL_SETTINGS_CACHE = loadCache(
 /**
  * Spawn/load a cache.
  * @param category Cache name.
- * @param ttl TTL in seconds.
  * @returns Lru
  */
 export function loadCache(
   category = defaultCache,
   maximum = 100,
-): Cache<string, any> {
+): LRUCache<string, any> | undefined {
   if (!caches.has(category)) {
-    const newCache = new Cache<string, any>({ maxSize: maximum });
+    const newCache = new LRUCache<string, any>(maximum);
     caches.set(category, newCache);
     return newCache;
   } else {
     return caches.get(category);
   }
+}
+
+export async function reportCache(message: Message): Promise<void> {
+  const report = [];
+
+  report.push('Cache Reports:\n');
+
+  for (const [key, value] of caches) {
+    report.push(`**${key}** has **${value.size}** entries.`);
+  }
+
+  await message.reply(report.join('\n'));
 }
 
 /**
@@ -50,8 +64,7 @@ export async function clearCache(category = defaultCache): Promise<boolean> {
     return true;
   } else {
     if (caches.has(category)) {
-      const cache = caches.get(category);
-      cache.clear();
+      caches.get(category)?.clear();
       return true;
     } else {
       return false;
@@ -75,11 +88,11 @@ export interface ICache {
  * @returns
  */
 export async function getGCD(guild_id: string): Promise<number> {
-  const GCD = await GLOBAL_COOLDOWN.get(guild_id);
+  const GCD = await GLOBAL_COOLDOWN?.get(guild_id);
   const timestamp = getCurrentTime();
 
   if (!GCD) {
-    await GLOBAL_COOLDOWN.set(guild_id, timestamp - 15);
+    await GLOBAL_COOLDOWN?.set(guild_id, timestamp - 15);
     return timestamp - 15;
   } else {
     return GCD;
@@ -89,10 +102,10 @@ export async function getGCD(guild_id: string): Promise<number> {
 export async function getCache(
   message: Message,
   settings: IGuildSettings,
-): Promise<ICache> {
-  if (!settings) return undefined;
+): Promise<ICache | undefined> {
+  if (!settings || !message.guild) return undefined;
 
-  let cache = await cacheClient.get(message.guild.id);
+  let cache = await cacheClient?.get(message.guild.id);
 
   if (!cache) {
     cache = {
@@ -104,8 +117,8 @@ export async function getCache(
         specific_channel: settings.specific_channel,
       },
     };
-    cacheClient.set(message.guild.id, cache);
-    cacheTwitter.set(message.guild.id, 'summit1g');
+    cacheClient?.set(message.guild.id, cache);
+    cacheTwitter?.set(message.guild.id, 'summit1g');
     return cache;
   } else {
     return cache;

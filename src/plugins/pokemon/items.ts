@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { ColorResolvable, Message, MessageEmbed } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { COLOR_BLUE } from '../../colors';
@@ -6,7 +6,7 @@ import { IItemsModel, ItemsTable } from '../../models/Items';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 import { asyncForEach, chunk, explode, format_number } from '../../utils';
-import Items from './data/items.json';
+import Items from './data/items_min.json';
 import {
   findMonsterByID,
   findMonsterByName,
@@ -167,31 +167,31 @@ async function msgUserItems(message: Message): Promise<void> {
     });
 
     if (sort[0] == 'number' && sort[1] == 'high') {
-      sortable_items.sort(function(a, b) {
+      sortable_items.sort(function (a, b) {
         return b.item_number - a.item_number;
       });
     } else if (sort[0] == 'number' && sort[1] == 'low') {
-      sortable_items.sort(function(a, b) {
+      sortable_items.sort(function (a, b) {
         return a.item_number - b.item_number;
       });
     } else if (sort[0] == 'id' && sort[1] == 'high') {
-      sortable_items.sort(function(a, b) {
+      sortable_items.sort(function (a, b) {
         return b.id - a.id;
       });
     } else if (sort[0] == 'id' && sort[1] == 'low') {
-      sortable_items.sort(function(a, b) {
+      sortable_items.sort(function (a, b) {
         return a.id - b.id;
       });
     } else if (sort[0] == 'name' && sort[1] == 'desc') {
-      sortable_items.sort(function(a, b) {
+      sortable_items.sort(function (a, b) {
         return b.name - a.name;
       });
     } else if (sort[0] == 'name' && sort[1] == 'asc') {
-      sortable_items.sort(function(a, b) {
+      sortable_items.sort(function (a, b) {
         return a.name - b.name;
       });
     } else {
-      sortable_items.sort(function(a, b) {
+      sortable_items.sort(function (a, b) {
         return b.id - a.id;
       });
     }
@@ -362,7 +362,7 @@ export async function checkItemEvolution(
           imgs = [evolve.images.normal, monster_dex.images.normal];
         }
         const embed = new MessageEmbed({
-          color: evolve.color,
+          color: evolve.color as ColorResolvable,
           description: `Nice! **${monster_dex.name.english}** has evolved into **${evolve.name.english}** with held item **${item.name.english}**!`,
           image: {
             url: imgs[0],
@@ -522,12 +522,10 @@ export async function getItemDB(id: number | string): Promise<IItemsModel> {
 }
 
 async function getUserItemDB(id: number, uid: string): Promise<IItemsModel> {
-  const item = await databaseClient<IItemsModel>(ItemsTable)
-    .first()
-    .where({
-      id: id,
-      uid: uid,
-    });
+  const item = await databaseClient<IItemsModel>(ItemsTable).first().where({
+    id: id,
+    uid: uid,
+  });
   return item;
 }
 

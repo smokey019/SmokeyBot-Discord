@@ -213,9 +213,9 @@ export async function catchMonster(
         } else if (shiny == 0 && !dex.includes(currentSpawn.id)) {
           response = `**${
             random_grats[getRndInteger(0, random_grats.length - 1)]
-          }**! You caught a level **${level} ${
-            currentSpawn.name.english
-          }**${shiny_msg + legendary}! Avg IV: **${averageIV}**% - ID: **${
+          }**! You caught a level **${level} ${currentSpawn.name.english}**${
+            shiny_msg + legendary
+          }! Avg IV: **${averageIV}**% - ID: **${
             insertMonster[0]
           }** - Added to Pokédex.`;
           logger.info(
@@ -227,11 +227,9 @@ export async function catchMonster(
         } else if (shiny == 0 && dex.includes(currentSpawn.id)) {
           response = `**${
             random_grats[getRndInteger(0, random_grats.length - 1)]
-          }**! You caught a level **${level} ${
-            currentSpawn.name.english
-          }**${shiny_msg + legendary}! Avg IV: **${averageIV}**% - ID: **${
-            insertMonster[0]
-          }**.`;
+          }**! You caught a level **${level} ${currentSpawn.name.english}**${
+            shiny_msg + legendary
+          }! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}**.`;
           logger.info(
             `'${message.guild?.name}' - Caught POKéMON~ -> '${message.author.username}'`,
           );
@@ -278,7 +276,7 @@ export async function catchMonster(
       logger.error(error);
     }
   } else if (timestamp - (GCD || 0) > 5) {
-    await GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
+    GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
 
     queueMsg(`That is the wrong Pokémon!`, message, true, 1);
     logger.trace(`${message.author.username} is WRONG!`);

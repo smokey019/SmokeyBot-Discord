@@ -1,7 +1,8 @@
-import DBL from 'dblapi.js';
+import Topgg from '@top-gg/sdk';
 import { Message } from 'discord.js';
 import TimeAgo from 'javascript-time-ago';
-import en from 'javascript-time-ago/locale/en';
+import en from 'javascript-time-ago/locale/en.json';
+import { AutoPoster } from 'topgg-autoposter';
 import { getConfigValue } from '../config';
 import { IMonsterUserModel, MonsterUserTable } from '../models/MonsterUser';
 import { createItemDB } from '../plugins/pokemon/items';
@@ -10,17 +11,23 @@ import { databaseClient } from './database';
 import { discordClient } from './discord';
 import { getLogger } from './logger';
 
-TimeAgo.addLocale(en);
+export const dblClient = new Topgg.Api(getConfigValue('TOPGG_KEY'));
+
+TimeAgo.addDefaultLocale(en);
 
 const timeAgo = new TimeAgo('en-US');
 
-export const dblClient = new DBL(getConfigValue('TOPGG_KEY'), discordClient);
 const logger = getLogger('Top.GG Client');
 export const dblCache = loadCache('dblCache');
 const API_CACHE = loadCache('API_CACHE');
+const ap = AutoPoster(getConfigValue('TOPGG_KEY'), discordClient);
 
 dblClient.on('error', (e) => {
   logger.error(`Oops! ${e}`);
+});
+
+ap.on('posted', () => {
+  logger.info('Posted stats to Top.gg!');
 });
 
 export async function checkVote(message: Message): Promise<boolean> {

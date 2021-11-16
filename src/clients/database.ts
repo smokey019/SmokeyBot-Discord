@@ -19,7 +19,7 @@ export const databaseClient = knex({
   pool: { min: 0, max: 7 },
   log: {
     warn(message) {
-      logger.warn(message);
+      console.error(message);
     },
     error(message) {
       console.error(message);
@@ -34,12 +34,12 @@ export const databaseClient = knex({
 });
 
 export async function loadGlobalSetting(which: string): Promise<any> {
-  let settings = await SMOKEYBOT_GLOBAL_SETTINGS_CACHE.get('main');
+  let settings = await SMOKEYBOT_GLOBAL_SETTINGS_CACHE?.get('main');
 
   if (!settings) {
     settings = await databaseClient('global_smokeybot_settings').first();
 
-    SMOKEYBOT_GLOBAL_SETTINGS_CACHE.set('main', settings);
+    SMOKEYBOT_GLOBAL_SETTINGS_CACHE?.set('main', settings);
 
     switch (which) {
       case 'pokemon_user_boost':
@@ -92,7 +92,7 @@ export async function loadGlobalSetting(which: string): Promise<any> {
  */
 export async function getGuildSettings(
   message: Message,
-): Promise<IGuildSettings> {
+): Promise<IGuildSettings | undefined> {
   const guild_settings = await databaseClient<IGuildSettings>(
     GuildSettingsTable,
   )

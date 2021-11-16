@@ -4,7 +4,7 @@ import { getLogger } from '../../clients/logger';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 import { getRndInteger, jsonFetch } from '../../utils';
-import PokeDex from './data/pokedex.json';
+import PokeDex from './data/pokedex_min.json';
 import {
   GenerationEight,
   GenerationFive,
@@ -111,16 +111,16 @@ async function formDex(): Promise<void> {
       MonsterPool.push(element);
       MonsterPool.push(element);
       MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
-      MonsterPool.push(element);
     });
 
     Gens.two.forEach((element) => {
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
+      MonsterPool.push(element);
       MonsterPool.push(element);
       MonsterPool.push(element);
     });
@@ -176,6 +176,7 @@ async function formDex(): Promise<void> {
 
 /**
  * have to do this inside of a function :)
+ * (not anymore but it's ok)
  */
 
 formDex();
