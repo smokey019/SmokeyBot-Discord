@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Collection,
   GuildChannel,
   Message,
   TextBasedChannels,
-  TextChannel,
+  TextChannel
 } from 'discord.js';
 import { rateLimited } from './discord';
 import { getLogger } from './logger';
@@ -126,27 +127,34 @@ function runMsgQueue() {
 
     try {
       if (!object.reply && !object.spawn) {
-        object.msg.channel
-          .send(object.outgoingMsg)
-          .then(() =>
-            logger.trace(`Sent a message in ${object.msg.guild?.name}.`),
-          );
+        object.msg.channel.send(object.outgoingMsg).then(() => {
+          try {
+            logger.trace(`Sent a message in ${object.msg.guild?.name}.`);
+          } catch (error) {
+            logger.error(error);
+            timerMsgQ = setTimeout(runMsgQueue, 250);
+          }
+        });
       } else if (!object.reply && object.spawn && object.embed) {
         (object.spawn as TextChannel).send({ embeds: [object.outgoingMsg] });
       } else if (!object.reply && object.spawn) {
         (object.spawn as TextChannel).send(object.outgoingMsg);
       } else {
-        object.msg
-          .reply(object.outgoingMsg)
-          .then(() =>
+        object.msg.reply(object.outgoingMsg).then(() => {
+          try {
             logger.trace(
               `Sent a reply to ${object.msg.author.username} in ${object.msg.guild?.name}.`,
-            ),
-          );
+            );
+          } catch (error) {
+            timerMsgQ = setTimeout(runMsgQueue, 250);
+            logger.error(error);
+          }
+        });
       }
       timerMsgQ = setTimeout(runMsgQueue, 250);
     } catch (error) {
       logger.error(error);
+      timerMsgQ = setTimeout(runMsgQueue, 250);
     }
   } else {
     if (rateLimited) {

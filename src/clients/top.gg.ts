@@ -1,7 +1,9 @@
-import Topgg from '@top-gg/sdk';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Message } from 'discord.js';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en.json';
+import fetch from 'node-fetch';
+import { URLSearchParams } from 'node:url';
 import { AutoPoster } from 'topgg-autoposter';
 import { getConfigValue } from '../config';
 import { IMonsterUserModel, MonsterUserTable } from '../models/MonsterUser';
@@ -11,8 +13,6 @@ import { databaseClient } from './database';
 import { discordClient } from './discord';
 import { getLogger } from './logger';
 
-export const dblClient = new Topgg.Api(getConfigValue('TOPGG_KEY'));
-
 TimeAgo.addDefaultLocale(en);
 
 const timeAgo = new TimeAgo('en-US');
@@ -20,15 +20,74 @@ const timeAgo = new TimeAgo('en-US');
 const logger = getLogger('Top.GG Client');
 export const dblCache = loadCache('dblCache');
 const API_CACHE = loadCache('API_CACHE');
-const ap = AutoPoster(getConfigValue('TOPGG_KEY'), discordClient);
+let ap = undefined;
 
-dblClient.on('error', (e) => {
-  logger.error(`Oops! ${e}`);
-});
+export async function enableAP() {
+  ap = AutoPoster(getConfigValue('TOPGG_KEY'), discordClient);
 
-ap.on('posted', () => {
-  logger.info('Posted stats to Top.gg!');
-});
+  ap.on('posted', () => {
+    logger.info('Posted stats to Top.gg!');
+  });
+}
+
+async function requestGET(
+  method = 'GET',
+  path: string,
+  body?: any,
+): Promise<string> {
+  let url = `https://top.gg/api/${path}`;
+  if (body && method === 'GET') url += `?${new URLSearchParams(body)}`;
+
+  return fetch(url, {
+    method: method,
+    headers: { Authorization: getConfigValue('TOPGG_KEY') },
+  }).then(async (res) => res.json());
+}
+
+/*async function requestPOST(
+  method = 'POST',
+  path: string,
+  body?: any,
+): Promise<any> {
+  fetch(`https://top.gg/api/${path}`, {
+    method: method,
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getConfigValue('TOPGG_KEY'),
+    },
+  }).then(async (res) => res.json());
+}*/
+
+/**
+ * Get whether or not a user has voted in the last 12 hours
+ * @param {Snowflake} id User ID
+ * @returns {Boolean} Whether the user has voted in the last 12 hours
+ * @example
+ * ```js
+ * await api.hasVoted('205680187394752512')
+ * // => true/false
+ * ```
+ */
+async function hasVoted(id: string): Promise<any> {
+  if (!id) throw new Error('Missing ID');
+  return await requestGET('GET', '/bots/check', { userId: id }).then(
+    (x: any) => !!x.voted,
+  );
+}
+
+/**
+ * Whether or not the weekend multiplier is active
+ * @returns {Boolean} Whether the multiplier is active
+ * @example
+ * ```js
+ * await api.isWeekend()
+ * // => true/false
+ * ```
+ */
+async function isWeekend(): Promise<any> {
+  return await requestGET('GET', '/weekend').then((x: any) => x.is_weekend);
+}
 
 export async function checkVote(message: Message): Promise<boolean> {
   const voted = (await dblCache.get(message.author.id)) ?? {
@@ -37,7 +96,7 @@ export async function checkVote(message: Message): Promise<boolean> {
   };
 
   if (!voted.voted || Date.now() - voted.checked_at > 43200000) {
-    const check = await dblClient.hasVoted(message.author.id);
+    const check = await hasVoted(message.author.id);
     dblCache.set(message.author.id, { voted: check, checked_at: Date.now() });
 
     if (check) {
@@ -101,12 +160,12 @@ async function checkWeekend(): Promise<boolean> {
   const weekend = API_CACHE.get('weekend');
 
   if (!weekend) {
-    const data = await dblClient.isWeekend();
+    const data = await isWeekend();
     API_CACHE.set('weekend', { weekend: data, time: Date.now() });
     return data;
   } else {
     if (Date.now() - weekend.time > 60) {
-      const data = await dblClient.isWeekend();
+      const data = await isWeekend();
       API_CACHE.set('weekend', { weekend: data, time: Date.now() });
       return data;
     } else {

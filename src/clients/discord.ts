@@ -1,12 +1,13 @@
 import { Client, Intents, Message } from 'discord.js';
+import { commands, loadCommands } from '../plugins/commands';
 import { getAllMonsters, MonsterDex } from '../plugins/pokemon/monsters';
-import { monsterParser } from '../plugins/pokemon/parser';
+import { getPrefixes } from '../plugins/pokemon/parser';
 import { MONSTER_SPAWNS, spawnMonster } from '../plugins/pokemon/spawn-monster';
-import { smokeybotParser } from '../plugins/smokeybot/parser';
 import { format_number, getCurrentTime, getRndInteger } from '../utils';
 import { getCache, getGCD, ICache } from './cache';
 import { getGuildSettings, IGuildSettings } from './database';
 import { getLogger } from './logger';
+import { enableAP } from './top.gg';
 
 const logger = getLogger('DiscordClient');
 export let rateLimited = false;
@@ -27,6 +28,8 @@ discordClient.on('ready', async () => {
   logger.info(`Total Monsters: ${MonsterDex.size}.`);
   logger.info('Fully initialized.');
   initializing = false;
+  await enableAP();
+  await loadCommands();
 });
 
 discordClient.on('rateLimit', (error) => {
@@ -66,29 +69,39 @@ discordClient.on('messageCreate', async (message) => {
 });
 
 async function parseMessage(message: Message) {
-  const timestamp = getCurrentTime();
-
   if (
+    !message.guild ||
     !message.member ||
     message.member.user.username == 'smokeybot' ||
-    rateLimited ||
     message.author.bot
-  ) {
+  )
     return;
-  }
 
+  const GCD = await getGCD(message.guild.id);
+  const timestamp = getCurrentTime();
+  const load_prefixes = await getPrefixes(message.guild.id);
+  const prefixes = RegExp(load_prefixes.join('|'));
+  const detect_prefix = message.content.match(prefixes);
+
+  if (!detect_prefix || rateLimited || timestamp - GCD < 2) return;
+
+  const prefix = detect_prefix.shift();
+
+  const args = message.content
+    .slice(prefix?.length)
+    .trim()
+    .toLowerCase()
+    .replace(/ {2,}/gm, ' ')
+    .split(/ +/);
+  if (args.length < 1) return;
+
+  const command = args.shift() ?? undefined;
+  const commandFile = commands.find((_r, n) => n.includes(command));
   const settings: IGuildSettings = await getGuildSettings(message);
-
   const cache: ICache = await getCache(message, settings);
 
-  const GCD: number = await getGCD(message.guild.id);
-
   if (cache && settings) {
-    if (timestamp - GCD > 5) {
-      await smokeybotParser(message, cache);
-    }
-
-    if (cache.settings.smokemon_enabled) {
+    if (cache.settings.smokemon_enabled && !commandFile) {
       let spawn = await MONSTER_SPAWNS.get(message.guild.id);
 
       if (!spawn) {
@@ -97,7 +110,6 @@ async function parseMessage(message: Message) {
           spawned_at: getCurrentTime() - 30,
         };
         MONSTER_SPAWNS.set(message.guild.id, spawn);
-        await monsterParser(message, cache);
       } else {
         const spawn_timer = getRndInteger(getRndInteger(15, 120), 300);
 
@@ -110,17 +122,18 @@ async function parseMessage(message: Message) {
         ) {
           await spawnMonster(message, cache);
         }
-
-        await monsterParser(message, cache);
       }
     }
-  } else if (!cache) {
-    logger.error(
-      `Missing cache for ${message.guild.id} - ${message.guild.name}.`,
-    );
-  } else if (!settings) {
-    logger.error(
-      `Missing settings for ${message.guild.id} - ${message.guild.name}.`,
-    );
   }
+
+  if (!commandFile) return;
+  else
+    commandFile({
+      message,
+      args,
+      client: discordClient,
+      dev: true,
+      settings: settings,
+      cache: cache,
+    });
 }

@@ -1,114 +1,69 @@
-'use strict';
-var __awaiter =
-  (this && this.__awaiter) ||
-  function (thisArg, _arguments, P, generator) {
-    function adopt(value) {
-      return value instanceof P
-        ? value
-        : new P(function (resolve) {
-            resolve(value);
-          });
-    }
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
-      function fulfilled(value) {
-        try {
-          step(generator.next(value));
-        } catch (e) {
-          reject(e);
-        }
-      }
-      function rejected(value) {
-        try {
-          step(generator['throw'](value));
-        } catch (e) {
-          reject(e);
-        }
-      }
-      function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
-      }
-      step((generator = generator.apply(thisArg, _arguments || [])).next());
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
-  };
-var __importDefault =
-  (this && this.__importDefault) ||
-  function (mod) {
-    return mod && mod.__esModule ? mod : { default: mod };
-  };
-Object.defineProperty(exports, '__esModule', { value: true });
-exports.unFavorite =
-  exports.setFavorite =
-  exports.selectMonster =
-  exports.getUsersMonsters =
-  exports.getUserMonster =
-  exports.getShinyMonsterDBCount =
-  exports.getMonsterDBCount =
-  exports.findMonsterByName =
-  exports.findMonsterByIDLocal =
-  exports.findMonsterByID =
-  exports.findMonsterByID_DB =
-  exports.getRandomMonster =
-  exports.getPokedex =
-  exports.getAllMonsters =
-  exports.MonsterDex =
-    void 0;
-const discord_js_1 = require('discord.js');
-const database_1 = require('../../clients/database');
-const logger_1 = require('../../clients/logger');
-const Monster_1 = require('../../models/Monster');
-const MonsterUser_1 = require('../../models/MonsterUser');
-const utils_1 = require('../../utils');
-const pokedex_min_json_1 = __importDefault(require('./data/pokedex_min.json'));
-const pokemon_list_1 = require('./pokemon-list');
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.unFavorite = exports.setFavorite = exports.selectMonster = exports.getUsersMonsters = exports.getUserMonster = exports.getShinyMonsterDBCount = exports.getMonsterDBCount = exports.findMonsterByName = exports.findMonsterByIDLocal = exports.findMonsterByID = exports.findMonsterByID_DB = exports.getRandomMonster = exports.getPokedex = exports.getAllMonsters = exports.MonsterDex = void 0;
+const discord_js_1 = require("discord.js");
+const database_1 = require("../../clients/database");
+const logger_1 = require("../../clients/logger");
+const Monster_1 = require("../../models/Monster");
+const MonsterUser_1 = require("../../models/MonsterUser");
+const utils_1 = require("../../utils");
+const pokedex_min_json_1 = __importDefault(require("./data/pokedex_min.json"));
+const pokemon_list_1 = require("./pokemon-list");
 const logger = (0, logger_1.getLogger)('Pokemon');
 const MonsterPool = [];
 exports.MonsterDex = new discord_js_1.Collection();
 let Gens = {
-  one: pokemon_list_1.GenerationOne,
-  two: pokemon_list_1.GenerationTwo,
-  three: pokemon_list_1.GenerationThree,
-  four: pokemon_list_1.GenerationFour,
-  five: pokemon_list_1.GenerationFive,
-  six: pokemon_list_1.GenerationSix,
-  seven: pokemon_list_1.GenerationSeven,
-  eight: pokemon_list_1.GenerationEight,
-  galar: [],
-  alola: [],
+    one: pokemon_list_1.GenerationOne,
+    two: pokemon_list_1.GenerationTwo,
+    three: pokemon_list_1.GenerationThree,
+    four: pokemon_list_1.GenerationFour,
+    five: pokemon_list_1.GenerationFive,
+    six: pokemon_list_1.GenerationSix,
+    seven: pokemon_list_1.GenerationSeven,
+    eight: pokemon_list_1.GenerationEight,
+    galar: [],
+    alola: [],
 };
 function formDex() {
-  return __awaiter(this, void 0, void 0, function* () {
-    logger.info('Forming Pokedex..');
-    pokedex_min_json_1.default.forEach((element) =>
-      __awaiter(this, void 0, void 0, function* () {
-        // !element.forme &&
-        if (
-          element.name &&
-          element.type &&
-          element.images &&
-          element.images.normal &&
-          !element.name.english.match(/Gmax/)
-        ) {
-          if (element.forme) {
-            if (!element.forme.match('Mega')) return;
-          }
-          MonsterPool.push(element.id);
-          if (element.region == 'Alola') {
-            Gens.alola.push(element);
-          }
-          if (element.region == 'Galar') {
-            Gens.galar.push(element);
-          }
-        }
-        if (
-          element.name.english &&
-          element.images &&
-          element.images.normal &&
-          !element.name.english.match(/Gmax/)
-        ) {
-          exports.MonsterDex.set(element.id, element);
-          /*await databaseClient('pokedex').insert({
+    return __awaiter(this, void 0, void 0, function* () {
+        logger.info('Forming Pokedex..');
+        pokedex_min_json_1.default.forEach((element) => __awaiter(this, void 0, void 0, function* () {
+            // !element.forme &&
+            if (element.name &&
+                element.type &&
+                element.images &&
+                element.images.normal &&
+                !element.name.english.match(/Gmax/)) {
+                if (element.forme) {
+                    if (!element.forme.match('Mega'))
+                        return;
+                }
+                MonsterPool.push(element.id);
+                if (element.region == 'Alola') {
+                    Gens.alola.push(element);
+                }
+                if (element.region == 'Galar') {
+                    Gens.galar.push(element);
+                }
+            }
+            if (element.name.english &&
+                element.images &&
+                element.images.normal &&
+                !element.name.english.match(/Gmax/)) {
+                exports.MonsterDex.set(element.id, element);
+                /*await databaseClient('pokedex').insert({
                           pokemon_id: element.id || null,
                           name: JSON.stringify(element.name) || null,
                           type: JSON.stringify(element.type) || null,
@@ -135,73 +90,72 @@ function formDex() {
                           gender: element.gender || null,
                           cosmeticFormes: JSON.stringify(element.cosmeticFormes) || null,
                       });*/
-        }
-      }),
-    );
-    /**
-     * Specific Monster Boosts
-     */
-    /*for (let index = 0; index < 150; index++) {
+            }
+        }));
+        /**
+         * Specific Monster Boosts
+         */
+        /*for (let index = 0; index < 150; index++) {
           MonsterPool.push(92);
           MonsterPool.push(193);
           MonsterPool.push(66);
         }*/
-    for (let index = 0; index < 2; index++) {
-      Gens.one.forEach((element) => {
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-      });
-      Gens.two.forEach((element) => {
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-      });
-      Gens.three.forEach((element) => {
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-      });
-      Gens.four.forEach((element) => {
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-      });
-      Gens.five.forEach((element) => {
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-      });
-      Gens.six.forEach((element) => {
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-      });
-      Gens.seven.forEach((element) => {
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-      });
-      Gens.eight.forEach((element) => {
-        MonsterPool.push(element);
-        MonsterPool.push(element);
-      });
-      Gens.alola.forEach((element) => {
-        MonsterPool.push(element.id);
-        MonsterPool.push(element.id);
-      });
-      Gens.galar.forEach((element) => {
-        MonsterPool.push(element.id);
-        MonsterPool.push(element.id);
-      });
-    }
-    /**
-     * clear to save some memory
-     */
-    Gens = undefined;
-    logger.info('Finished forming Pokedex.');
-  });
+        for (let index = 0; index < 2; index++) {
+            Gens.one.forEach((element) => {
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+            });
+            Gens.two.forEach((element) => {
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+            });
+            Gens.three.forEach((element) => {
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+            });
+            Gens.four.forEach((element) => {
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+            });
+            Gens.five.forEach((element) => {
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+            });
+            Gens.six.forEach((element) => {
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+            });
+            Gens.seven.forEach((element) => {
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+            });
+            Gens.eight.forEach((element) => {
+                MonsterPool.push(element);
+                MonsterPool.push(element);
+            });
+            Gens.alola.forEach((element) => {
+                MonsterPool.push(element.id);
+                MonsterPool.push(element.id);
+            });
+            Gens.galar.forEach((element) => {
+                MonsterPool.push(element.id);
+                MonsterPool.push(element.id);
+            });
+        }
+        /**
+         * clear to save some memory
+         */
+        Gens = undefined;
+        logger.info('Finished forming Pokedex.');
+    });
 }
 /**
  * have to do this inside of a function :)
@@ -212,21 +166,21 @@ formDex();
  * return monster spawn pool
  */
 function getAllMonsters() {
-  return MonsterPool;
+    return MonsterPool;
 }
 exports.getAllMonsters = getAllMonsters;
 /**
  * return pokedex Collection
  */
 function getPokedex() {
-  return exports.MonsterDex;
+    return exports.MonsterDex;
 }
 exports.getPokedex = getPokedex;
 /**
  * get a random monster from the spawn pool
  */
 function getRandomMonster() {
-  return MonsterPool[(0, utils_1.getRndInteger)(0, MonsterPool.length - 1)];
+    return MonsterPool[(0, utils_1.getRndInteger)(0, MonsterPool.length - 1)];
 }
 exports.getRandomMonster = getRandomMonster;
 /**
@@ -234,10 +188,9 @@ exports.getRandomMonster = getRandomMonster;
  * @param id monster number
  */
 function findMonsterByID_DB(id) {
-  return __awaiter(this, void 0, void 0, function* () {
-    return yield (0,
-    utils_1.jsonFetch)(`https://api.smokey.gg/pokemon/pokedex/${id}`);
-  });
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield (0, utils_1.jsonFetch)(`https://api.smokey.gg/pokemon/pokedex/${id}`);
+    });
 }
 exports.findMonsterByID_DB = findMonsterByID_DB;
 /**
@@ -245,14 +198,14 @@ exports.findMonsterByID_DB = findMonsterByID_DB;
  * @param id monster number
  */
 function findMonsterByID(id) {
-  return __awaiter(this, void 0, void 0, function* () {
-    const monster = exports.MonsterDex.find((mon) => mon.id === id);
-    return monster;
-  });
+    return __awaiter(this, void 0, void 0, function* () {
+        const monster = exports.MonsterDex.find((mon) => mon.id === id);
+        return monster;
+    });
 }
 exports.findMonsterByID = findMonsterByID;
 function findMonsterByIDLocal(id) {
-  return exports.MonsterDex.get(id);
+    return exports.MonsterDex.get(id);
 }
 exports.findMonsterByIDLocal = findMonsterByIDLocal;
 /**
@@ -260,45 +213,38 @@ exports.findMonsterByIDLocal = findMonsterByIDLocal;
  * @param name
  */
 function findMonsterByName(name) {
-  if (!name) return undefined;
-  let monster = undefined;
-  exports.MonsterDex.forEach((element) =>
-    __awaiter(this, void 0, void 0, function* () {
-      if (
-        element.name.english.toLowerCase().replace(/♂|♀/g, '') ==
-        name.toLowerCase()
-      ) {
-        monster = element;
-      }
-    }),
-  );
-  return monster;
+    if (!name)
+        return undefined;
+    let monster = undefined;
+    exports.MonsterDex.forEach((element) => __awaiter(this, void 0, void 0, function* () {
+        if (element.name.english.toLowerCase().replace(/♂|♀/g, '') ==
+            name.toLowerCase()) {
+            monster = element;
+        }
+    }));
+    return monster;
 }
 exports.findMonsterByName = findMonsterByName;
 /**
  * return total monster count for stats
  */
 function getMonsterDBCount() {
-  return __awaiter(this, void 0, void 0, function* () {
-    const db_monster = yield (0, database_1.databaseClient)(
-      Monster_1.MonsterTable,
-    ).select('id');
-    return db_monster.length;
-  });
+    return __awaiter(this, void 0, void 0, function* () {
+        const db_monster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable).select('id');
+        return db_monster.length;
+    });
 }
 exports.getMonsterDBCount = getMonsterDBCount;
 /**
  * return total shiny monster count for stats
  */
 function getShinyMonsterDBCount() {
-  return __awaiter(this, void 0, void 0, function* () {
-    const db_monster = yield (0, database_1.databaseClient)(
-      Monster_1.MonsterTable,
-    )
-      .select('id')
-      .where('shiny', 1);
-    return db_monster.length;
-  });
+    return __awaiter(this, void 0, void 0, function* () {
+        const db_monster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
+            .select('id')
+            .where('shiny', 1);
+        return db_monster.length;
+    });
 }
 exports.getShinyMonsterDBCount = getShinyMonsterDBCount;
 /**
@@ -306,105 +252,100 @@ exports.getShinyMonsterDBCount = getShinyMonsterDBCount;
  * @param monster_id database id
  */
 function getUserMonster(monster_id) {
-  return __awaiter(this, void 0, void 0, function* () {
-    const db_monster = yield (0, database_1.databaseClient)(
-      Monster_1.MonsterTable,
-    )
-      .select()
-      .where('id', monster_id);
-    if (db_monster) {
-      return db_monster[0];
-    } else {
-      return undefined;
-    }
-  });
+    return __awaiter(this, void 0, void 0, function* () {
+        const db_monster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
+            .select()
+            .where('id', monster_id);
+        if (db_monster) {
+            return db_monster[0];
+        }
+        else {
+            return undefined;
+        }
+    });
 }
 exports.getUserMonster = getUserMonster;
 function getUsersMonsters(uid) {
-  return __awaiter(this, void 0, void 0, function* () {
-    const monsters = yield (0, database_1.databaseClient)(
-      Monster_1.MonsterTable,
-    )
-      .select()
-      .where({
-        uid: uid,
-        released: 0,
-      });
-    return monsters;
-  });
+    return __awaiter(this, void 0, void 0, function* () {
+        const monsters = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
+            .select()
+            .where({
+            uid: uid,
+            released: 0,
+        });
+        return monsters;
+    });
 }
 exports.getUsersMonsters = getUsersMonsters;
 function selectMonster(message) {
-  return __awaiter(this, void 0, void 0, function* () {
-    const splitMsg = message.content.split(' ');
-    const monster = yield getUserMonster(splitMsg[1]);
-    if (!monster) return undefined;
-    const dex = yield findMonsterByID(monster.monster_id);
-    if (monster && message.author.id == monster.uid) {
-      const updateUser = yield (0, database_1.databaseClient)(
-        MonsterUser_1.MonsterUserTable,
-      )
-        .where({ uid: message.author.id })
-        .update({ current_monster: parseInt(splitMsg[1]) });
-      if (updateUser) {
-        message.reply(
-          `Selected **Level ${monster.level} ${dex.name.english}**!`,
-        );
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  });
+    return __awaiter(this, void 0, void 0, function* () {
+        const splitMsg = message.content.split(' ');
+        const monster = yield getUserMonster(splitMsg[1]);
+        if (!monster)
+            return undefined;
+        const dex = yield findMonsterByID(monster.monster_id);
+        if (monster && message.author.id == monster.uid) {
+            const updateUser = yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable)
+                .where({ uid: message.author.id })
+                .update({ current_monster: parseInt(splitMsg[1]) });
+            if (updateUser) {
+                message.reply(`Selected **Level ${monster.level} ${dex.name.english}**!`);
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    });
 }
 exports.selectMonster = selectMonster;
 function setFavorite(message) {
-  return __awaiter(this, void 0, void 0, function* () {
-    const splitMsg = message.content.split(' ');
-    const monster = yield getUserMonster(splitMsg[1]);
-    if (!monster) return undefined;
-    const dex = yield findMonsterByID(monster.monster_id);
-    if (monster && message.author.id == monster.uid) {
-      const updatedMonster = yield (0, database_1.databaseClient)(
-        Monster_1.MonsterTable,
-      )
-        .where('id', monster.id)
-        .update({ favorite: 1 });
-      if (updatedMonster) {
-        message.reply(
-          `Favorited monster **Level ${monster.level} ${dex.name.english}**!`,
-        );
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  });
+    return __awaiter(this, void 0, void 0, function* () {
+        const splitMsg = message.content.split(' ');
+        const monster = yield getUserMonster(splitMsg[1]);
+        if (!monster)
+            return undefined;
+        const dex = yield findMonsterByID(monster.monster_id);
+        if (monster && message.author.id == monster.uid) {
+            const updatedMonster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
+                .where('id', monster.id)
+                .update({ favorite: 1 });
+            if (updatedMonster) {
+                message.reply(`Favorited monster **Level ${monster.level} ${dex.name.english}**!`);
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    });
 }
 exports.setFavorite = setFavorite;
 function unFavorite(message) {
-  return __awaiter(this, void 0, void 0, function* () {
-    const splitMsg = message.content.split(' ');
-    const monster = yield getUserMonster(splitMsg[1]);
-    if (monster && message.author.id == monster.uid) {
-      const updatedMonster = yield (0, database_1.databaseClient)(
-        Monster_1.MonsterTable,
-      )
-        .where('id', monster.id)
-        .update({ favorite: 0 });
-      if (updatedMonster) {
-        message.reply(`Unfavorited monster id ${monster.id}!`);
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  });
+    return __awaiter(this, void 0, void 0, function* () {
+        const splitMsg = message.content.split(' ');
+        const monster = yield getUserMonster(splitMsg[1]);
+        if (monster && message.author.id == monster.uid) {
+            const updatedMonster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
+                .where('id', monster.id)
+                .update({ favorite: 0 });
+            if (updatedMonster) {
+                message.reply(`Unfavorited monster id ${monster.id}!`);
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    });
 }
 exports.unFavorite = unFavorite;
