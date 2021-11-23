@@ -1,6 +1,10 @@
 ## TODO
 
-- probably plenty
++ fix search parse
++ fix dex parse
++ fix item parse
++ make items better
+
 
 ## SmokeyBot Commands
 
