@@ -9,7 +9,6 @@ specifiers:
   '@typescript-eslint/eslint-plugin': ^5.3.1
   '@typescript-eslint/parser': ^5.3.1
   datetime-difference: ^1.0.2
-  dblapi.js: ^2.4.1
   discord-api-types: ^0.24.0
   discord.js: ^13.3.1
   dotenv: ^10.0.0
@@ -39,7 +38,6 @@ dependencies:
   '@top-gg/sdk': 3.1.2
   '@types/node': 16.11.7
   datetime-difference: 1.0.2
-  dblapi.js: 2.4.1
   discord-api-types: 0.24.0
   discord.js: 13.3.1
   dotenv: 10.0.0
@@ -627,11 +625,6 @@ packages:
 
   /datetime-difference/1.0.2:
     resolution: {integrity: sha512-nQrIuV1WhKLD9VxfoXm6NbvScy3XbuoJ5Q+POKpLf3ZN9QYkIHpXzEJHK51a+ltrMQpyCkVzGrZmWbxjCjHMvQ==}
-    dev: false
-
-  /dblapi.js/2.4.1:
-    resolution: {integrity: sha512-g+u1inF/qOLit5qPK4hBGk5pKL1vy09uBLV+nukkRMvw2S9D1PyiyO70n4fboUXOgbExPp6Sho/Y782OqQOUiQ==}
-    deprecated: Module is no longer maintained
     dev: false
 
   /debug/4.3.2:
