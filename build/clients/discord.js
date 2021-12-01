@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.discordClient = exports.initializing = exports.rateLimited = void 0;
 const discord_js_1 = require("discord.js");
 const commands_1 = require("../plugins/commands");
+const exp_gain_1 = require("../plugins/pokemon/exp-gain");
 const monsters_1 = require("../plugins/pokemon/monsters");
 const parser_1 = require("../plugins/pokemon/parser");
 const spawn_monster_1 = require("../plugins/pokemon/spawn-monster");
@@ -72,50 +73,33 @@ function parseMessage(message) {
         if (!message.guild ||
             !message.member ||
             message.member.user.username == 'smokeybot' ||
-            message.author.bot)
+            message.author.bot ||
+            exports.rateLimited)
             return;
         const GCD = yield (0, cache_1.getGCD)(message.guild.id);
         const timestamp = (0, utils_1.getCurrentTime)();
         const load_prefixes = yield (0, parser_1.getPrefixes)(message.guild.id);
         const prefixes = RegExp(load_prefixes.join('|'));
         const detect_prefix = message.content.match(prefixes);
-        if (!detect_prefix || exports.rateLimited || timestamp - GCD < 2)
-            return;
-        const prefix = detect_prefix.shift();
+        const settings = yield (0, database_1.getGuildSettings)(message);
+        const cache = yield (0, cache_1.getCache)(message, settings);
+        if (cache && settings) {
+            if (cache.settings.smokemon_enabled) {
+                yield (0, exp_gain_1.checkExpGain)(message);
+                yield (0, spawn_monster_1.checkSpawn)(message, cache);
+            }
+        }
+        const prefix = detect_prefix === null || detect_prefix === void 0 ? void 0 : detect_prefix.shift();
         const args = message.content
             .slice(prefix === null || prefix === void 0 ? void 0 : prefix.length)
             .trim()
             .toLowerCase()
             .replace(/ {2,}/gm, ' ')
             .split(/ +/);
-        if (args.length < 1)
+        if (args.length < 1 || !detect_prefix || timestamp - GCD < 2)
             return;
         const command = (_a = args.shift()) !== null && _a !== void 0 ? _a : undefined;
         const commandFile = commands_1.commands.find((_r, n) => n.includes(command));
-        const settings = yield (0, database_1.getGuildSettings)(message);
-        const cache = yield (0, cache_1.getCache)(message, settings);
-        if (cache && settings) {
-            if (cache.settings.smokemon_enabled && !commandFile) {
-                let spawn = yield spawn_monster_1.MONSTER_SPAWNS.get(message.guild.id);
-                if (!spawn) {
-                    spawn = {
-                        monster: undefined,
-                        spawned_at: (0, utils_1.getCurrentTime)() - 30,
-                    };
-                    spawn_monster_1.MONSTER_SPAWNS.set(message.guild.id, spawn);
-                }
-                else {
-                    const spawn_timer = (0, utils_1.getRndInteger)((0, utils_1.getRndInteger)(15, 120), 300);
-                    if (timestamp - spawn.spawned_at > spawn_timer &&
-                        !message.content.match(/catch/i) &&
-                        !message.content.match(/spawn/i) &&
-                        !exports.rateLimited &&
-                        !exports.initializing) {
-                        yield (0, spawn_monster_1.spawnMonster)(message, cache);
-                    }
-                }
-            }
-        }
         if (!commandFile)
             return;
         else

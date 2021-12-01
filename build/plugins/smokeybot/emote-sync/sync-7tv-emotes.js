@@ -9,13 +9,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sync_7tv_emotes = exports.fetch7tvChannelEmotes = exports.fetch7tvGlobalEmotes = void 0;
+exports.sync_7tv_emotes = exports.fetch7tvChannelEmotes = exports.fetch7tvGlobalEmotes = exports.Stv_emoji_queue_attempt_count = exports.Stv_emoji_queue_count = void 0;
 const discord_js_1 = require("discord.js");
 const log4js_1 = require("log4js");
 const queue_1 = require("../../../clients/queue");
 const utils_1 = require("../../../utils");
 const sync_ffz_emotes_1 = require("./sync-ffz-emotes");
 const logger = (0, log4js_1.getLogger)('7TV Emote Manager');
+exports.Stv_emoji_queue_count = 0;
+exports.Stv_emoji_queue_attempt_count = 0;
 /**
  * Fetch 7TV Global Emotes
  * @returns Array of 7TV Global Emotes.
@@ -35,6 +37,7 @@ exports.fetch7tvGlobalEmotes = fetch7tvGlobalEmotes;
 function fetch7tvChannelEmotes(channel) {
     return __awaiter(this, void 0, void 0, function* () {
         const emotes = yield (0, utils_1.jsonFetch)(`https://api.7tv.app/v2/users/${channel}/emotes`);
+        exports.Stv_emoji_queue_attempt_count++;
         return emotes;
     });
 }
@@ -43,21 +46,11 @@ exports.fetch7tvChannelEmotes = fetch7tvChannelEmotes;
  *
  * @param message
  */
-function sync_7tv_emotes(message) {
-    var _a;
+function sync_7tv_emotes(message, channel) {
     return __awaiter(this, void 0, void 0, function* () {
         let embed = undefined;
         let to_be_deleted = undefined;
-        const args = message.content
-            .slice(1)
-            .trim()
-            .toLowerCase()
-            .replace(/ {2,}/gm, ' ')
-            .split(/ +/);
-        const command = args.shift();
-        const channel = (_a = args[0]) === null || _a === void 0 ? void 0 : _a.replace(/\W/g, '');
-        if (command == 'sync-emotes-7tv' &&
-            channel &&
+        if (channel &&
             message.member.permissions.has([
                 discord_js_1.Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS,
             ]) &&
@@ -73,6 +66,7 @@ function sync_7tv_emotes(message) {
             })
                 .catch((error) => logger.error(error));
             logger.debug(`Fetching 7TV Emotes for Twitch channel ${channel} (requested by ${message.member.displayName} in ${message.guild.name})..`);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let emotes;
             if (channel == 'global') {
                 emotes = yield fetch7tvGlobalEmotes();
@@ -80,7 +74,7 @@ function sync_7tv_emotes(message) {
             else {
                 emotes = yield fetch7tvChannelEmotes(channel);
             }
-            if (!emotes) {
+            if (!emotes || emotes.status === 404) {
                 logger.debug(`Couldn't fetch 7TV Emotes for Twitch channel ${channel}.`);
                 yield message.channel.messages
                     .fetch(to_be_deleted)
@@ -104,6 +98,8 @@ function sync_7tv_emotes(message) {
                 if (!queue_1.EmoteQueue.has(message.guild.id)) {
                     emotes.forEach((element) => {
                         var _a;
+                        if (element.mime === "image/webp")
+                            return;
                         let emote_url = (_a = (element.urls['4'] ||
                             element.urls['3'] ||
                             element.urls['2'] ||
@@ -121,6 +117,7 @@ function sync_7tv_emotes(message) {
                     if (final_emojis.length > 0) {
                         sync_ffz_emotes_1.EMOJI_COOLDOWN.set(message.guild.id, Date.now());
                         logger.debug(`Syncing ${final_emojis.length}/${emotes.length} total emotes for ${channel}..`);
+                        exports.Stv_emoji_queue_count++;
                         queue_1.EmoteQueue.set(message.guild.id, {
                             emotes: final_emojis,
                             msg: message,
@@ -134,7 +131,7 @@ function sync_7tv_emotes(message) {
                         embed = new discord_js_1.MessageEmbed()
                             .setTitle('7TV Emote Manager')
                             .setColor(0x00bc8c)
-                            .setDescription(`**Successfully syncing ${final_emojis.length}/${emotes.length} emotes!** \n\n\n It will take up to 30 minutes or more depending on the queue. \n\n- Discord's maximum GIF size is 256 kb so some longer emotes may not get uploaded. \n- Some images may not upload as GIFs for some unknown reason. \n\n Type \`~cancel-sync\` to cancel. \n Type \`~stats\` to see how many servers are in queue.`);
+                            .setDescription(`**Successfully syncing ${final_emojis.length}/${emotes.length} emotes!**\n\n\nIt will take up to 30 minutes or more depending on the queue.\n\n- Discord's maximum GIF size is 256 kb so some longer emotes may not get uploaded. \n- Some images may not upload because 7TV has converted them to \`image/webp\` instead of GIFs so Discord does not accept it.\n- Only images marked as \`image/gif\` or \`image/png\` in their API will be uploaded.\n\n Type \`~cancel-sync\` to cancel. \n Type \`~stats\` to see how many servers are in queue.`);
                         yield message.channel.send({ embeds: [embed] });
                     }
                     else {

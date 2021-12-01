@@ -19,6 +19,8 @@ const queue_1 = require("../../clients/queue");
 const top_gg_1 = require("../../clients/top.gg");
 const colors_1 = require("../../colors");
 const utils_1 = require("../../utils");
+const sync_7tv_emotes_1 = require("../smokeybot/emote-sync/sync-7tv-emotes");
+const sync_ffz_emotes_1 = require("../smokeybot/emote-sync/sync-ffz-emotes");
 const monsters_1 = require("./monsters");
 const parser_1 = require("./parser");
 const weather_1 = require("./weather");
@@ -117,8 +119,10 @@ function getBotStats(message) {
             .setColor(colors_1.COLOR_BLACK)
             .setTitle('SmokeyBot Statistics')
             .addField('Ping', ping + ' ms', true)
-            .addField('Total Servers in Emote Queue', (0, utils_1.format_number)(queue_1.EmoteQueue.size), true)
-            .addField('Total Servers', (0, utils_1.format_number)(discord_1.discordClient.guilds.cache.size), true)
+            .addField('Servers in Emote Queue 🔌', (0, utils_1.format_number)(queue_1.EmoteQueue.size), true)
+            .addField('Emote Sync Attempts 🔴', (0, utils_1.format_number)(sync_7tv_emotes_1.Stv_emoji_queue_attempt_count + sync_ffz_emotes_1.FFZ_emoji_queue_attempt_count), true)
+            .addField('Emote Successful Syncs 🟢', (0, utils_1.format_number)(sync_7tv_emotes_1.Stv_emoji_queue_count + sync_ffz_emotes_1.FFZ_emoji_queue_count), true)
+            .addField('Total Servers 🖥️', (0, utils_1.format_number)(discord_1.discordClient.guilds.cache.size), true)
             .addField('Total ' + (0, utils_1.theWord)(), (0, utils_1.format_number)(yield (0, monsters_1.getMonsterDBCount)()), true)
             .addField('Total Shiny ' + (0, utils_1.theWord)(), (0, utils_1.format_number)(yield (0, monsters_1.getShinyMonsterDBCount)()), true)
             .addField('Total ' + (0, utils_1.theWord)() + ' Users', (0, utils_1.format_number)(yield (0, database_1.getUserDBCount)()), true)

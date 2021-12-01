@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Client, Collection, Message } from 'discord.js';
 import { readdir } from 'fs';
+import path from 'path';
 import { ICache } from '../../clients/cache';
 import { IGuildSettings } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
@@ -29,9 +30,10 @@ export const commands: Collection<string[], (event: runEvent) => any> =
  */
 export async function loadCommands() {
   // Load Pokemon Commands
-  readdir('./src/plugins/commands/pokemon/', async (err, allFiles) => {
+  readdir(path.join(__dirname, '/pokemon/'), async (err, allFiles) => {
     if (err) console.log(err);
-    const files = allFiles.filter((f) => f.split('.').pop() === 'ts');
+    // const files = allFiles.filter((f) => f.split('.').pop() === 'ts' || 'js');
+    const files = allFiles.filter((f) => f.match(/\.ts|\.js/i));
     if (files.length <= 0) console.log('No commands found!');
     else
       for (const file of files) {
@@ -47,9 +49,10 @@ export async function loadCommands() {
   });
 
   // Load SmokeyBot Commands
-  readdir('./src/plugins/commands/smokeybot/', async (err, allFiles) => {
+  readdir(path.join(__dirname, '/smokeybot/'), async (err, allFiles) => {
     if (err) console.log(err);
-    const files = allFiles.filter((f) => f.split('.').pop() === 'ts');
+    // const files = allFiles.filter((f) => f.split('.').pop() === 'ts' || 'js');
+    const files = allFiles.filter((f) => f.match(/\.ts|\.js/i));
     if (files.length <= 0) console.log('No commands found!');
     else
       for (const file of files) {

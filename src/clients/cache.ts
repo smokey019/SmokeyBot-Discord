@@ -29,13 +29,13 @@ export const SMOKEYBOT_GLOBAL_SETTINGS_CACHE = loadCache(
 export function loadCache(
   category = defaultCache,
   maximum = 100,
-): LRUCache<string, any> | undefined {
+): LRUCache<string, any> {
   if (!caches.has(category)) {
     const newCache = new LRUCache<string, any>(maximum);
     caches.set(category, newCache);
     return newCache;
   } else {
-    return caches.get(category);
+    return caches.get(category) as LRUCache<string, any>;
   }
 }
 
@@ -102,9 +102,7 @@ export async function getGCD(guild_id: string): Promise<number> {
 export async function getCache(
   message: Message,
   settings: IGuildSettings,
-): Promise<ICache | undefined> {
-  if (!settings || !message.guild) return undefined;
-
+): Promise<ICache> {
   let cache = await cacheClient?.get(message.guild.id);
 
   if (!cache) {

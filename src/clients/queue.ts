@@ -169,27 +169,31 @@ function runMsgQueue() {
  * Repeating timed function to run the emote upload queue.
  */
 async function runEmoteQueue() {
-  if (EmoteQueue.first() && !rateLimited) {
-    const object = EmoteQueue.first();
-    const emote = object.emotes?.shift() ?? null;
-    const message = object.msg;
+  try {
+    if (EmoteQueue.first() && !rateLimited) {
+      const object = EmoteQueue.first();
+      const emote = object.emotes?.shift() ?? null;
+      const message = object.msg;
 
-    EmoteQueue.set(message.guild.id, object);
+      EmoteQueue.set(message.guild.id, object);
 
-    if (emote) {
-      logger.trace(
-        `Attempting to create emoji '${emote.name}' on ${message.guild.name}.`,
-      );
-      create_emoji(emote.url, message, emote.name);
-      timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
+      if (emote) {
+        logger.trace(
+          `Attempting to create emoji '${emote.name}' on ${message.guild.name}.`,
+        );
+        create_emoji(emote.url, message, emote.name);
+        timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
+      } else {
+        const temp = EmoteQueue.first();
+        logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
+        EmoteQueue.delete(EmoteQueue.firstKey());
+        timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
+      }
     } else {
-      const temp = EmoteQueue.first();
-      logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
-      EmoteQueue.delete(EmoteQueue.firstKey());
       timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
     }
-  } else {
-    timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
+  } catch (error) {
+    console.error('Emote Queue Error:', error);
   }
 }
 

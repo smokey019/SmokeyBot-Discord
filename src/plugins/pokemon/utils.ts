@@ -10,8 +10,10 @@ import {
   format_number,
   getCurrentTime,
   getRndInteger,
-  theWord,
+  theWord
 } from '../../utils';
+import { Stv_emoji_queue_attempt_count, Stv_emoji_queue_count } from '../smokeybot/emote-sync/sync-7tv-emotes';
+import { FFZ_emoji_queue_attempt_count, FFZ_emoji_queue_count } from '../smokeybot/emote-sync/sync-ffz-emotes';
 import { getMonsterDBCount, getShinyMonsterDBCount } from './monsters';
 import { getPrefixes } from './parser';
 import { getBoostedWeatherSpawns } from './weather';
@@ -127,12 +129,22 @@ export async function getBotStats(message: Message): Promise<void> {
     .setTitle('SmokeyBot Statistics')
     .addField('Ping', ping + ' ms', true)
     .addField(
-      'Total Servers in Emote Queue',
+      'Servers in Emote Queue 🔌',
       format_number(EmoteQueue.size),
       true,
     )
     .addField(
-      'Total Servers',
+      'Emote Sync Attempts 🔴',
+      format_number(Stv_emoji_queue_attempt_count + FFZ_emoji_queue_attempt_count),
+      true,
+    )
+    .addField(
+      'Emote Successful Syncs 🟢',
+      format_number(Stv_emoji_queue_count + FFZ_emoji_queue_count),
+      true,
+    )
+    .addField(
+      'Total Servers 🖥️',
       format_number(discordClient.guilds.cache.size),
       true,
     )

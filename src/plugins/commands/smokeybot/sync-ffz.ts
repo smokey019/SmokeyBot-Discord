@@ -6,7 +6,7 @@ import { sync_ffz_emotes } from '../../smokeybot/emote-sync/sync-ffz-emotes';
 export async function run(e: runEvent) {
   GLOBAL_COOLDOWN.set(e.message.guild.id, getCurrentTime());
 
-  await sync_ffz_emotes(e.message);
+  await sync_ffz_emotes(e.message, e.args[0]);
 }
 
 export const names = ['sync-emotes-ffz', 'sync-ffz'];

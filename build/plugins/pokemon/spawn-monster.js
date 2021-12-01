@@ -9,10 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.forceSpawn = exports.spawnMonster = exports.MONSTER_SPAWNS = void 0;
+exports.forceSpawn = exports.spawnMonster = exports.checkSpawn = exports.MONSTER_SPAWNS = void 0;
 const discord_js_1 = require("discord.js");
 const cache_1 = require("../../clients/cache");
 const database_1 = require("../../clients/database");
+const discord_1 = require("../../clients/discord");
 const logger_1 = require("../../clients/logger");
 const queue_1 = require("../../clients/queue");
 const colors_1 = require("../../colors");
@@ -21,6 +22,30 @@ const monsters_1 = require("./monsters");
 const weather_1 = require("./weather");
 exports.MONSTER_SPAWNS = (0, cache_1.loadCache)('MONSTER_SPAWNS', 500);
 const logger = (0, logger_1.getLogger)('Pokemon-Spawn');
+function checkSpawn(message, cache) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let spawn = yield exports.MONSTER_SPAWNS.get(message.guild.id);
+        if (!spawn) {
+            spawn = {
+                monster: undefined,
+                spawned_at: (0, utils_1.getCurrentTime)() - 30,
+            };
+            exports.MONSTER_SPAWNS.set(message.guild.id, spawn);
+        }
+        else {
+            const spawn_timer = (0, utils_1.getRndInteger)((0, utils_1.getRndInteger)(15, 120), 300);
+            const timestamp = (0, utils_1.getCurrentTime)();
+            if (timestamp - spawn.spawned_at > spawn_timer &&
+                !message.content.match(/catch/i) &&
+                !message.content.match(/spawn/i) &&
+                !discord_1.rateLimited &&
+                !discord_1.initializing) {
+                yield spawnMonster(message, cache);
+            }
+        }
+    });
+}
+exports.checkSpawn = checkSpawn;
 /**
  * Spawns a random Monster.
  *

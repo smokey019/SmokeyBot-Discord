@@ -97,8 +97,6 @@ function getGCD(guild_id) {
 exports.getGCD = getGCD;
 function getCache(message, settings) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (!settings || !message.guild)
-            return undefined;
         let cache = yield (exports.cacheClient === null || exports.cacheClient === void 0 ? void 0 : exports.cacheClient.get(message.guild.id));
         if (!cache) {
             cache = {

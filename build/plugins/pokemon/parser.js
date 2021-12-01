@@ -27,7 +27,12 @@ function getPrefixes(guild_id) {
         })
             .select('prefixes')
             .first();
-        return JSON.parse(data.prefixes);
+        if (data) {
+            return JSON.parse(data.prefixes);
+        }
+        else {
+            return exports.default_prefixes;
+        }
     });
 }
 exports.getPrefixes = getPrefixes;

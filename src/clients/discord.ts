@@ -1,9 +1,10 @@
 import { Client, Intents, Message } from 'discord.js';
 import { commands, loadCommands } from '../plugins/commands';
+import { checkExpGain } from '../plugins/pokemon/exp-gain';
 import { getAllMonsters, MonsterDex } from '../plugins/pokemon/monsters';
 import { getPrefixes } from '../plugins/pokemon/parser';
-import { MONSTER_SPAWNS, spawnMonster } from '../plugins/pokemon/spawn-monster';
-import { format_number, getCurrentTime, getRndInteger } from '../utils';
+import { checkSpawn } from '../plugins/pokemon/spawn-monster';
+import { format_number, getCurrentTime } from '../utils';
 import { getCache, getGCD, ICache } from './cache';
 import { getGuildSettings, IGuildSettings } from './database';
 import { getLogger } from './logger';
@@ -73,7 +74,8 @@ async function parseMessage(message: Message) {
     !message.guild ||
     !message.member ||
     message.member.user.username == 'smokeybot' ||
-    message.author.bot
+    message.author.bot ||
+    rateLimited
   )
     return;
 
@@ -82,10 +84,17 @@ async function parseMessage(message: Message) {
   const load_prefixes = await getPrefixes(message.guild.id);
   const prefixes = RegExp(load_prefixes.join('|'));
   const detect_prefix = message.content.match(prefixes);
+  const settings: IGuildSettings = await getGuildSettings(message);
+  const cache: ICache = await getCache(message, settings);
 
-  if (!detect_prefix || rateLimited || timestamp - GCD < 2) return;
+  if (cache && settings) {
+    if (cache.settings.smokemon_enabled) {
+      await checkExpGain(message);
+      await checkSpawn(message, cache);
+    }
+  }
 
-  const prefix = detect_prefix.shift();
+  const prefix = detect_prefix?.shift();
 
   const args = message.content
     .slice(prefix?.length)
@@ -93,38 +102,11 @@ async function parseMessage(message: Message) {
     .toLowerCase()
     .replace(/ {2,}/gm, ' ')
     .split(/ +/);
-  if (args.length < 1) return;
+
+  if (args.length < 1 || !detect_prefix || timestamp - GCD < 2) return;
 
   const command = args.shift() ?? undefined;
   const commandFile = commands.find((_r, n) => n.includes(command));
-  const settings: IGuildSettings = await getGuildSettings(message);
-  const cache: ICache = await getCache(message, settings);
-
-  if (cache && settings) {
-    if (cache.settings.smokemon_enabled && !commandFile) {
-      let spawn = await MONSTER_SPAWNS.get(message.guild.id);
-
-      if (!spawn) {
-        spawn = {
-          monster: undefined,
-          spawned_at: getCurrentTime() - 30,
-        };
-        MONSTER_SPAWNS.set(message.guild.id, spawn);
-      } else {
-        const spawn_timer = getRndInteger(getRndInteger(15, 120), 300);
-
-        if (
-          timestamp - spawn.spawned_at > spawn_timer &&
-          !message.content.match(/catch/i) &&
-          !message.content.match(/spawn/i) &&
-          !rateLimited &&
-          !initializing
-        ) {
-          await spawnMonster(message, cache);
-        }
-      }
-    }
-  }
 
   if (!commandFile) return;
   else

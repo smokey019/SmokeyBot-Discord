@@ -19,7 +19,11 @@ export async function getPrefixes(guild_id: string): Promise<any> {
     .select('prefixes')
     .first();
 
-  return JSON.parse(data.prefixes);
+    if (data){
+      return JSON.parse(data.prefixes);
+    }else{
+      return default_prefixes;
+    }
 }
 
 /**

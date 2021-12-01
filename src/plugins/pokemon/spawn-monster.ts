@@ -3,18 +3,47 @@ import { ICache, loadCache } from '../../clients/cache';
 import {
   databaseClient,
   GuildSettingsTable,
-  IGuildSettings,
+  IGuildSettings
 } from '../../clients/database';
+import { initializing, rateLimited } from '../../clients/discord';
 import { getLogger } from '../../clients/logger';
 import { queueMsg } from '../../clients/queue';
 import { COLOR_PURPLE } from '../../colors';
-import { getCurrentTime } from '../../utils';
+import { getCurrentTime, getRndInteger } from '../../utils';
 import { findMonsterByID, getRandomMonster } from './monsters';
 import { getBoostedWeatherSpawns } from './weather';
 
 export const MONSTER_SPAWNS = loadCache('MONSTER_SPAWNS', 500);
 
 const logger = getLogger('Pokemon-Spawn');
+
+export async function checkSpawn(
+  message: Message,
+  cache: ICache,
+): Promise<void> {
+  let spawn = await MONSTER_SPAWNS.get(message.guild.id);
+
+  if (!spawn) {
+    spawn = {
+      monster: undefined,
+      spawned_at: getCurrentTime() - 30,
+    };
+    MONSTER_SPAWNS.set(message.guild.id, spawn);
+  } else {
+    const spawn_timer = getRndInteger(getRndInteger(15, 120), 300);
+    const timestamp = getCurrentTime();
+
+    if (
+      timestamp - spawn.spawned_at > spawn_timer &&
+      !message.content.match(/catch/i) &&
+      !message.content.match(/spawn/i) &&
+      !rateLimited &&
+      !initializing
+    ) {
+      await spawnMonster(message, cache);
+    }
+  }
+}
 
 /**
  * Spawns a random Monster.

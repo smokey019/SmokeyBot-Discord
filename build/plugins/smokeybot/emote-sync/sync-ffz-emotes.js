@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sync_ffz_emotes = exports.cancel_sync = exports.EMOJI_COOLDOWN = void 0;
+exports.sync_ffz_emotes = exports.cancel_sync = exports.FFZ_emoji_queue_attempt_count = exports.FFZ_emoji_queue_count = exports.EMOJI_COOLDOWN = void 0;
 const discord_js_1 = require("discord.js");
 const mnemonist_1 = require("mnemonist");
 const logger_1 = require("../../../clients/logger");
@@ -17,6 +17,8 @@ const queue_1 = require("../../../clients/queue");
 const utils_1 = require("../../../utils");
 const logger = (0, logger_1.getLogger)('FFZ Emote Manager');
 exports.EMOJI_COOLDOWN = new mnemonist_1.LRUCache(25);
+exports.FFZ_emoji_queue_count = 0;
+exports.FFZ_emoji_queue_attempt_count = 0;
 /**
  * Cancel the emote sync for the guild.
  * @param message
@@ -48,21 +50,11 @@ exports.cancel_sync = cancel_sync;
  *
  * @param message
  */
-function sync_ffz_emotes(message) {
-    var _a;
+function sync_ffz_emotes(message, channel) {
     return __awaiter(this, void 0, void 0, function* () {
         let embed = undefined;
         let to_be_deleted = undefined;
-        const args = message.content
-            .slice(1)
-            .trim()
-            .toLowerCase()
-            .replace(/ {2,}/gm, ' ')
-            .split(/ +/);
-        const command = args.shift();
-        const channel = (_a = args[0]) === null || _a === void 0 ? void 0 : _a.replace(/\W/g, '');
-        if (command == 'sync-emotes-ffz' &&
-            channel &&
+        if (channel &&
             message.member.permissions.has([
                 discord_js_1.Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS,
             ]) &&
@@ -79,6 +71,7 @@ function sync_ffz_emotes(message) {
                 .catch((error) => logger.error(error));
             logger.debug(`Fetching FFZ Emotes for Twitch channel ${channel} (requested by ${message.member.displayName} in ${message.guild.name})..`);
             const ffz_emotes = yield (0, utils_1.jsonFetch)(`https://api.frankerfacez.com/v1/room/${channel}`);
+            exports.FFZ_emoji_queue_attempt_count++;
             if (!ffz_emotes || !ffz_emotes.room || !ffz_emotes.room.set) {
                 logger.debug(`Couldn't fetch FFZ Emotes for Twitch channel ${channel}.`);
                 yield message.channel.messages
@@ -120,6 +113,7 @@ function sync_ffz_emotes(message) {
                     if (final_emojis.length > 0) {
                         exports.EMOJI_COOLDOWN.set(message.guild.id, Date.now());
                         logger.debug(`Syncing ${final_emojis.length}/${emojis.length} total emotes for ${channel}..`);
+                        exports.FFZ_emoji_queue_count++;
                         queue_1.EmoteQueue.set(message.guild.id, {
                             emotes: final_emojis,
                             msg: message,

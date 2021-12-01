@@ -153,25 +153,30 @@ function runMsgQueue() {
 function runEmoteQueue() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        if (exports.EmoteQueue.first() && !discord_1.rateLimited) {
-            const object = exports.EmoteQueue.first();
-            const emote = (_b = (_a = object.emotes) === null || _a === void 0 ? void 0 : _a.shift()) !== null && _b !== void 0 ? _b : null;
-            const message = object.msg;
-            exports.EmoteQueue.set(message.guild.id, object);
-            if (emote) {
-                logger.trace(`Attempting to create emoji '${emote.name}' on ${message.guild.name}.`);
-                create_emoji(emote.url, message, emote.name);
-                timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
+        try {
+            if (exports.EmoteQueue.first() && !discord_1.rateLimited) {
+                const object = exports.EmoteQueue.first();
+                const emote = (_b = (_a = object.emotes) === null || _a === void 0 ? void 0 : _a.shift()) !== null && _b !== void 0 ? _b : null;
+                const message = object.msg;
+                exports.EmoteQueue.set(message.guild.id, object);
+                if (emote) {
+                    logger.trace(`Attempting to create emoji '${emote.name}' on ${message.guild.name}.`);
+                    create_emoji(emote.url, message, emote.name);
+                    timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
+                }
+                else {
+                    const temp = exports.EmoteQueue.first();
+                    logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
+                    exports.EmoteQueue.delete(exports.EmoteQueue.firstKey());
+                    timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
+                }
             }
             else {
-                const temp = exports.EmoteQueue.first();
-                logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
-                exports.EmoteQueue.delete(exports.EmoteQueue.firstKey());
                 timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
             }
         }
-        else {
-            timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
+        catch (error) {
+            console.error('Emote Queue Error:', error);
         }
     });
 }
