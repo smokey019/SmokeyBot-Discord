@@ -100,8 +100,8 @@ function sync_7tv_emotes(message, channel) {
                         var _a;
                         if (element.mime === "image/webp")
                             return;
-                        let emote_url = (_a = (element.urls['4'] ||
-                            element.urls['3'] ||
+                        let emote_url = (_a = ( // element.urls['4'] ||
+                        element.urls['3'] ||
                             element.urls['2'] ||
                             element.urls['1'])) !== null && _a !== void 0 ? _a : undefined;
                         if (element.mime.match('gif')) {

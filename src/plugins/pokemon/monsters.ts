@@ -7,13 +7,14 @@ import { getRndInteger, jsonFetch } from '../../utils';
 import PokeDex from './data/pokedex_min.json';
 import {
   GenerationEight,
+  GenerationExtras,
   GenerationFive,
   GenerationFour,
   GenerationOne,
   GenerationSeven,
   GenerationSix,
   GenerationThree,
-  GenerationTwo,
+  GenerationTwo
 } from './pokemon-list';
 
 const logger = getLogger('Pokemon');
@@ -34,6 +35,7 @@ let Gens = {
   eight: GenerationEight,
   galar: [],
   alola: [],
+  extras: GenerationExtras,
 };
 
 async function formDex(): Promise<void> {
@@ -107,6 +109,14 @@ async function formDex(): Promise<void> {
   }*/
 
   for (let index = 0; index < 2; index++) {
+    MonsterPool.push(0.1);
+    MonsterPool.push(0.1);
+    MonsterPool.push(0.1);
+    MonsterPool.push(0.1);
+    MonsterPool.push(0.1);
+    MonsterPool.push(0.1);
+    MonsterPool.push(0.1);
+
     Gens.one.forEach((element) => {
       MonsterPool.push(element);
       MonsterPool.push(element);

@@ -35,6 +35,7 @@ let Gens = {
     eight: pokemon_list_1.GenerationEight,
     galar: [],
     alola: [],
+    extras: pokemon_list_1.GenerationExtras,
 };
 function formDex() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -101,6 +102,13 @@ function formDex() {
           MonsterPool.push(66);
         }*/
         for (let index = 0; index < 2; index++) {
+            MonsterPool.push(0.1);
+            MonsterPool.push(0.1);
+            MonsterPool.push(0.1);
+            MonsterPool.push(0.1);
+            MonsterPool.push(0.1);
+            MonsterPool.push(0.1);
+            MonsterPool.push(0.1);
             Gens.one.forEach((element) => {
                 MonsterPool.push(element);
                 MonsterPool.push(element);

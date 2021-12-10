@@ -18,6 +18,7 @@ const Monster_1 = require("../../models/Monster");
 const utils_1 = require("../../utils");
 const items_1 = require("./items");
 const monsters_1 = require("./monsters");
+const utils_2 = require("./utils");
 const logger = (0, logger_1.getLogger)('ExpGain');
 function checkExpGain(message) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -25,7 +26,7 @@ function checkExpGain(message) {
         const cacheKey = message.author.id + ':' + message.guild.id;
         const cache = yield cache_1.xp_cache.get(cacheKey);
         if (cache == undefined) {
-            yield cache_1.xp_cache.set(cacheKey, (0, utils_1.getCurrentTime)());
+            cache_1.xp_cache.set(cacheKey, (0, utils_1.getCurrentTime)());
             return;
         }
         else {
@@ -38,7 +39,7 @@ function checkExpGain(message) {
                     const monster = yield (0, monsters_1.getUserMonster)(user.current_monster);
                     const monster_dex = yield (0, monsters_1.findMonsterByID)(monster.monster_id);
                     const held_item = yield (0, items_1.getItemDB)(monster.held_item);
-                    yield cache_1.xp_cache.set(cacheKey, (0, utils_1.getCurrentTime)());
+                    cache_1.xp_cache.set(cacheKey, (0, utils_1.getCurrentTime)());
                     if (!monster || monster.level >= 100)
                         return;
                     const updateExp = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
@@ -99,6 +100,53 @@ function checkExpGain(message) {
                                             });
                                         }
                                     }
+                                }
+                            }
+                            else if (monster_dex.evoType == 'maxLevel' &&
+                                monster_dex.name.english == 'Egg' &&
+                                monster.level === 99) {
+                                const allMonsters = (0, monsters_1.getPokedex)();
+                                const new_monster = allMonsters[(0, utils_1.getRndInteger)(0, allMonsters.size - 1)];
+                                let isShiny = (0, utils_2.rollShiny)();
+                                // if we're not shiny let's give another chance since hatching an egg
+                                if (!isShiny) {
+                                    isShiny = (0, utils_2.rollShiny)();
+                                }
+                                const updateMonster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
+                                    .where({ id: monster.id })
+                                    .update({
+                                    monster_id: new_monster.id,
+                                    level: 1,
+                                    experience: (0, utils_1.getRndInteger)(69, 420),
+                                    shiny: isShiny,
+                                });
+                                if (updateMonster) {
+                                    let imgs = [];
+                                    if (monster.shiny) {
+                                        imgs = [new_monster.images.shiny, monster_dex.images.shiny];
+                                    }
+                                    else {
+                                        imgs = [new_monster.images.normal, monster_dex.images.normal];
+                                    }
+                                    const embed = new discord_js_1.MessageEmbed({
+                                        color: new_monster.color,
+                                        description: `YO! **${monster_dex.name.english}** has HATCHED into **${new_monster.name.english}**! Congratulations!`,
+                                        image: {
+                                            url: imgs[0],
+                                        },
+                                        thumbnail: {
+                                            url: imgs[1],
+                                        },
+                                        title: `${message.author.username}'s ${monster_dex.name.english} has hatched!`,
+                                    });
+                                    yield message.channel
+                                        .send({ embeds: [embed] })
+                                        .then(() => {
+                                        return;
+                                    })
+                                        .catch((err) => {
+                                        logger.error(err);
+                                    });
                                 }
                             }
                         }

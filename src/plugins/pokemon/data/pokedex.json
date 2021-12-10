@@ -40433,5 +40433,37 @@
       "gif": "https://cdn.discordapp.com/attachments/718781413452677211/812874763549933569/258148da4895d67507b574d2c6ffd9db.gif",
       "gif-shiny": "https://cdn.discordapp.com/attachments/718781413452677211/812874769694982164/c78861fe10213064d76e1852126e6e17.gif"
     }
+  },
+  {
+    "id": 0.1,
+    "name": {
+      "english": "Egg",
+      "japanese": "卵",
+      "chinese": "蛋",
+      "french": "Oeuf"
+    },
+    "type": ["Normal"],
+    "baseStats": {
+      "hp": 33,
+      "atk": 136,
+      "def": 0,
+      "spa": 6,
+      "spd": 6,
+      "spe": 29
+    },
+    "abilities": {
+      "0": "NULL"
+    },
+    "heightm": 3,
+    "weightkg": 3,
+    "color": "#000000",
+    "eggGroups": ["Random"],
+    "evoType": "maxLevel",
+    "images": {
+      "normal": "https://cdn.discordapp.com/attachments/718781413452677211/918693774878732318/safhsfafsfahuifhf3737.png",
+      "shiny": "https://cdn.discordapp.com/attachments/718781413452677211/918693774878732318/safhsfafsfahuifhf3737.png",
+      "gif": "https://archives.bulbagarden.net/media/upload/e/ed/Spr_5b_Egg.png",
+      "gif-shiny": "https://archives.bulbagarden.net/media/upload/e/ed/Spr_5b_Egg.png"
+    }
   }
 ]

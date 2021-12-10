@@ -154,8 +154,8 @@ function runEmoteQueue() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            if (exports.EmoteQueue.first() && !discord_1.rateLimited) {
-                const object = exports.EmoteQueue.first();
+            const object = exports.EmoteQueue.first();
+            if (object && !discord_1.rateLimited) {
                 const emote = (_b = (_a = object.emotes) === null || _a === void 0 ? void 0 : _a.shift()) !== null && _b !== void 0 ? _b : null;
                 const message = object.msg;
                 exports.EmoteQueue.set(message.guild.id, object);
@@ -177,6 +177,7 @@ function runEmoteQueue() {
         }
         catch (error) {
             console.error('Emote Queue Error:', error);
+            timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
         }
     });
 }

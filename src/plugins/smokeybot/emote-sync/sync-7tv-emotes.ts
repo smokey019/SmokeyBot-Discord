@@ -108,7 +108,7 @@ export async function sync_7tv_emotes(message: Message, channel: string): Promis
         emotes.forEach((element: SevenTVEmotes) => {
           if (element.mime === "image/webp") return;
           let emote_url =
-            (element.urls['4'] ||
+            (// element.urls['4'] ||
               element.urls['3'] ||
               element.urls['2'] ||
               element.urls['1']) ??

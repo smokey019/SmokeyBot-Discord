@@ -170,8 +170,8 @@ function runMsgQueue() {
  */
 async function runEmoteQueue() {
   try {
-    if (EmoteQueue.first() && !rateLimited) {
-      const object = EmoteQueue.first();
+    const object = EmoteQueue.first();
+    if (object && !rateLimited) {
       const emote = object.emotes?.shift() ?? null;
       const message = object.msg;
 
@@ -194,6 +194,7 @@ async function runEmoteQueue() {
     }
   } catch (error) {
     console.error('Emote Queue Error:', error);
+    timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
   }
 }
 
