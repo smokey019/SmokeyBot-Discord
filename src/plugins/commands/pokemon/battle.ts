@@ -5,11 +5,11 @@ import { getCurrentTime } from '../../../utils';
 import { battleParser } from '../../pokemon/battle';
 
 export async function run(e: runEvent) {
-  const channel_name = (e.message.channel as TextChannel).name;
+  const channel_name = (e.interaction.channel as TextChannel).name;
   if (!e.cache.settings.smokemon_enabled || channel_name != e.cache.settings.specific_channel) return;
-  GLOBAL_COOLDOWN.set(e.message.guild.id, getCurrentTime());
+  GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
 
-  await battleParser(e.message);
+  await battleParser(e.interaction);
 }
 
 export const names = ['battle', 'test-battle', 'battle-test'];

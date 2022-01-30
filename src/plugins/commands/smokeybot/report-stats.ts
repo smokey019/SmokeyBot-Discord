@@ -4,9 +4,9 @@ import { getCurrentTime } from '../../../utils';
 import { getBotStats } from '../../pokemon/utils';
 
 export async function run(e: runEvent) {
-  GLOBAL_COOLDOWN.set(e.message.guild.id, getCurrentTime());
+  GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
 
-  await getBotStats(e.message);
+  await getBotStats(e.interaction);
 }
 
 export const names = ['stats'];

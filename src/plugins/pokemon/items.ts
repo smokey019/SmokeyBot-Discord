@@ -1,4 +1,4 @@
-import { ColorResolvable, Message, MessageEmbed } from 'discord.js';
+import { ColorResolvable, MessageEmbed } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { COLOR_BLUE } from '../../colors';
@@ -11,7 +11,7 @@ import {
   findMonsterByID,
   findMonsterByName,
   getUserMonster,
-  IMonsterDex,
+  IMonsterDex
 } from './monsters';
 // import MultiMap from 'mnemonist/multi-map';
 import { getPrefixes } from './parser';
@@ -22,12 +22,12 @@ export type Iitem = typeof Items[1];
 
 export const itemDB = Items;
 
-export async function parseItems(message: Message): Promise<void> {
-  const load_prefixes = await getPrefixes(message.guild.id);
+export async function parseItems(interaction: Interaction): Promise<void> {
+  const load_prefixes = await getPrefixes(interaction.guild.id);
   const prefixes = RegExp(load_prefixes.join('|'));
-  const detect_prefix = message.content.match(prefixes);
+  const detect_prefix = interaction.content.match(prefixes);
   const prefix = detect_prefix.shift();
-  const args = message.content
+  const args = interaction.content
     .slice(prefix.length)
     .trim()
     .toLowerCase()
@@ -52,13 +52,13 @@ export async function parseItems(message: Message): Promise<void> {
   }
 }
 
-async function listItems(message: Message) {
+async function listItems(interaction: Interaction) {
   let item_message = [];
 
-  const splitMsg = message.content.split(' ');
+  const splitMsg = args;
 
   itemDB.forEach((element) => {
-    item_message.push(
+    item_interaction.push(
       `ID: ${element.id} - Name: ${
         element.name.english
       } - Price: ${format_number(element.price)}`,
@@ -67,7 +67,7 @@ async function listItems(message: Message) {
 
   let all_items = [];
 
-  if (item_message.length > 10) {
+  if (item_interaction.length > 10) {
     all_items = chunk(item_message, 10);
 
     if (splitMsg.length == 3 && all_items.length > 1) {
@@ -81,7 +81,7 @@ async function listItems(message: Message) {
     }
   }
 
-  const new_msg = item_message.join('\n');
+  const new_msg = item_interaction.join('\n');
 
   const embed = new MessageEmbed()
     .setAuthor(
@@ -90,9 +90,9 @@ async function listItems(message: Message) {
     )
     .setColor(0xff0000)
     .setDescription(new_msg);
-  await message.channel
+  await interaction.channel
     .send({ embeds: [embed] })
-    .then((message) => {
+    .then((interaction) => {
       return message;
     })
     .catch((err) => {
@@ -100,17 +100,17 @@ async function listItems(message: Message) {
     });
 }
 
-async function msgUserItems(message: Message): Promise<void> {
-  const isQuote = message.content.match('"');
+async function msgUserItems(interaction: Interaction): Promise<void> {
+  const isQuote = interaction.content.match('"');
   const sort = ['id', 'high'];
   let search = undefined;
   let page = 0;
 
-  const load_prefixes = await getPrefixes(message.guild.id);
+  const load_prefixes = await getPrefixes(interaction.guild.id);
   const prefixes = RegExp(load_prefixes.join('|'));
-  const detect_prefix = message.content.match(prefixes);
+  const detect_prefix = interaction.content.match(prefixes);
   const prefix = detect_prefix.shift();
-  const args = message.content
+  const args = interaction.content
     .slice(prefix.length)
     .trim()
     .toLowerCase()
@@ -133,7 +133,7 @@ async function msgUserItems(message: Message): Promise<void> {
   }
 
   const sortable_items = [];
-  const items = await getUserItems(message.author.id);
+  const items = await getUserItems(interaction.user.id);
 
   if (items && items.length > 0) {
     let item_message = [];
@@ -157,7 +157,7 @@ async function msgUserItems(message: Message): Promise<void> {
 
       const tmpMsg = `ID: **${element.id}** - **${item_dex.name.english}** i№: ${item_dex.id}`;
 
-      item_message.push(tmpMsg);
+      item_interaction.push(tmpMsg);
       sortable_items.push({
         id: element.id,
         item_number: element.item_number,
@@ -197,39 +197,39 @@ async function msgUserItems(message: Message): Promise<void> {
     }
 
     await asyncForEach(sortable_items, async (element) => {
-      if (!item_message.includes(element.msg)) {
-        item_message.push(element.msg);
+      if (!item_interaction.includes(element.msg)) {
+        item_interaction.push(element.msg);
       }
     });
 
-    if (item_message.length > 10) {
+    if (item_interaction.length > 10) {
       const all_items = chunk(item_message, 10);
 
       if (page > 0 && all_items.length > 1) {
         if (all_items[page]) {
           item_message = all_items[page];
 
-          item_message.push(`Page: **${page}/${all_items.length}**`);
+          item_interaction.push(`Page: **${page}/${all_items.length}**`);
         }
       } else {
         item_message = all_items[0];
 
-        item_message.push(`Page: **1/${all_items.length}**`);
+        item_interaction.push(`Page: **1/${all_items.length}**`);
       }
     }
 
-    const new_msg = item_message.join('\n');
+    const new_msg = item_interaction.join('\n');
 
     const embed = new MessageEmbed()
       .setAuthor(
-        `${message.author.username}'s search for '${search}' \nFound: ${sortable_items.length} \nTotal Items: ${items.length}`,
+        `${interaction.user.username}'s search for '${search}' \nFound: ${sortable_items.length} \nTotal Items: ${items.length}`,
         `https://cdn.bulbagarden.net/upload/0/03/Bag_Ultra_Ball_Sprite.png`,
       )
       .setColor(COLOR_BLUE)
       .setDescription(new_msg);
-    await message.channel
+    await interaction.channel
       .send({ embeds: [embed] })
-      .then((message) => {
+      .then((interaction) => {
         return message;
       })
       .catch((err) => {
@@ -238,35 +238,35 @@ async function msgUserItems(message: Message): Promise<void> {
   }
 }
 
-async function updateItems(message: Message): Promise<boolean> {
-  const user = await getUser(message.author.id);
+async function updateItems(interaction: Interaction): Promise<boolean> {
+  const user = await getUser(interaction.user.id);
   const items = JSON.parse(user.items);
 
   if (items.length > 0) {
     items.forEach(async (element) => {
       await databaseClient<IItemsModel>(ItemsTable).insert({
         item_number: element,
-        uid: message.author.id,
+        uid: interaction.user.id,
       });
     });
     await databaseClient<IMonsterUserModel>(MonsterUserTable)
       .update('items', '[]')
-      .where('uid', message.author.id);
+      .where('uid', interaction.user.id);
 
-    const newItems = await getUserItems(message.author.id);
-    message.reply(
+    const newItems = await getUserItems(interaction.user.id);
+    (interaction as BaseCommandInteraction).reply(
       `Successfully transferred ${newItems.length} to the new item inventory!`,
     );
     return true;
   } else {
-    message.reply(`You don't have any old items!`);
+    (interaction as BaseCommandInteraction).reply(`You don't have any old items!`);
     return false;
   }
 }
 
-async function removeMonsterItem(message: Message) {
-  const user = await getUser(message.author.id);
-  const split = explode(message.content, ' ', 3);
+async function removeMonsterItem(interaction: Interaction) {
+  const user = await getUser(interaction.user.id);
+  const split = explode(interaction.content, ' ', 3);
   let monster: IMonsterModel = undefined;
   if (split[2] == 'current') {
     monster = await getUserMonster(user.current_monster);
@@ -277,7 +277,7 @@ async function removeMonsterItem(message: Message) {
   if (
     user &&
     split.length == 3 &&
-    monster.uid == message.author.id &&
+    monster.uid == interaction.user.id &&
     monster.held_item
   ) {
     const item = await getItemDB(monster.held_item);
@@ -293,7 +293,7 @@ async function removeMonsterItem(message: Message) {
       .update({ held_item: null });
 
     if (updateItem && updateMonster) {
-      message.reply(
+      (interaction as BaseCommandInteraction).reply(
         `Removed item **${itemDex.name.english}** from **${monsterDex.name.english}**.`,
       );
     }
@@ -302,7 +302,7 @@ async function removeMonsterItem(message: Message) {
 
 export async function checkItemEvolution(
   monster: IMonsterModel,
-  message: Message,
+  interaction: Interaction,
   isTrade = false,
 ): Promise<void> {
   const monster_dex: IMonsterDex = await findMonsterByID(monster.monster_id);
@@ -370,10 +370,10 @@ export async function checkItemEvolution(
           thumbnail: {
             url: imgs[1],
           },
-          title: `${message.author.username}'s ${monster_dex.name.english} is evolving!`,
+          title: `${interaction.user.username}'s ${monster_dex.name.english} is evolving!`,
         });
 
-        await message.channel
+        await interaction.channel
           .send({ embeds: [embed] })
           .then(() => {
             return;
@@ -386,13 +386,13 @@ export async function checkItemEvolution(
   }
 }
 
-async function giveMonsterItem(message: Message) {
-  const user: IMonsterUserModel = await getUser(message.author.id);
-  const split = explode(message.content, ' ', 4);
+async function giveMonsterItem(interaction: Interaction) {
+  const user: IMonsterUserModel = await getUser(interaction.user.id);
+  const split = explode(interaction.content, ' ', 4);
   let monster: IMonsterModel = undefined;
 
   if (user && split.length == 4) {
-    const item = await getUserItemDB(parseInt(split[2]), message.author.id);
+    const item = await getUserItemDB(parseInt(split[2]), interaction.user.id);
 
     if (split[3] == 'current') {
       monster = await getUserMonster(user.current_monster);
@@ -401,11 +401,11 @@ async function giveMonsterItem(message: Message) {
     }
 
     if (!monster) {
-      message.reply("That monster doesn't exist..");
+      (interaction as BaseCommandInteraction).reply("That monster doesn't exist..");
       return;
     }
 
-    if (item && monster.uid == message.author.id && !monster.held_item) {
+    if (item && monster.uid == interaction.user.id && !monster.held_item) {
       if (item.item_number == 50 && monster.level < 100) {
         const updateMonster = await databaseClient<IMonsterModel>(MonsterTable)
           .where({ id: monster.id })
@@ -416,7 +416,7 @@ async function giveMonsterItem(message: Message) {
         if (deleteItem && updateMonster) {
           const itemDex = getItemByID(item.item_number);
           const monsterDex = await findMonsterByID(monster.monster_id);
-          message.reply(
+          (interaction as BaseCommandInteraction).reply(
             `Gave **${monsterDex.name.english}** a **${itemDex.name.english}** and it leveled up! Neato!`,
           );
         }
@@ -436,7 +436,7 @@ async function giveMonsterItem(message: Message) {
           monster.held_item = item.id;
           const itemDex = getItemByID(item.item_number);
           const monsterDex = await findMonsterByID(monster.monster_id);
-          message.reply(
+          (interaction as BaseCommandInteraction).reply(
             `Gave **${monsterDex.name.english}** an item - **${itemDex.name.english}**! Neato!`,
           );
           await checkItemEvolution(monster, message);
@@ -447,9 +447,9 @@ async function giveMonsterItem(message: Message) {
   }
 }
 
-async function buyItem(message: Message) {
-  const user = await getUser(message.author.id);
-  const split = explode(message.content, ' ', 3);
+async function buyItem(interaction: Interaction) {
+  const user = await getUser(interaction.user.id);
+  const split = explode(interaction.content, ' ', 3);
 
   if (user && split.length) {
     const item_to_buy =
@@ -459,18 +459,18 @@ async function buyItem(message: Message) {
     if (item_to_buy && user.currency >= item_to_buy.price) {
       const create_item = await createItemDB({
         item_number: item_to_buy.id,
-        uid: message.author.id,
+        uid: interaction.user.id,
       });
 
       if (create_item) {
         const updateUser = await databaseClient<IMonsterUserModel>(
           MonsterUserTable,
         )
-          .where({ uid: message.author.id })
+          .where({ uid: interaction.user.id })
           .decrement('currency', item_to_buy.price);
 
         if (updateUser) {
-          message.reply(
+          (interaction as BaseCommandInteraction).reply(
             `You have purchased **${
               item_to_buy.name.english
             }** for **${format_number(
@@ -485,10 +485,10 @@ async function buyItem(message: Message) {
   }
 }
 
-export async function msgBalance(message: Message): Promise<void> {
-  const user = await getUser(message.author.id);
+export async function msgBalance(interaction: Interaction): Promise<void> {
+  const user = await getUser(interaction.user.id);
   if (user) {
-    message.reply(
+    (interaction as BaseCommandInteraction).reply(
       `Your current balance is **${format_number(user.currency)}**.`,
     );
   }

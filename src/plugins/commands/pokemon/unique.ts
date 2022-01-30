@@ -5,10 +5,10 @@ import { getCurrentTime } from '../../../utils';
 import { checkUniqueMonsters } from '../../pokemon/info';
 
 export async function run(e: runEvent) {
-  const channel_name = (e.message.channel as TextChannel).name;
+  const channel_name = (e.interaction.channel as TextChannel).name;
   if (!e.cache.settings.smokemon_enabled || channel_name != e.cache.settings.specific_channel) return;
-  GLOBAL_COOLDOWN.set(e.message.guild.id, getCurrentTime());
-  await checkUniqueMonsters(e.message);
+  GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
+  await checkUniqueMonsters(e.interaction);
 }
 
 export const names = ['unique'];

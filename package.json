@@ -10,7 +10,8 @@
     "start-dist": "node ./dist/index.ts",
     "force-update": "pnpm update",
     "force-install": "pnpm install",
-    "minify": "uglifyjs-folder build -eo dist -x .js"
+    "minify": "uglifyjs-folder build -eo dist -x .js",
+    "start": "node ./index.js"
   },
   "dependencies": {
     "@discordjs/builders": "^0.8.2",

@@ -1,11 +1,11 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { MessageEmbed } from 'discord.js';
 import { getLogger } from '../../clients/logger';
 import { COLOR_RED } from '../../colors';
 import { img_monster_ball } from './utils';
 
 const logger = getLogger('Battles');
 
-async function monsterChooseAbility(message: Message) {
+async function monsterChooseAbility(interaction: Interaction) {
   const embed = new MessageEmbed()
     .setAuthor(`Battle - Mew vs Mewtwo`, img_monster_ball)
     .setColor(COLOR_RED)
@@ -32,9 +32,9 @@ async function monsterChooseAbility(message: Message) {
       },
     )
     .setDescription(`USER1's Turn! Pick an ability to use.`);
-  await message.channel
+  await interaction.channel
     .send({ embeds: [embed] })
-    .then((message) => {
+    .then((interaction) => {
       return message;
     })
     .catch((err) => {
@@ -42,8 +42,8 @@ async function monsterChooseAbility(message: Message) {
     });
 }
 
-export async function battleParser(message: Message): Promise<void> {
-  if (message.content == '~battle test') {
+export async function battleParser(interaction: Interaction): Promise<void> {
+  if (interaction.content == '~battle test') {
     monsterChooseAbility(message);
   }
 }

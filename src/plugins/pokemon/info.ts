@@ -1,6 +1,7 @@
-import { EmbedFieldData, Message, MessageEmbed } from 'discord.js';
+import { EmbedFieldData, Interaction, MessageEmbed } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
+import { queueMsg } from '../../clients/queue';
 import { COLOR_PURPLE } from '../../colors';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
@@ -9,22 +10,20 @@ import {
   findMonsterByID,
   findMonsterByName,
   IMonsterDex,
-  MonsterDex,
+  MonsterDex
 } from './monsters';
 import { img_monster_ball } from './utils';
 
 const logger = getLogger('Info');
 
-export async function checkUniqueMonsters(message: Message): Promise<void> {
-  const tempdex = await userDex(message);
-  await message.reply(
-    `You have ${tempdex.length}/${MonsterDex.size} total unique Pokémon in your Pokédex.`,
-  );
+export async function checkUniqueMonsters(interaction: Interaction): Promise<void> {
+  const tempdex = await userDex(interaction.user.id);
+  queueMsg(`You have ${tempdex.length}/${MonsterDex.size} total unique Pokémon in your Pokédex.`, interaction, false, 0, undefined);
 }
 
 export async function monsterEmbed(
   monster_db: IMonsterModel,
-  message: Message,
+  interaction: Interaction,
 ): Promise<void> {
   if (!monster_db) {
     return;
@@ -36,7 +35,7 @@ export async function monsterEmbed(
 
   const tmpID = `${monster.id}`.padStart(3, '0');
 
-  const next_level_xp = monster_db.level * 1250 + 1250;
+  const next_level_xp = monster_db.level * 1250;
 
   const monster_stats = {
     hp: Math.round(
@@ -203,6 +202,24 @@ export async function monsterEmbed(
       inline: true,
     });
   }
+  if (monster_db.egg && monster_db.hatched_at) {
+    const hatched_at = new Date(monster_db.hatched_at).toLocaleDateString(
+      'en-US',
+      {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric'
+      },
+    );
+    embedFields.push({
+      name: '**Hatched On**',
+      value: hatched_at,
+      inline: true,
+    });
+  }
 
   const embed = new MessageEmbed()
     .setAuthor(
@@ -216,7 +233,7 @@ export async function monsterEmbed(
     .setDescription(released)
     .addFields(embedFields);
   try {
-    await message.channel.send({ embeds: [embed] });
+    queueMsg(embed, interaction, false, 0, undefined, true);
   } catch (error) {
     logger.error(error);
   }
@@ -224,12 +241,12 @@ export async function monsterEmbed(
 
 /**
  * Get latest Monster caught's information.
- * @param message
+ * @param interaction
  */
-export async function monsterInfoLatest(message: Message): Promise<void> {
+export async function monsterInfoLatest(interaction: Interaction): Promise<void> {
   const user = await databaseClient<IMonsterUserModel>(MonsterUserTable)
     .select()
-    .where('uid', message.author.id);
+    .where('uid', interaction.user.id);
 
   if (user) {
     if (user[0].latest_monster) {
@@ -239,7 +256,7 @@ export async function monsterInfoLatest(message: Message): Promise<void> {
 
       if (!tmpMonster) return;
 
-      monsterEmbed(tmpMonster[0], message);
+      monsterEmbed(tmpMonster[0], interaction);
     }
   }
 }
@@ -248,8 +265,8 @@ export async function monsterInfoLatest(message: Message): Promise<void> {
  * Get a specific Monster's information.
  * @param id
  */
-export async function currentMonsterInfoBETA(message: Message): Promise<void> {
-  const user: IMonsterUserModel = await getUser(message.author.id);
+export async function currentMonsterInfoBETA(interaction: Interaction): Promise<void> {
+  const user: IMonsterUserModel = await getUser(interaction.user.id);
 
   if (!user) return;
 
@@ -259,24 +276,23 @@ export async function currentMonsterInfoBETA(message: Message): Promise<void> {
 
   if (!tmpMonster) return;
 
-  await monsterEmbed(tmpMonster[0], message);
+  await monsterEmbed(tmpMonster[0], interaction);
 }
 
 /**
  * Get a specific Monster's information.
  * @param id
  */
-export async function monsterInfo(message: Message): Promise<void> {
-  const tmpSplit = message.content.split(' ');
+export async function monsterInfo(interaction: Interaction, monster_id: string): Promise<void> {
 
-  if (tmpSplit.length == 2) {
+  if (monster_id) {
     const tmpMonster = await databaseClient<IMonsterModel>(MonsterTable)
       .select()
-      .where('id', tmpSplit[1]);
+      .where('id', monster_id);
 
     if (!tmpMonster) return;
 
-    monsterEmbed(tmpMonster[0], message);
+    monsterEmbed(tmpMonster[0], interaction);
   }
 }
 
@@ -284,8 +300,8 @@ export async function monsterInfo(message: Message): Promise<void> {
  * Get current Monster's information.
  * @param id
  */
-export async function currentMonsterInfo(message: Message): Promise<void> {
-  const user: IMonsterUserModel = await getUser(message.author.id);
+export async function currentMonsterInfo(interaction: Interaction): Promise<void> {
+  const user: IMonsterUserModel = await getUser(interaction.user.id);
 
   if (!user) return;
 
@@ -295,15 +311,15 @@ export async function currentMonsterInfo(message: Message): Promise<void> {
 
   if (!tmpMonster) return;
 
-  monsterEmbed(tmpMonster[0], message);
+  monsterEmbed(tmpMonster[0], interaction);
 }
 
 /**
  * Get a specific Monster's information.
- * @param message
+ * @param interaction
  */
-export async function monsterDex(message: Message): Promise<void> {
-  const tmpSplit = message.content.split(' ');
+export async function monsterDex(interaction: Interaction, args: string[]): Promise<void> {
+  const tmpSplit = args;
   let tempMonster: IMonsterDex = undefined;
 
   /**
@@ -334,7 +350,7 @@ export async function monsterDex(message: Message): Promise<void> {
     let thumbnail = ``;
     let image = ``;
     const count = format_number(
-      await monsterCount(tempMonster.id, message.author.id),
+      await monsterCount(tempMonster.id, interaction.user.id),
     );
 
     if (tempMonster.region || tempMonster.forme) {
@@ -399,10 +415,10 @@ export async function monsterDex(message: Message): Promise<void> {
 
 	**Prevolve**: ${prevolve}
     **Evolve**: ${evolve + evo_item}`);
-    await message.channel
+    await interaction.channel
       .send({ embeds: [embed] })
-      .then((message) => {
-        return message;
+      .then((interaction) => {
+        return interaction;
       })
       .catch((err) => {
         logger.error(err);
@@ -421,13 +437,13 @@ export async function monsterCount(id: number, uid: string): Promise<number> {
   return pokemon.length;
 }
 
-export async function userDex(message: Message): Promise<number[]> {
+export async function userDex(user: string): Promise<number[]> {
   const dex = [];
 
   const pokemon = await databaseClient<IMonsterModel>(MonsterTable)
     .select('monster_id')
     .where({
-      uid: message.author.id,
+      uid: user,
     });
 
   if (pokemon.length > 0) {

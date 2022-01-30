@@ -1,21 +1,20 @@
-import { Message } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { getPrefixes } from './parser';
 
-export async function setNickname(message: Message): Promise<void> {
-  const load_prefixes = await getPrefixes(message.guild.id);
+export async function setNickname(interaction: Interaction): Promise<void> {
+  const load_prefixes = await getPrefixes(interaction.guild.id);
   const prefixes = RegExp(load_prefixes.join('|'));
-  const detect_prefix = message.content.match(prefixes);
+  const detect_prefix = interaction.content.match(prefixes);
   const prefix = detect_prefix.shift();
-  const args = message.content
+  const args = interaction.content
     .slice(prefix.length)
     .replace(/ {2,}/gm, ' ')
     .split(/ +/);
 
   const command = args.shift();
 
-  const user = await getUser(message.author.id);
+  const user = await getUser(interaction.user.id);
   // const monster = await getUserMonster(user.current_monster);
 
   if (args[1]?.trim() && command && user?.current_monster) {
@@ -24,16 +23,16 @@ export async function setNickname(message: Message): Promise<void> {
       .update({ nickname: args[1] });
 
     if (updatedMonster) {
-      message.reply('Nickname successfully set for your current monster!');
+      (interaction as BaseCommandInteraction).reply('Nickname successfully set for your current monster!');
     } else {
-      message.reply(
+      (interaction as BaseCommandInteraction).reply(
         'There was an error setting the nickname for your current monster.',
       );
     }
   } else if (!args[1]?.trim()) {
-    message.reply('You have to set a valid nickname, idiot.');
+    (interaction as BaseCommandInteraction).reply('You have to set a valid nickname, idiot.');
   } else if (!user?.current_monster) {
-    message.reply(
+    (interaction as BaseCommandInteraction).reply(
       "You don't have a monster currently selected or no monsters caught.",
     );
   }

@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { MessageEmbed } from 'discord.js';
 import { getLogger } from 'log4js';
 import { databaseClient } from '../../clients/database';
 import { COLOR_GREEN } from '../../colors';
@@ -8,13 +8,13 @@ import { getPrefixes } from './parser';
 
 const logger = getLogger('Pokemon-Leaderboard');
 
-export async function checkLeaderboard(message: Message): Promise<void> {
+export async function checkLeaderboard(interaction: Interaction): Promise<void> {
   let search = undefined;
-  const load_prefixes = await getPrefixes(message.guild.id);
+  const load_prefixes = await getPrefixes(interaction.guild.id);
   const prefixes = RegExp(load_prefixes.join('|'));
-  const detect_prefix = message.content.match(prefixes);
+  const detect_prefix = interaction.content.match(prefixes);
   const prefix = detect_prefix.shift();
-  const args = message.content
+  const args = interaction.content
     .slice(prefix.length)
     .trim()
     .toLowerCase()
@@ -93,17 +93,16 @@ export async function checkLeaderboard(message: Message): Promise<void> {
       .setAuthor(`Top 25 Pokémon`)
       .setColor(COLOR_GREEN)
       .setDescription(new_msg);
-    await message.channel
+    await interaction.channel
       .send({ embeds: [embed] })
-      .then((message) => {
-        logger.debug(`Sent leaderboard in ${message.guild?.name}!`);
+      .then((interaction) => {
+        logger.debug(`Sent leaderboard in ${interaction.guild?.name}!`);
       })
       .catch((error) => {
         logger.error(error);
       });
   } else {
-    message
-      .reply(`There was an error.`)
+    (interaction as BaseCommandInteraction).reply(`There was an error.`)
       .then(() => {
         logger.debug(`There was an error getting the leaderboard.`);
         return;

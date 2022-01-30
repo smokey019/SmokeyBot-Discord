@@ -5,11 +5,11 @@ import { getCurrentTime } from '../../../utils';
 import { searchMonsters } from '../../pokemon/check-monsters';
 
 export async function run(e: runEvent) {
-  const channel_name = (e.message.channel as TextChannel).name;
+  const channel_name = (e.interaction.channel as TextChannel).name;
   if (!e.cache.settings.smokemon_enabled || channel_name != e.cache.settings.specific_channel) return;
-  GLOBAL_COOLDOWN.set(e.message.guild.id, getCurrentTime());
+  GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
 
-  await searchMonsters(e.message);
+  await searchMonsters(e.interaction);
 }
 
 export const names = ['search', 's'];

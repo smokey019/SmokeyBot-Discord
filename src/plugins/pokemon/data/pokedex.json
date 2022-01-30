@@ -7630,6 +7630,40 @@
     }
   },
   {
+    "id": 144.1,
+    "name": {
+      "english": "Galarian Articuno",
+      "japanese": "フリーザー",
+      "chinese": "急冻鸟",
+      "french": "Artikodin"
+    },
+    "special": "Legendary",
+    "type": ["Psychic", "Flying"],
+    "gender": "N",
+    "baseStats": {
+      "hp": 90,
+      "atk": 85,
+      "def": 85,
+      "spa": 125,
+      "spd": 100,
+      "spe": 95
+    },
+    "abilities": {
+      "0": "Gust",
+      "H": "Psycho Cut"
+    },
+    "heightm": 1.7,
+    "weightkg": 55.4,
+    "color": "#003cff",
+    "eggGroups": ["Undiscovered"],
+    "images": {
+      "normal": "https://cdn.discordapp.com/attachments/718781413452677211/932790530729967688/saf8y7hsafyasuifas.png",
+      "shiny": "https://cdn.discordapp.com/attachments/718781413452677211/932790530960662568/123y78u3f328hf.png",
+      "gif": "",
+      "gif-shiny": ""
+    }
+  },
+  {
     "id": 145,
     "name": {
       "english": "Zapdos",
@@ -7664,6 +7698,40 @@
     }
   },
   {
+    "id": 145.1,
+    "name": {
+      "english": "Galarian Zapdos",
+      "japanese": "サンダー",
+      "chinese": "闪电鸟",
+      "french": "Électhor"
+    },
+    "special": "Legendary",
+    "type": ["Fighting", "Flying"],
+    "gender": "N",
+    "baseStats": {
+      "hp": 90,
+      "atk": 125,
+      "def": 90,
+      "spa": 85,
+      "spd": 90,
+      "spe": 100
+    },
+    "abilities": {
+      "0": "Peck",
+      "H": "Thunderous Kick"
+    },
+    "heightm": 1.6,
+    "weightkg": 52.6,
+    "color": "#fcff00",
+    "eggGroups": ["Undiscovered"],
+    "images": {
+      "normal": "https://cdn.discordapp.com/attachments/718781413452677211/932788855311048744/af7y8ujhinaf.png",
+      "shiny": "https://cdn.discordapp.com/attachments/718781413452677211/932788855759843348/afuyhjn3f73f3afha8fh.png",
+      "gif": "",
+      "gif-shiny": ""
+    }
+  },
+  {
     "id": 146,
     "name": {
       "english": "Moltres",
@@ -7695,6 +7763,40 @@
       "shiny": "https://cdn.discordapp.com/attachments/718781413452677211/812851328040435712/acaf3971cff4cdaf3f025d840b180b34.png",
       "gif": "https://cdn.discordapp.com/attachments/718781413452677211/812851334424166430/58e3e0ae1558cc2d12367024c827cedc.gif",
       "gif-shiny": "https://cdn.discordapp.com/attachments/718781413452677211/812851340795052062/de33865dbc29c9be98bdc4a2eb61685c.gif"
+    }
+  },
+  {
+    "id": 146.1,
+    "name": {
+      "english": "Galarian Moltres",
+      "japanese": "ファイヤー",
+      "chinese": "火焰鸟",
+      "french": "Sulfura"
+    },
+    "special": "Legendary",
+    "type": ["Dark", "Flying"],
+    "gender": "N",
+    "baseStats": {
+      "hp": 90,
+      "atk": 85,
+      "def": 90,
+      "spa": 100,
+      "spd": 125,
+      "spe": 90
+    },
+    "abilities": {
+      "0": "Gust",
+      "H": "Sucker Punch"
+    },
+    "heightm": 2,
+    "weightkg": 60,
+    "color": "#fcff00",
+    "eggGroups": ["Undiscovered"],
+    "images": {
+      "normal": "https://cdn.discordapp.com/attachments/718781413452677211/932789858072658023/saf87uas9jifasa.png",
+      "shiny": "https://cdn.discordapp.com/attachments/718781413452677211/932789858299158609/as76fyu8hsafafsa7.png",
+      "gif": "",
+      "gif-shiny": ""
     }
   },
   {
@@ -27233,7 +27335,7 @@
     "formeOrder": ["Stunfisk", "Galarian Stunfisk"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/812865213329833984/d07d5b4ce03e60d9ecdd2332e2843b7e.png",
-      "shiny": "https://cdn.discordapp.com/attachments/718781413452677211/812865219499524126/4acdc2e9fb439079f175b0ee7959b15a.png",
+      "shiny": "https://media.discordapp.net/attachments/631363984020471830/771028121674842142/pokemon.png?width=427&height=427",
       "gif": "https://cdn.discordapp.com/attachments/718781413452677211/812865225677471802/75b72f715bc2faf99c25686901fcd4cf.gif",
       "gif-shiny": "https://cdn.discordapp.com/attachments/718781413452677211/812865231779921930/8677aaec1cca91fbf9566610c6f07155.gif"
     }
@@ -39992,8 +40094,8 @@
     "otherFormes": ["Eternatus-Eternamax"],
     "formeOrder": ["Eternatus", "Eternatus-Eternamax"],
     "images": {
-      "normal": "https://cdn.discordapp.com/attachments/718781413452677211/812874423915773972/fd0c0d8fa574d5cde4c0360ec8b2cf2f.png",
-      "shiny": "https://cdn.discordapp.com/attachments/718781413452677211/812874430249304134/111beef484cb2885a894ba6ba9afb386.png",
+      "normal": "https://cdn.discordapp.com/attachments/718781413452677211/918901186566979634/fd0c0d8fa574d5cde4c0360ec8b2cf2f.png",
+      "shiny": "https://cdn.discordapp.com/attachments/718781413452677211/918902038820159539/111beef484cb2885a894ba6ba9afb386.png",
       "gif": "https://cdn.discordapp.com/attachments/718781413452677211/812874436154884116/da5924bb6fd098794de97cf44bfd1965.gif",
       "gif-shiny": "https://cdn.discordapp.com/attachments/718781413452677211/812874442568761380/360a6c7c63164de54b7f4b2d192464d2.gif"
     }

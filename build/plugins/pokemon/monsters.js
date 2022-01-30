@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.unFavorite = exports.setFavorite = exports.selectMonster = exports.getUsersMonsters = exports.getUserMonster = exports.getShinyMonsterDBCount = exports.getMonsterDBCount = exports.findMonsterByName = exports.findMonsterByIDLocal = exports.findMonsterByID = exports.findMonsterByID_DB = exports.getRandomMonster = exports.getPokedex = exports.getAllMonsters = exports.MonsterDex = void 0;
+exports.unFavorite = exports.setFavorite = exports.selectMonster = exports.getUsersFavoriteMonsters = exports.getUsersMonsters = exports.getUserMonster = exports.getShinyMonsterDBCount = exports.getMonsterDBCount = exports.findMonsterByName = exports.findMonsterByIDLocal = exports.findMonsterByID = exports.findMonsterByID_DB = exports.getRandomMonster = exports.getPokedex = exports.getAllMonsters = exports.MonsterDex = void 0;
 const discord_js_1 = require("discord.js");
 const database_1 = require("../../clients/database");
 const logger_1 = require("../../clients/logger");
@@ -96,19 +96,19 @@ function formDex() {
         /**
          * Specific Monster Boosts
          */
-        /*for (let index = 0; index < 150; index++) {
-          MonsterPool.push(92);
-          MonsterPool.push(193);
-          MonsterPool.push(66);
-        }*/
+        for (let index = 0; index < 150; index++) {
+            MonsterPool.push(1);
+            MonsterPool.push(4);
+            MonsterPool.push(7);
+            MonsterPool.push(1);
+            MonsterPool.push(29);
+            MonsterPool.push(32);
+            MonsterPool.push(111);
+            MonsterPool.push(133);
+            MonsterPool.push(143);
+            MonsterPool.push(149);
+        }
         for (let index = 0; index < 2; index++) {
-            MonsterPool.push(0.1);
-            MonsterPool.push(0.1);
-            MonsterPool.push(0.1);
-            MonsterPool.push(0.1);
-            MonsterPool.push(0.1);
-            MonsterPool.push(0.1);
-            MonsterPool.push(0.1);
             Gens.one.forEach((element) => {
                 MonsterPool.push(element);
                 MonsterPool.push(element);
@@ -273,18 +273,47 @@ function getUserMonster(monster_id) {
     });
 }
 exports.getUserMonster = getUserMonster;
-function getUsersMonsters(uid) {
+/**
+ * Get a user's monsters
+ * @param uid Discord ID
+ * @param released 0 | 1, default 0
+ * @returns IMonsterModel[]
+ */
+function getUsersMonsters(uid, released) {
     return __awaiter(this, void 0, void 0, function* () {
+        if (!released)
+            released = 0;
         const monsters = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
             .select()
             .where({
             uid: uid,
-            released: 0,
+            released: released,
         });
         return monsters;
     });
 }
 exports.getUsersMonsters = getUsersMonsters;
+/**
+ * Get a user's favorite monsters.
+ * @param uid Discord ID
+ * @param released 0 | 1, default 0
+ * @returns IMonsterModel[]
+ */
+function getUsersFavoriteMonsters(uid, released) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!released)
+            released = 0;
+        const monsters = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
+            .select()
+            .where({
+            uid: uid,
+            released: released,
+            favorite: 1
+        });
+        return monsters;
+    });
+}
+exports.getUsersFavoriteMonsters = getUsersFavoriteMonsters;
 function selectMonster(message) {
     return __awaiter(this, void 0, void 0, function* () {
         const splitMsg = message.content.split(' ');

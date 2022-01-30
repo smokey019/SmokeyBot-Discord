@@ -37,7 +37,7 @@ exports.databaseClient = (0, knex_1.default)({
             console.error(message);
         },
         deprecate(message) {
-            logger.error(message);
+            console.error(message);
         },
         debug(message) {
             logger.debug(message);

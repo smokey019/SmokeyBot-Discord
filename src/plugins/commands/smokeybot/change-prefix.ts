@@ -1,14 +1,17 @@
-import { Permissions } from 'discord.js';
+import { Permissions, PermissionString } from 'discord.js';
 import { runEvent } from '..';
 import { GLOBAL_COOLDOWN } from '../../../clients/cache';
 import { getCurrentTime } from '../../../utils';
 import { set_prefix } from '../../pokemon/parser';
 
 export async function run(e: runEvent) {
-  if (!e.message.member.permissions.has([Permissions.FLAGS.ADMINISTRATOR])) return;
-  GLOBAL_COOLDOWN.set(e.message.guild.id, getCurrentTime());
+  const userPerms = new Permissions(e.interaction.member.permissions as PermissionString);
 
-  await set_prefix(e.message);
+  if (!userPerms.has(Permissions.FLAGS.ADMINISTRATOR)) return;
+
+  GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
+
+  await set_prefix(e.interaction);
 }
 
 export const names = ['prefix'];

@@ -1,4 +1,4 @@
-import { Message, TextChannel } from 'discord.js';
+import { Interaction, TextChannel } from 'discord.js';
 import { ICache, loadCache } from '../../clients/cache';
 import { getRndInteger } from '../../utils';
 import Weather from './data/weather.json';
@@ -8,18 +8,18 @@ export type IWeather = typeof Weather[0];
 const WEATHER_CACHE = loadCache('weather', 100);
 
 export async function getBoostedWeatherSpawns(
-  message: Message,
+  interaction: Interaction,
   cache: ICache,
 ): Promise<IWeather> {
-  const boost = await WEATHER_CACHE.get(message.guild.id);
+  const boost = await WEATHER_CACHE.get(interaction.guild.id);
 
   if (!boost) {
-    const weather = await change_weather(message, cache);
+    const weather = await change_weather(interaction, cache);
 
     return weather;
   } else {
     if (Date.now() - boost.time > 60 * 1000 * getRndInteger(5, 15)) {
-      const weather = await change_weather(message, cache);
+      const weather = await change_weather(interaction, cache);
 
       return weather;
     } else {
@@ -29,16 +29,16 @@ export async function getBoostedWeatherSpawns(
 }
 
 async function change_weather(
-  message: Message,
+  interaction: Interaction,
   cache: ICache,
 ): Promise<IWeather> {
   const boost = {
     weather: Weather[getRndInteger(0, Weather.length - 1)],
     time: Date.now(),
   };
-  WEATHER_CACHE.set(message.guild.id, boost);
+  WEATHER_CACHE.set(interaction.guild.id, boost);
 
-  const monsterChannel = message.guild?.channels.cache.find(
+  const monsterChannel = interaction.guild?.channels.cache.find(
     (ch) => ch.name === cache.settings.specific_channel,
   );
 

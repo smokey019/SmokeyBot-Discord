@@ -1,4 +1,4 @@
-import { Collection, Message } from 'discord.js';
+import { Collection } from 'discord.js';
 import { databaseClient } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
@@ -102,20 +102,20 @@ async function formDex(): Promise<void> {
    * Specific Monster Boosts
    */
 
-  /*for (let index = 0; index < 150; index++) {
-    MonsterPool.push(92);
-    MonsterPool.push(193);
-    MonsterPool.push(66);
-  }*/
+  for (let index = 0; index < 150; index++) {
+    MonsterPool.push(1);
+    MonsterPool.push(4);
+    MonsterPool.push(7);
+    MonsterPool.push(1);
+    MonsterPool.push(29);
+    MonsterPool.push(32);
+    MonsterPool.push(111);
+    MonsterPool.push(133);
+    MonsterPool.push(143);
+    MonsterPool.push(149);
+  }
 
   for (let index = 0; index < 2; index++) {
-    MonsterPool.push(0.1);
-    MonsterPool.push(0.1);
-    MonsterPool.push(0.1);
-    MonsterPool.push(0.1);
-    MonsterPool.push(0.1);
-    MonsterPool.push(0.1);
-    MonsterPool.push(0.1);
 
     Gens.one.forEach((element) => {
       MonsterPool.push(element);
@@ -292,30 +292,61 @@ export async function getUserMonster(
   }
 }
 
-export async function getUsersMonsters(uid: string): Promise<IMonsterModel[]> {
+/**
+ * Get a user's monsters
+ * @param uid Discord ID
+ * @param released 0 | 1, default 0
+ * @returns IMonsterModel[]
+ */
+export async function getUsersMonsters(
+  uid: string,
+  released?: 0 | 1,
+): Promise<IMonsterModel[]> {
+  if (!released) released = 0;
   const monsters = await databaseClient<IMonsterModel>(MonsterTable)
     .select()
     .where({
       uid: uid,
-      released: 0,
+      released: released,
     });
   return monsters;
 }
 
-export async function selectMonster(message: Message): Promise<boolean> {
-  const splitMsg = message.content.split(' ');
+/**
+ * Get a user's favorite monsters.
+ * @param uid Discord ID
+ * @param released 0 | 1, default 0
+ * @returns IMonsterModel[]
+ */
+export async function getUsersFavoriteMonsters(
+  uid: string,
+  released?: 0 | 1,
+): Promise<IMonsterModel[]> {
+  if (!released) released = 0;
+  const monsters = await databaseClient<IMonsterModel>(MonsterTable)
+    .select()
+    .where({
+      uid: uid,
+      released: released,
+      favorite: 1
+    });
+  return monsters;
+}
+
+export async function selectMonster(interaction: Interaction): Promise<boolean> {
+  const splitMsg = args;
 
   const monster: IMonsterModel = await getUserMonster(splitMsg[1]);
   if (!monster) return undefined;
   const dex = await findMonsterByID(monster.monster_id);
 
-  if (monster && message.author.id == monster.uid) {
+  if (monster && interaction.user.id == monster.uid) {
     const updateUser = await databaseClient<IMonsterUserModel>(MonsterUserTable)
-      .where({ uid: message.author.id })
+      .where({ uid: interaction.user.id })
       .update({ current_monster: parseInt(splitMsg[1]) });
 
     if (updateUser) {
-      message.reply(`Selected **Level ${monster.level} ${dex.name.english}**!`);
+      (interaction as BaseCommandInteraction).reply(`Selected **Level ${monster.level} ${dex.name.english}**!`);
       return true;
     } else {
       return false;
@@ -325,20 +356,20 @@ export async function selectMonster(message: Message): Promise<boolean> {
   }
 }
 
-export async function setFavorite(message: Message): Promise<boolean> {
-  const splitMsg = message.content.split(' ');
+export async function setFavorite(interaction: Interaction): Promise<boolean> {
+  const splitMsg = args;
 
   const monster: IMonsterModel = await getUserMonster(splitMsg[1]);
   if (!monster) return undefined;
   const dex = await findMonsterByID(monster.monster_id);
 
-  if (monster && message.author.id == monster.uid) {
+  if (monster && interaction.user.id == monster.uid) {
     const updatedMonster = await databaseClient<IMonsterModel>(MonsterTable)
       .where('id', monster.id)
       .update({ favorite: 1 });
 
     if (updatedMonster) {
-      message.reply(
+      (interaction as BaseCommandInteraction).reply(
         `Favorited monster **Level ${monster.level} ${dex.name.english}**!`,
       );
       return true;
@@ -350,18 +381,18 @@ export async function setFavorite(message: Message): Promise<boolean> {
   }
 }
 
-export async function unFavorite(message: Message): Promise<boolean> {
-  const splitMsg = message.content.split(' ');
+export async function unFavorite(interaction: Interaction): Promise<boolean> {
+  const splitMsg = args;
 
   const monster: IMonsterModel = await getUserMonster(splitMsg[1]);
 
-  if (monster && message.author.id == monster.uid) {
+  if (monster && interaction.user.id == monster.uid) {
     const updatedMonster = await databaseClient<IMonsterModel>(MonsterTable)
       .where('id', monster.id)
       .update({ favorite: 0 });
 
     if (updatedMonster) {
-      message.reply(`Unfavorited monster id ${monster.id}!`);
+      (interaction as BaseCommandInteraction).reply(`Unfavorited monster id ${monster.id}!`);
       return true;
     } else {
       return false;

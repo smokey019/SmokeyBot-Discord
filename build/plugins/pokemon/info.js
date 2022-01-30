@@ -13,6 +13,7 @@ exports.userDex = exports.monsterCount = exports.monsterDex = exports.currentMon
 const discord_js_1 = require("discord.js");
 const database_1 = require("../../clients/database");
 const logger_1 = require("../../clients/logger");
+const queue_1 = require("../../clients/queue");
 const colors_1 = require("../../colors");
 const Monster_1 = require("../../models/Monster");
 const MonsterUser_1 = require("../../models/MonsterUser");
@@ -35,7 +36,7 @@ function monsterEmbed(monster_db, message) {
         const monster = yield (0, monsters_1.findMonsterByID)(monster_db.monster_id);
         const monster_types = monster.type.join(' | ');
         const tmpID = `${monster.id}`.padStart(3, '0');
-        const next_level_xp = monster_db.level * 1250 + 1250;
+        const next_level_xp = monster_db.level * 1250;
         const monster_stats = {
             hp: Math.round(2 * monster.baseStats.hp +
                 (monster_db.hp * monster_db.level) / 100 +
@@ -175,6 +176,21 @@ function monsterEmbed(monster_db, message) {
                 inline: true,
             });
         }
+        if (monster_db.egg && monster_db.hatched_at) {
+            const hatched_at = new Date(monster_db.hatched_at).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric'
+            });
+            embedFields.push({
+                name: '**Hatched On**',
+                value: hatched_at,
+                inline: true,
+            });
+        }
         const embed = new discord_js_1.MessageEmbed()
             .setAuthor(title, utils_2.img_monster_ball, `https://pokemondb.net/pokedex/${monster.id}`)
             .setColor(colors_1.COLOR_PURPLE)
@@ -183,7 +199,8 @@ function monsterEmbed(monster_db, message) {
             .setDescription(released)
             .addFields(embedFields);
         try {
-            yield message.channel.send({ embeds: [embed] });
+            (0, queue_1.queueMsg)(embed, message, false, 0, undefined, true);
+            //await message.channel.send({ embeds: [embed] });
         }
         catch (error) {
             logger.error(error);

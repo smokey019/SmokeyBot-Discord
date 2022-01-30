@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { BaseCommandInteraction, Interaction, MessageEmbed } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { COLOR_GREEN, COLOR_WHITE } from '../../colors';
@@ -6,7 +6,7 @@ import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel } from '../../models/MonsterUser';
 import { chunk, format_number } from '../../utils';
 import { userDex } from './info';
-import { findMonsterByIDLocal, getPokedex, getUsersMonsters } from './monsters';
+import { findMonsterByIDLocal, getPokedex, getUsersFavoriteMonsters, getUsersMonsters } from './monsters';
 
 const logger = getLogger('Pokemon');
 
@@ -14,16 +14,16 @@ const logger = getLogger('Pokemon');
  *
  * @param message
  */
-export async function checkMonsters(message: Message): Promise<void> {
+export async function checkMonsters(interaction: Interaction, args: string[]): Promise<void> {
   logger.debug(
-    `Fetching Pokémon for ${message.author.username} in ${message.guild?.name}..`,
+    `Fetching Pokémon for ${interaction.user.username} in ${interaction.guild?.name}..`,
   );
 
-  const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
+  const splitMsg = args;
 
   const sort = [splitMsg[1], splitMsg[2]];
 
-  const pokemon = await getUsersMonsters(message.author.id);
+  const pokemon = await getUsersMonsters(interaction.user.id);
 
   if (pokemon.length > 0) {
     let message_contents = [];
@@ -35,7 +35,7 @@ export async function checkMonsters(message: Message): Promise<void> {
 
     const temp_monsters = [];
 
-    const user: IMonsterUserModel = await getUser(message.author.id);
+    const user: IMonsterUserModel = await getUser(interaction.user.id);
 
     const current_monster = await databaseClient<IMonsterModel>(MonsterTable)
       .first()
@@ -190,30 +190,29 @@ export async function checkMonsters(message: Message): Promise<void> {
 
     const embed = new MessageEmbed()
       .setAuthor(
-        `${message.author.username}'s Pokémon\nShowing: ${format_number(
+        `${interaction.user.username}'s Pokémon\nShowing: ${format_number(
           message_contents.length,
         ) +
           '/' +
           format_number(pokemon.length)}`,
-        message.author.avatarURL()?.toString(),
+        interaction.user.avatarURL()?.toString(),
       )
       .setColor(COLOR_GREEN)
       .setDescription(new_msg);
-    await message.channel
+    await interaction.channel
       .send({ embeds: [embed] })
       .then(() => {
         logger.debug(
-          `Sent Pokémon for ${message.author.tag} in ${message.guild?.name}!`,
+          `Sent Pokémon for ${interaction.user.tag} in ${interaction.guild?.name}!`,
         );
       })
       .catch(async (err) => {
         logger.error(err);
       });
   } else {
-    message
-      .reply(`You don't have any monsters in your Pokédex. :(`)
+    (interaction as BaseCommandInteraction).reply(`You don't have any monsters in your Pokédex. :(`)
       .then(() => {
-        logger.debug(`${message.author.username} doesn't have any Pokémon!`);
+        logger.debug(`${interaction.user.username} doesn't have any Pokémon!`);
         return;
       })
       .catch(async (err) => {
@@ -222,15 +221,15 @@ export async function checkMonsters(message: Message): Promise<void> {
   }
 }
 
-export async function checkPokedex(message: Message): Promise<void> {
-  const pokemon = await userDex(message);
+export async function checkPokedex(interaction: Interaction, args: string[]): Promise<void> {
+  const pokemon = await userDex(interaction.user.id);
 
   const pokedex = getPokedex();
 
   let msg_array = [];
   let pokemon_count = 0;
 
-  const splitMsg = message.content.split(' ');
+  const splitMsg = args;
 
   pokedex.forEach((dex) => {
     if (!dex.images || !dex.images.normal) return;
@@ -241,7 +240,7 @@ export async function checkPokedex(message: Message): Promise<void> {
           count++;
         }
       });
-      if (!message.content.match(/missing/i)) {
+      if (!args.includes('missing')) {
         msg_array.push(
           `**${dex.id}** - **${dex.name.english}** - **${count}**`,
         );
@@ -276,14 +275,14 @@ export async function checkPokedex(message: Message): Promise<void> {
   const embed = new MessageEmbed()
     .setAuthor(
       `Pokédex - Total Pokémon: ${pokemon_count}`,
-      message.author.avatarURL(),
+      interaction.user.avatarURL(),
     )
     .setColor(COLOR_WHITE)
     .setDescription(new_msg);
-  await message.channel
+  await interaction.channel
     .send({ embeds: [embed] })
-    .then((message) => {
-      logger.debug(`Sent PokeDex in ${message.guild?.name}!`);
+    .then((interaction) => {
+      logger.debug(`Sent PokeDex in ${interaction.guild?.name}!`);
     })
     .catch(async (err) => {
       logger.error(err);
@@ -294,22 +293,16 @@ export async function checkPokedex(message: Message): Promise<void> {
  *
  * @param message
  */
-export async function checkFavorites(message: Message): Promise<void> {
+export async function checkFavorites(interaction: Interaction, args: string[]): Promise<void> {
   logger.debug(
-    `Fetching Favorite Pokémon for ${message.author.tag} in ${message.guild?.name}..`,
+    `Fetching Favorite Pokémon for ${interaction.user.tag} in ${interaction.guild?.name}..`,
   );
 
-  const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
+  const splitMsg = args;
 
   const sort = [splitMsg[1], splitMsg[2]];
 
-  const pokemon = await databaseClient<IMonsterModel>(MonsterTable)
-    .select()
-    .where({
-      uid: message.author.id,
-      released: 0,
-      favorite: 1,
-    });
+  const pokemon = await getUsersFavoriteMonsters(interaction.user.id);
 
   if (pokemon.length > 0) {
     let message_contents = [];
@@ -464,31 +457,30 @@ export async function checkFavorites(message: Message): Promise<void> {
 
     const embed = new MessageEmbed()
       .setAuthor(
-        `${message.author.username}'s Favorites\nShowing: ${format_number(
+        `${interaction.user.username}'s Favorites\nShowing: ${format_number(
           message_contents.length,
         ) +
           '/' +
           format_number(pokemon.length)}\nTotal: ${format_number(
           pokemon.length,
         )}`,
-        message.author.avatarURL()?.toString(),
+        interaction.user.avatarURL()?.toString(),
       )
       .setColor(COLOR_WHITE)
       .setDescription(new_msg);
-    await message.channel
+    await interaction.channel
       .send({ embeds: [embed] })
-      .then((message) => {
-        logger.debug(`Sent favorites in ${message.guild?.name}!`);
+      .then((interaction) => {
+        logger.debug(`Sent favorites in ${interaction.guild?.name}!`);
       })
       .catch(async (err) => {
         logger.error(err);
       });
   } else {
-    message
-      .reply(`You don't have any favorite monsters in your Pokédex. :(`)
+    (interaction as BaseCommandInteraction).reply(`You don't have any favorite monsters in your Pokédex. :( Use \`!favorite ID\` to add one.`)
       .then(() => {
         logger.debug(
-          `${message.author.username} doesn't have any favorite Pokémon!`,
+          `${interaction.user.username} doesn't have any favorite Pokémon!`,
         );
         return;
       })
@@ -502,15 +494,15 @@ export async function checkFavorites(message: Message): Promise<void> {
  *
  * @param message
  */
-export async function searchMonsters(message: Message): Promise<void> {
-  const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
-  const isQuote = message.content.match('"');
+export async function searchMonsters(interaction: Interaction, args: string[]): Promise<void> {
+  const splitMsg = args;
+  const isQuote = false;
   let sort = ['iv', 'high'];
   let search = undefined;
   let page = 0;
 
   if (isQuote) {
-    const parseSearch = message.content.replace(/ {2,}/gm, ' ').split('"');
+    const parseSearch = args[0].replace(/ {2,}/gm, ' ').split('"');
     const splitSort = parseSearch[parseSearch.length - 1].split(' ');
     search = parseSearch[1].toLowerCase();
     if (splitSort.length == 3) {
@@ -520,12 +512,12 @@ export async function searchMonsters(message: Message): Promise<void> {
       page = parseInt(splitSort[splitSort.length - 1]) - 1;
     }
   } else {
-    const parseSearch = message.content.replace(/ {2,}/gm, ' ').split(' ');
+    const parseSearch = args[0].replace(/ {2,}/gm, ' ').split(' ');
     sort = [splitMsg[2], splitMsg[3]];
     search = parseSearch[1].toLowerCase();
   }
 
-  const pokemon = await getUsersMonsters(message.author.id);
+  const pokemon = await getUsersMonsters(interaction.user.id);
 
   if (pokemon.length > 0) {
     let message_contents = [];
@@ -663,7 +655,7 @@ export async function searchMonsters(message: Message): Promise<void> {
       const embed = new MessageEmbed()
         .setAuthor(
           `${
-            message.author.username
+            interaction.user.username
           }'s search for '${search}' - Total: ${format_number(
             message_contents.length,
           ) +
@@ -671,43 +663,43 @@ export async function searchMonsters(message: Message): Promise<void> {
             format_number(pokemon.length)} - Pages: ${format_number(
             all_monsters.length,
           )}`,
-          message.author.avatarURL()?.toString(),
+          interaction.user.avatarURL()?.toString(),
         )
         .setColor(0xff0000)
         .setDescription(new_msg);
-      await message.channel
+      await interaction.channel
         .send({ embeds: [embed] })
         .then(() => {
           logger.debug(
-            `Sent Pokémon for ${message.author.username} in ${message.guild?.name}!`,
+            `Sent Pokémon for ${interaction.user.username} in ${interaction.guild?.name}!`,
           );
         })
         .catch(async (err) => {
           logger.error(err);
         });
     } else if (message_contents.length == 0) {
-      message.reply(`Cannot find '${search}'.`);
+      (interaction as BaseCommandInteraction).reply(`Cannot find '${search}'.`);
     } else {
       const new_msg = message_contents.join('\n');
 
       const embed = new MessageEmbed()
         .setAuthor(
           `${
-            message.author.username
+            interaction.user.username
           }'s search for '${search}' - Total: ${format_number(
             message_contents.length,
           ) +
             '/' +
             format_number(pokemon.length)}`,
-          message.author.avatarURL()?.toString(),
+          interaction.user.avatarURL()?.toString(),
         )
         .setColor(0xff0000)
         .setDescription(new_msg);
-      await message.channel
+      await interaction.channel
         .send({ embeds: [embed] })
         .then(() => {
           logger.debug(
-            `Sent Pokémon for ${message.author.username} in ${message.guild?.name}!`,
+            `Sent Pokémon for ${interaction.user.username} in ${interaction.guild?.name}!`,
           );
         })
         .catch(async (err) => {
@@ -715,10 +707,9 @@ export async function searchMonsters(message: Message): Promise<void> {
         });
     }
   } else {
-    message
-      .reply(`You don't have any monsters in your Pokédex. :(`)
+    (interaction as BaseCommandInteraction).reply(`You don't have any monsters in your Pokédex. :(`)
       .then(() => {
-        logger.debug(`${message.author.username} doesn't have any Pokémon!`);
+        logger.debug(`${interaction.user.username} doesn't have any Pokémon!`);
         return;
       })
       .catch(async (err) => {

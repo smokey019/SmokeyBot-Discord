@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Message, MessageEmbed } from 'discord.js';
+import { BaseCommandInteraction, Interaction, MessageEmbed } from 'discord.js';
 import { GLOBAL_COOLDOWN, ICache } from '../../clients/cache';
 import { getUserDBCount } from '../../clients/database';
 import { discordClient } from '../../clients/discord';
 import { EmoteQueue } from '../../clients/queue';
 import { dblCache } from '../../clients/top.gg';
-import { COLOR_BLACK } from '../../colors';
+import { COLOR_BLUE } from '../../colors';
 import {
   format_number,
   getCurrentTime,
@@ -21,23 +21,23 @@ import { getBoostedWeatherSpawns } from './weather';
 // const SHINY_ODDS_RETAIL = parseInt(getConfigValue('SHINY_ODDS_RETAIL'));
 // const SHINY_ODDS_COMMUNITY = parseInt(getConfigValue('SHINY_ODDS_COMMUNITY'));
 
-export async function parseArgs(message: Message): Promise<{
+export async function parseArgs(interaction: Interaction): Promise<{
   search: string;
   page: number;
   sort: any;
   isQuote: RegExpMatchArray;
   args: any;
 }> {
-  const isQuote = message.content.match('"');
+  const isQuote = interaction.content.match('"');
   const sort = ['id', 'high'];
   let search = undefined;
   let page = 0;
 
-  const load_prefixes = await getPrefixes(message.guild.id);
+  const load_prefixes = await getPrefixes(interaction.guild.id);
   const prefixes = RegExp(load_prefixes.join('|'));
-  const detect_prefix = message.content.match(prefixes);
+  const detect_prefix = interaction.content.match(prefixes);
   const prefix = detect_prefix.shift();
-  const args = message.content
+  const args = interaction.content
     .slice(prefix.length)
     .trim()
     .toLowerCase()
@@ -91,27 +91,27 @@ export function rollPerfectIV(): 0 | 1 {
   return getRndInteger(1, 45) >= 45 ? 1 : 0;
 }
 
-export async function voteCommand(message: Message): Promise<void> {
-  const voted = (await dblCache.get(message.author.id)) ?? { voted: false };
+export async function voteCommand(interaction: Interaction): Promise<void> {
+  const voted = (await dblCache.get(interaction.user.id)) ?? { voted: false };
 
   if (!voted.voted) {
-    await message.reply(
+    await (interaction as BaseCommandInteraction).reply(
       `You haven't voted yet -- vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
     );
   } else {
-    await message.reply(
+    await (interaction as BaseCommandInteraction).reply(
       `You've already voted, but maybe others want to vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
     );
   }
 }
 
 export async function checkServerWeather(
-  message: Message,
+  interaction: Interaction,
   cache: ICache,
 ): Promise<void> {
-  const boost = await getBoostedWeatherSpawns(message, cache);
+  const boost = await getBoostedWeatherSpawns(interaction, cache);
 
-  await message.reply(
+  await (interaction as BaseCommandInteraction).reply(
     `The current weather is **${
       boost.weather
     }**.  You will find increased spawns of **${boost.boosts.join(
@@ -120,27 +120,22 @@ export async function checkServerWeather(
   );
 }
 
-export async function getBotStats(message: Message): Promise<void> {
-  GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
-  const ping = Date.now() - message.createdTimestamp;
+export async function getBotStats(interaction: Interaction): Promise<void> {
+  GLOBAL_COOLDOWN.set(interaction.guild.id, getCurrentTime());
+  const ping = Date.now() - interaction.createdTimestamp;
 
   const embed = new MessageEmbed()
-    .setColor(COLOR_BLACK)
-    .setTitle('SmokeyBot Statistics')
-    .addField('Ping', ping + ' ms', true)
+    .setColor(COLOR_BLUE)
+    .setTitle('SmokeyBot Statistics 📊')
+    .addField('Ping 🌩️', ping + ' ms', true)
     .addField(
-      'Servers in Emote Queue 🔌',
+      'Servers in Emote Queue 🔗',
       format_number(EmoteQueue.size),
       true,
     )
     .addField(
-      'Emote Sync Attempts 🔴',
-      format_number(Stv_emoji_queue_attempt_count + FFZ_emoji_queue_attempt_count),
-      true,
-    )
-    .addField(
-      'Emote Successful Syncs 🟢',
-      format_number(Stv_emoji_queue_count + FFZ_emoji_queue_count),
+      'Emote Synchronizations 🔼',
+      `${format_number(Stv_emoji_queue_count + FFZ_emoji_queue_count)} / ${format_number(Stv_emoji_queue_attempt_count + FFZ_emoji_queue_attempt_count)}`,
       true,
     )
     .addField(
@@ -149,23 +144,23 @@ export async function getBotStats(message: Message): Promise<void> {
       true,
     )
     .addField(
-      'Total ' + theWord(),
+      'Total ' + theWord() + ' 🐾',
       format_number(await getMonsterDBCount()),
       true,
     )
     .addField(
-      'Total Shiny ' + theWord(),
+      'Total Shiny ' + theWord() + ' 🌟',
       format_number(await getShinyMonsterDBCount()),
       true,
     )
     .addField(
-      'Total ' + theWord() + ' Users',
+      'Total ' + theWord() + ' Users 👤',
       format_number(await getUserDBCount()),
       true,
     )
     .setTimestamp();
 
-  await message.reply({ embeds: [embed] });
+  await (interaction as BaseCommandInteraction).reply({ embeds: [embed] });
 }
 
 export const img_monster_ball = `https://cdn.discordapp.com/attachments/550103813587992586/721256683665621092/pokeball2.png`;

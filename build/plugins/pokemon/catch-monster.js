@@ -76,7 +76,11 @@ function catchMonster(message, cache) {
             let level = 0;
             const shiny = (0, utils_2.rollShiny)();
             let gender = (0, utils_2.rollGender)();
+            let isEgg = 0;
             const currentSpawn = spawn.monster;
+            if (currentSpawn.name.english == 'Egg') {
+                isEgg = 1;
+            }
             if (currentSpawn.evoLevel) {
                 level = (0, utils_2.rollLevel)(currentSpawn.evoLevel, 60);
             }
@@ -102,8 +106,9 @@ function catchMonster(message, cache) {
                 uid: message.author.id,
                 original_uid: message.author.id,
                 shiny: shiny,
-                captured_at: timestamp,
+                captured_at: Date.now(),
                 gender: gender,
+                egg: isEgg,
             };
             const isPerfect = (0, utils_2.rollPerfectIV)();
             if (isPerfect) {
@@ -154,41 +159,40 @@ function catchMonster(message, cache) {
                     let response = ``;
                     let shiny_msg = '';
                     let legendary = '';
+                    let egg_info = ``;
                     if (shiny) {
                         shiny_msg = ' ⭐';
                     }
-                    else {
-                        shiny_msg = '';
+                    if (currentSpawn.name.english == 'Egg') {
+                        egg_info = '\n\nEggs have a random chance of hatching into anything, with an increased chance at being shiny by selecting and leveling it to 50!';
                     }
-                    currentSpawn.id = parseFloat(currentSpawn.id.toString());
                     if (currentSpawn.special) {
                         legendary = ` 💠`;
                     }
-                    else {
-                        legendary = '';
-                    }
+                    currentSpawn.id = parseFloat(currentSpawn.id.toString());
                     if (shiny == 1 && !dex.includes(currentSpawn.id)) {
-                        response = `_**POGGERS**_! You caught a __***SHINY***__ level **${level} ${currentSpawn.name.english}**${shiny_msg + legendary}! \n\n Avg IV: **${averageIV}**% \nID: **${insertMonster[0]}** \n\nAdded to Pokédex.`;
-                        logger.error(`'${(_c = message.guild) === null || _c === void 0 ? void 0 : _c.name}' - Caught A SHINY POKéMON~ -> '${message.author.username}'`);
+                        response = `_**POGGERS**_! You caught a __***SHINY***__ level **${level} ${currentSpawn.name.english}**${shiny_msg + legendary}! \n\n Avg IV: **${averageIV}**% \nID: **${insertMonster[0]}** \n\nAdded to Pokédex.$`;
+                        logger.error(`'${(_c = message.guild) === null || _c === void 0 ? void 0 : _c.name}' - '${message.author.username}' CAUGHT A SHINY POKéMON~'`);
                         yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable)
                             .where({ uid: message.author.id })
                             .increment('currency', 1000);
                     }
                     else if (shiny == 0 && !dex.includes(currentSpawn.id)) {
                         response = `**${random_grats[(0, utils_1.getRndInteger)(0, random_grats.length - 1)]}**! You caught a level **${level} ${currentSpawn.name.english}**${shiny_msg + legendary}! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}** - Added to Pokédex.`;
-                        logger.info(`'${(_d = message.guild) === null || _d === void 0 ? void 0 : _d.name}' - Caught POKéMON~ -> '${message.author.username}'`);
+                        logger.info(`'${(_d = message.guild) === null || _d === void 0 ? void 0 : _d.name}' - '${message.author.username}' CAUGHT A POKéMON~`);
                         yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable)
                             .where({ uid: message.author.id })
                             .increment('currency', 100);
                     }
                     else if (shiny == 0 && dex.includes(currentSpawn.id)) {
                         response = `**${random_grats[(0, utils_1.getRndInteger)(0, random_grats.length - 1)]}**! You caught a level **${level} ${currentSpawn.name.english}**${shiny_msg + legendary}! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}**.`;
-                        logger.info(`'${(_e = message.guild) === null || _e === void 0 ? void 0 : _e.name}' - Caught POKéMON~ -> '${message.author.username}'`);
+                        logger.info(`'${(_e = message.guild) === null || _e === void 0 ? void 0 : _e.name}' - '${message.author.username}' CAUGHT A POKéMON~`);
                     }
                     else if (shiny == 1 && dex.includes(currentSpawn.id)) {
                         response = `_**POGGERS**_! You caught a __***SHINY***__ level **${level} ${currentSpawn.name.english}${shiny_msg + legendary}**! \n\n Avg IV: **${averageIV}**% \nID: **${insertMonster[0]}**.`;
-                        logger.error(`'${(_f = message.guild) === null || _f === void 0 ? void 0 : _f.name}' - CAUGHT A SHINY POKéMON~ -> '${message.author.username}'`);
+                        logger.error(`'${(_f = message.guild) === null || _f === void 0 ? void 0 : _f.name}' - '${message.author.username}' CAUGHT A SHINY POKéMON~`);
                     }
+                    response = response + egg_info;
                     const user = yield (0, database_1.getUser)(message.author.id);
                     if (user) {
                         if (user.streak == 10) {

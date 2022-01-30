@@ -9,20 +9,20 @@ import {
 } from '../../pokemon/info';
 
 export async function run(e: runEvent) {
-  const channel_name = (e.message.channel as TextChannel).name;
+  const channel_name = (e.interaction.channel as TextChannel).name;
   if (!e.cache.settings.smokemon_enabled || channel_name != e.cache.settings.specific_channel) return;
   if (e.args[0]?.match(/\d+/)) {
-    GLOBAL_COOLDOWN.set(e.message.guild.id, getCurrentTime());
+    GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
 
-    await monsterInfo(e.message);
+    await monsterInfo(e.interaction);
   } else if (e.args.length == 0) {
-    GLOBAL_COOLDOWN.set(e.message.guild.id, getCurrentTime());
+    GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
 
-    await currentMonsterInfo(e.message);
+    await currentMonsterInfo(e.interaction);
   } else if (e.args[0] == 'latest' || e.args[0] == 'l') {
-    GLOBAL_COOLDOWN.set(e.message.guild.id, getCurrentTime());
+    GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
 
-    await monsterInfoLatest(e.message);
+    await monsterInfoLatest(e.interaction);
   }
 }
 

@@ -9,15 +9,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.queueMsg = exports.resetQueue = exports.EmoteQueue = void 0;
+exports.queueMsg = exports.resetQueue = exports.last_message = exports.EmoteQueue = void 0;
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const discord_js_1 = require("discord.js");
 const discord_1 = require("./discord");
 const logger_1 = require("./logger");
 const logger = (0, logger_1.getLogger)('Queue');
 exports.EmoteQueue = new discord_js_1.Collection();
-const EMOTE_COOLDOWN = 35 * 1000;
-const MSG_COOLDOWN = 10 * 1000;
+const EMOTE_COOLDOWN = 30 * 1000;
+const MSG_COOLDOWN = 1.5 * 1000;
+exports.last_message = undefined;
 const MsgQueue = [];
 let timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
 let timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
@@ -53,10 +54,11 @@ exports.resetQueue = resetQueue;
  * @param reply Are we replying to the user?
  * @param priority `0` = Low, `1` = High
  * @param spawn Spawn channel. If undefined it won't send to a spawn channel.
+ * @param embed true/false
  * @returns `TRUE` if added to the queue.
  */
 function queueMsg(outgoingMsg, msg, reply = false, priority = 0, spawn, embed) {
-    if (outgoingMsg.toString().length >= 2000)
+    if (outgoingMsg.toString().length >= 2000 || !outgoingMsg || outgoingMsg == exports.last_message)
         return false;
     switch (priority) {
         // low priority
@@ -98,44 +100,56 @@ exports.queueMsg = queueMsg;
 function runMsgQueue() {
     if (MsgQueue.length > 0 && !discord_1.rateLimited) {
         const object = MsgQueue.shift();
-        if (!object)
+        if (!object) {
+            timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
             return;
-        try {
-            if (!object.reply && !object.spawn) {
-                object.msg.channel.send(object.outgoingMsg).then(() => {
-                    var _a;
-                    try {
-                        logger.trace(`Sent a message in ${(_a = object.msg.guild) === null || _a === void 0 ? void 0 : _a.name}.`);
-                    }
-                    catch (error) {
-                        logger.error(error);
-                        timerMsgQ = setTimeout(runMsgQueue, 250);
-                    }
-                });
-            }
-            else if (!object.reply && object.spawn && object.embed) {
-                object.spawn.send({ embeds: [object.outgoingMsg] });
-            }
-            else if (!object.reply && object.spawn) {
-                object.spawn.send(object.outgoingMsg);
-            }
-            else {
-                object.msg.reply(object.outgoingMsg).then(() => {
-                    var _a;
-                    try {
-                        logger.trace(`Sent a reply to ${object.msg.author.username} in ${(_a = object.msg.guild) === null || _a === void 0 ? void 0 : _a.name}.`);
-                    }
-                    catch (error) {
-                        timerMsgQ = setTimeout(runMsgQueue, 250);
-                        logger.error(error);
-                    }
-                });
-            }
-            timerMsgQ = setTimeout(runMsgQueue, 250);
         }
-        catch (error) {
-            logger.error(error);
-            timerMsgQ = setTimeout(runMsgQueue, 250);
+        else {
+            try {
+                if (!object.reply && !object.spawn && !object.embed) {
+                    object.msg.channel.send(object.outgoingMsg).then(() => {
+                        var _a;
+                        try {
+                            logger.debug(`Sent a message in ${(_a = object.msg.guild) === null || _a === void 0 ? void 0 : _a.name}.`);
+                            exports.last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
+                        }
+                        catch (error) {
+                            logger.error(error);
+                            timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
+                        }
+                    });
+                }
+                else if (!object.reply && object.spawn && object.embed) {
+                    object.spawn.send({ embeds: [object.outgoingMsg] });
+                    exports.last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
+                }
+                else if (!object.reply && !object.spawn && object.embed) {
+                    object.msg.channel.send({ embeds: [object.outgoingMsg] });
+                    exports.last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
+                }
+                else if (!object.reply && object.spawn) {
+                    object.spawn.send(object.outgoingMsg);
+                    exports.last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
+                }
+                else {
+                    object.msg.reply(object.outgoingMsg).then(() => {
+                        var _a;
+                        try {
+                            logger.debug(`Sent a reply to ${object.msg.author.username} in ${(_a = object.msg.guild) === null || _a === void 0 ? void 0 : _a.name}.`);
+                            exports.last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
+                        }
+                        catch (error) {
+                            timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
+                            logger.error(error);
+                        }
+                    });
+                }
+                timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
+            }
+            catch (error) {
+                logger.error(error);
+                timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
+            }
         }
     }
     else {
@@ -143,7 +157,7 @@ function runMsgQueue() {
             timerMsgQ = setTimeout(runMsgQueue, 10000);
         }
         else {
-            timerMsgQ = setTimeout(runMsgQueue, 100);
+            timerMsgQ = setTimeout(runMsgQueue, 500);
         }
     }
 }

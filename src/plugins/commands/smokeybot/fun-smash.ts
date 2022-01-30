@@ -4,9 +4,9 @@ import { getCurrentTime } from '../../../utils';
 import { sumSmash } from '../../smokeybot/smokeybot';
 
 export async function run(e: runEvent) {
-  GLOBAL_COOLDOWN.set(e.message.guild.id, getCurrentTime());
+  GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
 
-  await sumSmash(e.message);
+  await sumSmash(e.interaction);
 }
 
 export const names = ['smash'];

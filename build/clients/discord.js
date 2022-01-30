@@ -20,6 +20,7 @@ const utils_1 = require("../utils");
 const cache_1 = require("./cache");
 const database_1 = require("./database");
 const logger_1 = require("./logger");
+const queue_1 = require("./queue");
 const top_gg_1 = require("./top.gg");
 const logger = (0, logger_1.getLogger)('DiscordClient');
 exports.rateLimited = false;
@@ -44,6 +45,7 @@ exports.discordClient.on('ready', () => __awaiter(void 0, void 0, void 0, functi
 exports.discordClient.on('rateLimit', (error) => {
     const timeoutStr = error.timeout / 1000;
     logger.warn(`Rate Limited.. waiting ${(0, utils_1.format_number)(Math.round(timeoutStr / 60))} minutes.`);
+    console.log(`Last Message:`, queue_1.last_message);
     exports.rateLimited = true;
     setTimeout(() => {
         logger.warn('Rate limit timeout elapsed.');

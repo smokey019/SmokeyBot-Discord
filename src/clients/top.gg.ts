@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Message } from 'discord.js';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en.json';
 import fetch from 'node-fetch';
@@ -71,7 +70,7 @@ async function requestGET(
  */
 async function hasVoted(id: string): Promise<any> {
   if (!id) throw new Error('Missing ID');
-  return await requestGET('GET', '/bots/check', { userId: id }).then(
+  return await requestGET('GET', 'bots/check', { userId: id }).then(
     (x: any) => !!x.voted,
   );
 }
@@ -86,62 +85,62 @@ async function hasVoted(id: string): Promise<any> {
  * ```
  */
 async function isWeekend(): Promise<any> {
-  return await requestGET('GET', '/weekend').then((x: any) => x.is_weekend);
+  return await requestGET('GET', 'weekend').then((x: any) => x.is_weekend);
 }
 
-export async function checkVote(message: Message): Promise<boolean> {
-  const voted = (await dblCache.get(message.author.id)) ?? {
+export async function checkVote(interaction: Interaction): Promise<boolean> {
+  const voted = (await dblCache.get(interaction.user.id)) ?? {
     voted: false,
     checked_at: Date.now() - 86401337,
   };
 
   if (!voted.voted || Date.now() - voted.checked_at > 43200000) {
-    const check = await hasVoted(message.author.id);
-    dblCache.set(message.author.id, { voted: check, checked_at: Date.now() });
+    const check = await hasVoted(interaction.user.id);
+    dblCache.set(interaction.user.id, { voted: check, checked_at: Date.now() });
 
     if (check) {
       const isWeekend = await checkWeekend();
 
       if (isWeekend) {
-        await message.reply(
+        await (interaction as BaseCommandInteraction).reply(
           `Thanks for voting! It's the weekend so you receive double! You received **5,000 currency** and **2 Rare Candy** to level up your monster(s)! You can do this every 12 hours.`,
         );
 
         for (let index = 0; index < 4; index++) {
           await createItemDB({
-            uid: message.author.id,
+            uid: interaction.user.id,
             item_number: 50,
           });
         }
 
         await databaseClient<IMonsterUserModel>(MonsterUserTable)
-          .where({ uid: message.author.id })
+          .where({ uid: interaction.user.id })
           .increment('currency', 5000);
 
         return true;
       } else {
-        await message.reply(
+        await (interaction as BaseCommandInteraction).reply(
           `Thanks for voting! You received **2,500 currency** and a **Rare Candy** to level up a monster! You can do this every 12 hours.`,
         );
 
         await createItemDB({
-          uid: message.author.id,
+          uid: interaction.user.id,
           item_number: 50,
         });
 
         await databaseClient<IMonsterUserModel>(MonsterUserTable)
-          .where({ uid: message.author.id })
+          .where({ uid: interaction.user.id })
           .increment('currency', 2500);
 
         return true;
       }
     } else {
-      await message.reply(`you haven't voted yet, m8. WeirdChamp`);
+      await (interaction as BaseCommandInteraction).reply(`you haven't voted yet, m8. WeirdChamp`);
 
       return false;
     }
   } else if (voted.voted) {
-    await message.reply(
+    await (interaction as BaseCommandInteraction).reply(
       `you voted ${timeAgo.format(
         voted.checked_at,
       )} and got credit already. You can vote again ${timeAgo.format(

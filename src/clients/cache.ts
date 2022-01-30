@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Collection, Message } from 'discord.js';
+import { Collection, Guild } from 'discord.js';
 import { LRUCache } from 'mnemonist';
 import { getCurrentTime } from '../utils';
 import { IGuildSettings } from './database';
@@ -39,7 +39,7 @@ export function loadCache(
   }
 }
 
-export async function reportCache(message: Message): Promise<void> {
+export async function reportCache(interaction: Interaction): Promise<void> {
   const report = [];
 
   report.push('Cache Reports:\n');
@@ -48,7 +48,7 @@ export async function reportCache(message: Message): Promise<void> {
     report.push(`**${key}** has **${value.size}** entries.`);
   }
 
-  await message.reply(report.join('\n'));
+  await (interaction as BaseCommandInteraction).reply(report.join('\n'));
 }
 
 /**
@@ -100,10 +100,10 @@ export async function getGCD(guild_id: string): Promise<number> {
 }
 
 export async function getCache(
-  message: Message,
+  guild: Guild,
   settings: IGuildSettings,
 ): Promise<ICache> {
-  let cache = await cacheClient?.get(message.guild.id);
+  let cache = await cacheClient?.get(guild.id);
 
   if (!cache) {
     cache = {
@@ -115,8 +115,8 @@ export async function getCache(
         specific_channel: settings.specific_channel,
       },
     };
-    cacheClient?.set(message.guild.id, cache);
-    cacheTwitter?.set(message.guild.id, 'summit1g');
+    cacheClient?.set(guild.id, cache);
+    cacheTwitter?.set(guild.id, 'summit1g');
     return cache;
   } else {
     return cache;

@@ -1,13 +1,17 @@
-import { Client, Intents, Message } from 'discord.js';
-import { commands, loadCommands } from '../plugins/commands';
+import { Client, Intents } from 'discord.js';
+import {
+  commands,
+  loadCommands,
+  registerSlashCommands
+} from '../plugins/commands';
 import { checkExpGain } from '../plugins/pokemon/exp-gain';
 import { getAllMonsters, MonsterDex } from '../plugins/pokemon/monsters';
-import { getPrefixes } from '../plugins/pokemon/parser';
 import { checkSpawn } from '../plugins/pokemon/spawn-monster';
 import { format_number, getCurrentTime } from '../utils';
 import { getCache, getGCD, ICache } from './cache';
 import { getGuildSettings, IGuildSettings } from './database';
 import { getLogger } from './logger';
+import { last_message } from './queue';
 import { enableAP } from './top.gg';
 
 const logger = getLogger('DiscordClient');
@@ -19,7 +23,8 @@ export const discordClient = new Client({
     Intents.FLAGS.GUILDS,
     Intents.FLAGS.GUILD_MESSAGES,
     Intents.FLAGS.DIRECT_MESSAGES,
-    Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
+    Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS /*
+    Intents.FLAGS.GUILD_PRESENCES*/,
   ],
   shards: 'auto',
 });
@@ -31,6 +36,45 @@ discordClient.on('ready', async () => {
   initializing = false;
   await enableAP();
   await loadCommands();
+
+  setTimeout(async () => {
+    await registerSlashCommands();
+  }, 15 * 1000);
+});
+
+discordClient.on('interactionCreate', async (interaction) => {
+  const GCD = await getGCD(interaction.guild.id);
+  const timestamp = getCurrentTime();
+  const settings: IGuildSettings = await getGuildSettings(interaction.guild);
+  const cache: ICache = await getCache(interaction.guild, settings);
+
+  if (cache && settings) {
+    if (cache.settings.smokemon_enabled) {
+      await checkExpGain(interaction.user, interaction.guild, interaction);
+      await checkSpawn(interaction, cache);
+    }
+  }
+
+  if (!interaction.isCommand()) return;
+
+  if (timestamp - GCD < 2) return;
+
+  console.log(interaction);
+
+  const command = interaction.commandName;
+  const args = [interaction.options.getString('input')];
+  const commandFile = commands.find((_r, n) => n.includes(command));
+
+  if (!commandFile) return;
+  else
+    commandFile({
+      interaction,
+      args,
+      client: discordClient,
+      dev: true,
+      settings: settings,
+      cache: cache,
+    });
 });
 
 discordClient.on('rateLimit', (error) => {
@@ -40,6 +84,7 @@ discordClient.on('rateLimit', (error) => {
       Math.round(timeoutStr / 60),
     )} minutes.`,
   );
+  console.log(`Last Message:`, last_message);
 
   rateLimited = true;
 
@@ -60,62 +105,3 @@ discordClient.on('error', (error) => {
 discordClient.on('shardReady', (id: number) => {
   console.error(`Shard ${id} is ready.`);
 });
-
-discordClient.on('messageCreate', async (message) => {
-  try {
-    await parseMessage(message);
-  } catch (error) {
-    logger.error(error);
-  }
-});
-
-async function parseMessage(message: Message) {
-  if (
-    !message.guild ||
-    !message.member ||
-    message.member.user.username == 'smokeybot' ||
-    message.author.bot ||
-    rateLimited
-  )
-    return;
-
-  const GCD = await getGCD(message.guild.id);
-  const timestamp = getCurrentTime();
-  const load_prefixes = await getPrefixes(message.guild.id);
-  const prefixes = RegExp(load_prefixes.join('|'));
-  const detect_prefix = message.content.match(prefixes);
-  const settings: IGuildSettings = await getGuildSettings(message);
-  const cache: ICache = await getCache(message, settings);
-
-  if (cache && settings) {
-    if (cache.settings.smokemon_enabled) {
-      await checkExpGain(message);
-      await checkSpawn(message, cache);
-    }
-  }
-
-  const prefix = detect_prefix?.shift();
-
-  const args = message.content
-    .slice(prefix?.length)
-    .trim()
-    .toLowerCase()
-    .replace(/ {2,}/gm, ' ')
-    .split(/ +/);
-
-  if (args.length < 1 || !detect_prefix || timestamp - GCD < 2) return;
-
-  const command = args.shift() ?? undefined;
-  const commandFile = commands.find((_r, n) => n.includes(command));
-
-  if (!commandFile) return;
-  else
-    commandFile({
-      message,
-      args,
-      client: discordClient,
-      dev: true,
-      settings: settings,
-      cache: cache,
-    });
-}

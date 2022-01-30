@@ -4,9 +4,9 @@ import { getCurrentTime } from '../../../utils';
 import { gtfo } from '../../smokeybot/smokeybot';
 
 export async function run(e: runEvent) {
-  GLOBAL_COOLDOWN.set(e.message.guild.id, getCurrentTime());
+  GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
 
-  await gtfo(e.message);
+  await gtfo(e.interaction);
 }
 
 export const names = ['gtfo'];

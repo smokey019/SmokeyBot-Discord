@@ -1,13 +1,12 @@
-import { Message } from 'discord.js';
 import { databaseClient } from '../../clients/database';
-import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
-import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { getLogger } from '../../clients/logger';
+import { IMonsterModel, MonsterTable } from '../../models/Monster';
+import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 
 const logger = getLogger('NEW DEX');
 
-export async function updateDexes(message: Message): Promise<any> {
-  if (message.author.id == '90514165138989056') {
+export async function updateDexes(interaction: Interaction): Promise<any> {
+  if (interaction.user.id == '90514165138989056') {
     const users: Array<IMonsterUserModel> = await databaseClient<
       IMonsterUserModel
     >(MonsterUserTable).select();

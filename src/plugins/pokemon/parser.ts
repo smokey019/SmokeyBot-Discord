@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Message } from 'discord.js';
 import { databaseClient, IGuildSettings } from '../../clients/database';
 import { parseArgs } from './utils';
 
@@ -8,7 +7,7 @@ export const default_prefixes = ['!', '~', 'p!'];
 /**
  * Retrieve Guild Prefixes
  * Default: ['!', '~', 'p!']
- * @param guild_id message.guild.id
+ * @param guild_id interaction.guild.id
  * @returns ['!', '~', 'p!'] or more.
  */
 export async function getPrefixes(guild_id: string): Promise<any> {
@@ -45,13 +44,13 @@ export async function updatePrefixes(
     });
 }
 
-export async function set_prefix(message: Message): Promise<void> {
+export async function set_prefix(interaction: Interaction): Promise<void> {
   let i = 0;
   const parse = await parseArgs(message);
-  const prefixes = await getPrefixes(message.guild.id);
+  const prefixes = await getPrefixes(interaction.guild.id);
 
   if (!parse.args[1] || (!parse.args[2] && parse.args[1] != 'default')) {
-    await message.reply(
+    await (interaction as BaseCommandInteraction).reply(
       'Not enough parameters. Example: `!prefix enable !`. Type `!prefix help` for more information.',
     );
     return;
@@ -62,8 +61,8 @@ export async function set_prefix(message: Message): Promise<void> {
       case '!':
         if (!prefixes.includes('!')) {
           prefixes.push('!');
-          await updatePrefixes(message.guild.id, prefixes);
-          await message.reply(
+          await updatePrefixes(interaction.guild.id, prefixes);
+          await (interaction as BaseCommandInteraction).reply(
             'Successfully added `!` as a prefix. Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
@@ -74,8 +73,8 @@ export async function set_prefix(message: Message): Promise<void> {
       case '?':
         if (!prefixes.includes('\\?')) {
           prefixes.push('\\?');
-          await updatePrefixes(message.guild.id, prefixes);
-          await message.reply(
+          await updatePrefixes(interaction.guild.id, prefixes);
+          await (interaction as BaseCommandInteraction).reply(
             'Successfully added `?` as a prefix.  Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
@@ -86,8 +85,8 @@ export async function set_prefix(message: Message): Promise<void> {
       case '~':
         if (!prefixes.includes('~')) {
           prefixes.push('~');
-          await updatePrefixes(message.guild.id, prefixes);
-          await message.reply(
+          await updatePrefixes(interaction.guild.id, prefixes);
+          await (interaction as BaseCommandInteraction).reply(
             'Successfully added `~` as a prefix.  Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
@@ -98,8 +97,8 @@ export async function set_prefix(message: Message): Promise<void> {
       case 'p!':
         if (!prefixes.includes('p!')) {
           prefixes.push('p!');
-          await updatePrefixes(message.guild.id, prefixes);
-          await message.reply(
+          await updatePrefixes(interaction.guild.id, prefixes);
+          await (interaction as BaseCommandInteraction).reply(
             'Successfully added `p!` as a prefix.  Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
@@ -109,7 +108,7 @@ export async function set_prefix(message: Message): Promise<void> {
         break;
 
       default:
-        await message.reply(
+        await (interaction as BaseCommandInteraction).reply(
           'You can enable/disable these prefixes: ' + prefixes,
         );
         break;
@@ -123,12 +122,12 @@ export async function set_prefix(message: Message): Promise<void> {
               prefixes.splice(i, 1);
             }
           }
-          await message.reply(
+          await (interaction as BaseCommandInteraction).reply(
             'Successfully removed `!` as a prefix.  Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
           );
-          await updatePrefixes(message.guild.id, prefixes);
+          await updatePrefixes(interaction.guild.id, prefixes);
         }
 
         break;
@@ -139,12 +138,12 @@ export async function set_prefix(message: Message): Promise<void> {
               prefixes.splice(i, 1);
             }
           }
-          await message.reply(
+          await (interaction as BaseCommandInteraction).reply(
             'Successfully removed `?` as a prefix.  Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
           );
-          await updatePrefixes(message.guild.id, prefixes);
+          await updatePrefixes(interaction.guild.id, prefixes);
         }
 
         break;
@@ -155,12 +154,12 @@ export async function set_prefix(message: Message): Promise<void> {
               prefixes.splice(i, 1);
             }
           }
-          await message.reply(
+          await (interaction as BaseCommandInteraction).reply(
             'Successfully removed `~` as a prefix.  Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
           );
-          await updatePrefixes(message.guild.id, prefixes);
+          await updatePrefixes(interaction.guild.id, prefixes);
         }
 
         break;
@@ -171,30 +170,30 @@ export async function set_prefix(message: Message): Promise<void> {
               prefixes.splice(i, 1);
             }
           }
-          await message.reply(
+          await (interaction as BaseCommandInteraction).reply(
             'Successfully removed `p!` as a prefix.  Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
           );
-          await updatePrefixes(message.guild.id, prefixes);
+          await updatePrefixes(interaction.guild.id, prefixes);
         }
 
         break;
 
       default:
-        await message.reply(
+        await (interaction as BaseCommandInteraction).reply(
           'You can enable/disable these prefixes: ' + prefixes,
         );
         break;
     }
   } else if (parse.args[1] == 'default') {
-    await updatePrefixes(message.guild.id, default_prefixes);
-    await message.reply(
+    await updatePrefixes(interaction.guild.id, default_prefixes);
+    await (interaction as BaseCommandInteraction).reply(
       'Successfully reset prefixes back to default: ' +
         default_prefixes.join(', '),
     );
   } else if (parse.args[1] == 'help') {
-    await message.reply(
+    await (interaction as BaseCommandInteraction).reply(
       'Enable/disable prefixes: `!prefix disable ~` or `!prefix enable p!`. By default SmokeyBot uses: `' +
         default_prefixes.join(' ') +
         '`.',
@@ -202,10 +201,10 @@ export async function set_prefix(message: Message): Promise<void> {
   }
 }
 
-export async function prefix_check(message: Message): Promise<boolean> {
-  const prefixes = await getPrefixes(message.guild.id);
+export async function prefix_check(interaction: Interaction): Promise<boolean> {
+  const prefixes = await getPrefixes(interaction.guild.id);
 
-  if (prefixes.includes(message.content.charAt(0))) {
+  if (prefixes.includes(interaction.content.charAt(0))) {
     return true;
   } else {
     return false;

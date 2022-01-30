@@ -1,10 +1,11 @@
-import { Message } from 'discord.js';
+import { Interaction } from 'discord.js';
 import { discordClient } from '../../clients/discord';
 import { getLogger } from '../../clients/logger';
+import { queueMsg } from '../../clients/queue';
 
 const logger = getLogger('SmokeyBot');
 
-export async function checkForEmptyServers(message: Message): Promise<any> {
+export async function checkForEmptyServers(interaction: Interaction): Promise<any> {
   const all_guilds = discordClient.guilds.cache;
   let leave_count = 0;
   let timeout = 5;
@@ -24,5 +25,5 @@ export async function checkForEmptyServers(message: Message): Promise<any> {
   });
 
   logger.info(`We're leaving ${leave_count} servers.`);
-  message.reply(`We're leaving ${leave_count} servers.`);
+  queueMsg(`We're leaving ${leave_count} servers.`, interaction, true);
 }

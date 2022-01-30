@@ -1,4 +1,3 @@
-import { Message } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
@@ -44,8 +43,8 @@ async function recover(monster_id: number | string): Promise<boolean> {
   }
 }
 
-export async function releaseMonster(message: Message): Promise<void> {
-  const tmpMsg = explode(message.content, ' ', 2);
+export async function releaseMonster(interaction: Interaction): Promise<void> {
+  const tmpMsg = explode(interaction.content, ' ', 2);
 
   if (tmpMsg.length > 1) {
     if (tmpMsg[1].toString().match(',') || tmpMsg[1].toString().match(' ')) {
@@ -68,7 +67,7 @@ export async function releaseMonster(message: Message): Promise<void> {
           if (
             to_release &&
             !to_release.released &&
-            to_release.uid == message.author.id
+            to_release.uid == interaction.user.id
           ) {
             await release(to_release.id);
           }
@@ -80,7 +79,7 @@ export async function releaseMonster(message: Message): Promise<void> {
           )
           .then(() => {
             logger.info(
-              `${message.author.username} Attempting to release your monsters.. Good luck little guys :(`,
+              `${interaction.user.username} Attempting to release your monsters.. Good luck little guys :(`,
             );
             return;
           })
@@ -92,7 +91,7 @@ export async function releaseMonster(message: Message): Promise<void> {
       let to_release = undefined;
 
       if (tmpMsg[1] == '^') {
-        const user: IMonsterUserModel = await getUser(message.author.id);
+        const user: IMonsterUserModel = await getUser(interaction.user.id);
         to_release = await getUserMonster(user.latest_monster);
       } else {
         if (isNaN(parseInt(tmpMsg[1]))) return;
@@ -103,7 +102,7 @@ export async function releaseMonster(message: Message): Promise<void> {
 
       if (
         !to_release.released &&
-        to_release.uid == message.author.id &&
+        to_release.uid == interaction.user.id &&
         !to_release.released
       ) {
         const monster = await findMonsterByID(to_release.monster_id);
@@ -126,11 +125,10 @@ export async function releaseMonster(message: Message): Promise<void> {
       }
     }
   } else {
-    message
-      .reply(`Not enough things in ur msg there m8`)
+    (interaction as BaseCommandInteraction).reply(`Not enough things in ur msg there m8`)
       .then(() => {
         logger.debug(
-          `${message.author.username} not enough things in ur msg there m8`,
+          `${interaction.user.username} not enough things in ur msg there m8`,
         );
         return;
       })
@@ -138,8 +136,8 @@ export async function releaseMonster(message: Message): Promise<void> {
   }
 }
 
-export async function recoverMonster(message: Message): Promise<void> {
-  const tmpMsg = message.content.split(' ');
+export async function recoverMonster(interaction: Interaction): Promise<void> {
+  const tmpMsg = interaction.content.split(' ');
 
   if (tmpMsg.length > 1) {
     const to_release = await getUserMonster(tmpMsg[1]);
@@ -147,7 +145,7 @@ export async function recoverMonster(message: Message): Promise<void> {
     if (
       to_release &&
       to_release.released &&
-      to_release.uid == message.author.id
+      to_release.uid == interaction.user.id
     ) {
       const monster = await findMonsterByID(to_release.monster_id);
 
@@ -160,7 +158,7 @@ export async function recoverMonster(message: Message): Promise<void> {
           )
           .then(() => {
             logger.info(
-              `${message.author.username} Successfully recovered **${monster.name.english}**!`,
+              `${interaction.user.username} Successfully recovered **${monster.name.english}**!`,
             );
             return;
           })

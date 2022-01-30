@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { Guild } from 'discord.js';
 import knex from 'knex';
 import { getConfigValue } from '../config';
 import { IMonsterUserModel, MonsterUserTable } from '../models/MonsterUser';
@@ -25,7 +25,7 @@ export const databaseClient = knex({
       console.error(message);
     },
     deprecate(message) {
-      logger.error(message);
+      console.error(message);
     },
     debug(message) {
       logger.debug(message);
@@ -91,30 +91,30 @@ export async function loadGlobalSetting(which: string): Promise<any> {
  * @param Message Discord Message Object
  */
 export async function getGuildSettings(
-  message: Message,
+  guild: Guild,
 ): Promise<IGuildSettings | undefined> {
   const guild_settings = await databaseClient<IGuildSettings>(
     GuildSettingsTable,
   )
     .select()
-    .where('guild_id', message.guild.id);
+    .where('guild_id', guild.id);
 
   if (!guild_settings[0]) {
     const insert = await databaseClient<IGuildSettings>(
       GuildSettingsTable,
     ).insert({
-      guild_id: message.guild.id,
+      guild_id: guild.id,
       smokemon_enabled: 0,
     });
 
     if (insert) {
-      logger.info(`Created new guild settings for ${message.guild.name}.`);
+      logger.info(`Created new guild settings for ${guild.name}.`);
 
       const guild_settings = await databaseClient<IGuildSettings>(
         GuildSettingsTable,
       )
         .select()
-        .where('guild_id', message.guild.id);
+        .where('guild_id', guild.id);
       if (guild_settings) {
         return guild_settings[0];
       } else {
@@ -157,16 +157,16 @@ export async function getUser(
  *
  * @param message Discord Message Object
  */
-export async function putGuildSettings(message: Message): Promise<number> {
+export async function putGuildSettings(interaction: Interaction): Promise<number> {
   const insert =
-    message.guild != null
+    interaction.guild != null
       ? await databaseClient<IGuildSettings>(GuildSettingsTable).insert({
-          guild_id: message.guild.id,
+          guild_id: interaction.guild.id,
           smokemon_enabled: 0,
         })
       : [];
 
-  logger.info(`Created new guild settings for ${message.guild.name}.`);
+  logger.info(`Created new guild settings for ${interaction.guild.name}.`);
 
   console.log(insert);
 

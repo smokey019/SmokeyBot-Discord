@@ -116,16 +116,15 @@ function getBotStats(message) {
         cache_1.GLOBAL_COOLDOWN.set(message.guild.id, (0, utils_1.getCurrentTime)());
         const ping = Date.now() - message.createdTimestamp;
         const embed = new discord_js_1.MessageEmbed()
-            .setColor(colors_1.COLOR_BLACK)
-            .setTitle('SmokeyBot Statistics')
-            .addField('Ping', ping + ' ms', true)
-            .addField('Servers in Emote Queue 🔌', (0, utils_1.format_number)(queue_1.EmoteQueue.size), true)
-            .addField('Emote Sync Attempts 🔴', (0, utils_1.format_number)(sync_7tv_emotes_1.Stv_emoji_queue_attempt_count + sync_ffz_emotes_1.FFZ_emoji_queue_attempt_count), true)
-            .addField('Emote Successful Syncs 🟢', (0, utils_1.format_number)(sync_7tv_emotes_1.Stv_emoji_queue_count + sync_ffz_emotes_1.FFZ_emoji_queue_count), true)
+            .setColor(colors_1.COLOR_BLUE)
+            .setTitle('SmokeyBot Statistics 📊')
+            .addField('Ping 🌩️', ping + ' ms', true)
+            .addField('Servers in Emote Queue 🔗', (0, utils_1.format_number)(queue_1.EmoteQueue.size), true)
+            .addField('Emote Synchronizations 🔼', `${(0, utils_1.format_number)(sync_7tv_emotes_1.Stv_emoji_queue_count + sync_ffz_emotes_1.FFZ_emoji_queue_count)} / ${(0, utils_1.format_number)(sync_7tv_emotes_1.Stv_emoji_queue_attempt_count + sync_ffz_emotes_1.FFZ_emoji_queue_attempt_count)}`, true)
             .addField('Total Servers 🖥️', (0, utils_1.format_number)(discord_1.discordClient.guilds.cache.size), true)
-            .addField('Total ' + (0, utils_1.theWord)(), (0, utils_1.format_number)(yield (0, monsters_1.getMonsterDBCount)()), true)
-            .addField('Total Shiny ' + (0, utils_1.theWord)(), (0, utils_1.format_number)(yield (0, monsters_1.getShinyMonsterDBCount)()), true)
-            .addField('Total ' + (0, utils_1.theWord)() + ' Users', (0, utils_1.format_number)(yield (0, database_1.getUserDBCount)()), true)
+            .addField('Total ' + (0, utils_1.theWord)() + ' 🐾', (0, utils_1.format_number)(yield (0, monsters_1.getMonsterDBCount)()), true)
+            .addField('Total Shiny ' + (0, utils_1.theWord)() + ' 🌟', (0, utils_1.format_number)(yield (0, monsters_1.getShinyMonsterDBCount)()), true)
+            .addField('Total ' + (0, utils_1.theWord)() + ' Users 👤', (0, utils_1.format_number)(yield (0, database_1.getUserDBCount)()), true)
             .setTimestamp();
         yield message.reply({ embeds: [embed] });
     });

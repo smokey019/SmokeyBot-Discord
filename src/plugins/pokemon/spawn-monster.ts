@@ -1,4 +1,4 @@
-import { ColorResolvable, Message, MessageEmbed } from 'discord.js';
+import { ColorResolvable, Interaction, MessageEmbed } from 'discord.js';
 import { ICache, loadCache } from '../../clients/cache';
 import {
   databaseClient,
@@ -18,29 +18,27 @@ export const MONSTER_SPAWNS = loadCache('MONSTER_SPAWNS', 500);
 const logger = getLogger('Pokemon-Spawn');
 
 export async function checkSpawn(
-  message: Message,
+  interaction: Interaction,
   cache: ICache,
 ): Promise<void> {
-  let spawn = await MONSTER_SPAWNS.get(message.guild.id);
+  let spawn = await MONSTER_SPAWNS.get(interaction.guild.id);
 
   if (!spawn) {
     spawn = {
       monster: undefined,
       spawned_at: getCurrentTime() - 30,
     };
-    MONSTER_SPAWNS.set(message.guild.id, spawn);
+    MONSTER_SPAWNS.set(interaction.guild.id, spawn);
   } else {
     const spawn_timer = getRndInteger(getRndInteger(15, 120), 300);
     const timestamp = getCurrentTime();
 
     if (
       timestamp - spawn.spawned_at > spawn_timer &&
-      !message.content.match(/catch/i) &&
-      !message.content.match(/spawn/i) &&
       !rateLimited &&
       !initializing
     ) {
-      await spawnMonster(message, cache);
+      await spawnMonster(interaction, cache);
     }
   }
 }
@@ -48,25 +46,25 @@ export async function checkSpawn(
 /**
  * Spawns a random Monster.
  *
- * @param message
+ * @param interaction
  * @param cache
  */
 export async function spawnMonster(
-  message: Message,
+  interaction: Interaction,
   cache: ICache,
 ): Promise<void> {
-  const monsterChannel = message.guild?.channels.cache.find(
+  const monsterChannel = interaction.guild.channels.cache.find(
     (ch) => ch.name === cache.settings.specific_channel,
   );
 
   if (!monsterChannel) {
     const updateGuild = await databaseClient<IGuildSettings>(GuildSettingsTable)
-      .where({ guild_id: message.guild.id })
+      .where({ guild_id: interaction.guild.id })
       .update({ smokemon_enabled: 0 });
 
     if (updateGuild) {
       logger.error(
-        `Disabled smokeMon for server '${message.guild.name}' since no channel to spawn in.`,
+        `Disabled smokeMon for server '${interaction.guild.name}' since no channel to spawn in.`,
       );
     }
   } else {
@@ -76,7 +74,7 @@ export async function spawnMonster(
     };
 
     let boostCount = 0;
-    const boost = await getBoostedWeatherSpawns(message, cache);
+    const boost = await getBoostedWeatherSpawns(interaction, cache);
     let isBoosted = false;
     try {
       while (
@@ -98,10 +96,10 @@ export async function spawnMonster(
         boostCount++;
       }
 
-      MONSTER_SPAWNS.set(message.guild.id, spawn_data);
+      MONSTER_SPAWNS.set(interaction.guild.id, spawn_data);
 
       logger.info(
-        `'${message.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`,
+        `'${interaction.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`,
       );
 
       const embed = new MessageEmbed({
@@ -114,7 +112,7 @@ export async function spawnMonster(
       });
 
       // (monsterChannel as TextChannel).send({ embeds: [embed] });
-      queueMsg(embed, message, false, 1, monsterChannel, true);
+      queueMsg(embed, interaction, false, 1, monsterChannel, true);
     } catch (error) {
       logger.error(error);
       // console.log(spawn_data.monster);
@@ -128,28 +126,22 @@ export async function spawnMonster(
  * @param cache
  */
 export async function forceSpawn(
-  message: Message,
+  interaction: Interaction,
+  monster: number,
   cache: ICache,
 ): Promise<void> {
-  const monsterChannel = message.guild?.channels.cache.find(
+  const monsterChannel = interaction.guild.channels.cache.find(
     (ch) => ch.name === cache.settings.specific_channel,
   );
 
-  const args = message.content
-    .slice(1)
-    .trim()
-    .toLowerCase()
-    .replace(/ {2,}/gm, ' ')
-    .split(/ +/gm);
-
   const spawn_data = {
-    monster: await findMonsterByID(parseFloat(args[1])),
+    monster: await findMonsterByID(monster),
     spawned_at: getCurrentTime(),
   };
   try {
-    if (await MONSTER_SPAWNS.set(message.guild.id, spawn_data)) {
+    if (await MONSTER_SPAWNS.set(interaction.guild.id, spawn_data)) {
       logger.info(
-        `'${message.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`,
+        `'${interaction.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`,
       );
 
       const embed = new MessageEmbed({
@@ -161,7 +153,7 @@ export async function forceSpawn(
         title: 'A wild Pokémon has appeared!',
       });
 
-      queueMsg(embed, message, false, 0, monsterChannel);
+      queueMsg(embed, interaction, false, 0, monsterChannel);
     }
   } catch (error) {
     logger.error(error);

@@ -14,6 +14,7 @@ const discord_js_1 = require("discord.js");
 const cache_1 = require("../../clients/cache");
 const database_1 = require("../../clients/database");
 const logger_1 = require("../../clients/logger");
+const queue_1 = require("../../clients/queue");
 const Monster_1 = require("../../models/Monster");
 const utils_1 = require("../../utils");
 const items_1 = require("./items");
@@ -47,7 +48,7 @@ function checkExpGain(message) {
                         .increment('experience', (0, utils_1.getRndInteger)(50, 620));
                     if (updateExp) {
                         logger.trace(`User ${message.author.username} gained XP in ${message.guild.name}.`);
-                        if (monster.experience >= monster.level * 1250 + 1250) {
+                        if (monster.experience >= monster.level * 1250) {
                             const updateLevel = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
                                 .where({ id: monster.id })
                                 .increment('level', 1);
@@ -104,13 +105,18 @@ function checkExpGain(message) {
                             }
                             else if (monster_dex.evoType == 'maxLevel' &&
                                 monster_dex.name.english == 'Egg' &&
-                                monster.level === 99) {
-                                const allMonsters = (0, monsters_1.getPokedex)();
-                                const new_monster = allMonsters[(0, utils_1.getRndInteger)(0, allMonsters.size - 1)];
+                                monster.level >= 50) {
+                                let new_monster = yield (0, monsters_1.findMonsterByID)((0, monsters_1.getRandomMonster)());
+                                while (new_monster.name.english == "Egg") {
+                                    new_monster = yield (0, monsters_1.findMonsterByID)((0, monsters_1.getRandomMonster)());
+                                }
                                 let isShiny = (0, utils_2.rollShiny)();
                                 // if we're not shiny let's give another chance since hatching an egg
-                                if (!isShiny) {
+                                if (!isShiny && !monster.shiny) {
                                     isShiny = (0, utils_2.rollShiny)();
+                                }
+                                else if (monster.shiny) {
+                                    isShiny = 1;
                                 }
                                 const updateMonster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
                                     .where({ id: monster.id })
@@ -119,6 +125,7 @@ function checkExpGain(message) {
                                     level: 1,
                                     experience: (0, utils_1.getRndInteger)(69, 420),
                                     shiny: isShiny,
+                                    hatched_at: Date.now(),
                                 });
                                 if (updateMonster) {
                                     let imgs = [];
@@ -139,14 +146,10 @@ function checkExpGain(message) {
                                         },
                                         title: `${message.author.username}'s ${monster_dex.name.english} has hatched!`,
                                     });
-                                    yield message.channel
-                                        .send({ embeds: [embed] })
-                                        .then(() => {
-                                        return;
-                                    })
-                                        .catch((err) => {
-                                        logger.error(err);
-                                    });
+                                    (0, queue_1.queueMsg)(embed, message, false, 0, undefined, true);
+                                }
+                                else {
+                                    console.error('there was an error updating the egg>monster');
                                 }
                             }
                         }

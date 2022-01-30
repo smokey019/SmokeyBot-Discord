@@ -269,13 +269,7 @@ function checkFavorites(message) {
         logger.debug(`Fetching Favorite Pokémon for ${message.author.tag} in ${(_a = message.guild) === null || _a === void 0 ? void 0 : _a.name}..`);
         const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
         const sort = [splitMsg[1], splitMsg[2]];
-        const pokemon = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
-            .select()
-            .where({
-            uid: message.author.id,
-            released: 0,
-            favorite: 1,
-        });
+        const pokemon = yield (0, monsters_1.getUsersFavoriteMonsters)(message.author.id);
         if (pokemon.length > 0) {
             let message_contents = [];
             let shiny = '';
@@ -427,7 +421,7 @@ function checkFavorites(message) {
         }
         else {
             message
-                .reply(`You don't have any favorite monsters in your Pokédex. :(`)
+                .reply(`You don't have any favorite monsters in your Pokédex. :( Use \`!favorite ID\` to add one.`)
                 .then(() => {
                 logger.debug(`${message.author.username} doesn't have any favorite Pokémon!`);
                 return;
