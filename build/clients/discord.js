@@ -14,7 +14,6 @@ const discord_js_1 = require("discord.js");
 const commands_1 = require("../plugins/commands");
 const exp_gain_1 = require("../plugins/pokemon/exp-gain");
 const monsters_1 = require("../plugins/pokemon/monsters");
-const parser_1 = require("../plugins/pokemon/parser");
 const spawn_monster_1 = require("../plugins/pokemon/spawn-monster");
 const utils_1 = require("../utils");
 const cache_1 = require("./cache");
@@ -30,7 +29,8 @@ exports.discordClient = new discord_js_1.Client({
         discord_js_1.Intents.FLAGS.GUILDS,
         discord_js_1.Intents.FLAGS.GUILD_MESSAGES,
         discord_js_1.Intents.FLAGS.DIRECT_MESSAGES,
-        discord_js_1.Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
+        discord_js_1.Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS /*
+        Intents.FLAGS.GUILD_PRESENCES*/,
     ],
     shards: 'auto',
 });
@@ -41,6 +41,50 @@ exports.discordClient.on('ready', () => __awaiter(void 0, void 0, void 0, functi
     exports.initializing = false;
     yield (0, top_gg_1.enableAP)();
     yield (0, commands_1.loadCommands)();
+    setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
+        yield (0, commands_1.registerSlashCommands)();
+    }), 15 * 1000);
+}));
+exports.discordClient.on('interactionCreate', (interaction) => __awaiter(void 0, void 0, void 0, function* () {
+    const GCD = yield (0, cache_1.getGCD)(interaction.guild.id);
+    const timestamp = (0, utils_1.getCurrentTime)();
+    const settings = yield (0, database_1.getGuildSettings)(interaction.guild);
+    const cache = yield (0, cache_1.getCache)(interaction.guild, settings);
+    if (cache && settings) {
+        if (cache.settings.smokemon_enabled) {
+            yield (0, exp_gain_1.checkExpGain)(interaction.user, interaction.guild, interaction);
+            yield (0, spawn_monster_1.checkSpawn)(interaction, cache);
+        }
+    }
+    logger.debug('\n', interaction.options);
+    if (!interaction.isCommand())
+        return;
+    if (timestamp - GCD < 2)
+        return;
+    const command = interaction.commandName;
+    const args = [interaction.options.getString('input')];
+    const commandFile = commands_1.commands.find((_r, n) => n.includes(command));
+    if (!commandFile)
+        return;
+    else
+        commandFile({
+            interaction,
+            args,
+            client: exports.discordClient,
+            dev: true,
+            settings: settings,
+            cache: cache,
+        });
+}));
+exports.discordClient.on('messageCreate', (message) => __awaiter(void 0, void 0, void 0, function* () {
+    const settings = yield (0, database_1.getGuildSettings)(message.guild);
+    const cache = yield (0, cache_1.getCache)(message.guild, settings);
+    if (cache && settings) {
+        if (cache.settings.smokemon_enabled) {
+            yield (0, exp_gain_1.checkExpGain)(message.author, message.guild, undefined);
+            yield (0, spawn_monster_1.checkSpawn)(message, cache);
+        }
+    }
 }));
 exports.discordClient.on('rateLimit', (error) => {
     const timeoutStr = error.timeout / 1000;
@@ -61,57 +105,3 @@ exports.discordClient.on('error', (error) => {
 exports.discordClient.on('shardReady', (id) => {
     console.error(`Shard ${id} is ready.`);
 });
-exports.discordClient.on('messageCreate', (message) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield parseMessage(message);
-    }
-    catch (error) {
-        logger.error(error);
-    }
-}));
-function parseMessage(message) {
-    var _a;
-    return __awaiter(this, void 0, void 0, function* () {
-        if (!message.guild ||
-            !message.member ||
-            message.member.user.username == 'smokeybot' ||
-            message.author.bot ||
-            exports.rateLimited)
-            return;
-        const GCD = yield (0, cache_1.getGCD)(message.guild.id);
-        const timestamp = (0, utils_1.getCurrentTime)();
-        const load_prefixes = yield (0, parser_1.getPrefixes)(message.guild.id);
-        const prefixes = RegExp(load_prefixes.join('|'));
-        const detect_prefix = message.content.match(prefixes);
-        const settings = yield (0, database_1.getGuildSettings)(message);
-        const cache = yield (0, cache_1.getCache)(message, settings);
-        if (cache && settings) {
-            if (cache.settings.smokemon_enabled) {
-                yield (0, exp_gain_1.checkExpGain)(message);
-                yield (0, spawn_monster_1.checkSpawn)(message, cache);
-            }
-        }
-        const prefix = detect_prefix === null || detect_prefix === void 0 ? void 0 : detect_prefix.shift();
-        const args = message.content
-            .slice(prefix === null || prefix === void 0 ? void 0 : prefix.length)
-            .trim()
-            .toLowerCase()
-            .replace(/ {2,}/gm, ' ')
-            .split(/ +/);
-        if (args.length < 1 || !detect_prefix || timestamp - GCD < 2)
-            return;
-        const command = (_a = args.shift()) !== null && _a !== void 0 ? _a : undefined;
-        const commandFile = commands_1.commands.find((_r, n) => n.includes(command));
-        if (!commandFile)
-            return;
-        else
-            commandFile({
-                message,
-                args,
-                client: exports.discordClient,
-                dev: true,
-                settings: settings,
-                cache: cache,
-            });
-    });
-}

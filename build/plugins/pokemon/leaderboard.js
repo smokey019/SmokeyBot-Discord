@@ -16,23 +16,11 @@ const database_1 = require("../../clients/database");
 const colors_1 = require("../../colors");
 const Monster_1 = require("../../models/Monster");
 const monsters_1 = require("./monsters");
-const parser_1 = require("./parser");
-const logger = (0, log4js_1.getLogger)('Pokemon-Leaderboard');
-function checkLeaderboard(message) {
+const logger = (0, log4js_1.getLogger)('Pokémon-Leaderboard');
+function checkLeaderboard(interaction, args) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         let search = undefined;
-        const load_prefixes = yield (0, parser_1.getPrefixes)(message.guild.id);
-        const prefixes = RegExp(load_prefixes.join('|'));
-        const detect_prefix = message.content.match(prefixes);
-        const prefix = detect_prefix.shift();
-        const args = message.content
-            .slice(prefix.length)
-            .trim()
-            .toLowerCase()
-            .replace(/ {2,}/gm, ' ')
-            .split(/ +/gm);
-        args.splice(0, 1);
         if (args.includes('iv') && args.includes('high')) {
             args.splice(args.length - 2, 2);
             search = args.join(' ');
@@ -88,18 +76,18 @@ function checkLeaderboard(message) {
                 .setAuthor(`Top 25 Pokémon`)
                 .setColor(colors_1.COLOR_GREEN)
                 .setDescription(new_msg);
-            yield message.channel
+            yield interaction.channel
                 .send({ embeds: [embed] })
-                .then((message) => {
+                .then((interaction) => {
                 var _a;
-                logger.debug(`Sent leaderboard in ${(_a = message.guild) === null || _a === void 0 ? void 0 : _a.name}!`);
+                logger.debug(`Sent leaderboard in ${(_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.name}!`);
             })
                 .catch((error) => {
                 logger.error(error);
             });
         }
         else {
-            message
+            interaction
                 .reply(`There was an error.`)
                 .then(() => {
                 logger.debug(`There was an error getting the leaderboard.`);

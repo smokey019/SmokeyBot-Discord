@@ -26,21 +26,21 @@ let timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
  * Reset and clear a queue.
  * @param queue 'emote' or 'message' queues.
  */
-function resetQueue(queue = 'emote', message) {
+function resetQueue(queue = 'emote', interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (queue) {
             case 'emote':
                 clearTimeout(timerEmoteQ);
                 exports.EmoteQueue.clear();
                 timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
-                yield message.reply('Successfully reset emote queue.');
+                yield interaction.reply('Successfully reset emote queue.');
                 logger.error('Reset emote queue.');
                 break;
             case 'message':
                 clearTimeout(timerMsgQ);
                 exports.EmoteQueue.clear();
                 timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
-                yield message.reply('Successfully reset message queue.');
+                yield interaction.reply('Successfully reset message queue.');
                 logger.error('Reset message queue.');
                 break;
         }
@@ -58,7 +58,9 @@ exports.resetQueue = resetQueue;
  * @returns `TRUE` if added to the queue.
  */
 function queueMsg(outgoingMsg, msg, reply = false, priority = 0, spawn, embed) {
-    if (outgoingMsg.toString().length >= 2000 || !outgoingMsg || outgoingMsg == exports.last_message)
+    if (outgoingMsg.toString().length >= 2000 ||
+        !outgoingMsg ||
+        outgoingMsg == exports.last_message)
         return false;
     switch (priority) {
         // low priority
@@ -98,68 +100,64 @@ exports.queueMsg = queueMsg;
  * Repeating timed function to run the message queue.
  */
 function runMsgQueue() {
-    if (MsgQueue.length > 0 && !discord_1.rateLimited) {
-        const object = MsgQueue.shift();
-        if (!object) {
-            timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
-            return;
-        }
-        else {
-            try {
-                if (!object.reply && !object.spawn && !object.embed) {
-                    object.msg.channel.send(object.outgoingMsg).then(() => {
-                        var _a;
-                        try {
-                            logger.debug(`Sent a message in ${(_a = object.msg.guild) === null || _a === void 0 ? void 0 : _a.name}.`);
-                            exports.last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
-                        }
-                        catch (error) {
-                            logger.error(error);
-                            timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
-                        }
-                    });
-                }
-                else if (!object.reply && object.spawn && object.embed) {
-                    object.spawn.send({ embeds: [object.outgoingMsg] });
-                    exports.last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
-                }
-                else if (!object.reply && !object.spawn && object.embed) {
-                    object.msg.channel.send({ embeds: [object.outgoingMsg] });
-                    exports.last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
-                }
-                else if (!object.reply && object.spawn) {
-                    object.spawn.send(object.outgoingMsg);
-                    exports.last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
-                }
-                else {
-                    object.msg.reply(object.outgoingMsg).then(() => {
-                        var _a;
-                        try {
-                            logger.debug(`Sent a reply to ${object.msg.author.username} in ${(_a = object.msg.guild) === null || _a === void 0 ? void 0 : _a.name}.`);
-                            exports.last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
-                        }
-                        catch (error) {
-                            timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
-                            logger.error(error);
-                        }
-                    });
-                }
+    return __awaiter(this, void 0, void 0, function* () {
+        if (MsgQueue.length > 0 && !discord_1.rateLimited) {
+            const object = MsgQueue.shift();
+            if (!object) {
                 timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
+                return;
             }
-            catch (error) {
-                logger.error(error);
-                timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
+            else {
+                try {
+                    if (!object.reply && !object.spawn && !object.embed) {
+                        object.msg.channel.send(object.outgoingMsg).then(() => {
+                            var _a;
+                            try {
+                                logger.debug(`Sent a message in ${(_a = object.msg.guild) === null || _a === void 0 ? void 0 : _a.name}.`);
+                                exports.last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
+                            }
+                            catch (error) {
+                                logger.error(error);
+                                timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
+                            }
+                        });
+                    }
+                    else if (!object.reply && object.spawn && object.embed) {
+                        object.spawn.send({ embeds: [object.outgoingMsg] });
+                        exports.last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
+                    }
+                    else if (!object.reply && !object.spawn && object.embed) {
+                        object.msg.channel.send({ embeds: [object.outgoingMsg] });
+                        exports.last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
+                    }
+                    else if (object.reply && !object.spawn && object.embed) {
+                        object.msg.reply({ embeds: [object.outgoingMsg] });
+                        exports.last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
+                    }
+                    else if (!object.reply && object.spawn) {
+                        object.spawn.send(object.outgoingMsg);
+                        exports.last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
+                    }
+                    else {
+                        yield object.msg.reply(object.outgoingMsg);
+                    }
+                    timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
+                }
+                catch (error) {
+                    logger.error(error);
+                    timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
+                }
             }
         }
-    }
-    else {
-        if (discord_1.rateLimited) {
-            timerMsgQ = setTimeout(runMsgQueue, 10000);
-        }
         else {
-            timerMsgQ = setTimeout(runMsgQueue, 500);
+            if (discord_1.rateLimited) {
+                timerMsgQ = setTimeout(runMsgQueue, 10000);
+            }
+            else {
+                timerMsgQ = setTimeout(runMsgQueue, 500);
+            }
         }
-    }
+    });
 }
 /**
  * Repeating timed function to run the emote upload queue.
@@ -171,16 +169,16 @@ function runEmoteQueue() {
             const object = exports.EmoteQueue.first();
             if (object && !discord_1.rateLimited) {
                 const emote = (_b = (_a = object.emotes) === null || _a === void 0 ? void 0 : _a.shift()) !== null && _b !== void 0 ? _b : null;
-                const message = object.msg;
-                exports.EmoteQueue.set(message.guild.id, object);
+                exports.EmoteQueue.set(object.msg.guild.id, object);
                 if (emote) {
-                    logger.trace(`Attempting to create emoji '${emote.name}' on ${message.guild.name}.`);
-                    create_emoji(emote.url, message, emote.name);
+                    logger.trace(`Attempting to create emoji '${emote.name}' on ${object.msg.guild.name}.`);
+                    create_emoji(emote.url, object.msg, emote.name);
                     timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
                 }
                 else {
                     const temp = exports.EmoteQueue.first();
                     logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
+                    temp.msg.editReply('Finished uploading emotes. You can sync again whenever you want.');
                     exports.EmoteQueue.delete(exports.EmoteQueue.firstKey());
                     timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
                 }
@@ -202,10 +200,12 @@ function runEmoteQueue() {
  * @param name String
  * @returns true/false
  */
-function create_emoji(emote_url, message, name) {
+function create_emoji(emote_url, interaction, name) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            if (yield message.guild.emojis.create(emote_url, name).then((emoji) => __awaiter(this, void 0, void 0, function* () {
+            if (yield interaction.guild.emojis
+                .create(emote_url, name)
+                .then((emoji) => __awaiter(this, void 0, void 0, function* () {
                 logger.debug(`Created new emoji with name ${emoji.name} in ${emoji.guild.name}.`);
                 return true;
             }))) {
@@ -221,17 +221,17 @@ function create_emoji(emote_url, message, name) {
                 case 'Maximum number of emojis reached (75)':
                 case 'Maximum number of emojis reached (100)':
                 case 'Maximum number of emojis reached (250)':
-                    exports.EmoteQueue.delete(message.guild.id);
-                    logger.info(`Maximum emojis reached for server '${message.guild.name}'.`);
-                    yield message.reply(`you've reached the maximum amount of emotes for the server.`);
+                    exports.EmoteQueue.delete(interaction.guild.id);
+                    logger.info(`Maximum emojis reached for server '${interaction.guild.name}'.`);
+                    queueMsg(`You've reached the maximum amount of emotes for the server.`, interaction, true, 1);
                     return false;
                 case 'Missing Permissions':
-                    exports.EmoteQueue.delete(message.guild.id);
-                    logger.info(`Improper permissions for server '${message.guild.name}'.`);
-                    yield message.reply(`SmokeyBot doesn't have the proper permissions. Make sure SmokeyBot can Manage Emoji in the roles section.`);
+                    exports.EmoteQueue.delete(interaction.guild.id);
+                    logger.info(`Improper permissions for server '${interaction.guild.name}'.`);
+                    queueMsg(`SmokeyBot doesn't have the proper permissions. Make sure SmokeyBot can Manage Emoji in the roles section.`, interaction, true, 1);
                     return false;
                 default:
-                    logger.error(`'${err.message.trim().replace('\n', '')}'`);
+                    logger.error(`'${err.interaction.trim().replace('\n', '')}'`);
                     return false;
             }
         }

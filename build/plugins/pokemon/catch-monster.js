@@ -23,19 +23,16 @@ const info_1 = require("./info");
 const natures_1 = require("./natures");
 const spawn_monster_1 = require("./spawn-monster");
 const utils_2 = require("./utils");
-const logger = (0, logger_1.getLogger)('Pokemon-Catch');
+const logger = (0, logger_1.getLogger)('Pokémon-Catch');
 /**
  * Returns true if the first value matches any of the currently spawned
  * names. Case insensitive.
  *
- * @param messageContent
+ * @param interactionContent
  * @param currentSpawn
  */
-function monsterMatchesPrevious(messageContent, { name }) {
-    const split = (0, utils_1.explode)(messageContent.replace(/ {2,}/gm, ' '), ' ', 2);
-    if (split.length <= 1)
-        return false;
-    const monster = split[1].toLowerCase();
+function monsterMatchesPrevious(interactionContent, { name }) {
+    const monster = interactionContent.toLowerCase();
     return (monster ==
         name.english
             .replace(/(♂|♀| RS| SS|Galarian |Alolan )/gi, '')
@@ -61,18 +58,18 @@ function monsterMatchesPrevious(messageContent, { name }) {
  * Each side of this conditional (match vs no match) should probably be
  * broken out into their own functions. `attemptCapture`, `captureFailed`, `captureSuccess`?
  *
- * @param message
+ * @param interaction
  * @param cache
  */
-function catchMonster(message, cache) {
+function catchMonster(interaction, cache) {
     var _a, _b, _c, _d, _e, _f, _g;
     return __awaiter(this, void 0, void 0, function* () {
         const timestamp = (0, utils_1.getCurrentTime)();
-        const GCD = yield (0, cache_1.getGCD)(message.guild.id);
-        const spawn = yield spawn_monster_1.MONSTER_SPAWNS.get(message.guild.id);
-        if (spawn.monster &&
-            monsterMatchesPrevious(message.content.toLowerCase(), spawn.monster)) {
-            logger.trace(`${(_a = message.guild) === null || _a === void 0 ? void 0 : _a.name} - ${message.author.username} | Starting catch~`);
+        const GCD = yield (0, cache_1.getGCD)(interaction.guild.id);
+        const spawn = yield spawn_monster_1.MONSTER_SPAWNS.get(interaction.guild.id);
+        const attempt = interaction.options.getString('pokemon');
+        if (spawn.monster && monsterMatchesPrevious(attempt, spawn.monster)) {
+            logger.trace(`${(_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.name} - ${interaction.user.username} | Starting catch~`);
             let level = 0;
             const shiny = (0, utils_2.rollShiny)();
             let gender = (0, utils_2.rollGender)();
@@ -91,7 +88,7 @@ function catchMonster(message, cache) {
                 gender = 'N';
             }
             spawn.monster = null;
-            yield spawn_monster_1.MONSTER_SPAWNS.set(message.guild.id, spawn);
+            spawn_monster_1.MONSTER_SPAWNS.set(interaction.guild.id, spawn);
             const monster = {
                 monster_id: currentSpawn.id,
                 hp: (0, utils_1.getRndInteger)(1, 31),
@@ -103,8 +100,8 @@ function catchMonster(message, cache) {
                 nature: (0, natures_1.getRandomNature)(),
                 experience: level * 1250,
                 level: level,
-                uid: message.author.id,
-                original_uid: message.author.id,
+                uid: interaction.user.id,
+                original_uid: interaction.user.id,
                 shiny: shiny,
                 captured_at: Date.now(),
                 gender: gender,
@@ -137,22 +134,22 @@ function catchMonster(message, cache) {
                 100).toFixed(2);
             monster.avg_iv = parseFloat(averageIV);
             try {
-                const dex = yield (0, info_1.userDex)(message);
+                const dex = yield (0, info_1.userDex)(interaction.user.id);
                 const insertMonster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable).insert(monster);
                 const updateUser = yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable)
-                    .where({ uid: message.author.id })
+                    .where({ uid: interaction.user.id })
                     .update({ latest_monster: insertMonster[0] })
                     .increment('currency', 10)
                     .increment('streak', 1);
                 if (!updateUser) {
-                    logger.debug(`${(_b = message.guild) === null || _b === void 0 ? void 0 : _b.name} - ${message.author.username} | Couldn't update user, insert to user DB~`);
+                    logger.debug(`${(_b = interaction.guild) === null || _b === void 0 ? void 0 : _b.name} - ${interaction.user.username} | Couldn't update user, insert to user DB~`);
                     yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable).insert({
                         current_monster: insertMonster[0],
                         latest_monster: insertMonster[0],
-                        uid: message.author.id,
+                        uid: interaction.user.id,
                         dex: '[]',
                     });
-                    logger.debug(`Successfully inserted user ${message.author.username}`);
+                    logger.debug(`Successfully inserted user ${interaction.user.username}`);
                 }
                 if (insertMonster) {
                     const random_grats = ['YOINK', 'YOINKERS', 'NICE', 'NOICE', 'Congrats'];
@@ -164,7 +161,8 @@ function catchMonster(message, cache) {
                         shiny_msg = ' ⭐';
                     }
                     if (currentSpawn.name.english == 'Egg') {
-                        egg_info = '\n\nEggs have a random chance of hatching into anything, with an increased chance at being shiny by selecting and leveling it to 50!';
+                        egg_info =
+                            '\n\nEggs have a random chance of hatching into anything, with an increased chance at being shiny by selecting and leveling it to 50!';
                     }
                     if (currentSpawn.special) {
                         legendary = ` 💠`;
@@ -172,32 +170,32 @@ function catchMonster(message, cache) {
                     currentSpawn.id = parseFloat(currentSpawn.id.toString());
                     if (shiny == 1 && !dex.includes(currentSpawn.id)) {
                         response = `_**POGGERS**_! You caught a __***SHINY***__ level **${level} ${currentSpawn.name.english}**${shiny_msg + legendary}! \n\n Avg IV: **${averageIV}**% \nID: **${insertMonster[0]}** \n\nAdded to Pokédex.$`;
-                        logger.error(`'${(_c = message.guild) === null || _c === void 0 ? void 0 : _c.name}' - '${message.author.username}' CAUGHT A SHINY POKéMON~'`);
+                        logger.error(`'${(_c = interaction.guild) === null || _c === void 0 ? void 0 : _c.name}' - '${interaction.user.username}' CAUGHT A SHINY POKéMON~'`);
                         yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable)
-                            .where({ uid: message.author.id })
+                            .where({ uid: interaction.user.id })
                             .increment('currency', 1000);
                     }
                     else if (shiny == 0 && !dex.includes(currentSpawn.id)) {
                         response = `**${random_grats[(0, utils_1.getRndInteger)(0, random_grats.length - 1)]}**! You caught a level **${level} ${currentSpawn.name.english}**${shiny_msg + legendary}! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}** - Added to Pokédex.`;
-                        logger.info(`'${(_d = message.guild) === null || _d === void 0 ? void 0 : _d.name}' - '${message.author.username}' CAUGHT A POKéMON~`);
+                        logger.info(`'${(_d = interaction.guild) === null || _d === void 0 ? void 0 : _d.name}' - '${interaction.user.username}' CAUGHT A POKéMON~`);
                         yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable)
-                            .where({ uid: message.author.id })
+                            .where({ uid: interaction.user.id })
                             .increment('currency', 100);
                     }
                     else if (shiny == 0 && dex.includes(currentSpawn.id)) {
                         response = `**${random_grats[(0, utils_1.getRndInteger)(0, random_grats.length - 1)]}**! You caught a level **${level} ${currentSpawn.name.english}**${shiny_msg + legendary}! Avg IV: **${averageIV}**% - ID: **${insertMonster[0]}**.`;
-                        logger.info(`'${(_e = message.guild) === null || _e === void 0 ? void 0 : _e.name}' - '${message.author.username}' CAUGHT A POKéMON~`);
+                        logger.info(`'${(_e = interaction.guild) === null || _e === void 0 ? void 0 : _e.name}' - '${interaction.user.username}' CAUGHT A POKéMON~`);
                     }
                     else if (shiny == 1 && dex.includes(currentSpawn.id)) {
                         response = `_**POGGERS**_! You caught a __***SHINY***__ level **${level} ${currentSpawn.name.english}${shiny_msg + legendary}**! \n\n Avg IV: **${averageIV}**% \nID: **${insertMonster[0]}**.`;
-                        logger.error(`'${(_f = message.guild) === null || _f === void 0 ? void 0 : _f.name}' - '${message.author.username}' CAUGHT A SHINY POKéMON~`);
+                        logger.error(`'${(_f = interaction.guild) === null || _f === void 0 ? void 0 : _f.name}' - '${interaction.user.username}' CAUGHT A SHINY POKéMON~`);
                     }
                     response = response + egg_info;
-                    const user = yield (0, database_1.getUser)(message.author.id);
+                    const user = yield (0, database_1.getUser)(interaction.user.id);
                     if (user) {
                         if (user.streak == 10) {
                             yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable)
-                                .where({ uid: message.author.id })
+                                .where({ uid: interaction.user.id })
                                 .update({ streak: 0 })
                                 .increment('currency', 250);
                         }
@@ -209,11 +207,11 @@ function catchMonster(message, cache) {
                             .setDescription(response)
                             .setImage(currentSpawn.images.shiny)
                             .setTimestamp();
-                        const monsterChannel = (_g = message.guild) === null || _g === void 0 ? void 0 : _g.channels.cache.find((ch) => ch.name === cache.settings.specific_channel);
-                        (0, queue_1.queueMsg)(embed, message, false, 1, monsterChannel, true);
+                        const monsterChannel = (_g = interaction.guild) === null || _g === void 0 ? void 0 : _g.channels.cache.find((ch) => ch.name === cache.settings.specific_channel);
+                        (0, queue_1.queueMsg)(embed, interaction, false, 1, monsterChannel, true);
                     }
                     else {
-                        (0, queue_1.queueMsg)(response, message, true, 1);
+                        (0, queue_1.queueMsg)(response, interaction, true, 1);
                     }
                 }
             }
@@ -222,9 +220,9 @@ function catchMonster(message, cache) {
             }
         }
         else if (timestamp - (GCD || 0) > 5) {
-            cache_1.GLOBAL_COOLDOWN.set(message.guild.id, (0, utils_1.getCurrentTime)());
-            (0, queue_1.queueMsg)(`That is the wrong Pokémon!`, message, true, 1);
-            logger.trace(`${message.author.username} is WRONG!`);
+            cache_1.GLOBAL_COOLDOWN.set(interaction.guild.id, (0, utils_1.getCurrentTime)());
+            (0, queue_1.queueMsg)(`That is the wrong Pokémon!`, interaction, true, 1);
+            logger.trace(`${interaction.user.username} is WRONG!`);
         }
     });
 }

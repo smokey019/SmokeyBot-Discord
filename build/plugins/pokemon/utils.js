@@ -22,26 +22,15 @@ const utils_1 = require("../../utils");
 const sync_7tv_emotes_1 = require("../smokeybot/emote-sync/sync-7tv-emotes");
 const sync_ffz_emotes_1 = require("../smokeybot/emote-sync/sync-ffz-emotes");
 const monsters_1 = require("./monsters");
-const parser_1 = require("./parser");
 const weather_1 = require("./weather");
 // const SHINY_ODDS_RETAIL = parseInt(getConfigValue('SHINY_ODDS_RETAIL'));
 // const SHINY_ODDS_COMMUNITY = parseInt(getConfigValue('SHINY_ODDS_COMMUNITY'));
-function parseArgs(message) {
+function parseArgs(args) {
     return __awaiter(this, void 0, void 0, function* () {
-        const isQuote = message.content.match('"');
+        const isQuote = false;
         const sort = ['id', 'high'];
         let search = undefined;
         let page = 0;
-        const load_prefixes = yield (0, parser_1.getPrefixes)(message.guild.id);
-        const prefixes = RegExp(load_prefixes.join('|'));
-        const detect_prefix = message.content.match(prefixes);
-        const prefix = detect_prefix.shift();
-        const args = message.content
-            .slice(prefix.length)
-            .trim()
-            .toLowerCase()
-            .replace(/ {2,}/gm, ' ')
-            .split(/ +/gm);
         if (!isNaN(parseInt(args[args.length - 1]))) {
             page = parseInt(args[args.length - 1]);
             args.splice(args.length - 1, 1);
@@ -91,30 +80,30 @@ function rollPerfectIV() {
     return (0, utils_1.getRndInteger)(1, 45) >= 45 ? 1 : 0;
 }
 exports.rollPerfectIV = rollPerfectIV;
-function voteCommand(message) {
+function voteCommand(interaction) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        const voted = (_a = (yield top_gg_1.dblCache.get(message.author.id))) !== null && _a !== void 0 ? _a : { voted: false };
+        const voted = (_a = (yield top_gg_1.dblCache.get(interaction.user.id))) !== null && _a !== void 0 ? _a : { voted: false };
         if (!voted.voted) {
-            yield message.reply(`You haven't voted yet -- vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`);
+            (0, queue_1.queueMsg)(`You haven't voted yet -- vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`, interaction, true);
         }
         else {
-            yield message.reply(`You've already voted, but maybe others want to vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`);
+            (0, queue_1.queueMsg)(`You've already voted, but maybe others want to vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`, interaction, true);
         }
     });
 }
 exports.voteCommand = voteCommand;
-function checkServerWeather(message, cache) {
+function checkServerWeather(interaction, cache) {
     return __awaiter(this, void 0, void 0, function* () {
-        const boost = yield (0, weather_1.getBoostedWeatherSpawns)(message, cache);
-        yield message.reply(`The current weather is **${boost.weather}**.  You will find increased spawns of **${boost.boosts.join(' / ')}** on this server.`);
+        const boost = yield (0, weather_1.getBoostedWeatherSpawns)(interaction, cache);
+        (0, queue_1.queueMsg)(`The current weather is **${boost.weather}**.  You will find increased spawns of **${boost.boosts.join(' / ')}** on this server.`, interaction, true);
     });
 }
 exports.checkServerWeather = checkServerWeather;
-function getBotStats(message) {
+function getBotStats(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        cache_1.GLOBAL_COOLDOWN.set(message.guild.id, (0, utils_1.getCurrentTime)());
-        const ping = Date.now() - message.createdTimestamp;
+        cache_1.GLOBAL_COOLDOWN.set(interaction.guild.id, (0, utils_1.getCurrentTime)());
+        const ping = Date.now() - interaction.createdTimestamp;
         const embed = new discord_js_1.MessageEmbed()
             .setColor(colors_1.COLOR_BLUE)
             .setTitle('SmokeyBot Statistics 📊')
@@ -126,7 +115,7 @@ function getBotStats(message) {
             .addField('Total Shiny ' + (0, utils_1.theWord)() + ' 🌟', (0, utils_1.format_number)(yield (0, monsters_1.getShinyMonsterDBCount)()), true)
             .addField('Total ' + (0, utils_1.theWord)() + ' Users 👤', (0, utils_1.format_number)(yield (0, database_1.getUserDBCount)()), true)
             .setTimestamp();
-        yield message.reply({ embeds: [embed] });
+        yield interaction.reply({ embeds: [embed] });
     });
 }
 exports.getBotStats = getBotStats;

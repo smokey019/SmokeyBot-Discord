@@ -21,10 +21,10 @@ const items_1 = require("./items");
 const monsters_1 = require("./monsters");
 const utils_2 = require("./utils");
 const logger = (0, logger_1.getLogger)('ExpGain');
-function checkExpGain(message) {
+function checkExpGain(user, guild, interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         const timestamp = (0, utils_1.getCurrentTime)();
-        const cacheKey = message.author.id + ':' + message.guild.id;
+        const cacheKey = user.id + ':' + guild.id;
         const cache = yield cache_1.xp_cache.get(cacheKey);
         if (cache == undefined) {
             cache_1.xp_cache.set(cacheKey, (0, utils_1.getCurrentTime)());
@@ -33,28 +33,28 @@ function checkExpGain(message) {
         else {
             const should_we_exp = (0, utils_1.getRndInteger)(5, 300);
             if (timestamp - parseInt(cache) > should_we_exp) {
-                const user = yield (0, database_1.getUser)(message.author.id);
-                if (!user)
+                const tmpUser = yield (0, database_1.getUser)(user.id);
+                if (!tmpUser)
                     return;
-                if (user.current_monster) {
-                    const monster = yield (0, monsters_1.getUserMonster)(user.current_monster);
+                if (tmpUser.current_monster) {
+                    const monster = yield (0, monsters_1.getUserMonster)(tmpUser.current_monster);
                     const monster_dex = yield (0, monsters_1.findMonsterByID)(monster.monster_id);
                     const held_item = yield (0, items_1.getItemDB)(monster.held_item);
                     cache_1.xp_cache.set(cacheKey, (0, utils_1.getCurrentTime)());
                     if (!monster || monster.level >= 100)
                         return;
                     const updateExp = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
-                        .where({ id: user.current_monster })
+                        .where({ id: tmpUser.current_monster })
                         .increment('experience', (0, utils_1.getRndInteger)(50, 620));
                     if (updateExp) {
-                        logger.trace(`User ${message.author.username} gained XP in ${message.guild.name}.`);
+                        logger.trace(`User ${user.username} gained XP in ${guild.name}.`);
                         if (monster.experience >= monster.level * 1250) {
                             const updateLevel = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
                                 .where({ id: monster.id })
                                 .increment('level', 1);
                             monster.level++;
                             if (updateLevel) {
-                                logger.trace(`User ${message.author.username}'s Monster ${monster.id} - ${monster_dex.name.english} has leveled up to ${monster.level}!`);
+                                logger.trace(`User ${user.username}'s Monster ${monster.id} - ${monster_dex.name.english} has leveled up to ${monster.level}!`);
                             }
                             if (monster_dex.evos && (held_item === null || held_item === void 0 ? void 0 : held_item.item_number) != 229) {
                                 const allMonsters = (0, monsters_1.getPokedex)();
@@ -89,16 +89,11 @@ function checkExpGain(message) {
                                                 thumbnail: {
                                                     url: imgs[1],
                                                 },
-                                                title: `${message.author.username}'s ${monster_dex.name.english} is evolving!`,
+                                                title: `${user.username}'s ${monster_dex.name.english} is evolving!`,
                                             });
-                                            yield message.channel
-                                                .send({ embeds: [embed] })
-                                                .then(() => {
-                                                return;
-                                            })
-                                                .catch((err) => {
-                                                logger.error(err);
-                                            });
+                                            if (interaction) {
+                                                (0, queue_1.queueMsg)(embed, interaction, false, 0, undefined, true);
+                                            }
                                         }
                                     }
                                 }
@@ -122,7 +117,7 @@ function checkExpGain(message) {
                                     .where({ id: monster.id })
                                     .update({
                                     monster_id: new_monster.id,
-                                    level: 1,
+                                    level: (0, utils_1.getRndInteger)(1, 5),
                                     experience: (0, utils_1.getRndInteger)(69, 420),
                                     shiny: isShiny,
                                     hatched_at: Date.now(),
@@ -144,9 +139,11 @@ function checkExpGain(message) {
                                         thumbnail: {
                                             url: imgs[1],
                                         },
-                                        title: `${message.author.username}'s ${monster_dex.name.english} has hatched!`,
+                                        title: `${user.username}'s ${monster_dex.name.english} has hatched!`,
                                     });
-                                    (0, queue_1.queueMsg)(embed, message, false, 0, undefined, true);
+                                    if (interaction) {
+                                        (0, queue_1.queueMsg)(embed, interaction, false, 0, undefined, true);
+                                    }
                                 }
                                 else {
                                     console.error('there was an error updating the egg>monster');

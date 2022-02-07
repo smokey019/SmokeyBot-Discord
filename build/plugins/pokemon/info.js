@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userDex = exports.monsterCount = exports.monsterDex = exports.currentMonsterInfo = exports.monsterInfo = exports.currentMonsterInfoBETA = exports.monsterInfoLatest = exports.monsterEmbed = exports.checkUniqueMonsters = void 0;
+exports.userDex = exports.monsterCount = exports.monsterDex = exports.currentMonsterInfo = exports.monsterInfo = exports.monsterInfoLatest = exports.monsterEmbed = exports.checkUniqueMonsters = void 0;
 const discord_js_1 = require("discord.js");
 const database_1 = require("../../clients/database");
 const logger_1 = require("../../clients/logger");
@@ -21,14 +21,14 @@ const utils_1 = require("../../utils");
 const monsters_1 = require("./monsters");
 const utils_2 = require("./utils");
 const logger = (0, logger_1.getLogger)('Info');
-function checkUniqueMonsters(message) {
+function checkUniqueMonsters(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const tempdex = yield userDex(message);
-        yield message.reply(`You have ${tempdex.length}/${monsters_1.MonsterDex.size} total unique Pokémon in your Pokédex.`);
+        const tempdex = yield userDex(interaction.user.id);
+        (0, queue_1.queueMsg)(`You have ${tempdex.length}/${monsters_1.MonsterDex.size} total unique Pokémon in your Pokédex.`, interaction, false, 0, undefined);
     });
 }
 exports.checkUniqueMonsters = checkUniqueMonsters;
-function monsterEmbed(monster_db, message) {
+function monsterEmbed(monster_db, interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!monster_db) {
             return;
@@ -183,7 +183,7 @@ function monsterEmbed(monster_db, message) {
                 month: 'long',
                 day: 'numeric',
                 hour: 'numeric',
-                minute: 'numeric'
+                minute: 'numeric',
             });
             embedFields.push({
                 name: '**Hatched On**',
@@ -199,8 +199,7 @@ function monsterEmbed(monster_db, message) {
             .setDescription(released)
             .addFields(embedFields);
         try {
-            (0, queue_1.queueMsg)(embed, message, false, 0, undefined, true);
-            //await message.channel.send({ embeds: [embed] });
+            (0, queue_1.queueMsg)(embed, interaction, true, 0, undefined, true);
         }
         catch (error) {
             logger.error(error);
@@ -210,13 +209,13 @@ function monsterEmbed(monster_db, message) {
 exports.monsterEmbed = monsterEmbed;
 /**
  * Get latest Monster caught's information.
- * @param message
+ * @param interaction
  */
-function monsterInfoLatest(message) {
+function monsterInfoLatest(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         const user = yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable)
             .select()
-            .where('uid', message.author.id);
+            .where('uid', interaction.user.id);
         if (user) {
             if (user[0].latest_monster) {
                 const tmpMonster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
@@ -224,7 +223,7 @@ function monsterInfoLatest(message) {
                     .where('id', user[0].latest_monster);
                 if (!tmpMonster)
                     return;
-                monsterEmbed(tmpMonster[0], message);
+                monsterEmbed(tmpMonster[0], interaction);
             }
         }
     });
@@ -234,34 +233,15 @@ exports.monsterInfoLatest = monsterInfoLatest;
  * Get a specific Monster's information.
  * @param id
  */
-function currentMonsterInfoBETA(message) {
+function monsterInfo(interaction, monster_id) {
     return __awaiter(this, void 0, void 0, function* () {
-        const user = yield (0, database_1.getUser)(message.author.id);
-        if (!user)
-            return;
-        const tmpMonster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
-            .select()
-            .where('id', user.current_monster);
-        if (!tmpMonster)
-            return;
-        yield monsterEmbed(tmpMonster[0], message);
-    });
-}
-exports.currentMonsterInfoBETA = currentMonsterInfoBETA;
-/**
- * Get a specific Monster's information.
- * @param id
- */
-function monsterInfo(message) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const tmpSplit = message.content.split(' ');
-        if (tmpSplit.length == 2) {
+        if (monster_id) {
             const tmpMonster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
                 .select()
-                .where('id', tmpSplit[1]);
+                .where('id', monster_id);
             if (!tmpMonster)
                 return;
-            monsterEmbed(tmpMonster[0], message);
+            monsterEmbed(tmpMonster[0], interaction);
         }
     });
 }
@@ -270,9 +250,9 @@ exports.monsterInfo = monsterInfo;
  * Get current Monster's information.
  * @param id
  */
-function currentMonsterInfo(message) {
+function currentMonsterInfo(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const user = yield (0, database_1.getUser)(message.author.id);
+        const user = yield (0, database_1.getUser)(interaction.user.id);
         if (!user)
             return;
         const tmpMonster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
@@ -280,28 +260,24 @@ function currentMonsterInfo(message) {
             .where('id', user.current_monster);
         if (!tmpMonster)
             return;
-        monsterEmbed(tmpMonster[0], message);
+        monsterEmbed(tmpMonster[0], interaction);
     });
 }
 exports.currentMonsterInfo = currentMonsterInfo;
 /**
  * Get a specific Monster's information.
- * @param message
+ * @param interaction
  */
-function monsterDex(message) {
-    var _a, _b, _c, _d;
+function monsterDex(interaction) {
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
-        const tmpSplit = message.content.split(' ');
+        const searchShiny = interaction.options.getString('pokemon').match(/shiny/i);
+        let tmp = interaction.options.getString('pokemon');
         let tempMonster = undefined;
-        /**
-         * TODO: this breaks with names with too many spaces: '~dex mega mewtwo y --shiny'
-         */
-        if (tmpSplit.length >= 3 && !tmpSplit[2].match(/shiny/i)) {
-            tempMonster = (0, monsters_1.findMonsterByName)(tmpSplit[1].toLowerCase() + ' ' + tmpSplit[2].toLowerCase());
+        if (searchShiny) {
+            tmp = tmp.replace(/shiny/i, '');
         }
-        else {
-            tempMonster = (0, monsters_1.findMonsterByName)((_a = tmpSplit[1]) === null || _a === void 0 ? void 0 : _a.toLowerCase());
-        }
+        tempMonster = (0, monsters_1.findMonsterByName)(tmp.toLowerCase());
         if (tempMonster) {
             const monster_types = tempMonster.type.join(' | ');
             const tmpID = `${tempMonster.id}`.padStart(3, '0');
@@ -315,10 +291,10 @@ function monsterDex(message) {
             };
             let thumbnail = ``;
             let image = ``;
-            const count = (0, utils_1.format_number)(yield monsterCount(tempMonster.id, message.author.id));
+            const count = (0, utils_1.format_number)(yield monsterCount(tempMonster.id, interaction.user.id));
             if (tempMonster.region || tempMonster.forme) {
                 // shiny
-                if (tmpSplit[tmpSplit.length - 1].match(/shiny/i)) {
+                if (searchShiny) {
                     thumbnail = tempMonster.images['gif-shiny'];
                     image = tempMonster.images.shiny;
                 }
@@ -330,7 +306,7 @@ function monsterDex(message) {
             }
             else {
                 // shiny
-                if (tmpSplit[tmpSplit.length - 1].match(/shiny/i)) {
+                if (searchShiny) {
                     thumbnail = tempMonster.images['gif-shiny'];
                     image = tempMonster.images.shiny;
                 }
@@ -344,8 +320,8 @@ function monsterDex(message) {
             if (tempMonster.special) {
                 legendary = ` 💠`;
             }
-            const evolve = (_c = (_b = tempMonster.evos) === null || _b === void 0 ? void 0 : _b.join(' | ')) !== null && _c !== void 0 ? _c : 'None';
-            const prevolve = (_d = tempMonster.prevo) !== null && _d !== void 0 ? _d : 'None';
+            const evolve = (_b = (_a = tempMonster.evos) === null || _a === void 0 ? void 0 : _a.join(' | ')) !== null && _b !== void 0 ? _b : 'None';
+            const prevolve = (_c = tempMonster.prevo) !== null && _c !== void 0 ? _c : 'None';
             let evo_item = '';
             if (tempMonster.evos) {
                 const tmpEvo = (0, monsters_1.findMonsterByName)(tempMonster.evos[0]);
@@ -373,14 +349,7 @@ function monsterDex(message) {
 
 	**Prevolve**: ${prevolve}
     **Evolve**: ${evolve + evo_item}`);
-            yield message.channel
-                .send({ embeds: [embed] })
-                .then((message) => {
-                return message;
-            })
-                .catch((err) => {
-                logger.error(err);
-            });
+            (0, queue_1.queueMsg)(embed, interaction, true, 0, undefined, true);
         }
     });
 }
@@ -397,13 +366,13 @@ function monsterCount(id, uid) {
     });
 }
 exports.monsterCount = monsterCount;
-function userDex(message) {
+function userDex(user) {
     return __awaiter(this, void 0, void 0, function* () {
         const dex = [];
         const pokemon = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
             .select('monster_id')
             .where({
-            uid: message.author.id,
+            uid: user,
         });
         if (pokemon.length > 0) {
             pokemon.forEach((element) => {

@@ -17,16 +17,16 @@ const cache_1 = require("../../clients/cache");
 const utils_1 = require("../../utils");
 const weather_json_1 = __importDefault(require("./data/weather.json"));
 const WEATHER_CACHE = (0, cache_1.loadCache)('weather', 100);
-function getBoostedWeatherSpawns(message, cache) {
+function getBoostedWeatherSpawns(interaction, cache) {
     return __awaiter(this, void 0, void 0, function* () {
-        const boost = yield WEATHER_CACHE.get(message.guild.id);
+        const boost = yield WEATHER_CACHE.get(interaction.guild.id);
         if (!boost) {
-            const weather = yield change_weather(message, cache);
+            const weather = yield change_weather(interaction, cache);
             return weather;
         }
         else {
             if (Date.now() - boost.time > 60 * 1000 * (0, utils_1.getRndInteger)(5, 15)) {
-                const weather = yield change_weather(message, cache);
+                const weather = yield change_weather(interaction, cache);
                 return weather;
             }
             else {
@@ -36,15 +36,15 @@ function getBoostedWeatherSpawns(message, cache) {
     });
 }
 exports.getBoostedWeatherSpawns = getBoostedWeatherSpawns;
-function change_weather(message, cache) {
+function change_weather(interaction, cache) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const boost = {
             weather: weather_json_1.default[(0, utils_1.getRndInteger)(0, weather_json_1.default.length - 1)],
             time: Date.now(),
         };
-        WEATHER_CACHE.set(message.guild.id, boost);
-        const monsterChannel = (_a = message.guild) === null || _a === void 0 ? void 0 : _a.channels.cache.find((ch) => ch.name === cache.settings.specific_channel);
+        WEATHER_CACHE.set(interaction.guild.id, boost);
+        const monsterChannel = (_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.channels.cache.find((ch) => ch.name === cache.settings.specific_channel);
         monsterChannel.send(`The weather has changed!  It is now **${boost.weather.weather}**.  You will find increased spawns of **${boost.weather.boosts.join(' / ')}** on this server.`);
         return boost.weather;
     });

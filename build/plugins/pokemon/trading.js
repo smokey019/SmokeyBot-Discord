@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkTrade = exports.cancelTrade = exports.confirmTrade = exports.checkEvolves = exports.parseTrade = exports.startTrade = void 0;
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const discord_js_1 = require("discord.js");
 const database_1 = require("../../clients/database");
 const logger_1 = require("../../clients/logger");
@@ -21,23 +22,22 @@ const Trades_1 = require("../../models/Trades");
 const utils_1 = require("../../utils");
 const items_1 = require("./items");
 const monsters_1 = require("./monsters");
-const logger = (0, logger_1.getLogger)('Pokemon-Trade');
-function startTrade(message) {
+const logger = (0, logger_1.getLogger)('Pokémon-Trade');
+function startTrade(interaction, args) {
     return __awaiter(this, void 0, void 0, function* () {
         // ~trade start @mention id-for-monster
-        const split = message.content.split(' ');
-        const traded_monster = parseInt(split[3]);
-        const mentions = message.mentions.users;
-        if (mentions.first()) {
-            const to_user = mentions.first().id;
-            if (to_user == message.author.id)
+        const split = args;
+        const traded_monster = parseInt(split[2]);
+        const to_user = interaction.options.getMentionable('player');
+        if (to_user) {
+            if (to_user == interaction.user.id)
                 return;
             const recipient = yield (0, database_1.getUser)(to_user);
-            const check_trade = yield checkTrade(traded_monster, to_user, message);
+            const check_trade = yield checkTrade(traded_monster, to_user, interaction);
             if (recipient && !check_trade) {
                 const insertTrade = yield (0, database_1.databaseClient)(Trades_1.TradeTable).insert({
                     monster_id: traded_monster,
-                    uid_from: message.author.id,
+                    uid_from: interaction.user.id,
                     uid_to: to_user,
                     active: 1,
                     traded: 0,
@@ -74,7 +74,7 @@ function startTrade(message) {
                         },
                         title: `Trading ${monster.name.english}..`,
                     });
-                    yield message.channel
+                    yield interaction.channel
                         .send({ embeds: [embed] })
                         .then(() => {
                         return;
@@ -88,41 +88,41 @@ function startTrade(message) {
                 }
             }
             else if (!recipient) {
-                message.reply(`Could not find user <@${to_user}>, make them catch a Pokémon first!`);
+                interaction.reply(`Could not find user <@${to_user}>, make them catch a Pokémon first!`);
             }
             else if (check_trade) {
-                message.reply(`A trade with this Pokémon or user exists already. Close that one and try again.`);
+                interaction.reply(`A trade with this Pokémon or user exists already. Close that one and try again.`);
             }
         }
         else {
-            message.reply(`You need to mention someone m8.`);
+            interaction.reply(`You need to mention someone m8.`);
         }
     });
 }
 exports.startTrade = startTrade;
-function parseTrade(message) {
+function parseTrade(interaction, args) {
     return __awaiter(this, void 0, void 0, function* () {
         // ~trade start @mention id-for-monster
-        const split = message.content.split(' ');
-        if (split[1] == 'start') {
-            yield startTrade(message);
+        const command = interaction.commandName;
+        if (command == 'start') {
+            yield startTrade(interaction, args);
         }
-        else if (split[1] == 'cancel' ||
-            split[1] == 'delete' ||
-            split[1] == 'del' ||
-            split[1] == '-') {
-            yield cancelTrade(message);
+        else if (command == 'cancel' ||
+            command == 'delete' ||
+            command == 'del' ||
+            command == '-') {
+            yield cancelTrade(interaction);
         }
-        else if (split[1] == 'accept' ||
-            split[1] == 'confirm' ||
-            split[1] == 'acc' ||
-            split[1] == '+') {
-            yield confirmTrade(message);
+        else if (command == 'accept' ||
+            command == 'confirm' ||
+            command == 'acc' ||
+            command == '+') {
+            yield confirmTrade(interaction);
         }
     });
 }
 exports.parseTrade = parseTrade;
-function checkEvolves(monster_id, message) {
+function checkEvolves(monster_id, interaction) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const db_monster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
@@ -162,16 +162,16 @@ function checkEvolves(monster_id, message) {
                                     thumbnail: {
                                         url: imgs[1],
                                     },
-                                    title: `${message.author.username}'s ${monster.name.english} is evolving!`,
+                                    title: `${interaction.user.username}'s ${monster.name.english} is evolving!`,
                                 });
-                                (0, queue_1.queueMsg)(embed, message);
+                                (0, queue_1.queueMsg)(embed, interaction);
                             }
                             else {
                                 return false;
                             }
                         }
                         else if (evolution.evoType == 'trade' && evolution.evoItem) {
-                            (0, items_1.checkItemEvolution)(db_monster[0], message, true);
+                            (0, items_1.checkItemEvolution)(db_monster[0], interaction, true);
                         }
                         else {
                             return false;
@@ -195,30 +195,28 @@ function checkEvolves(monster_id, message) {
     });
 }
 exports.checkEvolves = checkEvolves;
-function confirmTrade(message) {
+function confirmTrade(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         // ~trade accept
-        const trades = yield (0, database_1.databaseClient)(Trades_1.TradeTable)
-            .select()
-            .where({
-            uid_to: message.author.id,
+        const trades = yield (0, database_1.databaseClient)(Trades_1.TradeTable).select().where({
+            uid_to: interaction.user.id,
             active: 1,
         });
         if (trades.length) {
             const trade = trades[0];
             const updateMonster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
                 .where({ id: trade.monster_id })
-                .update({ uid: message.author.id, favorite: 0 });
+                .update({ uid: interaction.user.id, favorite: 0 });
             if (updateMonster) {
                 const monsterDB = yield (0, monsters_1.getUserMonster)(trade.monster_id);
                 const monster = yield (0, monsters_1.findMonsterByID)(monsterDB.monster_id);
-                message.reply(`Successfully traded over monster **${monster.name.english}**! Nice dude.`);
-                yield checkEvolves(trade.monster_id, message);
+                interaction.reply(`Successfully traded over monster **${monster.name.english}**! Nice dude.`);
+                yield checkEvolves(trade.monster_id, interaction);
                 yield (0, database_1.databaseClient)(Trades_1.TradeTable)
                     .where({ id: trade.id })
                     .update({ active: 0, traded: 1 });
                 yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable)
-                    .where({ uid: message.author.id })
+                    .where({ uid: interaction.user.id })
                     .update({ latest_monster: trade.monster_id });
             }
             else {
@@ -226,21 +224,21 @@ function confirmTrade(message) {
             }
         }
         else {
-            message.reply(`You don't have any trades to accept m8.`);
+            interaction.reply(`You don't have any trades to accept m8.`);
         }
     });
 }
 exports.confirmTrade = confirmTrade;
-function cancelTrade(message) {
+function cancelTrade(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         const trades = yield (0, database_1.databaseClient)(Trades_1.TradeTable)
             .select()
             .where({
-            uid_to: message.author.id,
+            uid_to: interaction.user.id,
             active: 1,
         })
             .orWhere({
-            uid_from: message.author.id,
+            uid_from: interaction.user.id,
             active: 1,
         });
         if (trades.length) {
@@ -249,20 +247,18 @@ function cancelTrade(message) {
                 .where({ id: trade.id })
                 .update({ active: 0 });
             if (cancelTrade) {
-                message.reply(`Successfully cancelled trade with monster #${trade.monster_id}.`);
+                interaction.reply(`Successfully cancelled trade with monster #${trade.monster_id}.`);
             }
         }
         else {
-            message.reply(`You don't have any trades to cancel m8.`);
+            interaction.reply(`You don't have any trades to cancel m8.`);
         }
     });
 }
 exports.cancelTrade = cancelTrade;
-function checkTrade(monster_id, to_user, message) {
+function checkTrade(monster_id, to_user, interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const trades = yield (0, database_1.databaseClient)(Trades_1.TradeTable)
-            .select()
-            .where({
+        const trades = yield (0, database_1.databaseClient)(Trades_1.TradeTable).select().where({
             monster_id: monster_id,
             active: 1,
         });
@@ -271,17 +267,15 @@ function checkTrade(monster_id, to_user, message) {
             .where({
             id: monster_id,
         });
-        const users = yield (0, database_1.databaseClient)(Trades_1.TradeTable)
-            .select()
-            .where({
+        const users = yield (0, database_1.databaseClient)(Trades_1.TradeTable).select().where({
             uid_to: to_user,
-            uid_from: message.author.id,
+            uid_from: interaction.user.id,
             active: 1,
         });
         if (trades.length ||
             users.length ||
             pokemon.length == 0 ||
-            pokemon[0].uid != message.author.id) {
+            pokemon[0].uid != interaction.user.id) {
             return true;
         }
         else {

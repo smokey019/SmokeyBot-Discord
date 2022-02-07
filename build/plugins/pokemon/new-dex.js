@@ -11,13 +11,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateDexes = void 0;
 const database_1 = require("../../clients/database");
-const MonsterUser_1 = require("../../models/MonsterUser");
-const Monster_1 = require("../../models/Monster");
 const logger_1 = require("../../clients/logger");
+const Monster_1 = require("../../models/Monster");
+const MonsterUser_1 = require("../../models/MonsterUser");
 const logger = (0, logger_1.getLogger)('NEW DEX');
-function updateDexes(message) {
+function updateDexes(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (message.author.id == '90514165138989056') {
+        if (interaction.user.id == '90514165138989056') {
             const users = yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable).select();
             if (users) {
                 users.forEach((user) => __awaiter(this, void 0, void 0, function* () {

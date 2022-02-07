@@ -25,6 +25,7 @@ const cache_1 = require("./cache");
 const database_1 = require("./database");
 const discord_1 = require("./discord");
 const logger_1 = require("./logger");
+const queue_1 = require("./queue");
 javascript_time_ago_1.default.addDefaultLocale(en_json_1.default);
 const timeAgo = new javascript_time_ago_1.default('en-US');
 const logger = (0, logger_1.getLogger)('Top.GG Client');
@@ -79,7 +80,7 @@ function hasVoted(id) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!id)
             throw new Error('Missing ID');
-        return yield requestGET('GET', '/bots/check', { userId: id }).then((x) => !!x.voted);
+        return yield requestGET('GET', 'bots/check', { userId: id }).then((x) => !!x.voted);
     });
 }
 /**
@@ -93,53 +94,53 @@ function hasVoted(id) {
  */
 function isWeekend() {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield requestGET('GET', '/weekend').then((x) => x.is_weekend);
+        return yield requestGET('GET', 'weekend').then((x) => x.is_weekend);
     });
 }
-function checkVote(message) {
+function checkVote(interaction) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        const voted = (_a = (yield exports.dblCache.get(message.author.id))) !== null && _a !== void 0 ? _a : {
+        const voted = (_a = (yield exports.dblCache.get(interaction.user.id))) !== null && _a !== void 0 ? _a : {
             voted: false,
             checked_at: Date.now() - 86401337,
         };
         if (!voted.voted || Date.now() - voted.checked_at > 43200000) {
-            const check = yield hasVoted(message.author.id);
-            exports.dblCache.set(message.author.id, { voted: check, checked_at: Date.now() });
+            const check = yield hasVoted(interaction.user.id);
+            exports.dblCache.set(interaction.user.id, { voted: check, checked_at: Date.now() });
             if (check) {
                 const isWeekend = yield checkWeekend();
                 if (isWeekend) {
-                    yield message.reply(`Thanks for voting! It's the weekend so you receive double! You received **5,000 currency** and **2 Rare Candy** to level up your monster(s)! You can do this every 12 hours.`);
+                    (0, queue_1.queueMsg)(`Thanks for voting! It's the weekend so you receive double! You received **5,000 currency** and **2 Rare Candy** to level up your monster(s)! You can do this every 12 hours.`, interaction, true);
                     for (let index = 0; index < 4; index++) {
                         yield (0, items_1.createItemDB)({
-                            uid: message.author.id,
+                            uid: interaction.user.id,
                             item_number: 50,
                         });
                     }
                     yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable)
-                        .where({ uid: message.author.id })
+                        .where({ uid: interaction.user.id })
                         .increment('currency', 5000);
                     return true;
                 }
                 else {
-                    yield message.reply(`Thanks for voting! You received **2,500 currency** and a **Rare Candy** to level up a monster! You can do this every 12 hours.`);
+                    (0, queue_1.queueMsg)(`Thanks for voting! You received **2,500 currency** and a **Rare Candy** to level up a monster! You can do this every 12 hours.`, interaction, true);
                     yield (0, items_1.createItemDB)({
-                        uid: message.author.id,
+                        uid: interaction.user.id,
                         item_number: 50,
                     });
                     yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable)
-                        .where({ uid: message.author.id })
+                        .where({ uid: interaction.user.id })
                         .increment('currency', 2500);
                     return true;
                 }
             }
             else {
-                yield message.reply(`you haven't voted yet, m8. WeirdChamp`);
+                (0, queue_1.queueMsg)(`You haven't voted yet. WeirdChamp`, interaction, true);
                 return false;
             }
         }
         else if (voted.voted) {
-            yield message.reply(`you voted ${timeAgo.format(voted.checked_at)} and got credit already. You can vote again ${timeAgo.format(voted.checked_at + 12 * 60 * 60 * 1000)}.`);
+            (0, queue_1.queueMsg)(`you voted ${timeAgo.format(voted.checked_at)} and got credit already. You can vote again ${timeAgo.format(voted.checked_at + 12 * 60 * 60 * 1000)}.`, interaction, true);
             return false;
         }
         else {

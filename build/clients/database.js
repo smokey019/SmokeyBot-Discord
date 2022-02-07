@@ -44,6 +44,7 @@ exports.databaseClient = (0, knex_1.default)({
         },
     },
 });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function loadGlobalSetting(which) {
     return __awaiter(this, void 0, void 0, function* () {
         let settings = yield (cache_1.SMOKEYBOT_GLOBAL_SETTINGS_CACHE === null || cache_1.SMOKEYBOT_GLOBAL_SETTINGS_CACHE === void 0 ? void 0 : cache_1.SMOKEYBOT_GLOBAL_SETTINGS_CACHE.get('main'));
@@ -101,21 +102,21 @@ exports.loadGlobalSetting = loadGlobalSetting;
  *
  * @param Message Discord Message Object
  */
-function getGuildSettings(message) {
+function getGuildSettings(guild) {
     return __awaiter(this, void 0, void 0, function* () {
         const guild_settings = yield (0, exports.databaseClient)(exports.GuildSettingsTable)
             .select()
-            .where('guild_id', message.guild.id);
+            .where('guild_id', guild.id);
         if (!guild_settings[0]) {
             const insert = yield (0, exports.databaseClient)(exports.GuildSettingsTable).insert({
-                guild_id: message.guild.id,
+                guild_id: guild.id,
                 smokemon_enabled: 0,
             });
             if (insert) {
-                logger.info(`Created new guild settings for ${message.guild.name}.`);
+                logger.info(`Created new guild settings for ${guild.name}.`);
                 const guild_settings = yield (0, exports.databaseClient)(exports.GuildSettingsTable)
                     .select()
-                    .where('guild_id', message.guild.id);
+                    .where('guild_id', guild.id);
                 if (guild_settings) {
                     return guild_settings[0];
                 }
@@ -158,15 +159,15 @@ exports.getUser = getUser;
  *
  * @param message Discord Message Object
  */
-function putGuildSettings(message) {
+function putGuildSettings(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const insert = message.guild != null
+        const insert = interaction.guild != null
             ? yield (0, exports.databaseClient)(exports.GuildSettingsTable).insert({
-                guild_id: message.guild.id,
+                guild_id: interaction.guild.id,
                 smokemon_enabled: 0,
             })
             : [];
-        logger.info(`Created new guild settings for ${message.guild.name}.`);
+        logger.info(`Created new guild settings for ${interaction.guild.name}.`);
         console.log(insert);
         return insert[0];
     });

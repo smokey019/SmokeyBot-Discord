@@ -15,8 +15,11 @@ const logger_1 = require("../../clients/logger");
 const colors_1 = require("../../colors");
 const utils_1 = require("./utils");
 const logger = (0, logger_1.getLogger)('Battles');
-function monsterChooseAbility(message) {
+function monsterChooseAbility(interaction, args) {
     return __awaiter(this, void 0, void 0, function* () {
+        if (!args) {
+            args.shift();
+        }
         const embed = new discord_js_1.MessageEmbed()
             .setAuthor(`Battle - Mew vs Mewtwo`, utils_1.img_monster_ball)
             .setColor(colors_1.COLOR_RED)
@@ -32,20 +35,20 @@ function monsterChooseAbility(message) {
             inline: true,
         })
             .setDescription(`USER1's Turn! Pick an ability to use.`);
-        yield message.channel
-            .send({ embeds: [embed] })
-            .then((message) => {
-            return message;
+        yield interaction
+            .reply({ embeds: [embed] })
+            .then((interaction) => {
+            return interaction;
         })
             .catch((err) => {
             logger.error(err);
         });
     });
 }
-function battleParser(message) {
+function battleParser(interaction, args) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (message.content == '~battle test') {
-            monsterChooseAbility(message);
+        if (args[0] == 'test') {
+            monsterChooseAbility(interaction, args);
         }
     });
 }

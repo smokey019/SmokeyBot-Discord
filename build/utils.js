@@ -12,14 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.explode = exports.chunk = exports.jsonFetch = exports.format_number = exports.getTimeInterval = exports.theWord = exports.getCurrentTime = exports.getRndInteger = exports.send_message = exports.asyncForEach = void 0;
+exports.explode = exports.chunk = exports.jsonFetch = exports.format_number = exports.getTimeInterval = exports.theWord = exports.getCurrentTime = exports.getRndInteger = exports.asyncForEach = void 0;
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const datetime_difference_1 = __importDefault(require("datetime-difference"));
-const discord_js_1 = require("discord.js");
 const moment_1 = __importDefault(require("moment"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
-const cache_1 = require("./clients/cache");
-const logger_1 = require("./clients/logger");
-const logger = (0, logger_1.getLogger)('Utilities');
 function asyncForEach(array, callback) {
     return __awaiter(this, void 0, void 0, function* () {
         for (let index = 0; index < array.length; index++) {
@@ -28,42 +25,6 @@ function asyncForEach(array, callback) {
     });
 }
 exports.asyncForEach = asyncForEach;
-/**
- * Send Message on Discord
- * @param title
- * @param msg
- * @param message
- * @param color
- */
-function send_message(msg, message, title, color = 0xff0000) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (!msg || !message)
-            return false;
-        const timestamp = getCurrentTime();
-        const GCD = yield (0, cache_1.getGCD)(message.guild.id);
-        if (timestamp - GCD > 3) {
-            cache_1.GLOBAL_COOLDOWN.set(message.guild.id, getCurrentTime());
-            const embed = new discord_js_1.MessageEmbed()
-                // Set the title of the field
-                .setTitle(title)
-                // Set the color of the embed
-                .setColor(color)
-                // Set the main content of the embed
-                .setDescription(msg);
-            // Send the embed to the same channel as the message
-            return yield message.channel
-                .send({ embeds: [embed] })
-                .then((sentMsg) => {
-                return sentMsg;
-            })
-                .catch((error) => logger.error(error));
-        }
-        else {
-            return false;
-        }
-    });
-}
-exports.send_message = send_message;
 /**
  * Random number between X and Y
  * @param min

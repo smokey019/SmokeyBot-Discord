@@ -9,14 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.prefix_check = exports.set_prefix = exports.updatePrefixes = exports.getPrefixes = exports.default_prefixes = void 0;
+exports.set_prefix = exports.updatePrefixes = exports.getPrefixes = exports.default_prefixes = void 0;
 const database_1 = require("../../clients/database");
 const utils_1 = require("./utils");
 exports.default_prefixes = ['!', '~', 'p!'];
 /**
  * Retrieve Guild Prefixes
  * Default: ['!', '~', 'p!']
- * @param guild_id message.guild.id
+ * @param guild_id interaction.guild.id
  * @returns ['!', '~', 'p!'] or more.
  */
 function getPrefixes(guild_id) {
@@ -54,13 +54,13 @@ function updatePrefixes(guild_id, prefixes) {
     });
 }
 exports.updatePrefixes = updatePrefixes;
-function set_prefix(message) {
+function set_prefix(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         let i = 0;
-        const parse = yield (0, utils_1.parseArgs)(message);
-        const prefixes = yield getPrefixes(message.guild.id);
+        const parse = yield (0, utils_1.parseArgs)([]);
+        const prefixes = yield getPrefixes(interaction.guild.id);
         if (!parse.args[1] || (!parse.args[2] && parse.args[1] != 'default')) {
-            yield message.reply('Not enough parameters. Example: `!prefix enable !`. Type `!prefix help` for more information.');
+            yield interaction.reply('Not enough parameters. Example: `!prefix enable !`. Type `!prefix help` for more information.');
             return;
         }
         if (parse.args[1] == 'enable') {
@@ -68,8 +68,8 @@ function set_prefix(message) {
                 case '!':
                     if (!prefixes.includes('!')) {
                         prefixes.push('!');
-                        yield updatePrefixes(message.guild.id, prefixes);
-                        yield message.reply('Successfully added `!` as a prefix. Your prefixes are now: `' +
+                        yield updatePrefixes(interaction.guild.id, prefixes);
+                        yield interaction.reply('Successfully added `!` as a prefix. Your prefixes are now: `' +
                             prefixes.join(' ') +
                             '`.');
                     }
@@ -77,8 +77,8 @@ function set_prefix(message) {
                 case '?':
                     if (!prefixes.includes('\\?')) {
                         prefixes.push('\\?');
-                        yield updatePrefixes(message.guild.id, prefixes);
-                        yield message.reply('Successfully added `?` as a prefix.  Your prefixes are now: `' +
+                        yield updatePrefixes(interaction.guild.id, prefixes);
+                        yield interaction.reply('Successfully added `?` as a prefix.  Your prefixes are now: `' +
                             prefixes.join(' ') +
                             '`.');
                     }
@@ -86,8 +86,8 @@ function set_prefix(message) {
                 case '~':
                     if (!prefixes.includes('~')) {
                         prefixes.push('~');
-                        yield updatePrefixes(message.guild.id, prefixes);
-                        yield message.reply('Successfully added `~` as a prefix.  Your prefixes are now: `' +
+                        yield updatePrefixes(interaction.guild.id, prefixes);
+                        yield interaction.reply('Successfully added `~` as a prefix.  Your prefixes are now: `' +
                             prefixes.join(' ') +
                             '`.');
                     }
@@ -95,14 +95,14 @@ function set_prefix(message) {
                 case 'p!':
                     if (!prefixes.includes('p!')) {
                         prefixes.push('p!');
-                        yield updatePrefixes(message.guild.id, prefixes);
-                        yield message.reply('Successfully added `p!` as a prefix.  Your prefixes are now: `' +
+                        yield updatePrefixes(interaction.guild.id, prefixes);
+                        yield interaction.reply('Successfully added `p!` as a prefix.  Your prefixes are now: `' +
                             prefixes.join(' ') +
                             '`.');
                     }
                     break;
                 default:
-                    yield message.reply('You can enable/disable these prefixes: ' + prefixes);
+                    yield interaction.reply('You can enable/disable these prefixes: ' + prefixes);
                     break;
             }
         }
@@ -115,10 +115,10 @@ function set_prefix(message) {
                                 prefixes.splice(i, 1);
                             }
                         }
-                        yield message.reply('Successfully removed `!` as a prefix.  Your prefixes are now: `' +
+                        yield interaction.reply('Successfully removed `!` as a prefix.  Your prefixes are now: `' +
                             prefixes.join(' ') +
                             '`.');
-                        yield updatePrefixes(message.guild.id, prefixes);
+                        yield updatePrefixes(interaction.guild.id, prefixes);
                     }
                     break;
                 case '?':
@@ -128,10 +128,10 @@ function set_prefix(message) {
                                 prefixes.splice(i, 1);
                             }
                         }
-                        yield message.reply('Successfully removed `?` as a prefix.  Your prefixes are now: `' +
+                        yield interaction.reply('Successfully removed `?` as a prefix.  Your prefixes are now: `' +
                             prefixes.join(' ') +
                             '`.');
-                        yield updatePrefixes(message.guild.id, prefixes);
+                        yield updatePrefixes(interaction.guild.id, prefixes);
                     }
                     break;
                 case '~':
@@ -141,10 +141,10 @@ function set_prefix(message) {
                                 prefixes.splice(i, 1);
                             }
                         }
-                        yield message.reply('Successfully removed `~` as a prefix.  Your prefixes are now: `' +
+                        yield interaction.reply('Successfully removed `~` as a prefix.  Your prefixes are now: `' +
                             prefixes.join(' ') +
                             '`.');
-                        yield updatePrefixes(message.guild.id, prefixes);
+                        yield updatePrefixes(interaction.guild.id, prefixes);
                     }
                     break;
                 case 'p!':
@@ -154,39 +154,27 @@ function set_prefix(message) {
                                 prefixes.splice(i, 1);
                             }
                         }
-                        yield message.reply('Successfully removed `p!` as a prefix.  Your prefixes are now: `' +
+                        yield interaction.reply('Successfully removed `p!` as a prefix.  Your prefixes are now: `' +
                             prefixes.join(' ') +
                             '`.');
-                        yield updatePrefixes(message.guild.id, prefixes);
+                        yield updatePrefixes(interaction.guild.id, prefixes);
                     }
                     break;
                 default:
-                    yield message.reply('You can enable/disable these prefixes: ' + prefixes);
+                    yield interaction.reply('You can enable/disable these prefixes: ' + prefixes);
                     break;
             }
         }
         else if (parse.args[1] == 'default') {
-            yield updatePrefixes(message.guild.id, exports.default_prefixes);
-            yield message.reply('Successfully reset prefixes back to default: ' +
+            yield updatePrefixes(interaction.guild.id, exports.default_prefixes);
+            yield interaction.reply('Successfully reset prefixes back to default: ' +
                 exports.default_prefixes.join(', '));
         }
         else if (parse.args[1] == 'help') {
-            yield message.reply('Enable/disable prefixes: `!prefix disable ~` or `!prefix enable p!`. By default SmokeyBot uses: `' +
+            yield interaction.reply('Enable/disable prefixes: `!prefix disable ~` or `!prefix enable p!`. By default SmokeyBot uses: `' +
                 exports.default_prefixes.join(' ') +
                 '`.');
         }
     });
 }
 exports.set_prefix = set_prefix;
-function prefix_check(message) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const prefixes = yield getPrefixes(message.guild.id);
-        if (prefixes.includes(message.content.charAt(0))) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    });
-}
-exports.prefix_check = prefix_check;

@@ -21,26 +21,24 @@ const utils_1 = require("../../utils");
 const monsters_1 = require("./monsters");
 const weather_1 = require("./weather");
 exports.MONSTER_SPAWNS = (0, cache_1.loadCache)('MONSTER_SPAWNS', 500);
-const logger = (0, logger_1.getLogger)('Pokemon-Spawn');
-function checkSpawn(message, cache) {
+const logger = (0, logger_1.getLogger)('Pokémon-Spawn');
+function checkSpawn(interaction, cache) {
     return __awaiter(this, void 0, void 0, function* () {
-        let spawn = yield exports.MONSTER_SPAWNS.get(message.guild.id);
+        let spawn = yield exports.MONSTER_SPAWNS.get(interaction.guild.id);
         if (!spawn) {
             spawn = {
                 monster: undefined,
                 spawned_at: (0, utils_1.getCurrentTime)() - 30,
             };
-            exports.MONSTER_SPAWNS.set(message.guild.id, spawn);
+            exports.MONSTER_SPAWNS.set(interaction.guild.id, spawn);
         }
         else {
             const spawn_timer = (0, utils_1.getRndInteger)((0, utils_1.getRndInteger)(15, 120), 300);
             const timestamp = (0, utils_1.getCurrentTime)();
             if (timestamp - spawn.spawned_at > spawn_timer &&
-                !message.content.match(/catch/i) &&
-                !message.content.match(/spawn/i) &&
                 !discord_1.rateLimited &&
                 !discord_1.initializing) {
-                yield spawnMonster(message, cache);
+                yield spawnMonster(interaction, cache);
             }
         }
     });
@@ -49,19 +47,19 @@ exports.checkSpawn = checkSpawn;
 /**
  * Spawns a random Monster.
  *
- * @param message
+ * @param interaction
  * @param cache
  */
-function spawnMonster(message, cache) {
-    var _a, _b, _c;
+function spawnMonster(interaction, cache) {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        const monsterChannel = (_a = message.guild) === null || _a === void 0 ? void 0 : _a.channels.cache.find((ch) => ch.name === cache.settings.specific_channel);
+        const monsterChannel = interaction.guild.channels.cache.find((ch) => ch.name === cache.settings.specific_channel);
         if (!monsterChannel) {
             const updateGuild = yield (0, database_1.databaseClient)(database_1.GuildSettingsTable)
-                .where({ guild_id: message.guild.id })
+                .where({ guild_id: interaction.guild.id })
                 .update({ smokemon_enabled: 0 });
             if (updateGuild) {
-                logger.error(`Disabled smokeMon for server '${message.guild.name}' since no channel to spawn in.`);
+                logger.error(`Disabled smokeMon for server '${interaction.guild.name}' since no channel to spawn in.`);
             }
         }
         else {
@@ -70,25 +68,25 @@ function spawnMonster(message, cache) {
                 spawned_at: (0, utils_1.getCurrentTime)(),
             };
             let boostCount = 0;
-            const boost = yield (0, weather_1.getBoostedWeatherSpawns)(message, cache);
+            const boost = yield (0, weather_1.getBoostedWeatherSpawns)(interaction, cache);
             let isBoosted = false;
             try {
-                while (!((_b = spawn_data.monster) === null || _b === void 0 ? void 0 : _b.name.english) ||
+                while (!((_a = spawn_data.monster) === null || _a === void 0 ? void 0 : _a.name.english) ||
                     // spawn_data.monster.forme == "Mega" ||
                     !spawn_data.monster.images ||
                     !spawn_data.monster.images.normal ||
                     (boostCount < 10 && !isBoosted)) {
                     logger.trace('Invalid monster found or trying to find a boosted type..');
                     spawn_data.monster = yield (0, monsters_1.findMonsterByID)((0, monsters_1.getRandomMonster)());
-                    (_c = spawn_data.monster.type) === null || _c === void 0 ? void 0 : _c.forEach((element) => {
+                    (_b = spawn_data.monster.type) === null || _b === void 0 ? void 0 : _b.forEach((element) => {
                         if (boost.boosts.includes(element)) {
                             isBoosted = true;
                         }
                     });
                     boostCount++;
                 }
-                exports.MONSTER_SPAWNS.set(message.guild.id, spawn_data);
-                logger.info(`'${message.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`);
+                exports.MONSTER_SPAWNS.set(interaction.guild.id, spawn_data);
+                logger.info(`'${interaction.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`);
                 const embed = new discord_js_1.MessageEmbed({
                     color: spawn_data.monster.color,
                     description: 'Type ~catch <Pokémon> to try and catch it!',
@@ -97,12 +95,10 @@ function spawnMonster(message, cache) {
                     },
                     title: 'A wild Pokémon has appeared!',
                 });
-                // (monsterChannel as TextChannel).send({ embeds: [embed] });
-                (0, queue_1.queueMsg)(embed, message, false, 1, monsterChannel, true);
+                (0, queue_1.queueMsg)(embed, interaction, false, 1, monsterChannel, true);
             }
             catch (error) {
                 logger.error(error);
-                // console.log(spawn_data.monster);
             }
         }
     });
@@ -113,33 +109,26 @@ exports.spawnMonster = spawnMonster;
  * @param message
  * @param cache
  */
-function forceSpawn(message, cache) {
-    var _a;
+function forceSpawn(interaction, cache) {
     return __awaiter(this, void 0, void 0, function* () {
-        const monsterChannel = (_a = message.guild) === null || _a === void 0 ? void 0 : _a.channels.cache.find((ch) => ch.name === cache.settings.specific_channel);
-        const args = message.content
-            .slice(1)
-            .trim()
-            .toLowerCase()
-            .replace(/ {2,}/gm, ' ')
-            .split(/ +/gm);
+        const monsterChannel = interaction.guild.channels.cache.find((ch) => ch.name === cache.settings.specific_channel);
+        const monster = parseFloat(interaction.options.getString('pokemon'));
         const spawn_data = {
-            monster: yield (0, monsters_1.findMonsterByID)(parseFloat(args[1])),
+            monster: yield (0, monsters_1.findMonsterByID)(monster),
             spawned_at: (0, utils_1.getCurrentTime)(),
         };
         try {
-            if (yield exports.MONSTER_SPAWNS.set(message.guild.id, spawn_data)) {
-                logger.info(`'${message.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`);
-                const embed = new discord_js_1.MessageEmbed({
-                    color: colors_1.COLOR_PURPLE,
-                    description: 'Type ~catch <Pokémon> to try and catch it!',
-                    image: {
-                        url: spawn_data.monster.images.normal,
-                    },
-                    title: 'A wild Pokémon has appeared!',
-                });
-                (0, queue_1.queueMsg)(embed, message, false, 0, monsterChannel);
-            }
+            exports.MONSTER_SPAWNS.set(interaction.guild.id, spawn_data);
+            logger.info(`'${interaction.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`);
+            const embed = new discord_js_1.MessageEmbed({
+                color: colors_1.COLOR_PURPLE,
+                description: 'Type ~catch <Pokémon> to try and catch it!',
+                image: {
+                    url: spawn_data.monster.images.normal,
+                },
+                title: 'A wild Pokémon has appeared!',
+            });
+            (0, queue_1.queueMsg)(embed, interaction, false, 1, monsterChannel, true);
         }
         catch (error) {
             logger.error(error);

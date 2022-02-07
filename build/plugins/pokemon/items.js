@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createItemDB = exports.getItemDB = exports.msgBalance = exports.checkItemEvolution = exports.parseItems = exports.itemDB = void 0;
 const discord_js_1 = require("discord.js");
 const database_1 = require("../../clients/database");
-const logger_1 = require("../../clients/logger");
+const queue_1 = require("../../clients/queue");
 const colors_1 = require("../../colors");
 const Items_1 = require("../../models/Items");
 const Monster_1 = require("../../models/Monster");
@@ -23,51 +23,38 @@ const MonsterUser_1 = require("../../models/MonsterUser");
 const utils_1 = require("../../utils");
 const items_min_json_1 = __importDefault(require("./data/items_min.json"));
 const monsters_1 = require("./monsters");
-// import MultiMap from 'mnemonist/multi-map';
-const parser_1 = require("./parser");
-const logger = (0, logger_1.getLogger)('Items');
 exports.itemDB = items_min_json_1.default;
-function parseItems(message) {
+function parseItems(interaction, args) {
     return __awaiter(this, void 0, void 0, function* () {
-        const load_prefixes = yield (0, parser_1.getPrefixes)(message.guild.id);
-        const prefixes = RegExp(load_prefixes.join('|'));
-        const detect_prefix = message.content.match(prefixes);
-        const prefix = detect_prefix.shift();
-        const args = message.content
-            .slice(prefix.length)
-            .trim()
-            .toLowerCase()
-            .replace(/ {2,}/gm, ' ')
-            .split(/ +/);
-        const command = args[1];
+        const command = interaction.commandName;
         if (command == 'buy') {
-            yield buyItem(message);
+            yield buyItem(interaction, args);
         }
         else if (command == 'remove' || command == '-') {
-            yield removeMonsterItem(message);
+            yield removeMonsterItem(interaction, args);
         }
         else if (command == 'balance') {
-            yield msgBalance(message);
+            yield msgBalance(interaction);
         }
         else if (command == 'give' || command == '+') {
-            yield giveMonsterItem(message);
+            yield giveMonsterItem(interaction, args);
         }
         else if (command == 'list' || command == 'items' || command == '=') {
-            yield msgUserItems(message);
+            yield msgUserItems(interaction, args);
         }
         else if (command == 'shop') {
-            yield listItems(message);
+            yield listItems(interaction, args);
         }
         else if (command == 'update') {
-            yield updateItems(message);
+            yield updateItems(interaction);
         }
     });
 }
 exports.parseItems = parseItems;
-function listItems(message) {
+function listItems(interaction, args) {
     return __awaiter(this, void 0, void 0, function* () {
         let item_message = [];
-        const splitMsg = message.content.split(' ');
+        const splitMsg = args;
         exports.itemDB.forEach((element) => {
             item_message.push(`ID: ${element.id} - Name: ${element.name.english} - Price: ${(0, utils_1.format_number)(element.price)}`);
         });
@@ -89,33 +76,16 @@ function listItems(message) {
             .setAuthor(`Poké Mart`, `https://cdn.bulbagarden.net/upload/0/03/Bag_Ultra_Ball_Sprite.png`)
             .setColor(0xff0000)
             .setDescription(new_msg);
-        yield message.channel
-            .send({ embeds: [embed] })
-            .then((message) => {
-            return message;
-        })
-            .catch((err) => {
-            logger.error(err);
-        });
+        (0, queue_1.queueMsg)(embed, interaction, false, 0, undefined, true);
     });
 }
-function msgUserItems(message) {
+function msgUserItems(interaction, args) {
     return __awaiter(this, void 0, void 0, function* () {
-        const isQuote = message.content.match('"');
+        const isQuote = false;
         const sort = ['id', 'high'];
         let search = undefined;
         let page = 0;
-        const load_prefixes = yield (0, parser_1.getPrefixes)(message.guild.id);
-        const prefixes = RegExp(load_prefixes.join('|'));
-        const detect_prefix = message.content.match(prefixes);
-        const prefix = detect_prefix.shift();
-        const args = message.content
-            .slice(prefix.length)
-            .trim()
-            .toLowerCase()
-            .replace(/ {2,}/gm, ' ')
-            .split(/ +/);
-        args.splice(0, 2);
+        args.shift();
         if (!isNaN(parseInt(args[args.length - 1]))) {
             page = parseInt(args[args.length - 1]);
             args.splice(args.length - 1, 1);
@@ -132,7 +102,7 @@ function msgUserItems(message) {
             search = args.join(' ');
         }
         const sortable_items = [];
-        const items = yield getUserItems(message.author.id);
+        const items = yield getUserItems(interaction.user.id);
         if (items && items.length > 0) {
             let item_message = [];
             yield (0, utils_1.asyncForEach)(items, (element) => __awaiter(this, void 0, void 0, function* () {
@@ -213,48 +183,41 @@ function msgUserItems(message) {
             }
             const new_msg = item_message.join('\n');
             const embed = new discord_js_1.MessageEmbed()
-                .setAuthor(`${message.author.username}'s search for '${search}' \nFound: ${sortable_items.length} \nTotal Items: ${items.length}`, `https://cdn.bulbagarden.net/upload/0/03/Bag_Ultra_Ball_Sprite.png`)
+                .setAuthor(`${interaction.user.username}'s search for '${search}' \nFound: ${sortable_items.length} \nTotal Items: ${items.length}`, `https://cdn.bulbagarden.net/upload/0/03/Bag_Ultra_Ball_Sprite.png`)
                 .setColor(colors_1.COLOR_BLUE)
                 .setDescription(new_msg);
-            yield message.channel
-                .send({ embeds: [embed] })
-                .then((message) => {
-                return message;
-            })
-                .catch((err) => {
-                logger.error(err);
-            });
+            (0, queue_1.queueMsg)(embed, interaction, false, 0, undefined, true);
         }
     });
 }
-function updateItems(message) {
+function updateItems(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const user = yield (0, database_1.getUser)(message.author.id);
+        const user = yield (0, database_1.getUser)(interaction.user.id);
         const items = JSON.parse(user.items);
         if (items.length > 0) {
             items.forEach((element) => __awaiter(this, void 0, void 0, function* () {
                 yield (0, database_1.databaseClient)(Items_1.ItemsTable).insert({
                     item_number: element,
-                    uid: message.author.id,
+                    uid: interaction.user.id,
                 });
             }));
             yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable)
                 .update('items', '[]')
-                .where('uid', message.author.id);
-            const newItems = yield getUserItems(message.author.id);
-            message.reply(`Successfully transferred ${newItems.length} to the new item inventory!`);
+                .where('uid', interaction.user.id);
+            const newItems = yield getUserItems(interaction.user.id);
+            interaction.reply(`Successfully transferred ${newItems.length} to the new item inventory!`);
             return true;
         }
         else {
-            message.reply(`You don't have any old items!`);
+            interaction.reply(`You don't have any old items!`);
             return false;
         }
     });
 }
-function removeMonsterItem(message) {
+function removeMonsterItem(interaction, args) {
     return __awaiter(this, void 0, void 0, function* () {
-        const user = yield (0, database_1.getUser)(message.author.id);
-        const split = (0, utils_1.explode)(message.content, ' ', 3);
+        const user = yield (0, database_1.getUser)(interaction.user.id);
+        const split = args;
         let monster = undefined;
         if (split[2] == 'current') {
             monster = yield (0, monsters_1.getUserMonster)(user.current_monster);
@@ -264,7 +227,7 @@ function removeMonsterItem(message) {
         }
         if (user &&
             split.length == 3 &&
-            monster.uid == message.author.id &&
+            monster.uid == interaction.user.id &&
             monster.held_item) {
             const item = yield getItemDB(monster.held_item);
             const itemDex = getItemByID(item.item_number);
@@ -276,12 +239,12 @@ function removeMonsterItem(message) {
                 .where({ id: monster.id })
                 .update({ held_item: null });
             if (updateItem && updateMonster) {
-                message.reply(`Removed item **${itemDex.name.english}** from **${monsterDex.name.english}**.`);
+                interaction.reply(`Removed item **${itemDex.name.english}** from **${monsterDex.name.english}**.`);
             }
         }
     });
 }
-function checkItemEvolution(monster, message, isTrade = false) {
+function checkItemEvolution(monster, interaction, isTrade = false) {
     return __awaiter(this, void 0, void 0, function* () {
         const monster_dex = yield (0, monsters_1.findMonsterByID)(monster.monster_id);
         if ((monster_dex.evos && monster.held_item != 229) ||
@@ -345,29 +308,22 @@ function checkItemEvolution(monster, message, isTrade = false) {
                         thumbnail: {
                             url: imgs[1],
                         },
-                        title: `${message.author.username}'s ${monster_dex.name.english} is evolving!`,
+                        title: `${interaction.user.username}'s ${monster_dex.name.english} is evolving!`,
                     });
-                    yield message.channel
-                        .send({ embeds: [embed] })
-                        .then(() => {
-                        return;
-                    })
-                        .catch((err) => {
-                        logger.error(err);
-                    });
+                    (0, queue_1.queueMsg)(embed, interaction, false, 0, undefined, true);
                 }
             }
         }
     });
 }
 exports.checkItemEvolution = checkItemEvolution;
-function giveMonsterItem(message) {
+function giveMonsterItem(interaction, args) {
     return __awaiter(this, void 0, void 0, function* () {
-        const user = yield (0, database_1.getUser)(message.author.id);
-        const split = (0, utils_1.explode)(message.content, ' ', 4);
+        const user = yield (0, database_1.getUser)(interaction.user.id);
+        const split = args;
         let monster = undefined;
         if (user && split.length == 4) {
-            const item = yield getUserItemDB(parseInt(split[2]), message.author.id);
+            const item = yield getUserItemDB(parseInt(split[2]), interaction.user.id);
             if (split[3] == 'current') {
                 monster = yield (0, monsters_1.getUserMonster)(user.current_monster);
             }
@@ -375,10 +331,10 @@ function giveMonsterItem(message) {
                 monster = yield (0, monsters_1.getUserMonster)(split[3]);
             }
             if (!monster) {
-                message.reply("That monster doesn't exist..");
+                interaction.reply("That monster doesn't exist..");
                 return;
             }
-            if (item && monster.uid == message.author.id && !monster.held_item) {
+            if (item && monster.uid == interaction.user.id && !monster.held_item) {
                 if (item.item_number == 50 && monster.level < 100) {
                     const updateMonster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
                         .where({ id: monster.id })
@@ -387,7 +343,7 @@ function giveMonsterItem(message) {
                     if (deleteItem && updateMonster) {
                         const itemDex = getItemByID(item.item_number);
                         const monsterDex = yield (0, monsters_1.findMonsterByID)(monster.monster_id);
-                        message.reply(`Gave **${monsterDex.name.english}** a **${itemDex.name.english}** and it leveled up! Neato!`);
+                        interaction.reply(`Gave **${monsterDex.name.english}** a **${itemDex.name.english}** and it leveled up! Neato!`);
                     }
                     return;
                 }
@@ -404,8 +360,8 @@ function giveMonsterItem(message) {
                         monster.held_item = item.id;
                         const itemDex = getItemByID(item.item_number);
                         const monsterDex = yield (0, monsters_1.findMonsterByID)(monster.monster_id);
-                        message.reply(`Gave **${monsterDex.name.english}** an item - **${itemDex.name.english}**! Neato!`);
-                        yield checkItemEvolution(monster, message);
+                        interaction.reply(`Gave **${monsterDex.name.english}** an item - **${itemDex.name.english}**! Neato!`);
+                        yield checkItemEvolution(monster, interaction);
                         return;
                     }
                 }
@@ -413,35 +369,35 @@ function giveMonsterItem(message) {
         }
     });
 }
-function buyItem(message) {
+function buyItem(interaction, args) {
     return __awaiter(this, void 0, void 0, function* () {
-        const user = yield (0, database_1.getUser)(message.author.id);
-        const split = (0, utils_1.explode)(message.content, ' ', 3);
+        const user = yield (0, database_1.getUser)(interaction.user.id);
+        const split = args;
         if (user && split.length) {
             const item_to_buy = getItemByID(parseInt(split[split.length - 1])) ||
                 getItemByName(split[split.length - 1]);
             if (item_to_buy && user.currency >= item_to_buy.price) {
                 const create_item = yield createItemDB({
                     item_number: item_to_buy.id,
-                    uid: message.author.id,
+                    uid: interaction.user.id,
                 });
                 if (create_item) {
                     const updateUser = yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable)
-                        .where({ uid: message.author.id })
+                        .where({ uid: interaction.user.id })
                         .decrement('currency', item_to_buy.price);
                     if (updateUser) {
-                        message.reply(`You have purchased **${item_to_buy.name.english}** for **${(0, utils_1.format_number)(item_to_buy.price)}**! Remaining Balance: **${(0, utils_1.format_number)(user.currency - item_to_buy.price)}**.`);
+                        (0, queue_1.queueMsg)(`You have purchased **${item_to_buy.name.english}** for **${(0, utils_1.format_number)(item_to_buy.price)}**! Remaining Balance: **${(0, utils_1.format_number)(user.currency - item_to_buy.price)}**.`, interaction, false, 0, undefined, true);
                     }
                 }
             }
         }
     });
 }
-function msgBalance(message) {
+function msgBalance(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const user = yield (0, database_1.getUser)(message.author.id);
+        const user = yield (0, database_1.getUser)(interaction.user.id);
         if (user) {
-            message.reply(`Your current balance is **${(0, utils_1.format_number)(user.currency)}**.`);
+            interaction.reply(`Your current balance is **${(0, utils_1.format_number)(user.currency)}**.`);
         }
     });
 }

@@ -39,14 +39,14 @@ function loadCache(category = defaultCache, maximum = 100) {
     }
 }
 exports.loadCache = loadCache;
-function reportCache(message) {
+function reportCache(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         const report = [];
         report.push('Cache Reports:\n');
         for (const [key, value] of exports.caches) {
             report.push(`**${key}** has **${value.size}** entries.`);
         }
-        yield message.reply(report.join('\n'));
+        yield interaction.reply(report.join('\n'));
     });
 }
 exports.reportCache = reportCache;
@@ -95,9 +95,9 @@ function getGCD(guild_id) {
     });
 }
 exports.getGCD = getGCD;
-function getCache(message, settings) {
+function getCache(guild, settings) {
     return __awaiter(this, void 0, void 0, function* () {
-        let cache = yield (exports.cacheClient === null || exports.cacheClient === void 0 ? void 0 : exports.cacheClient.get(message.guild.id));
+        let cache = yield (exports.cacheClient === null || exports.cacheClient === void 0 ? void 0 : exports.cacheClient.get(guild.id));
         if (!cache) {
             cache = {
                 tweet: [],
@@ -108,8 +108,8 @@ function getCache(message, settings) {
                     specific_channel: settings.specific_channel,
                 },
             };
-            exports.cacheClient === null || exports.cacheClient === void 0 ? void 0 : exports.cacheClient.set(message.guild.id, cache);
-            exports.cacheTwitter === null || exports.cacheTwitter === void 0 ? void 0 : exports.cacheTwitter.set(message.guild.id, 'summit1g');
+            exports.cacheClient === null || exports.cacheClient === void 0 ? void 0 : exports.cacheClient.set(guild.id, cache);
+            exports.cacheTwitter === null || exports.cacheTwitter === void 0 ? void 0 : exports.cacheTwitter.set(guild.id, 'summit1g');
             return cache;
         }
         else {

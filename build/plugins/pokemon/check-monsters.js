@@ -9,27 +9,181 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.searchMonsters = exports.checkFavorites = exports.checkPokedex = exports.checkMonsters = void 0;
+exports.searchMonsters = exports.checkFavorites = exports.checkPokedex = exports.checkMonsters = exports.checkMonstersNew = void 0;
 const discord_js_1 = require("discord.js");
 const database_1 = require("../../clients/database");
 const logger_1 = require("../../clients/logger");
+const queue_1 = require("../../clients/queue");
 const colors_1 = require("../../colors");
 const Monster_1 = require("../../models/Monster");
 const utils_1 = require("../../utils");
 const info_1 = require("./info");
 const monsters_1 = require("./monsters");
-const logger = (0, logger_1.getLogger)('Pokemon');
+const logger = (0, logger_1.getLogger)('Pokémon');
+function checkMonstersNew(interaction, favorites) {
+    var _a, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        logger.debug(`Fetching Pokémon for ${interaction.user.username} in ${(_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.name}..`);
+        let pokemon;
+        if (favorites) {
+            pokemon = yield (0, monsters_1.getUsersFavoriteMonsters)(interaction.user.id);
+        }
+        else {
+            pokemon = yield (0, monsters_1.getUsersMonsters)(interaction.user.id);
+        }
+        const sort = interaction.options.getString('options');
+        if (pokemon) {
+            let message_contents = [];
+            let shiny = '';
+            let favorite = '';
+            let legendary = '';
+            logger.debug(`Successfully fetched! Compiling..`);
+            const temp_monsters = [];
+            const user = yield (0, database_1.getUser)(interaction.user.id);
+            const current_monster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
+                .first()
+                .where('id', user.current_monster);
+            pokemon.forEach((element) => {
+                const monster = (0, monsters_1.findMonsterByIDLocal)(element.monster_id);
+                if (!monster)
+                    return;
+                if (element.shiny) {
+                    shiny = ' ⭐';
+                }
+                else {
+                    shiny = '';
+                }
+                if (element.favorite) {
+                    favorite = ' 💟';
+                }
+                else {
+                    favorite = '';
+                }
+                if (monster.special) {
+                    legendary = ` 💠`;
+                }
+                else {
+                    legendary = '';
+                }
+                const averageIV = (((element.hp +
+                    element.attack +
+                    element.defense +
+                    element.sp_attack +
+                    element.sp_defense +
+                    element.speed) /
+                    186) *
+                    100).toFixed(2);
+                let tmpMsg = '';
+                if (element.id == current_monster.id) {
+                    tmpMsg = `__**${element.id}** - **${monster.name.english}${shiny}${favorite}${legendary}** - **Level ${element.level}** - **Avg IV ${averageIV}%**__`;
+                }
+                else {
+                    tmpMsg = `**${element.id}** - **${monster.name.english}${shiny}${favorite}${legendary}** - **Level ${element.level}** - **Avg IV ${averageIV}%**`;
+                }
+                temp_monsters.push({
+                    id: element.id,
+                    name: monster.name.english,
+                    shiny: shiny,
+                    level: element.level,
+                    iv: averageIV,
+                    msg: tmpMsg,
+                });
+            });
+            if (sort == 'iv_high') {
+                temp_monsters.sort(function (a, b) {
+                    return b.iv - a.iv;
+                });
+            }
+            else if (sort == 'iv_low') {
+                temp_monsters.sort(function (a, b) {
+                    return a.iv - b.iv;
+                });
+            }
+            else if (sort == 'level_low') {
+                temp_monsters.sort(function (a, b) {
+                    return a.level - b.level;
+                });
+            }
+            else if (sort == 'level_high') {
+                temp_monsters.sort(function (a, b) {
+                    return b.level - a.level;
+                });
+            }
+            else if (sort == 'id_high') {
+                temp_monsters.sort(function (a, b) {
+                    return b.id - a.id;
+                });
+            }
+            else if (sort == 'id_low') {
+                temp_monsters.sort(function (a, b) {
+                    return a.id - b.id;
+                });
+            }
+            else if (sort == 'shiny_high') {
+                temp_monsters.sort(function (a, b) {
+                    return b.shiny - a.shiny;
+                });
+            }
+            else if (sort == 'shiny_low') {
+                temp_monsters.sort(function (a, b) {
+                    return a.shiny - b.shiny;
+                });
+            }
+            else if (sort == 'name_low') {
+                temp_monsters.sort(function (a, b) {
+                    return b.name - a.name;
+                });
+            }
+            else if (sort == 'name_high') {
+                temp_monsters.sort(function (a, b) {
+                    return a.name - b.name;
+                });
+            }
+            else {
+                temp_monsters.sort(function (a, b) {
+                    return b.id - a.id;
+                });
+            }
+            temp_monsters.forEach((element) => {
+                message_contents.push(element.msg);
+            });
+            let all_monsters = [];
+            if (message_contents.length > 20) {
+                all_monsters = (0, utils_1.chunk)(message_contents, 20);
+                message_contents = all_monsters[0];
+                message_contents.push(`\nTotal Monsters: **${pokemon.length}**`);
+            }
+            let new_msg = message_contents.join('\n');
+            if (new_msg.length > 2000) {
+                new_msg = new_msg.slice(0, 1997) + '...';
+            }
+            const embed = new discord_js_1.MessageEmbed()
+                .setAuthor('User Profile', (_b = interaction.user.avatarURL()) === null || _b === void 0 ? void 0 : _b.toString(), `https://bot.smokey.gg/user/${interaction.user.id}/pokemon`)
+                .setTitle(`${interaction.user.username}'s Pokémon\n\nShowing: ${(0, utils_1.format_number)(message_contents.length) +
+                '/' +
+                (0, utils_1.format_number)(pokemon.length)}`)
+                .setColor(colors_1.COLOR_GREEN)
+                .setDescription(new_msg);
+            (0, queue_1.queueMsg)(embed, interaction, true, 1, undefined, true);
+            logger.debug(`Sent Pokémon for ${interaction.user.tag} in ${(_c = interaction.guild) === null || _c === void 0 ? void 0 : _c.name}!`);
+        }
+        else {
+            (0, queue_1.queueMsg)("You don't have any Pokémon.", interaction, true);
+        }
+    });
+}
+exports.checkMonstersNew = checkMonstersNew;
 /**
  *
  * @param message
  */
-function checkMonsters(message) {
+function checkMonsters(interaction, args) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        logger.debug(`Fetching Pokémon for ${message.author.username} in ${(_a = message.guild) === null || _a === void 0 ? void 0 : _a.name}..`);
-        const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
+        logger.debug(`Fetching Pokémon for ${interaction.user.username} in ${(_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.name}..`);
+        const splitMsg = args;
         const sort = [splitMsg[1], splitMsg[2]];
-        const pokemon = yield (0, monsters_1.getUsersMonsters)(message.author.id);
+        const pokemon = yield (0, monsters_1.getUsersMonsters)(interaction.user.id);
         if (pokemon.length > 0) {
             let message_contents = [];
             let shiny = '';
@@ -37,7 +191,7 @@ function checkMonsters(message) {
             let legendary = '';
             logger.debug(`Successfully fetched! Compiling..`);
             const temp_monsters = [];
-            const user = yield (0, database_1.getUser)(message.author.id);
+            const user = yield (0, database_1.getUser)(interaction.user.id);
             const current_monster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
                 .first()
                 .where('id', user.current_monster);
@@ -174,26 +328,26 @@ function checkMonsters(message) {
             }
             const new_msg = message_contents.join('\n');
             const embed = new discord_js_1.MessageEmbed()
-                .setAuthor(`${message.author.username}'s Pokémon\nShowing: ${(0, utils_1.format_number)(message_contents.length) +
+                .setAuthor(`${interaction.user.username}'s Pokémon\nShowing: ${(0, utils_1.format_number)(message_contents.length) +
                 '/' +
-                (0, utils_1.format_number)(pokemon.length)}`, (_b = message.author.avatarURL()) === null || _b === void 0 ? void 0 : _b.toString())
+                (0, utils_1.format_number)(pokemon.length)}`, (_b = interaction.user.avatarURL()) === null || _b === void 0 ? void 0 : _b.toString())
                 .setColor(colors_1.COLOR_GREEN)
                 .setDescription(new_msg);
-            yield message.channel
+            yield interaction.channel
                 .send({ embeds: [embed] })
                 .then(() => {
                 var _a;
-                logger.debug(`Sent Pokémon for ${message.author.tag} in ${(_a = message.guild) === null || _a === void 0 ? void 0 : _a.name}!`);
+                logger.debug(`Sent Pokémon for ${interaction.user.tag} in ${(_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.name}!`);
             })
                 .catch((err) => __awaiter(this, void 0, void 0, function* () {
                 logger.error(err);
             }));
         }
         else {
-            message
+            interaction
                 .reply(`You don't have any monsters in your Pokédex. :(`)
                 .then(() => {
-                logger.debug(`${message.author.username} doesn't have any Pokémon!`);
+                logger.debug(`${interaction.user.username} doesn't have any Pokémon!`);
                 return;
             })
                 .catch((err) => __awaiter(this, void 0, void 0, function* () {
@@ -203,13 +357,13 @@ function checkMonsters(message) {
     });
 }
 exports.checkMonsters = checkMonsters;
-function checkPokedex(message) {
+function checkPokedex(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const pokemon = yield (0, info_1.userDex)(message);
+        const pokemon = yield (0, info_1.userDex)(interaction.user.id);
         const pokedex = (0, monsters_1.getPokedex)();
-        let msg_array = [];
+        const msg_array = [];
         let pokemon_count = 0;
-        const splitMsg = message.content.split(' ');
+        const missing = interaction.options.getBoolean('missing');
         pokedex.forEach((dex) => {
             if (!dex.images || !dex.images.normal)
                 return;
@@ -220,7 +374,7 @@ function checkPokedex(message) {
                         count++;
                     }
                 });
-                if (!message.content.match(/missing/i)) {
+                if (!missing) {
                     msg_array.push(`**${dex.id}** - **${dex.name.english}** - **${count}**`);
                     pokemon_count++;
                 }
@@ -231,27 +385,16 @@ function checkPokedex(message) {
             }
         });
         const all_monsters = (0, utils_1.chunk)(msg_array, 20);
-        if (splitMsg.length > 1 && !splitMsg[splitMsg.length - 1].match(/missing/i)) {
-            const page = parseInt(splitMsg[splitMsg.length - 1]) - 1;
-            if (all_monsters[page]) {
-                msg_array = all_monsters[page];
-                msg_array.push(`Page: **${page + 1}/${(0, utils_1.format_number)(all_monsters.length)}**`);
-            }
-        }
-        else {
-            msg_array = all_monsters[0];
-            msg_array.push(`Page: **1/${(0, utils_1.format_number)(all_monsters.length)}**`);
-        }
-        const new_msg = msg_array.join('\n');
+        const new_msg = all_monsters.join('\n');
         const embed = new discord_js_1.MessageEmbed()
-            .setAuthor(`Pokédex - Total Pokémon: ${pokemon_count}`, message.author.avatarURL())
+            .setAuthor(`Pokédex - Total Pokémon: ${pokemon_count}`, interaction.user.avatarURL())
             .setColor(colors_1.COLOR_WHITE)
             .setDescription(new_msg);
-        yield message.channel
+        yield interaction.channel
             .send({ embeds: [embed] })
-            .then((message) => {
+            .then((interaction) => {
             var _a;
-            logger.debug(`Sent PokeDex in ${(_a = message.guild) === null || _a === void 0 ? void 0 : _a.name}!`);
+            logger.debug(`Sent PokeDex in ${(_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.name}!`);
         })
             .catch((err) => __awaiter(this, void 0, void 0, function* () {
             logger.error(err);
@@ -263,13 +406,13 @@ exports.checkPokedex = checkPokedex;
  *
  * @param message
  */
-function checkFavorites(message) {
+function checkFavorites(interaction, args) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        logger.debug(`Fetching Favorite Pokémon for ${message.author.tag} in ${(_a = message.guild) === null || _a === void 0 ? void 0 : _a.name}..`);
-        const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
+        logger.debug(`Fetching Favorite Pokémon for ${interaction.user.tag} in ${(_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.name}..`);
+        const splitMsg = args;
         const sort = [splitMsg[1], splitMsg[2]];
-        const pokemon = yield (0, monsters_1.getUsersFavoriteMonsters)(message.author.id);
+        const pokemon = yield (0, monsters_1.getUsersFavoriteMonsters)(interaction.user.id);
         if (pokemon.length > 0) {
             let message_contents = [];
             let shiny = '';
@@ -404,26 +547,26 @@ function checkFavorites(message) {
             }
             const new_msg = message_contents.join('\n');
             const embed = new discord_js_1.MessageEmbed()
-                .setAuthor(`${message.author.username}'s Favorites\nShowing: ${(0, utils_1.format_number)(message_contents.length) +
+                .setAuthor(`${interaction.user.username}'s Favorites\nShowing: ${(0, utils_1.format_number)(message_contents.length) +
                 '/' +
-                (0, utils_1.format_number)(pokemon.length)}\nTotal: ${(0, utils_1.format_number)(pokemon.length)}`, (_b = message.author.avatarURL()) === null || _b === void 0 ? void 0 : _b.toString())
+                (0, utils_1.format_number)(pokemon.length)}\nTotal: ${(0, utils_1.format_number)(pokemon.length)}`, (_b = interaction.user.avatarURL()) === null || _b === void 0 ? void 0 : _b.toString())
                 .setColor(colors_1.COLOR_WHITE)
                 .setDescription(new_msg);
-            yield message.channel
+            yield interaction.channel
                 .send({ embeds: [embed] })
-                .then((message) => {
+                .then((interaction) => {
                 var _a;
-                logger.debug(`Sent favorites in ${(_a = message.guild) === null || _a === void 0 ? void 0 : _a.name}!`);
+                logger.debug(`Sent favorites in ${(_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.name}!`);
             })
                 .catch((err) => __awaiter(this, void 0, void 0, function* () {
                 logger.error(err);
             }));
         }
         else {
-            message
+            interaction
                 .reply(`You don't have any favorite monsters in your Pokédex. :( Use \`!favorite ID\` to add one.`)
                 .then(() => {
-                logger.debug(`${message.author.username} doesn't have any favorite Pokémon!`);
+                logger.debug(`${interaction.user.username} doesn't have any favorite Pokémon!`);
                 return;
             })
                 .catch((err) => __awaiter(this, void 0, void 0, function* () {
@@ -437,16 +580,16 @@ exports.checkFavorites = checkFavorites;
  *
  * @param message
  */
-function searchMonsters(message) {
+function searchMonsters(interaction, args) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        const splitMsg = message.content.replace(/ {2,}/gm, ' ').split(' ');
-        const isQuote = message.content.match('"');
+        const splitMsg = args;
+        const isQuote = false;
         let sort = ['iv', 'high'];
         let search = undefined;
         let page = 0;
         if (isQuote) {
-            const parseSearch = message.content.replace(/ {2,}/gm, ' ').split('"');
+            const parseSearch = args[0].replace(/ {2,}/gm, ' ').split('"');
             const splitSort = parseSearch[parseSearch.length - 1].split(' ');
             search = parseSearch[1].toLowerCase();
             if (splitSort.length == 3) {
@@ -458,11 +601,11 @@ function searchMonsters(message) {
             }
         }
         else {
-            const parseSearch = message.content.replace(/ {2,}/gm, ' ').split(' ');
+            const parseSearch = args[0].replace(/ {2,}/gm, ' ').split(' ');
             sort = [splitMsg[2], splitMsg[3]];
             search = parseSearch[1].toLowerCase();
         }
-        const pokemon = yield (0, monsters_1.getUsersMonsters)(message.author.id);
+        const pokemon = yield (0, monsters_1.getUsersMonsters)(interaction.user.id);
         if (pokemon.length > 0) {
             let message_contents = [];
             let shiny = '';
@@ -589,37 +732,37 @@ function searchMonsters(message) {
                 }
                 const new_msg = message_contents.join('\n');
                 const embed = new discord_js_1.MessageEmbed()
-                    .setAuthor(`${message.author.username}'s search for '${search}' - Total: ${(0, utils_1.format_number)(message_contents.length) +
+                    .setAuthor(`${interaction.user.username}'s search for '${search}' - Total: ${(0, utils_1.format_number)(message_contents.length) +
                     '/' +
-                    (0, utils_1.format_number)(pokemon.length)} - Pages: ${(0, utils_1.format_number)(all_monsters.length)}`, (_a = message.author.avatarURL()) === null || _a === void 0 ? void 0 : _a.toString())
+                    (0, utils_1.format_number)(pokemon.length)} - Pages: ${(0, utils_1.format_number)(all_monsters.length)}`, (_a = interaction.user.avatarURL()) === null || _a === void 0 ? void 0 : _a.toString())
                     .setColor(0xff0000)
                     .setDescription(new_msg);
-                yield message.channel
+                yield interaction.channel
                     .send({ embeds: [embed] })
                     .then(() => {
                     var _a;
-                    logger.debug(`Sent Pokémon for ${message.author.username} in ${(_a = message.guild) === null || _a === void 0 ? void 0 : _a.name}!`);
+                    logger.debug(`Sent Pokémon for ${interaction.user.username} in ${(_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.name}!`);
                 })
                     .catch((err) => __awaiter(this, void 0, void 0, function* () {
                     logger.error(err);
                 }));
             }
             else if (message_contents.length == 0) {
-                message.reply(`Cannot find '${search}'.`);
+                interaction.reply(`Cannot find '${search}'.`);
             }
             else {
                 const new_msg = message_contents.join('\n');
                 const embed = new discord_js_1.MessageEmbed()
-                    .setAuthor(`${message.author.username}'s search for '${search}' - Total: ${(0, utils_1.format_number)(message_contents.length) +
+                    .setAuthor(`${interaction.user.username}'s search for '${search}' - Total: ${(0, utils_1.format_number)(message_contents.length) +
                     '/' +
-                    (0, utils_1.format_number)(pokemon.length)}`, (_b = message.author.avatarURL()) === null || _b === void 0 ? void 0 : _b.toString())
+                    (0, utils_1.format_number)(pokemon.length)}`, (_b = interaction.user.avatarURL()) === null || _b === void 0 ? void 0 : _b.toString())
                     .setColor(0xff0000)
                     .setDescription(new_msg);
-                yield message.channel
+                yield interaction.channel
                     .send({ embeds: [embed] })
                     .then(() => {
                     var _a;
-                    logger.debug(`Sent Pokémon for ${message.author.username} in ${(_a = message.guild) === null || _a === void 0 ? void 0 : _a.name}!`);
+                    logger.debug(`Sent Pokémon for ${interaction.user.username} in ${(_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.name}!`);
                 })
                     .catch((err) => __awaiter(this, void 0, void 0, function* () {
                     logger.error(err);
@@ -627,10 +770,10 @@ function searchMonsters(message) {
             }
         }
         else {
-            message
+            interaction
                 .reply(`You don't have any monsters in your Pokédex. :(`)
                 .then(() => {
-                logger.debug(`${message.author.username} doesn't have any Pokémon!`);
+                logger.debug(`${interaction.user.username} doesn't have any Pokémon!`);
                 return;
             })
                 .catch((err) => __awaiter(this, void 0, void 0, function* () {

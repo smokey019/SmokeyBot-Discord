@@ -16,12 +16,13 @@ exports.unFavorite = exports.setFavorite = exports.selectMonster = exports.getUs
 const discord_js_1 = require("discord.js");
 const database_1 = require("../../clients/database");
 const logger_1 = require("../../clients/logger");
+const queue_1 = require("../../clients/queue");
 const Monster_1 = require("../../models/Monster");
 const MonsterUser_1 = require("../../models/MonsterUser");
 const utils_1 = require("../../utils");
 const pokedex_min_json_1 = __importDefault(require("./data/pokedex_min.json"));
 const pokemon_list_1 = require("./pokemon-list");
-const logger = (0, logger_1.getLogger)('Pokemon');
+const logger = (0, logger_1.getLogger)('Pokémon');
 const MonsterPool = [];
 exports.MonsterDex = new discord_js_1.Collection();
 let Gens = {
@@ -308,25 +309,25 @@ function getUsersFavoriteMonsters(uid, released) {
             .where({
             uid: uid,
             released: released,
-            favorite: 1
+            favorite: 1,
         });
         return monsters;
     });
 }
 exports.getUsersFavoriteMonsters = getUsersFavoriteMonsters;
-function selectMonster(message) {
+function selectMonster(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const splitMsg = message.content.split(' ');
-        const monster = yield getUserMonster(splitMsg[1]);
+        const tmp = interaction.options.getString('pokemon');
+        const monster = yield getUserMonster(tmp);
         if (!monster)
-            return undefined;
+            return false;
         const dex = yield findMonsterByID(monster.monster_id);
-        if (monster && message.author.id == monster.uid) {
+        if (monster && interaction.user.id == monster.uid) {
             const updateUser = yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable)
-                .where({ uid: message.author.id })
-                .update({ current_monster: parseInt(splitMsg[1]) });
+                .where({ uid: interaction.user.id })
+                .update({ current_monster: parseInt(tmp) });
             if (updateUser) {
-                message.reply(`Selected **Level ${monster.level} ${dex.name.english}**!`);
+                (0, queue_1.queueMsg)(`Selected **Level ${monster.level} ${dex.name.english}**!`, interaction, true);
                 return true;
             }
             else {
@@ -339,19 +340,19 @@ function selectMonster(message) {
     });
 }
 exports.selectMonster = selectMonster;
-function setFavorite(message) {
+function setFavorite(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const splitMsg = message.content.split(' ');
-        const monster = yield getUserMonster(splitMsg[1]);
+        const tmp = interaction.options.getString('pokemon');
+        const monster = yield getUserMonster(tmp);
         if (!monster)
             return undefined;
         const dex = yield findMonsterByID(monster.monster_id);
-        if (monster && message.author.id == monster.uid) {
+        if (monster && interaction.user.id == monster.uid) {
             const updatedMonster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
                 .where('id', monster.id)
                 .update({ favorite: 1 });
             if (updatedMonster) {
-                message.reply(`Favorited monster **Level ${monster.level} ${dex.name.english}**!`);
+                (0, queue_1.queueMsg)(`Favorited monster **Level ${monster.level} ${dex.name.english}**!`, interaction, true);
                 return true;
             }
             else {
@@ -364,16 +365,16 @@ function setFavorite(message) {
     });
 }
 exports.setFavorite = setFavorite;
-function unFavorite(message) {
+function unFavorite(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const splitMsg = message.content.split(' ');
-        const monster = yield getUserMonster(splitMsg[1]);
-        if (monster && message.author.id == monster.uid) {
+        const tmp = interaction.options.getString('pokemon');
+        const monster = yield getUserMonster(tmp);
+        if (monster && interaction.user.id == monster.uid) {
             const updatedMonster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
                 .where('id', monster.id)
                 .update({ favorite: 0 });
             if (updatedMonster) {
-                message.reply(`Unfavorited monster id ${monster.id}!`);
+                (0, queue_1.queueMsg)(`Unfavorited monster id ${monster.id}!`, interaction, true);
                 return true;
             }
             else {

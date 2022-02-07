@@ -9,13 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.recoverMonster = exports.releaseMonster = void 0;
+exports.recoverMonster = exports.releaseMonster = exports.releaseMonsterNew = void 0;
 const database_1 = require("../../clients/database");
 const logger_1 = require("../../clients/logger");
+const queue_1 = require("../../clients/queue");
 const Monster_1 = require("../../models/Monster");
-const utils_1 = require("../../utils");
 const monsters_1 = require("./monsters");
-const logger = (0, logger_1.getLogger)('Pokemon');
+const logger = (0, logger_1.getLogger)('Pokémon');
 /**
  * Release a monster
  * @param monster_id
@@ -54,9 +54,30 @@ function recover(monster_id) {
         }
     });
 }
-function releaseMonster(message) {
+function releaseMonsterNew(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const tmpMsg = (0, utils_1.explode)(message.content, ' ', 2);
+        let monster = yield (0, monsters_1.getUserMonster)(interaction.options.getString('pokemon'));
+        if (monster) {
+            const monster_dex = yield (0, monsters_1.findMonsterByID)(monster.monster_id);
+            yield release(monster.id);
+            (0, queue_1.queueMsg)(`Successfully released ${monster_dex.name.english}.`, interaction, true);
+        }
+        else {
+            const user = yield (0, database_1.getUser)(interaction.user.id);
+            monster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
+                .select()
+                .where('id', user.latest_monster)
+                .first();
+            yield release(monster.id);
+            const monster_dex = yield (0, monsters_1.findMonsterByID)(monster.monster_id);
+            (0, queue_1.queueMsg)(`Successfully released ${monster_dex.name.english}.`, interaction, true);
+        }
+    });
+}
+exports.releaseMonsterNew = releaseMonsterNew;
+function releaseMonster(interaction, args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const tmpMsg = args;
         if (tmpMsg.length > 1) {
             if (tmpMsg[1].toString().match(',') || tmpMsg[1].toString().match(' ')) {
                 let multi_dump = [];
@@ -75,25 +96,17 @@ function releaseMonster(message) {
                             return;
                         if (to_release &&
                             !to_release.released &&
-                            to_release.uid == message.author.id) {
+                            to_release.uid == interaction.user.id) {
                             yield release(to_release.id);
                         }
                     }));
-                    message
-                        .reply(`Attempting to release **${multi_dump.length}** monsters.. Good luck little guys :(`)
-                        .then(() => {
-                        logger.info(`${message.author.username} Attempting to release your monsters.. Good luck little guys :(`);
-                        return;
-                    })
-                        .catch((err) => {
-                        logger.error(err);
-                    });
+                    (0, queue_1.queueMsg)(`Attempting to release **${multi_dump.length}** monsters.. Good luck little guys :(`, interaction, true);
                 }
             }
             else {
                 let to_release = undefined;
                 if (tmpMsg[1] == '^') {
-                    const user = yield (0, database_1.getUser)(message.author.id);
+                    const user = yield (0, database_1.getUser)(interaction.user.id);
                     to_release = yield (0, monsters_1.getUserMonster)(user.latest_monster);
                 }
                 else {
@@ -104,29 +117,21 @@ function releaseMonster(message) {
                 if (!to_release)
                     return;
                 if (!to_release.released &&
-                    to_release.uid == message.author.id &&
+                    to_release.uid == interaction.user.id &&
                     !to_release.released) {
                     const monster = yield (0, monsters_1.findMonsterByID)(to_release.monster_id);
                     const released_monster = yield release(to_release.id);
                     if (released_monster) {
-                        message
-                            .reply(`Successfully released your monster. Goodbye **${monster.name.english}** :(`)
-                            .then(() => {
-                            logger.trace(`Successfully released monster. :(`);
-                            return;
-                        })
-                            .catch((err) => {
-                            logger.error(err);
-                        });
+                        (0, queue_1.queueMsg)(`Successfully released your monster. Goodbye **${monster.name.english}** :(`, interaction, true);
                     }
                 }
             }
         }
         else {
-            message
-                .reply(`Not enough things in ur msg there m8`)
+            interaction
+                .reply({ content: `Not enough things in ur msg there m8`, ephemeral: true })
                 .then(() => {
-                logger.debug(`${message.author.username} not enough things in ur msg there m8`);
+                logger.debug(`${interaction.user.username} not enough things in ur msg there m8`);
                 return;
             })
                 .catch((error) => logger.error(error));
@@ -134,25 +139,20 @@ function releaseMonster(message) {
     });
 }
 exports.releaseMonster = releaseMonster;
-function recoverMonster(message) {
+function recoverMonster(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const tmpMsg = message.content.split(' ');
-        if (tmpMsg.length > 1) {
-            const to_release = yield (0, monsters_1.getUserMonster)(tmpMsg[1]);
-            if (to_release &&
-                to_release.released &&
-                to_release.uid == message.author.id) {
-                const monster = yield (0, monsters_1.findMonsterByID)(to_release.monster_id);
-                const released_monster = yield recover(to_release.id);
-                if (released_monster) {
-                    message
-                        .reply(`Successfully recovered your monster. Welcome back **${monster.name.english}**!`)
-                        .then(() => {
-                        logger.info(`${message.author.username} Successfully recovered **${monster.name.english}**!`);
-                        return;
-                    })
-                        .catch((error) => logger.error(error));
-                }
+        const to_release = yield (0, monsters_1.getUserMonster)(interaction.options.getString('pokemon'));
+        if (!to_release) {
+            interaction.reply({ content: 'There was an error processing your request.', ephemeral: true });
+            return;
+        }
+        if (to_release &&
+            to_release.released &&
+            to_release.uid == interaction.user.id) {
+            const monster = yield (0, monsters_1.findMonsterByID)(to_release.monster_id);
+            const released_monster = yield recover(to_release.id);
+            if (released_monster) {
+                (0, queue_1.queueMsg)(`Successfully recovered your monster. Welcome back **${monster.name.english}**!`, interaction, true);
             }
         }
     });

@@ -12,8 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkForEmptyServers = void 0;
 const discord_1 = require("../../clients/discord");
 const logger_1 = require("../../clients/logger");
+const queue_1 = require("../../clients/queue");
 const logger = (0, logger_1.getLogger)('SmokeyBot');
-function checkForEmptyServers(message) {
+function checkForEmptyServers(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         const all_guilds = discord_1.discordClient.guilds.cache;
         let leave_count = 0;
@@ -30,7 +31,7 @@ function checkForEmptyServers(message) {
             }
         });
         logger.info(`We're leaving ${leave_count} servers.`);
-        message.reply(`We're leaving ${leave_count} servers.`);
+        (0, queue_1.queueMsg)(`We're leaving ${leave_count} servers.`, interaction, true);
     });
 }
 exports.checkForEmptyServers = checkForEmptyServers;

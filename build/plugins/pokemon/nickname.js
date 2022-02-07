@@ -11,38 +11,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setNickname = void 0;
 const database_1 = require("../../clients/database");
+const queue_1 = require("../../clients/queue");
 const Monster_1 = require("../../models/Monster");
-const parser_1 = require("./parser");
-function setNickname(message) {
-    var _a, _b;
+function setNickname(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const load_prefixes = yield (0, parser_1.getPrefixes)(message.guild.id);
-        const prefixes = RegExp(load_prefixes.join('|'));
-        const detect_prefix = message.content.match(prefixes);
-        const prefix = detect_prefix.shift();
-        const args = message.content
-            .slice(prefix.length)
-            .replace(/ {2,}/gm, ' ')
-            .split(/ +/);
-        const command = args.shift();
-        const user = yield (0, database_1.getUser)(message.author.id);
-        // const monster = await getUserMonster(user.current_monster);
-        if (((_a = args[1]) === null || _a === void 0 ? void 0 : _a.trim()) && command && (user === null || user === void 0 ? void 0 : user.current_monster)) {
+        const nick = interaction.options.getString('pokemon');
+        const user = yield (0, database_1.getUser)(interaction.user.id);
+        if (nick.trim() && user.current_monster) {
             const updatedMonster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
                 .where('id', user.current_monster)
-                .update({ nickname: args[1] });
+                .update({ nickname: nick });
             if (updatedMonster) {
-                message.reply('Nickname successfully set for your current monster!');
+                (0, queue_1.queueMsg)('Nickname successfully set for your current monster!', interaction, true);
             }
             else {
-                message.reply('There was an error setting the nickname for your current monster.');
+                (0, queue_1.queueMsg)('There was an error setting the nickname for your current monster.', interaction, true);
             }
         }
-        else if (!((_b = args[1]) === null || _b === void 0 ? void 0 : _b.trim())) {
-            message.reply('You have to set a valid nickname, idiot.');
+        else if (!(nick === null || nick === void 0 ? void 0 : nick.trim())) {
+            (0, queue_1.queueMsg)('You have to set a valid nickname, idiot.', interaction, true);
         }
         else if (!(user === null || user === void 0 ? void 0 : user.current_monster)) {
-            message.reply("You don't have a monster currently selected or no monsters caught.");
+            (0, queue_1.queueMsg)("You don't have a monster currently selected or no monsters caught.", interaction, true);
         }
     });
 }
