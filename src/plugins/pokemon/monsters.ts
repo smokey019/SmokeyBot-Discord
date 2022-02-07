@@ -1,6 +1,7 @@
-import { Collection } from 'discord.js';
+import { Collection, CommandInteraction } from 'discord.js';
 import { databaseClient } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
+import { queueMsg } from '../../clients/queue';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 import { getRndInteger, jsonFetch } from '../../utils';
@@ -17,7 +18,7 @@ import {
   GenerationTwo
 } from './pokemon-list';
 
-const logger = getLogger('Pokemon');
+const logger = getLogger('Pokémon');
 
 const MonsterPool: Array<number> = [];
 export const MonsterDex: Collection<number, IMonsterDex> = new Collection();
@@ -116,7 +117,6 @@ async function formDex(): Promise<void> {
   }
 
   for (let index = 0; index < 2; index++) {
-
     Gens.one.forEach((element) => {
       MonsterPool.push(element);
       MonsterPool.push(element);
@@ -328,49 +328,30 @@ export async function getUsersFavoriteMonsters(
     .where({
       uid: uid,
       released: released,
-      favorite: 1
+      favorite: 1,
     });
   return monsters;
 }
 
-export async function selectMonster(interaction: Interaction): Promise<boolean> {
-  const splitMsg = args;
+export async function selectMonster(
+  interaction: CommandInteraction,
+): Promise<boolean> {
+  const tmp = interaction.options.getString('pokemon');
 
-  const monster: IMonsterModel = await getUserMonster(splitMsg[1]);
-  if (!monster) return undefined;
+  const monster: IMonsterModel = await getUserMonster(tmp);
+  if (!monster) return false;
   const dex = await findMonsterByID(monster.monster_id);
 
   if (monster && interaction.user.id == monster.uid) {
     const updateUser = await databaseClient<IMonsterUserModel>(MonsterUserTable)
       .where({ uid: interaction.user.id })
-      .update({ current_monster: parseInt(splitMsg[1]) });
+      .update({ current_monster: parseInt(tmp) });
 
     if (updateUser) {
-      (interaction as BaseCommandInteraction).reply(`Selected **Level ${monster.level} ${dex.name.english}**!`);
-      return true;
-    } else {
-      return false;
-    }
-  } else {
-    return false;
-  }
-}
-
-export async function setFavorite(interaction: Interaction): Promise<boolean> {
-  const splitMsg = args;
-
-  const monster: IMonsterModel = await getUserMonster(splitMsg[1]);
-  if (!monster) return undefined;
-  const dex = await findMonsterByID(monster.monster_id);
-
-  if (monster && interaction.user.id == monster.uid) {
-    const updatedMonster = await databaseClient<IMonsterModel>(MonsterTable)
-      .where('id', monster.id)
-      .update({ favorite: 1 });
-
-    if (updatedMonster) {
-      (interaction as BaseCommandInteraction).reply(
-        `Favorited monster **Level ${monster.level} ${dex.name.english}**!`,
+      queueMsg(
+        `Selected **Level ${monster.level} ${dex.name.english}**!`,
+        interaction,
+        true,
       );
       return true;
     } else {
@@ -381,10 +362,41 @@ export async function setFavorite(interaction: Interaction): Promise<boolean> {
   }
 }
 
-export async function unFavorite(interaction: Interaction): Promise<boolean> {
-  const splitMsg = args;
+export async function setFavorite(
+  interaction: CommandInteraction,
+): Promise<boolean> {
+  const tmp = interaction.options.getString('pokemon');
 
-  const monster: IMonsterModel = await getUserMonster(splitMsg[1]);
+  const monster: IMonsterModel = await getUserMonster(tmp);
+  if (!monster) return undefined;
+  const dex = await findMonsterByID(monster.monster_id);
+
+  if (monster && interaction.user.id == monster.uid) {
+    const updatedMonster = await databaseClient<IMonsterModel>(MonsterTable)
+      .where('id', monster.id)
+      .update({ favorite: 1 });
+
+    if (updatedMonster) {
+      queueMsg(
+        `Favorited monster **Level ${monster.level} ${dex.name.english}**!`,
+        interaction,
+        true,
+      );
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+export async function unFavorite(
+  interaction: CommandInteraction,
+): Promise<boolean> {
+  const tmp = interaction.options.getString('pokemon');
+
+  const monster: IMonsterModel = await getUserMonster(tmp);
 
   if (monster && interaction.user.id == monster.uid) {
     const updatedMonster = await databaseClient<IMonsterModel>(MonsterTable)
@@ -392,7 +404,7 @@ export async function unFavorite(interaction: Interaction): Promise<boolean> {
       .update({ favorite: 0 });
 
     if (updatedMonster) {
-      (interaction as BaseCommandInteraction).reply(`Unfavorited monster id ${monster.id}!`);
+      queueMsg(`Unfavorited monster id ${monster.id}!`, interaction, true);
       return true;
     } else {
       return false;

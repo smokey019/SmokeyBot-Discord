@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  BaseCommandInteraction,
   Collection,
+  CommandInteraction,
   GuildChannel,
-  Interaction,
   TextBasedChannels,
   TextChannel
 } from 'discord.js';
@@ -14,7 +13,10 @@ const logger = getLogger('Queue');
 
 export const EmoteQueue: Collection<
   string,
-  { emotes: any[]; msg: Interaction }
+  {
+    emotes: any[];
+    msg: CommandInteraction;
+  }
 > = new Collection();
 const EMOTE_COOLDOWN = 30 * 1000;
 const MSG_COOLDOWN = 1.5 * 1000;
@@ -27,7 +29,7 @@ export let last_message = undefined;
 
 interface MsgQueueType {
   outgoingMsg: any;
-  msg: Interaction;
+  msg: CommandInteraction;
   reply?: boolean;
   spawn?: GuildChannel | TextChannel | TextBasedChannels;
   embed?: boolean;
@@ -44,14 +46,14 @@ let timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
  */
 export async function resetQueue(
   queue = 'emote',
-  interaction: Interaction,
+  interaction: CommandInteraction,
 ): Promise<void> {
   switch (queue) {
     case 'emote':
       clearTimeout(timerEmoteQ);
       EmoteQueue.clear();
       timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
-      await (interaction as BaseCommandInteraction).reply(
+      await (interaction as CommandInteraction).reply(
         'Successfully reset emote queue.',
       );
       logger.error('Reset emote queue.');
@@ -61,7 +63,7 @@ export async function resetQueue(
       clearTimeout(timerMsgQ);
       EmoteQueue.clear();
       timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
-      await (interaction as BaseCommandInteraction).reply(
+      await (interaction as CommandInteraction).reply(
         'Successfully reset message queue.',
       );
       logger.error('Reset message queue.');
@@ -82,7 +84,7 @@ export async function resetQueue(
  */
 export function queueMsg(
   outgoingMsg: any,
-  msg: Interaction,
+  msg: CommandInteraction,
   reply = false,
   priority = 0,
   spawn?: GuildChannel | TextChannel | TextBasedChannels,
@@ -158,23 +160,14 @@ async function runMsgQueue() {
         } else if (!object.reply && !object.spawn && object.embed) {
           object.msg.channel.send({ embeds: [object.outgoingMsg] });
           last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
+        } else if (object.reply && !object.spawn && object.embed) {
+          object.msg.reply({ embeds: [object.outgoingMsg] });
+          last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
         } else if (!object.reply && object.spawn) {
           (object.spawn as TextChannel).send(object.outgoingMsg);
           last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
         } else {
-          await (object.msg as BaseCommandInteraction)
-            .reply(object.outgoingMsg)
-            .then(() => {
-              try {
-                logger.debug(
-                  `Sent a reply to ${object.msg.user.username} in ${object.msg.guild?.name}.`,
-                );
-                last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
-              } catch (error) {
-                timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
-                logger.error(error);
-              }
-            });
+          await object.msg.reply(object.outgoingMsg);
         }
         timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
       } catch (error) {
@@ -211,6 +204,9 @@ async function runEmoteQueue() {
       } else {
         const temp = EmoteQueue.first();
         logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
+        temp.msg.editReply(
+          'Finished uploading emotes. You can sync again whenever you want.',
+        );
         EmoteQueue.delete(EmoteQueue.firstKey());
         timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
       }
@@ -232,7 +228,7 @@ async function runEmoteQueue() {
  */
 async function create_emoji(
   emote_url: string,
-  interaction: Interaction,
+  interaction: CommandInteraction,
   name: string,
 ): Promise<boolean> {
   try {

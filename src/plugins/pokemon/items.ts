@@ -1,11 +1,13 @@
-import { ColorResolvable, MessageEmbed } from 'discord.js';
+import {
+  ColorResolvable, CommandInteraction, MessageEmbed
+} from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
-import { getLogger } from '../../clients/logger';
+import { queueMsg } from '../../clients/queue';
 import { COLOR_BLUE } from '../../colors';
 import { IItemsModel, ItemsTable } from '../../models/Items';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
-import { asyncForEach, chunk, explode, format_number } from '../../utils';
+import { asyncForEach, chunk, format_number } from '../../utils';
 import Items from './data/items_min.json';
 import {
   findMonsterByID,
@@ -13,52 +15,41 @@ import {
   getUserMonster,
   IMonsterDex
 } from './monsters';
-// import MultiMap from 'mnemonist/multi-map';
-import { getPrefixes } from './parser';
-
-const logger = getLogger('Items');
 
 export type Iitem = typeof Items[1];
 
 export const itemDB = Items;
 
-export async function parseItems(interaction: Interaction): Promise<void> {
-  const load_prefixes = await getPrefixes(interaction.guild.id);
-  const prefixes = RegExp(load_prefixes.join('|'));
-  const detect_prefix = interaction.content.match(prefixes);
-  const prefix = detect_prefix.shift();
-  const args = interaction.content
-    .slice(prefix.length)
-    .trim()
-    .toLowerCase()
-    .replace(/ {2,}/gm, ' ')
-    .split(/ +/);
-  const command = args[1];
+export async function parseItems(
+  interaction: CommandInteraction,
+  args: string[],
+): Promise<void> {
+  const command = (interaction as CommandInteraction).commandName;
 
   if (command == 'buy') {
-    await buyItem(message);
+    await buyItem(interaction, args);
   } else if (command == 'remove' || command == '-') {
-    await removeMonsterItem(message);
+    await removeMonsterItem(interaction, args);
   } else if (command == 'balance') {
-    await msgBalance(message);
+    await msgBalance(interaction);
   } else if (command == 'give' || command == '+') {
-    await giveMonsterItem(message);
+    await giveMonsterItem(interaction, args);
   } else if (command == 'list' || command == 'items' || command == '=') {
-    await msgUserItems(message);
+    await msgUserItems(interaction, args);
   } else if (command == 'shop') {
-    await listItems(message);
+    await listItems(interaction, args);
   } else if (command == 'update') {
-    await updateItems(message);
+    await updateItems(interaction);
   }
 }
 
-async function listItems(interaction: Interaction) {
+async function listItems(interaction: CommandInteraction, args: string[]) {
   let item_message = [];
 
   const splitMsg = args;
 
   itemDB.forEach((element) => {
-    item_interaction.push(
+    item_message.push(
       `ID: ${element.id} - Name: ${
         element.name.english
       } - Price: ${format_number(element.price)}`,
@@ -67,7 +58,7 @@ async function listItems(interaction: Interaction) {
 
   let all_items = [];
 
-  if (item_interaction.length > 10) {
+  if (item_message.length > 10) {
     all_items = chunk(item_message, 10);
 
     if (splitMsg.length == 3 && all_items.length > 1) {
@@ -81,7 +72,7 @@ async function listItems(interaction: Interaction) {
     }
   }
 
-  const new_msg = item_interaction.join('\n');
+  const new_msg = item_message.join('\n');
 
   const embed = new MessageEmbed()
     .setAuthor(
@@ -90,34 +81,19 @@ async function listItems(interaction: Interaction) {
     )
     .setColor(0xff0000)
     .setDescription(new_msg);
-  await interaction.channel
-    .send({ embeds: [embed] })
-    .then((interaction) => {
-      return message;
-    })
-    .catch((err) => {
-      logger.error(err);
-    });
+  queueMsg(embed, interaction, false, 0, undefined, true);
 }
 
-async function msgUserItems(interaction: Interaction): Promise<void> {
-  const isQuote = interaction.content.match('"');
+async function msgUserItems(
+  interaction: CommandInteraction,
+  args: string[],
+): Promise<void> {
+  const isQuote = false;
   const sort = ['id', 'high'];
   let search = undefined;
   let page = 0;
 
-  const load_prefixes = await getPrefixes(interaction.guild.id);
-  const prefixes = RegExp(load_prefixes.join('|'));
-  const detect_prefix = interaction.content.match(prefixes);
-  const prefix = detect_prefix.shift();
-  const args = interaction.content
-    .slice(prefix.length)
-    .trim()
-    .toLowerCase()
-    .replace(/ {2,}/gm, ' ')
-    .split(/ +/);
-
-  args.splice(0, 2);
+  args.shift();
 
   if (!isNaN(parseInt(args[args.length - 1]))) {
     page = parseInt(args[args.length - 1]);
@@ -157,7 +133,7 @@ async function msgUserItems(interaction: Interaction): Promise<void> {
 
       const tmpMsg = `ID: **${element.id}** - **${item_dex.name.english}** i№: ${item_dex.id}`;
 
-      item_interaction.push(tmpMsg);
+      item_message.push(tmpMsg);
       sortable_items.push({
         id: element.id,
         item_number: element.item_number,
@@ -197,28 +173,28 @@ async function msgUserItems(interaction: Interaction): Promise<void> {
     }
 
     await asyncForEach(sortable_items, async (element) => {
-      if (!item_interaction.includes(element.msg)) {
-        item_interaction.push(element.msg);
+      if (!item_message.includes(element.msg)) {
+        item_message.push(element.msg);
       }
     });
 
-    if (item_interaction.length > 10) {
+    if (item_message.length > 10) {
       const all_items = chunk(item_message, 10);
 
       if (page > 0 && all_items.length > 1) {
         if (all_items[page]) {
           item_message = all_items[page];
 
-          item_interaction.push(`Page: **${page}/${all_items.length}**`);
+          item_message.push(`Page: **${page}/${all_items.length}**`);
         }
       } else {
         item_message = all_items[0];
 
-        item_interaction.push(`Page: **1/${all_items.length}**`);
+        item_message.push(`Page: **1/${all_items.length}**`);
       }
     }
 
-    const new_msg = item_interaction.join('\n');
+    const new_msg = item_message.join('\n');
 
     const embed = new MessageEmbed()
       .setAuthor(
@@ -227,18 +203,11 @@ async function msgUserItems(interaction: Interaction): Promise<void> {
       )
       .setColor(COLOR_BLUE)
       .setDescription(new_msg);
-    await interaction.channel
-      .send({ embeds: [embed] })
-      .then((interaction) => {
-        return message;
-      })
-      .catch((err) => {
-        logger.error(err);
-      });
+    queueMsg(embed, interaction, false, 0, undefined, true);
   }
 }
 
-async function updateItems(interaction: Interaction): Promise<boolean> {
+async function updateItems(interaction: CommandInteraction): Promise<boolean> {
   const user = await getUser(interaction.user.id);
   const items = JSON.parse(user.items);
 
@@ -254,19 +223,21 @@ async function updateItems(interaction: Interaction): Promise<boolean> {
       .where('uid', interaction.user.id);
 
     const newItems = await getUserItems(interaction.user.id);
-    (interaction as BaseCommandInteraction).reply(
+    (interaction as CommandInteraction).reply(
       `Successfully transferred ${newItems.length} to the new item inventory!`,
     );
     return true;
   } else {
-    (interaction as BaseCommandInteraction).reply(`You don't have any old items!`);
+    (interaction as CommandInteraction).reply(
+      `You don't have any old items!`,
+    );
     return false;
   }
 }
 
-async function removeMonsterItem(interaction: Interaction) {
+async function removeMonsterItem(interaction: CommandInteraction, args: string[]) {
   const user = await getUser(interaction.user.id);
-  const split = explode(interaction.content, ' ', 3);
+  const split = args;
   let monster: IMonsterModel = undefined;
   if (split[2] == 'current') {
     monster = await getUserMonster(user.current_monster);
@@ -293,7 +264,7 @@ async function removeMonsterItem(interaction: Interaction) {
       .update({ held_item: null });
 
     if (updateItem && updateMonster) {
-      (interaction as BaseCommandInteraction).reply(
+      (interaction as CommandInteraction).reply(
         `Removed item **${itemDex.name.english}** from **${monsterDex.name.english}**.`,
       );
     }
@@ -302,7 +273,7 @@ async function removeMonsterItem(interaction: Interaction) {
 
 export async function checkItemEvolution(
   monster: IMonsterModel,
-  interaction: Interaction,
+  interaction: CommandInteraction,
   isTrade = false,
 ): Promise<void> {
   const monster_dex: IMonsterDex = await findMonsterByID(monster.monster_id);
@@ -373,22 +344,15 @@ export async function checkItemEvolution(
           title: `${interaction.user.username}'s ${monster_dex.name.english} is evolving!`,
         });
 
-        await interaction.channel
-          .send({ embeds: [embed] })
-          .then(() => {
-            return;
-          })
-          .catch((err) => {
-            logger.error(err);
-          });
+        queueMsg(embed, interaction, false, 0, undefined, true);
       }
     }
   }
 }
 
-async function giveMonsterItem(interaction: Interaction) {
+async function giveMonsterItem(interaction: CommandInteraction, args: string[]) {
   const user: IMonsterUserModel = await getUser(interaction.user.id);
-  const split = explode(interaction.content, ' ', 4);
+  const split = args;
   let monster: IMonsterModel = undefined;
 
   if (user && split.length == 4) {
@@ -401,7 +365,9 @@ async function giveMonsterItem(interaction: Interaction) {
     }
 
     if (!monster) {
-      (interaction as BaseCommandInteraction).reply("That monster doesn't exist..");
+      (interaction as CommandInteraction).reply(
+        "That monster doesn't exist..",
+      );
       return;
     }
 
@@ -416,7 +382,7 @@ async function giveMonsterItem(interaction: Interaction) {
         if (deleteItem && updateMonster) {
           const itemDex = getItemByID(item.item_number);
           const monsterDex = await findMonsterByID(monster.monster_id);
-          (interaction as BaseCommandInteraction).reply(
+          (interaction as CommandInteraction).reply(
             `Gave **${monsterDex.name.english}** a **${itemDex.name.english}** and it leveled up! Neato!`,
           );
         }
@@ -436,10 +402,10 @@ async function giveMonsterItem(interaction: Interaction) {
           monster.held_item = item.id;
           const itemDex = getItemByID(item.item_number);
           const monsterDex = await findMonsterByID(monster.monster_id);
-          (interaction as BaseCommandInteraction).reply(
+          (interaction as CommandInteraction).reply(
             `Gave **${monsterDex.name.english}** an item - **${itemDex.name.english}**! Neato!`,
           );
-          await checkItemEvolution(monster, message);
+          await checkItemEvolution(monster, interaction);
           return;
         }
       }
@@ -447,9 +413,9 @@ async function giveMonsterItem(interaction: Interaction) {
   }
 }
 
-async function buyItem(interaction: Interaction) {
+async function buyItem(interaction: CommandInteraction, args: string[]) {
   const user = await getUser(interaction.user.id);
-  const split = explode(interaction.content, ' ', 3);
+  const split = args;
 
   if (user && split.length) {
     const item_to_buy =
@@ -470,7 +436,7 @@ async function buyItem(interaction: Interaction) {
           .decrement('currency', item_to_buy.price);
 
         if (updateUser) {
-          (interaction as BaseCommandInteraction).reply(
+          queueMsg(
             `You have purchased **${
               item_to_buy.name.english
             }** for **${format_number(
@@ -478,6 +444,11 @@ async function buyItem(interaction: Interaction) {
             )}**! Remaining Balance: **${format_number(
               user.currency - item_to_buy.price,
             )}**.`,
+            interaction,
+            false,
+            0,
+            undefined,
+            true,
           );
         }
       }
@@ -485,10 +456,10 @@ async function buyItem(interaction: Interaction) {
   }
 }
 
-export async function msgBalance(interaction: Interaction): Promise<void> {
+export async function msgBalance(interaction: CommandInteraction): Promise<void> {
   const user = await getUser(interaction.user.id);
   if (user) {
-    (interaction as BaseCommandInteraction).reply(
+    (interaction as CommandInteraction).reply(
       `Your current balance is **${format_number(user.currency)}**.`,
     );
   }

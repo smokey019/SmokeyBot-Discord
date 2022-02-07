@@ -1,4 +1,4 @@
-import { EmbedFieldData, Interaction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, EmbedFieldData, MessageEmbed } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { queueMsg } from '../../clients/queue';
@@ -16,14 +16,22 @@ import { img_monster_ball } from './utils';
 
 const logger = getLogger('Info');
 
-export async function checkUniqueMonsters(interaction: Interaction): Promise<void> {
+export async function checkUniqueMonsters(
+  interaction: CommandInteraction,
+): Promise<void> {
   const tempdex = await userDex(interaction.user.id);
-  queueMsg(`You have ${tempdex.length}/${MonsterDex.size} total unique Pokémon in your Pokédex.`, interaction, false, 0, undefined);
+  queueMsg(
+    `You have ${tempdex.length}/${MonsterDex.size} total unique Pokémon in your Pokédex.`,
+    interaction,
+    false,
+    0,
+    undefined,
+  );
 }
 
 export async function monsterEmbed(
   monster_db: IMonsterModel,
-  interaction: Interaction,
+  interaction: CommandInteraction,
 ): Promise<void> {
   if (!monster_db) {
     return;
@@ -211,7 +219,7 @@ export async function monsterEmbed(
         month: 'long',
         day: 'numeric',
         hour: 'numeric',
-        minute: 'numeric'
+        minute: 'numeric',
       },
     );
     embedFields.push({
@@ -233,7 +241,7 @@ export async function monsterEmbed(
     .setDescription(released)
     .addFields(embedFields);
   try {
-    queueMsg(embed, interaction, false, 0, undefined, true);
+    queueMsg(embed, interaction, true, 0, undefined, true);
   } catch (error) {
     logger.error(error);
   }
@@ -243,7 +251,9 @@ export async function monsterEmbed(
  * Get latest Monster caught's information.
  * @param interaction
  */
-export async function monsterInfoLatest(interaction: Interaction): Promise<void> {
+export async function monsterInfoLatest(
+  interaction: CommandInteraction,
+): Promise<void> {
   const user = await databaseClient<IMonsterUserModel>(MonsterUserTable)
     .select()
     .where('uid', interaction.user.id);
@@ -265,26 +275,10 @@ export async function monsterInfoLatest(interaction: Interaction): Promise<void>
  * Get a specific Monster's information.
  * @param id
  */
-export async function currentMonsterInfoBETA(interaction: Interaction): Promise<void> {
-  const user: IMonsterUserModel = await getUser(interaction.user.id);
-
-  if (!user) return;
-
-  const tmpMonster = await databaseClient<IMonsterModel>(MonsterTable)
-    .select()
-    .where('id', user.current_monster);
-
-  if (!tmpMonster) return;
-
-  await monsterEmbed(tmpMonster[0], interaction);
-}
-
-/**
- * Get a specific Monster's information.
- * @param id
- */
-export async function monsterInfo(interaction: Interaction, monster_id: string): Promise<void> {
-
+export async function monsterInfo(
+  interaction: CommandInteraction,
+  monster_id: string,
+): Promise<void> {
   if (monster_id) {
     const tmpMonster = await databaseClient<IMonsterModel>(MonsterTable)
       .select()
@@ -300,7 +294,9 @@ export async function monsterInfo(interaction: Interaction, monster_id: string):
  * Get current Monster's information.
  * @param id
  */
-export async function currentMonsterInfo(interaction: Interaction): Promise<void> {
+export async function currentMonsterInfo(
+  interaction: CommandInteraction,
+): Promise<void> {
   const user: IMonsterUserModel = await getUser(interaction.user.id);
 
   if (!user) return;
@@ -318,20 +314,18 @@ export async function currentMonsterInfo(interaction: Interaction): Promise<void
  * Get a specific Monster's information.
  * @param interaction
  */
-export async function monsterDex(interaction: Interaction, args: string[]): Promise<void> {
-  const tmpSplit = args;
+export async function monsterDex(
+  interaction: CommandInteraction,
+): Promise<void> {
+  const searchShiny = interaction.options.getString('pokemon').match(/shiny/i);
+  let tmp = interaction.options.getString('pokemon');
   let tempMonster: IMonsterDex = undefined;
 
-  /**
-   * TODO: this breaks with names with too many spaces: '~dex mega mewtwo y --shiny'
-   */
-  if (tmpSplit.length >= 3 && !tmpSplit[2].match(/shiny/i)) {
-    tempMonster = findMonsterByName(
-      tmpSplit[1].toLowerCase() + ' ' + tmpSplit[2].toLowerCase(),
-    );
-  } else {
-    tempMonster = findMonsterByName(tmpSplit[1]?.toLowerCase());
+  if (searchShiny){
+    tmp = tmp.replace(/shiny/i, '');
   }
+
+  tempMonster = findMonsterByName(tmp.toLowerCase());
 
   if (tempMonster) {
     const monster_types = tempMonster.type.join(' | ');
@@ -355,7 +349,7 @@ export async function monsterDex(interaction: Interaction, args: string[]): Prom
 
     if (tempMonster.region || tempMonster.forme) {
       // shiny
-      if (tmpSplit[tmpSplit.length - 1].match(/shiny/i)) {
+      if (searchShiny) {
         thumbnail = tempMonster.images['gif-shiny'];
         image = tempMonster.images.shiny;
       } else {
@@ -365,7 +359,7 @@ export async function monsterDex(interaction: Interaction, args: string[]): Prom
       }
     } else {
       // shiny
-      if (tmpSplit[tmpSplit.length - 1].match(/shiny/i)) {
+      if (searchShiny) {
         thumbnail = tempMonster.images['gif-shiny'];
         image = tempMonster.images.shiny;
       } else {
@@ -415,14 +409,8 @@ export async function monsterDex(interaction: Interaction, args: string[]): Prom
 
 	**Prevolve**: ${prevolve}
     **Evolve**: ${evolve + evo_item}`);
-    await interaction.channel
-      .send({ embeds: [embed] })
-      .then((interaction) => {
-        return interaction;
-      })
-      .catch((err) => {
-        logger.error(err);
-      });
+
+    queueMsg(embed, interaction, true, 0 , undefined, true);
   }
 }
 

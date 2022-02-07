@@ -1,11 +1,12 @@
+import { CommandInteraction } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
+import { queueMsg } from '../../clients/queue';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel } from '../../models/MonsterUser';
-import { explode } from '../../utils';
 import { findMonsterByID, getUserMonster } from './monsters';
 
-const logger = getLogger('Pokemon');
+const logger = getLogger('Pokémon');
 
 /**
  * Release a monster
@@ -43,8 +44,41 @@ async function recover(monster_id: number | string): Promise<boolean> {
   }
 }
 
-export async function releaseMonster(interaction: Interaction): Promise<void> {
-  const tmpMsg = explode(interaction.content, ' ', 2);
+export async function releaseMonsterNew(
+  interaction: CommandInteraction,
+): Promise<void> {
+  let monster = await getUserMonster(interaction.options.getString('pokemon'));
+
+  if (monster) {
+    const monster_dex = await findMonsterByID(monster.monster_id);
+    await release(monster.id);
+    queueMsg(
+      `Successfully released ${monster_dex.name.english}.`,
+      interaction,
+      true,
+    );
+  } else {
+    const user: IMonsterUserModel = await getUser(interaction.user.id);
+    monster = await databaseClient<IMonsterModel>(MonsterTable)
+      .select()
+      .where('id', user.latest_monster)
+      .first();
+    await release(monster.id);
+
+    const monster_dex = await findMonsterByID(monster.monster_id);
+    queueMsg(
+      `Successfully released ${monster_dex.name.english}.`,
+      interaction,
+      true,
+    );
+  }
+}
+
+export async function releaseMonster(
+  interaction: CommandInteraction,
+  args: string[],
+): Promise<void> {
+  const tmpMsg = args;
 
   if (tmpMsg.length > 1) {
     if (tmpMsg[1].toString().match(',') || tmpMsg[1].toString().match(' ')) {
@@ -73,19 +107,11 @@ export async function releaseMonster(interaction: Interaction): Promise<void> {
           }
         });
 
-        message
-          .reply(
-            `Attempting to release **${multi_dump.length}** monsters.. Good luck little guys :(`,
-          )
-          .then(() => {
-            logger.info(
-              `${interaction.user.username} Attempting to release your monsters.. Good luck little guys :(`,
-            );
-            return;
-          })
-          .catch((err) => {
-            logger.error(err);
-          });
+        queueMsg(
+          `Attempting to release **${multi_dump.length}** monsters.. Good luck little guys :(`,
+          interaction,
+          true,
+        );
       }
     } else {
       let to_release = undefined;
@@ -110,22 +136,17 @@ export async function releaseMonster(interaction: Interaction): Promise<void> {
         const released_monster = await release(to_release.id);
 
         if (released_monster) {
-          message
-            .reply(
-              `Successfully released your monster. Goodbye **${monster.name.english}** :(`,
-            )
-            .then(() => {
-              logger.trace(`Successfully released monster. :(`);
-              return;
-            })
-            .catch((err) => {
-              logger.error(err);
-            });
+          queueMsg(
+            `Successfully released your monster. Goodbye **${monster.name.english}** :(`,
+            interaction,
+            true,
+          );
         }
       }
     }
   } else {
-    (interaction as BaseCommandInteraction).reply(`Not enough things in ur msg there m8`)
+    (interaction as CommandInteraction)
+      .reply({ content: `Not enough things in ur msg there m8`, ephemeral: true })
       .then(() => {
         logger.debug(
           `${interaction.user.username} not enough things in ur msg there m8`,
@@ -136,34 +157,32 @@ export async function releaseMonster(interaction: Interaction): Promise<void> {
   }
 }
 
-export async function recoverMonster(interaction: Interaction): Promise<void> {
-  const tmpMsg = interaction.content.split(' ');
+export async function recoverMonster(
+  interaction: CommandInteraction,
+): Promise<void> {
+  const to_release = await getUserMonster(
+    interaction.options.getString('pokemon'),
+  );
+  if (!to_release){
+    interaction.reply({ content: 'There was an error processing your request.', ephemeral: true })
+    return;
+  }
 
-  if (tmpMsg.length > 1) {
-    const to_release = await getUserMonster(tmpMsg[1]);
+  if (
+    to_release &&
+    to_release.released &&
+    to_release.uid == interaction.user.id
+  ) {
+    const monster = await findMonsterByID(to_release.monster_id);
 
-    if (
-      to_release &&
-      to_release.released &&
-      to_release.uid == interaction.user.id
-    ) {
-      const monster = await findMonsterByID(to_release.monster_id);
+    const released_monster = await recover(to_release.id);
 
-      const released_monster = await recover(to_release.id);
-
-      if (released_monster) {
-        message
-          .reply(
-            `Successfully recovered your monster. Welcome back **${monster.name.english}**!`,
-          )
-          .then(() => {
-            logger.info(
-              `${interaction.user.username} Successfully recovered **${monster.name.english}**!`,
-            );
-            return;
-          })
-          .catch((error) => logger.error(error));
-      }
+    if (released_monster) {
+      queueMsg(
+        `Successfully recovered your monster. Welcome back **${monster.name.english}**!`,
+        interaction,
+        true,
+      );
     }
   }
 }

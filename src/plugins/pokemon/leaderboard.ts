@@ -1,27 +1,17 @@
-import { MessageEmbed } from 'discord.js';
+import { CommandInteraction, MessageEmbed } from 'discord.js';
 import { getLogger } from 'log4js';
 import { databaseClient } from '../../clients/database';
 import { COLOR_GREEN } from '../../colors';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { findMonsterByIDLocal, findMonsterByName } from './monsters';
-import { getPrefixes } from './parser';
 
-const logger = getLogger('Pokemon-Leaderboard');
+const logger = getLogger('Pokémon-Leaderboard');
 
-export async function checkLeaderboard(interaction: Interaction): Promise<void> {
+export async function checkLeaderboard(
+  interaction: CommandInteraction,
+  args: string[],
+): Promise<void> {
   let search = undefined;
-  const load_prefixes = await getPrefixes(interaction.guild.id);
-  const prefixes = RegExp(load_prefixes.join('|'));
-  const detect_prefix = interaction.content.match(prefixes);
-  const prefix = detect_prefix.shift();
-  const args = interaction.content
-    .slice(prefix.length)
-    .trim()
-    .toLowerCase()
-    .replace(/ {2,}/gm, ' ')
-    .split(/ +/gm);
-
-  args.splice(0, 1);
 
   if (args.includes('iv') && args.includes('high')) {
     args.splice(args.length - 2, 2);
@@ -102,7 +92,8 @@ export async function checkLeaderboard(interaction: Interaction): Promise<void> 
         logger.error(error);
       });
   } else {
-    (interaction as BaseCommandInteraction).reply(`There was an error.`)
+    (interaction as CommandInteraction)
+      .reply(`There was an error.`)
       .then(() => {
         logger.debug(`There was an error getting the leaderboard.`);
         return;

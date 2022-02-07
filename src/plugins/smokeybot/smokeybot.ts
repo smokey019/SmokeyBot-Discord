@@ -1,11 +1,11 @@
-import { Interaction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, MessageEmbed } from 'discord.js';
 import { getLogger } from '../../clients/logger';
 
 const logger = getLogger('SmokeyBot');
 
 /*export async function check_tweets(
   user: string,
-  interaction: Interaction,
+  interaction: CommandInteraction,
   tweet_count = 1,
 ): Promise<void> {
   const timestamp = getCurrentTime();
@@ -64,7 +64,7 @@ const logger = getLogger('SmokeyBot');
     id_str: string;
     created_at: number | Date;
   },
-  interaction: Interaction,
+  interaction: CommandInteraction,
 ): Promise<void> {
   //if (tweet.text.charAt(0) != "@") {
 
@@ -99,7 +99,7 @@ const logger = getLogger('SmokeyBot');
 }*/
 
 async function send_image_message(
-  interaction: Interaction,
+  interaction: CommandInteraction,
   image: string,
   color = 0x00bc8c,
   delete_after = false,
@@ -123,7 +123,7 @@ async function send_image_message(
     });
 }
 
-async function delete_message(interaction: Interaction, msg_id: any) {
+async function delete_message(interaction: CommandInteraction, msg_id: any) {
   interaction.channel.messages
     .fetch(msg_id)
     .then((interaction) => {
@@ -134,7 +134,7 @@ async function delete_message(interaction: Interaction, msg_id: any) {
     });
 }
 
-export async function checkVase(interaction: Interaction): Promise<void> {
+export async function checkVase(interaction: CommandInteraction): Promise<void> {
   setTimeout(
     send_image_message,
     250,
@@ -146,7 +146,7 @@ export async function checkVase(interaction: Interaction): Promise<void> {
   );
 }
 
-export async function gtfo(interaction: Interaction): Promise<void> {
+export async function gtfo(interaction: CommandInteraction): Promise<void> {
   setTimeout(
     send_image_message,
     250,
@@ -155,7 +155,7 @@ export async function gtfo(interaction: Interaction): Promise<void> {
   );
 }
 
-export async function sumSmash(interaction: Interaction): Promise<void> {
+export async function sumSmash(interaction: CommandInteraction): Promise<void> {
   setTimeout(
     send_image_message,
     250,

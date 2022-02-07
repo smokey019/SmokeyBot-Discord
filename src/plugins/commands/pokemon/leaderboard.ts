@@ -6,9 +6,13 @@ import { checkLeaderboard } from '../../pokemon/leaderboard';
 
 export async function run(e: runEvent) {
   const channel_name = (e.interaction.channel as TextChannel).name;
-  if (!e.cache.settings.smokemon_enabled || channel_name != e.cache.settings.specific_channel) return;
+  if (
+    !e.cache.settings.smokemon_enabled ||
+    channel_name != e.cache.settings.specific_channel
+  )
+    return;
   GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
-  await checkLeaderboard(e.interaction);
+  await checkLeaderboard(e.interaction, e.args);
 }
 
 export const names = ['leaderboard'];

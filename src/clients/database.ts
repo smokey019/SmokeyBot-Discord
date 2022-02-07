@@ -1,4 +1,4 @@
-import { Guild } from 'discord.js';
+import { CommandInteraction, Guild } from 'discord.js';
 import knex from 'knex';
 import { getConfigValue } from '../config';
 import { IMonsterUserModel, MonsterUserTable } from '../models/MonsterUser';
@@ -33,6 +33,7 @@ export const databaseClient = knex({
   },
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function loadGlobalSetting(which: string): Promise<any> {
   let settings = await SMOKEYBOT_GLOBAL_SETTINGS_CACHE?.get('main');
 
@@ -157,7 +158,7 @@ export async function getUser(
  *
  * @param message Discord Message Object
  */
-export async function putGuildSettings(interaction: Interaction): Promise<number> {
+export async function putGuildSettings(interaction: CommandInteraction): Promise<number> {
   const insert =
     interaction.guild != null
       ? await databaseClient<IGuildSettings>(GuildSettingsTable).insert({

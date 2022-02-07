@@ -1,12 +1,7 @@
-import {
-  Interaction,
-  MessageEmbed,
-  Permissions,
-  PermissionString
-} from 'discord.js';
+import { CommandInteraction, Permissions, PermissionString } from 'discord.js';
 import { LRUCache } from 'mnemonist';
 import { getLogger } from '../../../clients/logger';
-import { EmoteQueue, queueMsg } from '../../../clients/queue';
+import { EmoteQueue } from '../../../clients/queue';
 import { FFZRoom } from '../../../models/FFZ-Emotes';
 import { jsonFetch } from '../../../utils';
 
@@ -19,15 +14,20 @@ export let FFZ_emoji_queue_attempt_count = 0;
  * Cancel the emote sync for the guild.
  * @param message
  */
-export async function cancel_sync(interaction: Interaction): Promise<boolean> {
-  if (EmoteQueue.has(interaction.guild.id)) {
+export async function cancel_sync(
+  interaction: CommandInteraction,
+): Promise<boolean> {
+  const inQueue = EmoteQueue.get(interaction.guild.id);
+  if (inQueue) {
     EmoteQueue.delete(interaction.guild.id);
-    queueMsg(
-      'Your emote queue has been cancelled.  You can sync again if you wish.',
-      interaction,
-      true,
-      1,
+    inQueue.msg.editReply('Sync cancelled.  You can do another if you wish.');
+    logger.debug(
+      'Sync cancelled by ' +
+        interaction.user.username +
+        ' in ' +
+        interaction.guild.name,
     );
+    interaction.reply({ content: '👍', ephemeral: true });
     return true;
   } else {
     return false;
@@ -39,11 +39,11 @@ export async function cancel_sync(interaction: Interaction): Promise<boolean> {
  * @param message
  */
 export async function sync_ffz_emotes(
-  interaction: Interaction,
-  channel: string,
+  interaction: CommandInteraction,
 ): Promise<void> {
-  let embed = undefined;
-  let to_be_deleted = undefined;
+  const channel = interaction.options
+    .getString('channel')
+    .replace(/[^a-zA-Z0-9 ]/g, '');
 
   const userPerms = new Permissions(
     interaction.member.permissions as PermissionString,
@@ -54,16 +54,7 @@ export async function sync_ffz_emotes(
     userPerms.has(Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS) &&
     !EmoteQueue.has(interaction.guild.id)
   ) {
-    embed = new MessageEmbed()
-      .setTitle('FrankerFaceZ Emote Manager')
-      .setColor(0xff0000)
-      .setDescription(`Checking FrankerFaceZ API to sync emotes..`);
-    await interaction.channel
-      .send({ embeds: [embed] })
-      .then((interaction) => {
-        to_be_deleted = interaction.id;
-      })
-      .catch((error) => logger.error(error));
+    await interaction.reply(`Checking FrankerFaceZ API to sync emotes..`);
 
     logger.debug(
       `Fetching FFZ Emotes for Twitch channel ${channel} (requested by ${interaction.user.username} in ${interaction.guild.name})..`,
@@ -77,20 +68,9 @@ export async function sync_ffz_emotes(
     if (!ffz_emotes || !ffz_emotes.room || !ffz_emotes.room.set) {
       logger.debug(`Couldn't fetch FFZ Emotes for Twitch channel ${channel}.`);
 
-      await interaction.channel.messages
-        .fetch(to_be_deleted)
-        .then((interaction) => {
-          interaction.delete();
-        })
-        .catch((error) => logger.error(error));
-
-      embed = new MessageEmbed()
-        .setTitle('FrankerFaceZ Emote Manager')
-        .setColor(0xff0000)
-        .setDescription(
-          `There was an error fetching from FrankerFaceZ's API. \n\n Make sure the username is correct and there are no symbols. \n\n You may have to wait for FFZ's cache to update before getting certain emotes. This can take up to an hour.\n\nExample command: \`~sync-emotes-ffz summit1g\``,
-        );
-      await interaction.channel.send({ embeds: [embed] });
+      await interaction.editReply(
+        `There was an error fetching from FrankerFaceZ's API. \n\n Make sure the username is correct and there are no symbols. \n\n You may have to wait for FFZ's cache to update before getting certain emotes. This can take up to an hour.\n\nExample command: \`/sync-ffz summit1g\``,
+      );
 
       return;
     } else if (ffz_emotes.room.set) {
@@ -138,57 +118,24 @@ export async function sync_ffz_emotes(
             msg: interaction,
           });
 
-          await interaction.channel.messages
-            .fetch(to_be_deleted)
-            .then((interaction) => {
-              interaction.delete();
-            })
-            .catch((error) => logger.error(error));
-
-          embed = new MessageEmbed()
-            .setTitle('FrankerFaceZ Emote Manager')
-            .setColor(0x00bc8c)
-            .setDescription(
-              `**Successfully syncing ${final_emojis.length}/${emojis.length} emotes!** \n\n\n It will take up to 30 minutes or more depending on the queue. \n\n Type \`~cancel-sync\` to cancel. \n Type \`~stats\` to see how many servers are in queue.`,
-            );
-          await interaction.channel.send({ embeds: [embed] });
+          await interaction.editReply(
+            `**Successfully syncing ${final_emojis.length}/${emojis.length} emotes!** \n\n\n It will take up to 30 minutes or more depending on the queue. \n\n Type \`/cancel-sync\` to cancel. \n Type \`/stats\` to see how many servers are in queue.`,
+          );
         } else {
           logger.debug(`No emotes found able to be synced for ${channel}..`);
-          await interaction.channel.messages
-            .fetch(to_be_deleted)
-            .then((interaction) => {
-              interaction.delete();
-            })
-            .catch((error) => logger.error(error));
 
-          embed = new MessageEmbed()
-            .setTitle('FrankerFaceZ Emote Manager')
-            .setColor(0x00bc8c)
-            .setDescription(
-              `No emotes found to sync. If the emote name(s) already exist they will not be overridden.`,
-            );
-          await interaction.channel.send({ embeds: [embed] });
+          await interaction.editReply(
+            `No emotes found to sync. If the emote name(s) already exist they will not be overridden.`,
+          );
         }
       } else {
         logger.debug(`Error syncing emotes for ${channel}..`);
 
         const currentQueue = EmoteQueue.get(interaction.guild.id);
         const emotes = currentQueue.emotes.length;
-
-        await interaction.channel.messages
-          .fetch(to_be_deleted)
-          .then((interaction) => {
-            interaction.delete();
-          })
-          .catch((error) => logger.error(error));
-
-        embed = new MessageEmbed()
-          .setTitle('FrankerFaceZ Emote Manager')
-          .setColor(0x00bc8c)
-          .setDescription(
-            `**You already have ${emotes} emotes in a queue. You cannot add more at this time.**`,
-          );
-        await interaction.channel.send({ embeds: [embed] });
+        await interaction.editReply(
+          `**You already have ${emotes} emotes in a queue. You cannot add more at this time.**`,
+        );
       }
     }
   } else if (EmoteQueue.has(interaction.guild.id)) {
@@ -199,12 +146,8 @@ export async function sync_ffz_emotes(
     const currentQueue = EmoteQueue.get(interaction.guild.id);
     const emotes = currentQueue.emotes.length;
 
-    embed = new MessageEmbed()
-      .setTitle('FrankerFaceZ Emote Manager')
-      .setColor(0x00bc8c)
-      .setDescription(
-        `**You already have ${emotes} emotes in a queue. You cannot add more at this time.**`,
-      );
-    await interaction.channel.send({ embeds: [embed] });
+    await interaction.editReply(
+      `**You already have ${emotes} emotes in a queue. You cannot add more at this time.**`,
+    );
   }
 }

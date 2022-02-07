@@ -1,4 +1,5 @@
-import { MessageEmbed } from 'discord.js';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { CommandInteraction, MessageEmbed } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { queueMsg } from '../../clients/queue';
@@ -15,21 +16,22 @@ import {
   IMonsterDex
 } from './monsters';
 
-const logger = getLogger('Pokemon-Trade');
+const logger = getLogger('Pokémon-Trade');
 
-export async function startTrade(interaction: Interaction): Promise<void> {
+export async function startTrade(
+  interaction: CommandInteraction,
+  args: string[],
+): Promise<void> {
   // ~trade start @mention id-for-monster
-  const split = interaction.content.split(' ');
-  const traded_monster = parseInt(split[3]);
-  const mentions = interaction.mentions.users;
+  const split = args;
+  const traded_monster = parseInt(split[2]);
+  const to_user = (interaction as any).options.getMentionable('player');
 
-  if (mentions.first()) {
-    const to_user = mentions.first().id;
-
+  if (to_user) {
     if (to_user == interaction.user.id) return;
 
     const recipient = await getUser(to_user);
-    const check_trade = await checkTrade(traded_monster, to_user, message);
+    const check_trade = await checkTrade(traded_monster, to_user, interaction);
 
     if (recipient && !check_trade) {
       const insertTrade = await databaseClient<ITrade>(TradeTable).insert({
@@ -90,46 +92,51 @@ export async function startTrade(interaction: Interaction): Promise<void> {
         logger.error(`DB error while inserting trade.`);
       }
     } else if (!recipient) {
-      (interaction as BaseCommandInteraction).reply(
+      (interaction as CommandInteraction).reply(
         `Could not find user <@${to_user}>, make them catch a Pokémon first!`,
       );
     } else if (check_trade) {
-      (interaction as BaseCommandInteraction).reply(
+      (interaction as CommandInteraction).reply(
         `A trade with this Pokémon or user exists already. Close that one and try again.`,
       );
     }
   } else {
-    (interaction as BaseCommandInteraction).reply(`You need to mention someone m8.`);
+    (interaction as CommandInteraction).reply(
+      `You need to mention someone m8.`,
+    );
   }
 }
 
-export async function parseTrade(interaction: Interaction): Promise<void> {
+export async function parseTrade(
+  interaction: CommandInteraction,
+  args: string[],
+): Promise<void> {
   // ~trade start @mention id-for-monster
 
-  const split = interaction.content.split(' ');
+  const command = (interaction as any).commandName;
 
-  if (split[1] == 'start') {
-    await startTrade(message);
+  if (command == 'start') {
+    await startTrade(interaction, args);
   } else if (
-    split[1] == 'cancel' ||
-    split[1] == 'delete' ||
-    split[1] == 'del' ||
-    split[1] == '-'
+    command == 'cancel' ||
+    command == 'delete' ||
+    command == 'del' ||
+    command == '-'
   ) {
-    await cancelTrade(message);
+    await cancelTrade(interaction);
   } else if (
-    split[1] == 'accept' ||
-    split[1] == 'confirm' ||
-    split[1] == 'acc' ||
-    split[1] == '+'
+    command == 'accept' ||
+    command == 'confirm' ||
+    command == 'acc' ||
+    command == '+'
   ) {
-    await confirmTrade(message);
+    await confirmTrade(interaction);
   }
 }
 
 export async function checkEvolves(
   monster_id: number,
-  interaction: Interaction,
+  interaction: CommandInteraction,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
   const db_monster = await databaseClient<IMonsterModel>(MonsterTable)
@@ -179,12 +186,12 @@ export async function checkEvolves(
                 title: `${interaction.user.username}'s ${monster.name.english} is evolving!`,
               });
 
-              queueMsg(embed, message);
+              queueMsg(embed, interaction);
             } else {
               return false;
             }
           } else if (evolution.evoType == 'trade' && evolution.evoItem) {
-            checkItemEvolution(db_monster[0], message, true);
+            checkItemEvolution(db_monster[0], interaction, true);
           } else {
             return false;
           }
@@ -202,15 +209,13 @@ export async function checkEvolves(
   }
 }
 
-export async function confirmTrade(interaction: Interaction): Promise<void> {
+export async function confirmTrade(interaction: CommandInteraction): Promise<void> {
   // ~trade accept
 
-  const trades = await databaseClient<ITrade>(TradeTable)
-    .select()
-    .where({
-      uid_to: interaction.user.id,
-      active: 1,
-    });
+  const trades = await databaseClient<ITrade>(TradeTable).select().where({
+    uid_to: interaction.user.id,
+    active: 1,
+  });
 
   if (trades.length) {
     const trade = trades[0];
@@ -222,10 +227,10 @@ export async function confirmTrade(interaction: Interaction): Promise<void> {
     if (updateMonster) {
       const monsterDB = await getUserMonster(trade.monster_id);
       const monster = await findMonsterByID(monsterDB.monster_id);
-      (interaction as BaseCommandInteraction).reply(
+      (interaction as CommandInteraction).reply(
         `Successfully traded over monster **${monster.name.english}**! Nice dude.`,
       );
-      await checkEvolves(trade.monster_id, message);
+      await checkEvolves(trade.monster_id, interaction);
 
       await databaseClient<ITrade>(TradeTable)
         .where({ id: trade.id })
@@ -240,11 +245,13 @@ export async function confirmTrade(interaction: Interaction): Promise<void> {
       );
     }
   } else {
-    (interaction as BaseCommandInteraction).reply(`You don't have any trades to accept m8.`);
+    (interaction as CommandInteraction).reply(
+      `You don't have any trades to accept m8.`,
+    );
   }
 }
 
-export async function cancelTrade(interaction: Interaction): Promise<void> {
+export async function cancelTrade(interaction: CommandInteraction): Promise<void> {
   const trades = await databaseClient<ITrade>(TradeTable)
     .select()
     .where({
@@ -264,26 +271,26 @@ export async function cancelTrade(interaction: Interaction): Promise<void> {
       .update({ active: 0 });
 
     if (cancelTrade) {
-      (interaction as BaseCommandInteraction).reply(
+      (interaction as CommandInteraction).reply(
         `Successfully cancelled trade with monster #${trade.monster_id}.`,
       );
     }
   } else {
-    (interaction as BaseCommandInteraction).reply(`You don't have any trades to cancel m8.`);
+    (interaction as CommandInteraction).reply(
+      `You don't have any trades to cancel m8.`,
+    );
   }
 }
 
 export async function checkTrade(
   monster_id: number,
   to_user: number | string,
-  interaction: Interaction,
+  interaction: CommandInteraction,
 ): Promise<boolean> {
-  const trades = await databaseClient<ITrade>(TradeTable)
-    .select()
-    .where({
-      monster_id: monster_id,
-      active: 1,
-    });
+  const trades = await databaseClient<ITrade>(TradeTable).select().where({
+    monster_id: monster_id,
+    active: 1,
+  });
 
   const pokemon = await databaseClient<IMonsterModel>(MonsterTable)
     .select()
@@ -291,13 +298,11 @@ export async function checkTrade(
       id: monster_id,
     });
 
-  const users = await databaseClient<ITrade>(TradeTable)
-    .select()
-    .where({
-      uid_to: to_user,
-      uid_from: interaction.user.id,
-      active: 1,
-    });
+  const users = await databaseClient<ITrade>(TradeTable).select().where({
+    uid_to: to_user,
+    uid_from: interaction.user.id,
+    active: 1,
+  });
 
   if (
     trades.length ||

@@ -1,4 +1,4 @@
-import { Interaction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, MessageEmbed } from 'discord.js';
 import { getGCD, GLOBAL_COOLDOWN, ICache } from '../../clients/cache';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
@@ -6,14 +6,14 @@ import { queueMsg } from '../../clients/queue';
 import { COLOR_PURPLE } from '../../colors';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
-import { explode, getCurrentTime, getRndInteger } from '../../utils';
+import { getCurrentTime, getRndInteger } from '../../utils';
 import { userDex } from './info';
 import { IMonsterDex } from './monsters';
 import { getRandomNature } from './natures';
 import { MONSTER_SPAWNS } from './spawn-monster';
 import { rollGender, rollLevel, rollPerfectIV, rollShiny } from './utils';
 
-const logger = getLogger('Pokemon-Catch');
+const logger = getLogger('Pokémon-Catch');
 
 /**
  * Returns true if the first value matches any of the currently spawned
@@ -22,10 +22,11 @@ const logger = getLogger('Pokemon-Catch');
  * @param interactionContent
  * @param currentSpawn
  */
-function monsterMatchesPrevious(interactionContent: string, { name }: IMonsterDex) {
-  const split = explode(interactionContent.replace(/ {2,}/gm, ' '), ' ', 2);
-  if (split.length <= 1) return false;
-  const monster = split[1].toLowerCase();
+function monsterMatchesPrevious(
+  interactionContent: string,
+  { name }: IMonsterDex,
+) {
+  const monster = interactionContent.toLowerCase();
 
   return (
     monster ==
@@ -59,18 +60,15 @@ function monsterMatchesPrevious(interactionContent: string, { name }: IMonsterDe
  * @param cache
  */
 export async function catchMonster(
-  interaction: Interaction,
-  monster: string,
+  interaction: CommandInteraction,
   cache: ICache,
 ): Promise<void> {
   const timestamp = getCurrentTime();
   const GCD = await getGCD(interaction.guild.id);
   const spawn = await MONSTER_SPAWNS.get(interaction.guild.id);
+  const attempt = interaction.options.getString('pokemon');
 
-  if (
-    spawn.monster &&
-    monsterMatchesPrevious(monster.toLowerCase(), spawn.monster)
-  ) {
+  if (spawn.monster && monsterMatchesPrevious(attempt, spawn.monster)) {
     logger.trace(
       `${interaction.guild?.name} - ${interaction.user.username} | Starting catch~`,
     );
@@ -98,7 +96,7 @@ export async function catchMonster(
 
     spawn.monster = null;
 
-    await MONSTER_SPAWNS.set(interaction.guild.id, spawn);
+    MONSTER_SPAWNS.set(interaction.guild.id, spawn);
 
     const monster: IMonsterModel = {
       monster_id: currentSpawn.id,
@@ -196,8 +194,9 @@ export async function catchMonster(
           shiny_msg = ' ⭐';
         }
 
-        if (currentSpawn.name.english == 'Egg'){
-          egg_info = '\n\nEggs have a random chance of hatching into anything, with an increased chance at being shiny by selecting and leveling it to 50!';
+        if (currentSpawn.name.english == 'Egg') {
+          egg_info =
+            '\n\nEggs have a random chance of hatching into anything, with an increased chance at being shiny by selecting and leveling it to 50!';
         }
 
         if (currentSpawn.special) {

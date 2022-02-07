@@ -1,17 +1,17 @@
-import { Interaction, Permissions, PermissionString } from 'discord.js';
+import { CommandInteraction, Permissions, PermissionString } from 'discord.js';
 import { cacheClient, ICache } from '../../clients/cache';
 import {
-  databaseClient,
-  GuildSettingsTable,
-  IGuildSettings
+    databaseClient,
+    GuildSettingsTable,
+    IGuildSettings
 } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { queueMsg } from '../../clients/queue';
 
-const logger = getLogger('Pokemon');
+const logger = getLogger('Pokémon');
 
 export async function toggleSmokeMon(
-  interaction: Interaction,
+  interaction: CommandInteraction,
   args: string[],
   cache: ICache,
 ): Promise<boolean | void> {

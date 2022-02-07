@@ -1,9 +1,9 @@
-import { ColorResolvable, Interaction, MessageEmbed } from 'discord.js';
+import { ColorResolvable, CommandInteraction, MessageEmbed } from 'discord.js';
 import { ICache, loadCache } from '../../clients/cache';
 import {
-  databaseClient,
-  GuildSettingsTable,
-  IGuildSettings
+    databaseClient,
+    GuildSettingsTable,
+    IGuildSettings
 } from '../../clients/database';
 import { initializing, rateLimited } from '../../clients/discord';
 import { getLogger } from '../../clients/logger';
@@ -15,10 +15,10 @@ import { getBoostedWeatherSpawns } from './weather';
 
 export const MONSTER_SPAWNS = loadCache('MONSTER_SPAWNS', 500);
 
-const logger = getLogger('Pokemon-Spawn');
+const logger = getLogger('Pokémon-Spawn');
 
 export async function checkSpawn(
-  interaction: Interaction,
+  interaction: CommandInteraction,
   cache: ICache,
 ): Promise<void> {
   let spawn = await MONSTER_SPAWNS.get(interaction.guild.id);
@@ -50,7 +50,7 @@ export async function checkSpawn(
  * @param cache
  */
 export async function spawnMonster(
-  interaction: Interaction,
+  interaction: CommandInteraction,
   cache: ICache,
 ): Promise<void> {
   const monsterChannel = interaction.guild.channels.cache.find(
@@ -111,11 +111,9 @@ export async function spawnMonster(
         title: 'A wild Pokémon has appeared!',
       });
 
-      // (monsterChannel as TextChannel).send({ embeds: [embed] });
       queueMsg(embed, interaction, false, 1, monsterChannel, true);
     } catch (error) {
       logger.error(error);
-      // console.log(spawn_data.monster);
     }
   }
 }
@@ -126,35 +124,35 @@ export async function spawnMonster(
  * @param cache
  */
 export async function forceSpawn(
-  interaction: Interaction,
-  monster: number,
+  interaction: CommandInteraction,
   cache: ICache,
 ): Promise<void> {
   const monsterChannel = interaction.guild.channels.cache.find(
     (ch) => ch.name === cache.settings.specific_channel,
   );
+  const monster = parseFloat(interaction.options.getString('pokemon'));
 
   const spawn_data = {
     monster: await findMonsterByID(monster),
     spawned_at: getCurrentTime(),
   };
+
   try {
-    if (await MONSTER_SPAWNS.set(interaction.guild.id, spawn_data)) {
-      logger.info(
-        `'${interaction.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`,
-      );
+    MONSTER_SPAWNS.set(interaction.guild.id, spawn_data);
+    logger.info(
+      `'${interaction.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`,
+    );
 
-      const embed = new MessageEmbed({
-        color: COLOR_PURPLE,
-        description: 'Type ~catch <Pokémon> to try and catch it!',
-        image: {
-          url: spawn_data.monster.images.normal,
-        },
-        title: 'A wild Pokémon has appeared!',
-      });
+    const embed = new MessageEmbed({
+      color: COLOR_PURPLE,
+      description: 'Type ~catch <Pokémon> to try and catch it!',
+      image: {
+        url: spawn_data.monster.images.normal,
+      },
+      title: 'A wild Pokémon has appeared!',
+    });
 
-      queueMsg(embed, interaction, false, 0, monsterChannel);
-    }
+    queueMsg(embed, interaction, false, 1, monsterChannel, true);
   } catch (error) {
     logger.error(error);
     console.log(spawn_data.monster);

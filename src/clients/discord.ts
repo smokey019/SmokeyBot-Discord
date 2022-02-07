@@ -1,4 +1,4 @@
-import { Client, Intents } from 'discord.js';
+import { Client, CommandInteraction, Intents } from 'discord.js';
 import {
   commands,
   loadCommands,
@@ -42,39 +42,54 @@ discordClient.on('ready', async () => {
   }, 15 * 1000);
 });
 
-discordClient.on('interactionCreate', async (interaction) => {
-  const GCD = await getGCD(interaction.guild.id);
-  const timestamp = getCurrentTime();
-  const settings: IGuildSettings = await getGuildSettings(interaction.guild);
-  const cache: ICache = await getCache(interaction.guild, settings);
+discordClient.on(
+  'interactionCreate',
+  async (interaction: CommandInteraction) => {
+    const GCD = await getGCD(interaction.guild.id);
+    const timestamp = getCurrentTime();
+    const settings: IGuildSettings = await getGuildSettings(interaction.guild);
+    const cache: ICache = await getCache(interaction.guild, settings);
+
+    if (cache && settings) {
+      if (cache.settings.smokemon_enabled) {
+        await checkExpGain(interaction.user, interaction.guild, interaction);
+        await checkSpawn(interaction, cache);
+      }
+    }
+
+    logger.debug('\n', interaction.options);
+
+    if (!interaction.isCommand()) return;
+
+    if (timestamp - GCD < 2) return;
+
+    const command = interaction.commandName;
+    const args = [interaction.options.getString('input')];
+    const commandFile = commands.find((_r, n) => n.includes(command));
+
+    if (!commandFile) return;
+    else
+      commandFile({
+        interaction,
+        args,
+        client: discordClient,
+        dev: true,
+        settings: settings,
+        cache: cache,
+      });
+  },
+);
+
+discordClient.on('messageCreate', async (message) => {
+  const settings: IGuildSettings = await getGuildSettings(message.guild);
+  const cache: ICache = await getCache(message.guild, settings);
 
   if (cache && settings) {
     if (cache.settings.smokemon_enabled) {
-      await checkExpGain(interaction.user, interaction.guild, interaction);
-      await checkSpawn(interaction, cache);
+      await checkExpGain(message.author, message.guild, undefined);
+      await checkSpawn((message as unknown as CommandInteraction), cache);
     }
   }
-
-  if (!interaction.isCommand()) return;
-
-  if (timestamp - GCD < 2) return;
-
-  console.log(interaction);
-
-  const command = interaction.commandName;
-  const args = [interaction.options.getString('input')];
-  const commandFile = commands.find((_r, n) => n.includes(command));
-
-  if (!commandFile) return;
-  else
-    commandFile({
-      interaction,
-      args,
-      client: discordClient,
-      dev: true,
-      settings: settings,
-      cache: cache,
-    });
 });
 
 discordClient.on('rateLimit', (error) => {

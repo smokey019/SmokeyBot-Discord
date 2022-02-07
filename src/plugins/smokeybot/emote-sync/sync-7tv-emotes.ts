@@ -1,7 +1,5 @@
 import {
-  Interaction,
-  MessageEmbed,
-  Permissions,
+  CommandInteraction, Permissions,
   PermissionString
 } from 'discord.js';
 import { getLogger } from 'log4js';
@@ -47,11 +45,11 @@ export async function fetch7tvChannelEmotes(
  * @param message
  */
 export async function sync_7tv_emotes(
-  interaction: Interaction,
-  channel: string,
+  interaction: CommandInteraction,
 ): Promise<void> {
-  let embed = undefined;
-  let to_be_deleted = undefined;
+  const channel = interaction.options
+    .getString('channel')
+    .replace(/[^a-zA-Z0-9 ]/g, '');
 
   const userPerms = new Permissions(
     interaction.member.permissions as PermissionString,
@@ -62,16 +60,7 @@ export async function sync_7tv_emotes(
     userPerms.has(Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS) &&
     !EmoteQueue.has(interaction.guild.id)
   ) {
-    embed = new MessageEmbed()
-      .setTitle('7TV Emote Manager')
-      .setColor(0xff0000)
-      .setDescription(`Checking 7TV API to sync emotes..`);
-    await interaction.channel
-      .send({ embeds: [embed] })
-      .then((interaction) => {
-        to_be_deleted = interaction.id;
-      })
-      .catch((error) => logger.error(error));
+    await interaction.reply(`Checking 7TV API to sync emotes..`);
 
     logger.debug(
       `Fetching 7TV Emotes for Twitch channel ${channel} (requested by ${interaction.user.username} in ${interaction.guild.name})..`,
@@ -89,20 +78,9 @@ export async function sync_7tv_emotes(
     if (!emotes || emotes.status === 404) {
       logger.debug(`Couldn't fetch 7TV Emotes for Twitch channel ${channel}.`);
 
-      await interaction.channel.messages
-        .fetch(to_be_deleted)
-        .then((interaction) => {
-          interaction.delete();
-        })
-        .catch((error) => logger.error(error));
-
-      embed = new MessageEmbed()
-        .setTitle('7TV Emote Manager')
-        .setColor(0xff0000)
-        .setDescription(
-          `There was an error fetching from 7TV's API. \n\n Make sure the username is correct and there are no symbols. \n\n You may have to wait for 7TV's cache to update before getting certain emotes. This can take up to an hour.\n\nExample command: \`~sync-emotes-7tv summit1g\``,
-        );
-      await interaction.channel.send({ embeds: [embed] });
+      await interaction.editReply(
+        `There was an error fetching from 7TV's API. \n\n Make sure the username is correct and there are no symbols. \n\n You may have to wait for 7TV's cache to update before getting certain emotes. This can take up to an hour.\n\nExample command: \`~sync-emotes-7tv summit1g\``,
+      );
 
       return;
     } else {
@@ -116,15 +94,16 @@ export async function sync_7tv_emotes(
 
       if (!EmoteQueue.has(interaction.guild.id)) {
         emotes.forEach((element: SevenTVEmotes) => {
-          if (element.mime === 'image/webp') return;
-          let emote_url =
+          if (element.mime === 'image/webp' || element.mime.match('gif'))
+            return;
+          const emote_url =
             // element.urls['4'] ||
             (element.urls['3'] || element.urls['2'] || element.urls['1']) ??
             undefined;
 
-          if (element.mime.match('gif')) {
+          /*if (element.mime.match('gif')) {
             emote_url = element.urls['2'];
-          }
+          }*/
 
           if (!existing_emojis.includes(element.name) && emote_url[1]) {
             final_emojis.push({ url: emote_url[1], name: element.name });
@@ -147,36 +126,14 @@ export async function sync_7tv_emotes(
             msg: interaction,
           });
 
-          await interaction.channel.messages
-            .fetch(to_be_deleted)
-            .then((interaction) => {
-              interaction.delete();
-            })
-            .catch((error) => logger.error(error));
-
-          embed = new MessageEmbed()
-            .setTitle('7TV Emote Manager')
-            .setColor(0x00bc8c)
-            .setDescription(
-              `**Successfully syncing ${final_emojis.length}/${emotes.length} emotes!**\n\n\nIt will take up to 30 minutes or more depending on the queue.\n\n- Discord's maximum GIF size is 256 kb so some longer emotes may not get uploaded. \n- Some images may not upload because 7TV has converted them to \`image/webp\` instead of GIFs so Discord does not accept it.\n- Only images marked as \`image/gif\` or \`image/png\` in their API will be uploaded.\n\n Type \`~cancel-sync\` to cancel. \n Type \`~stats\` to see how many servers are in queue.`,
-            );
-          await interaction.channel.send({ embeds: [embed] });
+          await interaction.editReply(
+            `**Successfully syncing ${final_emojis.length}/${emotes.length} emotes!**\n\n\nIt will take up to 30 minutes or more depending on the queue.\n\n- Wide emotes will break.\n- GIFs will not upload because they are in a more modern format that Discord does not support yet.\n\n Type \`/cancel-sync\` to cancel. \n Type \`/stats\` to see how many servers are in queue.`,
+          );
         } else {
           logger.debug(`No emotes found able to be synced for ${channel}..`);
-          await interaction.channel.messages
-            .fetch(to_be_deleted)
-            .then((interaction) => {
-              interaction.delete();
-            })
-            .catch((error) => logger.error(error));
-
-          embed = new MessageEmbed()
-            .setTitle('7TV Emote Manager')
-            .setColor(0x00bc8c)
-            .setDescription(
-              `No emotes found to sync. If the emote name(s) already exist they will not be overridden.`,
-            );
-          await interaction.channel.send({ embeds: [embed] });
+          await interaction.editReply(
+            `No emotes found to sync. If the emote name(s) already exist they will not be overridden.`,
+          );
         }
       } else {
         logger.debug(`Error syncing emotes for ${channel}..`);
@@ -184,20 +141,9 @@ export async function sync_7tv_emotes(
         const currentQueue = EmoteQueue.get(interaction.guild.id);
         const emotes = currentQueue.emotes.length;
 
-        await interaction.channel.messages
-          .fetch(to_be_deleted)
-          .then((interaction) => {
-            interaction.delete();
-          })
-          .catch((error) => logger.error(error));
-
-        embed = new MessageEmbed()
-          .setTitle('7TV Emote Manager')
-          .setColor(0x00bc8c)
-          .setDescription(
-            `**You already have ${emotes} emotes in a queue. You cannot add more at this time.**`,
-          );
-        await interaction.channel.send({ embeds: [embed] });
+        await interaction.editReply(
+          `**You already have ${emotes} emotes in a queue. You cannot add more at this time.**`,
+        );
       }
     }
   } else if (EmoteQueue.has(interaction.guild.id)) {
@@ -208,12 +154,8 @@ export async function sync_7tv_emotes(
     const currentQueue = EmoteQueue.get(interaction.guild.id);
     const emotes = currentQueue.emotes.length;
 
-    embed = new MessageEmbed()
-      .setTitle('7TV Emote Manager')
-      .setColor(0x00bc8c)
-      .setDescription(
-        `**You already have ${emotes} emotes in a queue. You cannot add more at this time.**`,
-      );
-    await interaction.channel.send({ embeds: [embed] });
+    await interaction.editReply(
+      `**You already have ${emotes} emotes in a queue. You cannot add more at this time.**`,
+    );
   }
 }

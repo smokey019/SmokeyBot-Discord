@@ -2,7 +2,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
-import { Client, Collection, Interaction, Message } from 'discord.js';
+import { Client, Collection, CommandInteraction, Message } from 'discord.js';
 import { readdir } from 'fs';
 import path from 'path';
 import { ICache } from '../../clients/cache';
@@ -12,14 +12,9 @@ import { getConfigValue } from '../../config';
 
 const logger = getLogger('Commander');
 
-export interface Command {
-  aliases: string[];
-  execute(message: any, args?: string[]): any;
-}
-
 export interface runEvent {
   message?: Message;
-  interaction?: Interaction;
+  interaction?: CommandInteraction;
   client: Client;
   args: string[];
   dev: boolean;
@@ -36,7 +31,7 @@ const slashCommands = [];
  * Load commands dynamically
  */
 export async function loadCommands() {
-  // Load Pokemon Commands
+  // Load Pokémon Commands
   readdir(path.join(__dirname, '/pokemon/'), async (err, allFiles) => {
     if (err) console.log(err);
     // const files = allFiles.filter((f) => f.split('.').pop() === 'ts' || 'js');
@@ -91,7 +86,7 @@ export async function loadCommands() {
 
 export async function registerSlashCommands() {
   try {
-    console.log('Started refreshing application (/) commands.');
+    logger.debug('Started refreshing application (/) commands.');
 
     const rest = new REST({ version: '9' }).setToken(
       getConfigValue('DISCORD_TOKEN'),
@@ -105,7 +100,7 @@ export async function registerSlashCommands() {
       { body: slashCommands },
     );
 
-    console.log('Successfully reloaded application (/) commands.');
+    logger.debug('Successfully reloaded application (/) commands.');
   } catch (error) {
     console.error(error);
   }

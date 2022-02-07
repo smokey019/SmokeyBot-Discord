@@ -19,11 +19,11 @@
 - `~prefix (enable|disable|default) (!|~|p!)`
   - Enable/disable various prefixes.
 
-## Pokemon Commands
+## Pokémon Commands
 
 - `~smokemon enable|disable`
 
-  - Enable/disable the Pokemon Plugin.
+  - Enable/disable the Pokémon Plugin.
 
 - `~|p!|!`
   - Prefixes.

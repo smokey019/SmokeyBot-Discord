@@ -1,3 +1,4 @@
+import { CommandInteraction } from 'discord.js';
 import { databaseClient } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
@@ -5,7 +6,7 @@ import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
 
 const logger = getLogger('NEW DEX');
 
-export async function updateDexes(interaction: Interaction): Promise<any> {
+export async function updateDexes(interaction: CommandInteraction): Promise<any> {
   if (interaction.user.id == '90514165138989056') {
     const users: Array<IMonsterUserModel> = await databaseClient<
       IMonsterUserModel

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Collection, Guild } from 'discord.js';
+import { Collection, CommandInteraction, Guild } from 'discord.js';
 import { LRUCache } from 'mnemonist';
 import { getCurrentTime } from '../utils';
 import { IGuildSettings } from './database';
@@ -39,7 +39,7 @@ export function loadCache(
   }
 }
 
-export async function reportCache(interaction: Interaction): Promise<void> {
+export async function reportCache(interaction: CommandInteraction): Promise<void> {
   const report = [];
 
   report.push('Cache Reports:\n');
@@ -48,7 +48,7 @@ export async function reportCache(interaction: Interaction): Promise<void> {
     report.push(`**${key}** has **${value.size}** entries.`);
   }
 
-  await (interaction as BaseCommandInteraction).reply(report.join('\n'));
+  await (interaction as CommandInteraction).reply(report.join('\n'));
 }
 
 /**

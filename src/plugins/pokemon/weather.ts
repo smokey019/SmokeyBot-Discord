@@ -1,4 +1,4 @@
-import { Interaction, TextChannel } from 'discord.js';
+import { CommandInteraction, TextChannel } from 'discord.js';
 import { ICache, loadCache } from '../../clients/cache';
 import { getRndInteger } from '../../utils';
 import Weather from './data/weather.json';
@@ -8,7 +8,7 @@ export type IWeather = typeof Weather[0];
 const WEATHER_CACHE = loadCache('weather', 100);
 
 export async function getBoostedWeatherSpawns(
-  interaction: Interaction,
+  interaction: CommandInteraction,
   cache: ICache,
 ): Promise<IWeather> {
   const boost = await WEATHER_CACHE.get(interaction.guild.id);
@@ -29,7 +29,7 @@ export async function getBoostedWeatherSpawns(
 }
 
 async function change_weather(
-  interaction: Interaction,
+  interaction: CommandInteraction,
   cache: ICache,
 ): Promise<IWeather> {
   const boost = {

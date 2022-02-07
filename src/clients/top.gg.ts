@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { CommandInteraction } from 'discord.js';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en.json';
 import fetch from 'node-fetch';
@@ -11,6 +12,7 @@ import { loadCache } from './cache';
 import { databaseClient } from './database';
 import { discordClient } from './discord';
 import { getLogger } from './logger';
+import { queueMsg } from './queue';
 
 TimeAgo.addDefaultLocale(en);
 
@@ -88,7 +90,7 @@ async function isWeekend(): Promise<any> {
   return await requestGET('GET', 'weekend').then((x: any) => x.is_weekend);
 }
 
-export async function checkVote(interaction: Interaction): Promise<boolean> {
+export async function checkVote(interaction: CommandInteraction): Promise<boolean> {
   const voted = (await dblCache.get(interaction.user.id)) ?? {
     voted: false,
     checked_at: Date.now() - 86401337,
@@ -102,8 +104,10 @@ export async function checkVote(interaction: Interaction): Promise<boolean> {
       const isWeekend = await checkWeekend();
 
       if (isWeekend) {
-        await (interaction as BaseCommandInteraction).reply(
+        queueMsg(
           `Thanks for voting! It's the weekend so you receive double! You received **5,000 currency** and **2 Rare Candy** to level up your monster(s)! You can do this every 12 hours.`,
+          interaction,
+          true,
         );
 
         for (let index = 0; index < 4; index++) {
@@ -119,8 +123,10 @@ export async function checkVote(interaction: Interaction): Promise<boolean> {
 
         return true;
       } else {
-        await (interaction as BaseCommandInteraction).reply(
+        queueMsg(
           `Thanks for voting! You received **2,500 currency** and a **Rare Candy** to level up a monster! You can do this every 12 hours.`,
+          interaction,
+          true,
         );
 
         await createItemDB({
@@ -135,17 +141,19 @@ export async function checkVote(interaction: Interaction): Promise<boolean> {
         return true;
       }
     } else {
-      await (interaction as BaseCommandInteraction).reply(`you haven't voted yet, m8. WeirdChamp`);
+      queueMsg(`You haven't voted yet. WeirdChamp`, interaction, true);
 
       return false;
     }
   } else if (voted.voted) {
-    await (interaction as BaseCommandInteraction).reply(
+    queueMsg(
       `you voted ${timeAgo.format(
         voted.checked_at,
       )} and got credit already. You can vote again ${timeAgo.format(
         voted.checked_at + 12 * 60 * 60 * 1000,
       )}.`,
+      interaction,
+      true,
     );
 
     return false;

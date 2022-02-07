@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { CommandInteraction } from 'discord.js';
 import { databaseClient, IGuildSettings } from '../../clients/database';
 import { parseArgs } from './utils';
 
@@ -44,13 +45,13 @@ export async function updatePrefixes(
     });
 }
 
-export async function set_prefix(interaction: Interaction): Promise<void> {
+export async function set_prefix(interaction: CommandInteraction): Promise<void> {
   let i = 0;
-  const parse = await parseArgs(message);
+  const parse = await parseArgs([]);
   const prefixes = await getPrefixes(interaction.guild.id);
 
   if (!parse.args[1] || (!parse.args[2] && parse.args[1] != 'default')) {
-    await (interaction as BaseCommandInteraction).reply(
+    await (interaction as CommandInteraction).reply(
       'Not enough parameters. Example: `!prefix enable !`. Type `!prefix help` for more information.',
     );
     return;
@@ -62,7 +63,7 @@ export async function set_prefix(interaction: Interaction): Promise<void> {
         if (!prefixes.includes('!')) {
           prefixes.push('!');
           await updatePrefixes(interaction.guild.id, prefixes);
-          await (interaction as BaseCommandInteraction).reply(
+          await (interaction as CommandInteraction).reply(
             'Successfully added `!` as a prefix. Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
@@ -74,7 +75,7 @@ export async function set_prefix(interaction: Interaction): Promise<void> {
         if (!prefixes.includes('\\?')) {
           prefixes.push('\\?');
           await updatePrefixes(interaction.guild.id, prefixes);
-          await (interaction as BaseCommandInteraction).reply(
+          await (interaction as CommandInteraction).reply(
             'Successfully added `?` as a prefix.  Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
@@ -86,7 +87,7 @@ export async function set_prefix(interaction: Interaction): Promise<void> {
         if (!prefixes.includes('~')) {
           prefixes.push('~');
           await updatePrefixes(interaction.guild.id, prefixes);
-          await (interaction as BaseCommandInteraction).reply(
+          await (interaction as CommandInteraction).reply(
             'Successfully added `~` as a prefix.  Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
@@ -98,7 +99,7 @@ export async function set_prefix(interaction: Interaction): Promise<void> {
         if (!prefixes.includes('p!')) {
           prefixes.push('p!');
           await updatePrefixes(interaction.guild.id, prefixes);
-          await (interaction as BaseCommandInteraction).reply(
+          await (interaction as CommandInteraction).reply(
             'Successfully added `p!` as a prefix.  Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
@@ -108,7 +109,7 @@ export async function set_prefix(interaction: Interaction): Promise<void> {
         break;
 
       default:
-        await (interaction as BaseCommandInteraction).reply(
+        await (interaction as CommandInteraction).reply(
           'You can enable/disable these prefixes: ' + prefixes,
         );
         break;
@@ -122,7 +123,7 @@ export async function set_prefix(interaction: Interaction): Promise<void> {
               prefixes.splice(i, 1);
             }
           }
-          await (interaction as BaseCommandInteraction).reply(
+          await (interaction as CommandInteraction).reply(
             'Successfully removed `!` as a prefix.  Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
@@ -138,7 +139,7 @@ export async function set_prefix(interaction: Interaction): Promise<void> {
               prefixes.splice(i, 1);
             }
           }
-          await (interaction as BaseCommandInteraction).reply(
+          await (interaction as CommandInteraction).reply(
             'Successfully removed `?` as a prefix.  Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
@@ -154,7 +155,7 @@ export async function set_prefix(interaction: Interaction): Promise<void> {
               prefixes.splice(i, 1);
             }
           }
-          await (interaction as BaseCommandInteraction).reply(
+          await (interaction as CommandInteraction).reply(
             'Successfully removed `~` as a prefix.  Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
@@ -170,7 +171,7 @@ export async function set_prefix(interaction: Interaction): Promise<void> {
               prefixes.splice(i, 1);
             }
           }
-          await (interaction as BaseCommandInteraction).reply(
+          await (interaction as CommandInteraction).reply(
             'Successfully removed `p!` as a prefix.  Your prefixes are now: `' +
               prefixes.join(' ') +
               '`.',
@@ -181,32 +182,22 @@ export async function set_prefix(interaction: Interaction): Promise<void> {
         break;
 
       default:
-        await (interaction as BaseCommandInteraction).reply(
+        await (interaction as CommandInteraction).reply(
           'You can enable/disable these prefixes: ' + prefixes,
         );
         break;
     }
   } else if (parse.args[1] == 'default') {
     await updatePrefixes(interaction.guild.id, default_prefixes);
-    await (interaction as BaseCommandInteraction).reply(
+    await (interaction as CommandInteraction).reply(
       'Successfully reset prefixes back to default: ' +
         default_prefixes.join(', '),
     );
   } else if (parse.args[1] == 'help') {
-    await (interaction as BaseCommandInteraction).reply(
+    await (interaction as CommandInteraction).reply(
       'Enable/disable prefixes: `!prefix disable ~` or `!prefix enable p!`. By default SmokeyBot uses: `' +
         default_prefixes.join(' ') +
         '`.',
     );
-  }
-}
-
-export async function prefix_check(interaction: Interaction): Promise<boolean> {
-  const prefixes = await getPrefixes(interaction.guild.id);
-
-  if (prefixes.includes(interaction.content.charAt(0))) {
-    return true;
-  } else {
-    return false;
   }
 }

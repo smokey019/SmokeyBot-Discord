@@ -1,15 +1,20 @@
-import { TextChannel } from 'discord.js';
+import { SlashCommandBuilder } from '@discordjs/builders';
 import { runEvent } from '..';
-import { GLOBAL_COOLDOWN } from '../../../clients/cache';
-import { getCurrentTime } from '../../../utils';
-import { releaseMonster } from '../../pokemon/release-monster';
+import { releaseMonsterNew } from '../../pokemon/release-monster';
 
 export async function run(e: runEvent) {
-  const channel_name = (e.interaction.channel as TextChannel).name;
-  if (!e.cache.settings.smokemon_enabled || channel_name != e.cache.settings.specific_channel) return;
-  GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
-
-  await releaseMonster(e.interaction);
+  await releaseMonsterNew(e.interaction);
 }
 
 export const names = ['release', 'r'];
+
+export const SlashCommandData = new SlashCommandBuilder()
+  .setName('release')
+  .setDescription('Release a Pokémon.')
+  .addStringOption((option) =>
+    option
+      .setName('pokemon')
+      .setDescription(
+        "Pokémon's smokeMon ID #. Leave blank to release latest catch.",
+      ),
+  );

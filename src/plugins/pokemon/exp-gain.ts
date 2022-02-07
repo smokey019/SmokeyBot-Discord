@@ -1,4 +1,4 @@
-import { ColorResolvable, Guild, Interaction, Message, MessageEmbed, User } from 'discord.js';
+import { ColorResolvable, CommandInteraction, Guild, MessageEmbed, User } from 'discord.js';
 import { xp_cache } from '../../clients/cache';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
@@ -17,7 +17,7 @@ import { rollShiny } from './utils';
 
 const logger = getLogger('ExpGain');
 
-export async function checkExpGain(user: User, guild: Guild, interaction?: Interaction, message?: Message): Promise<void> {
+export async function checkExpGain(user: User, guild: Guild, interaction?: CommandInteraction): Promise<void> {
   const timestamp = getCurrentTime();
   const cacheKey = user.id + ':' + guild.id;
   const cache = await xp_cache.get(cacheKey);
@@ -108,8 +108,6 @@ export async function checkExpGain(user: User, guild: Guild, interaction?: Inter
 
                     if (interaction){
                       queueMsg(embed, interaction, false, 0, undefined, true);
-                    }else if (message){
-                      queueMsg(embed, message as unknown as Interaction, false, 0, undefined, true);
                     }
                   }
                 }
@@ -167,8 +165,6 @@ export async function checkExpGain(user: User, guild: Guild, interaction?: Inter
 
                 if (interaction){
                   queueMsg(embed, interaction, false, 0, undefined, true);
-                }else if (message){
-                  queueMsg(embed, message as unknown as Interaction, false, 0, undefined, true);
                 }
               } else {
                 console.error('there was an error updating the egg>monster');
