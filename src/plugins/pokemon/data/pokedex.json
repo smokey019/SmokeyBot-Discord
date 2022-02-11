@@ -307,24 +307,24 @@
     "prevo": "Charmeleon",
     "evoLevel": 36,
     "eggGroups": ["Monster", "Dragon"],
-    "otherFormes": ["Mega Charizard-X", "Mega Charizard-Y", "Gmax Charizard"],
+    "otherFormes": ["Mega Charizard X", "Mega Charizard Y", "Gmax Charizard"],
     "formeOrder": [
       "Charizard",
-      "Mega Charizard-X",
-      "Mega Charizard-Y",
+      "Mega Charizard X",
+      "Mega Charizard Y",
       "Gmax Charizard"
     ]
   },
   {
     "id": 6.3,
     "name": {
-      "english": "Mega Charizard-X",
+      "english": "Mega Charizard X",
       "japanese": "",
       "chinese": "",
       "french": ""
     },
     "baseSpecies": "Charizard",
-    "forme": "Mega-X",
+    "forme": "Mega X",
     "type": ["Fire", "Dragon"],
     "genderRatio": {
       "M": 0.875,
@@ -359,13 +359,13 @@
   {
     "id": 6.4,
     "name": {
-      "english": "Mega Charizard-Y",
+      "english": "Mega Charizard Y",
       "japanese": "",
       "chinese": "",
       "french": ""
     },
     "baseSpecies": "Charizard",
-    "forme": "Mega-Y",
+    "forme": "Mega Y",
     "type": ["Fire", "Flying"],
     "genderRatio": {
       "M": 0.875,
@@ -7928,8 +7928,8 @@
     "weightkg": 122,
     "color": "#6000ff",
     "eggGroups": ["Undiscovered"],
-    "otherFormes": ["Mega Mewtwo-X", "Mega Mewtwo-Y"],
-    "formeOrder": ["Mewtwo", "Mega Mewtwo-X", "Mega Mewtwo-Y"],
+    "otherFormes": ["Mega Mewtwo X", "Mega Mewtwo Y"],
+    "formeOrder": ["Mewtwo", "Mega Mewtwo X", "Mega Mewtwo Y"],
     "images": {
       "normal": "https://cdn.discordapp.com/attachments/718781413452677211/812851422558814208/8e7848e2473d78036e42bff4fe1ce2f0.png",
       "shiny": "https://cdn.discordapp.com/attachments/718781413452677211/812851428837163029/2e289d98962667af8ce5ac5b57a1e44e.png",
@@ -7940,14 +7940,14 @@
   {
     "id": 150.3,
     "name": {
-      "english": "Mega Mewtwo-X",
+      "english": "Mega Mewtwo X",
       "japanese": "",
       "chinese": "",
       "french": ""
     },
     "special": "Legendary",
     "baseSpecies": "Mewtwo",
-    "forme": "Mega-X",
+    "forme": "Mega X",
     "type": ["Psychic", "Fighting"],
     "gender": "N",
     "baseStats": {
@@ -7979,14 +7979,14 @@
   {
     "id": 150.4,
     "name": {
-      "english": "Mega Mewtwo-Y",
+      "english": "Mega Mewtwo Y",
       "japanese": "",
       "chinese": "",
       "french": ""
     },
     "special": "Legendary",
     "baseSpecies": "Mewtwo",
-    "forme": "Mega-Y",
+    "forme": "Mega Y",
     "type": ["Psychic"],
     "gender": "N",
     "baseStats": {
@@ -9925,8 +9925,8 @@
       "Unown-U",
       "Unown-V",
       "Unown-W",
-      "Unown-X",
-      "Unown-Y",
+      "Unown X",
+      "Unown Y",
       "Unown-Z",
       "Unown-Exclamation",
       "Unown-Question"
@@ -9955,8 +9955,8 @@
       "Unown-U",
       "Unown-V",
       "Unown-W",
-      "Unown-X",
-      "Unown-Y",
+      "Unown X",
+      "Unown Y",
       "Unown-Z",
       "Unown-Exclamation",
       "Unown-Question"

@@ -10,7 +10,7 @@ export async function run(e: runEvent) {
     channel_name != e.cache.settings.specific_channel
   )
     return;
-  await catchMonster(e.interaction, e.cache);
+  await catchMonster(e.interaction);
 }
 
 export const names = ['catch', 'キャッチ', '抓住', 'capture'];
@@ -18,7 +18,7 @@ export const names = ['catch', 'キャッチ', '抓住', 'capture'];
 export const SlashCommandData = new SlashCommandBuilder()
   .setName('catch')
   .setDescription(
-    'Catch a Pokémon! Type their name properly to successfully catch.',
+    'Catch a Pokémon! Type their name properly to successfully catch. ie: /catch Bulbasaur',
   )
   .addStringOption((option) =>
     option

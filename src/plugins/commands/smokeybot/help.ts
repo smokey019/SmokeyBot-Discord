@@ -1,3 +1,4 @@
+import { SlashCommandBuilder } from '@discordjs/builders';
 import { runEvent } from '..';
 import { GLOBAL_COOLDOWN } from '../../../clients/cache';
 import { queueMsg } from '../../../clients/queue';
@@ -14,3 +15,7 @@ export async function run(e: runEvent) {
 }
 
 export const names = ['help', 'commands'];
+
+export const SlashCommandData = new SlashCommandBuilder()
+  .setName('help')
+  .setDescription('Show SmokeyBot commands.');

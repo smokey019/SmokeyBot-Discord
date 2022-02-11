@@ -61,13 +61,15 @@ function monsterMatchesPrevious(interactionContent, { name }) {
  * @param interaction
  * @param cache
  */
-function catchMonster(interaction, cache) {
-    var _a, _b, _c, _d, _e, _f, _g;
+function catchMonster(interaction) {
+    var _a, _b, _c, _d, _e, _f;
     return __awaiter(this, void 0, void 0, function* () {
         const timestamp = (0, utils_1.getCurrentTime)();
         const GCD = yield (0, cache_1.getGCD)(interaction.guild.id);
-        const spawn = yield spawn_monster_1.MONSTER_SPAWNS.get(interaction.guild.id);
+        //const spawn = await MONSTER_SPAWNS.get(interaction.guild.id);
+        const data = yield (0, spawn_monster_1.getSpawn)(interaction.guild.id);
         const attempt = interaction.options.getString('pokemon');
+        const spawn = data.spawn_data;
         if (spawn.monster && monsterMatchesPrevious(attempt, spawn.monster)) {
             logger.trace(`${(_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.name} - ${interaction.user.username} | Starting catch~`);
             let level = 0;
@@ -88,7 +90,8 @@ function catchMonster(interaction, cache) {
                 gender = 'N';
             }
             spawn.monster = null;
-            spawn_monster_1.MONSTER_SPAWNS.set(interaction.guild.id, spawn);
+            yield (0, spawn_monster_1.updateSpawn)(interaction.guild.id, spawn);
+            //MONSTER_SPAWNS.set(interaction.guild.id, spawn);
             const monster = {
                 monster_id: currentSpawn.id,
                 hp: (0, utils_1.getRndInteger)(1, 31),
@@ -207,8 +210,7 @@ function catchMonster(interaction, cache) {
                             .setDescription(response)
                             .setImage(currentSpawn.images.shiny)
                             .setTimestamp();
-                        const monsterChannel = (_g = interaction.guild) === null || _g === void 0 ? void 0 : _g.channels.cache.find((ch) => ch.name === cache.settings.specific_channel);
-                        (0, queue_1.queueMsg)(embed, interaction, false, 1, monsterChannel, true);
+                        (0, queue_1.queueMsg)(embed, interaction, true, 1, undefined, true);
                     }
                     else {
                         (0, queue_1.queueMsg)(response, interaction, true, 1);

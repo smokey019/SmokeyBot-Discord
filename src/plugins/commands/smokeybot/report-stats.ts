@@ -1,3 +1,4 @@
+import { SlashCommandBuilder } from '@discordjs/builders';
 import { runEvent } from '..';
 import { GLOBAL_COOLDOWN } from '../../../clients/cache';
 import { getCurrentTime } from '../../../utils';
@@ -10,3 +11,7 @@ export async function run(e: runEvent) {
 }
 
 export const names = ['stats'];
+
+export const SlashCommandData = new SlashCommandBuilder()
+  .setName('stats')
+  .setDescription('Show SmokeyBot statistics.');

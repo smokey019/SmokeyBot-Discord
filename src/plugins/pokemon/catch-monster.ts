@@ -1,5 +1,5 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js';
-import { getGCD, GLOBAL_COOLDOWN, ICache } from '../../clients/cache';
+import { getGCD, GLOBAL_COOLDOWN } from '../../clients/cache';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { queueMsg } from '../../clients/queue';
@@ -10,7 +10,7 @@ import { getCurrentTime, getRndInteger } from '../../utils';
 import { userDex } from './info';
 import { IMonsterDex } from './monsters';
 import { getRandomNature } from './natures';
-import { MONSTER_SPAWNS } from './spawn-monster';
+import { getSpawn, updateSpawn } from './spawn-monster';
 import { rollGender, rollLevel, rollPerfectIV, rollShiny } from './utils';
 
 const logger = getLogger('Pokémon-Catch');
@@ -61,12 +61,13 @@ function monsterMatchesPrevious(
  */
 export async function catchMonster(
   interaction: CommandInteraction,
-  cache: ICache,
 ): Promise<void> {
   const timestamp = getCurrentTime();
   const GCD = await getGCD(interaction.guild.id);
-  const spawn = await MONSTER_SPAWNS.get(interaction.guild.id);
+  //const spawn = await MONSTER_SPAWNS.get(interaction.guild.id);
+  const data = await getSpawn(interaction.guild.id);
   const attempt = interaction.options.getString('pokemon');
+  const spawn = data.spawn_data;
 
   if (spawn.monster && monsterMatchesPrevious(attempt, spawn.monster)) {
     logger.trace(
@@ -96,7 +97,8 @@ export async function catchMonster(
 
     spawn.monster = null;
 
-    MONSTER_SPAWNS.set(interaction.guild.id, spawn);
+    await updateSpawn(interaction.guild.id, spawn);
+    //MONSTER_SPAWNS.set(interaction.guild.id, spawn);
 
     const monster: IMonsterModel = {
       monster_id: currentSpawn.id,
@@ -272,11 +274,7 @@ export async function catchMonster(
             .setImage(currentSpawn.images.shiny)
             .setTimestamp();
 
-          const monsterChannel = interaction.guild?.channels.cache.find(
-            (ch) => ch.name === cache.settings.specific_channel,
-          );
-
-          queueMsg(embed, interaction, false, 1, monsterChannel, true);
+          queueMsg(embed, interaction, true, 1, undefined, true);
         } else {
           queueMsg(response, interaction, true, 1);
         }

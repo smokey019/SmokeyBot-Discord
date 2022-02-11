@@ -1,8 +1,12 @@
-import { Client, CommandInteraction, Intents } from 'discord.js';
+import { REST } from '@discordjs/rest';
+import { Routes } from 'discord-api-types/v9';
+import { Client, CommandInteraction, Guild, Intents } from 'discord.js';
+import { getConfigValue } from '../config';
 import {
   commands,
   loadCommands,
-  registerSlashCommands
+  registerSlashCommands,
+  slashCommands
 } from '../plugins/commands';
 import { checkExpGain } from '../plugins/pokemon/exp-gain';
 import { getAllMonsters, MonsterDex } from '../plugins/pokemon/monsters';
@@ -57,7 +61,7 @@ discordClient.on(
       }
     }
 
-    logger.debug('\n', interaction.options);
+    // logger.debug('\n', interaction.options);
 
     if (!interaction.isCommand()) return;
 
@@ -90,6 +94,25 @@ discordClient.on('messageCreate', async (message) => {
       await checkSpawn((message as unknown as CommandInteraction), cache);
     }
   }
+});
+
+
+/**
+ * Register Slash commands for new servers so they can use the commands ASAP. Do I have to do this?
+ */
+discordClient.on('guildCreate', async (guild: Guild) => {
+
+  logger.debug(`\nRegistered commands in new guild '${guild.name}' ID: '${guild.id}'\n`);
+
+  const rest = new REST({ version: '9' }).setToken(
+    getConfigValue('DISCORD_TOKEN'),
+  );
+
+  await rest.put(
+    Routes.applicationGuildCommands('458710213122457600', guild.id),
+    { body: slashCommands },
+  );
+
 });
 
 discordClient.on('rateLimit', (error) => {

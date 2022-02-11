@@ -24,7 +24,7 @@ const logger = (0, logger_1.getLogger)('Info');
 function checkUniqueMonsters(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         const tempdex = yield userDex(interaction.user.id);
-        (0, queue_1.queueMsg)(`You have ${tempdex.length}/${monsters_1.MonsterDex.size} total unique Pokémon in your Pokédex.`, interaction, false, 0, undefined);
+        (0, queue_1.queueMsg)(`You have ${tempdex.length}/${monsters_1.MonsterDex.size} total unique Pokémon in your Pokédex.`, interaction, true, 0, undefined);
     });
 }
 exports.checkUniqueMonsters = checkUniqueMonsters;
@@ -191,13 +191,18 @@ function monsterEmbed(monster_db, interaction) {
                 inline: true,
             });
         }
-        const embed = new discord_js_1.MessageEmbed()
-            .setAuthor(title, utils_2.img_monster_ball, `https://pokemondb.net/pokedex/${monster.id}`)
-            .setColor(colors_1.COLOR_PURPLE)
-            .setImage(img)
-            .setThumbnail(thumbnail)
-            .setDescription(released)
-            .addFields(embedFields);
+        const embed = {
+            author: {
+                name: title,
+                icon_url: utils_2.img_monster_ball,
+                url: `https://pokemondb.net/pokedex/${monster.id}`,
+            },
+            color: monster.color,
+            image: { url: img },
+            thumbnail: thumbnail,
+            description: released,
+            fields: embedFields,
+        };
         try {
             (0, queue_1.queueMsg)(embed, interaction, true, 0, undefined, true);
         }

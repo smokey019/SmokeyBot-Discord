@@ -23,7 +23,7 @@ export async function checkUniqueMonsters(
   queueMsg(
     `You have ${tempdex.length}/${MonsterDex.size} total unique Pokémon in your Pokédex.`,
     interaction,
-    false,
+    true,
     0,
     undefined,
   );
@@ -229,17 +229,19 @@ export async function monsterEmbed(
     });
   }
 
-  const embed = new MessageEmbed()
-    .setAuthor(
-      title,
-      img_monster_ball,
-      `https://pokemondb.net/pokedex/${monster.id}`,
-    )
-    .setColor(COLOR_PURPLE)
-    .setImage(img)
-    .setThumbnail(thumbnail)
-    .setDescription(released)
-    .addFields(embedFields);
+  const embed = {
+    author: {
+      name: title,
+      icon_url: img_monster_ball,
+      url: `https://pokemondb.net/pokedex/${monster.id}`,
+    },
+    color: monster.color,
+    image: { url: img },
+    thumbnail: thumbnail,
+    description: released,
+    fields: embedFields,
+  };
+
   try {
     queueMsg(embed, interaction, true, 0, undefined, true);
   } catch (error) {
@@ -257,9 +259,12 @@ export async function monsterInfoLatest(
   const user = await databaseClient<IMonsterUserModel>(MonsterUserTable)
     .select()
     .where('uid', interaction.user.id);
+    console.log('1');
 
   if (user) {
+    console.log('2');
     if (user[0].latest_monster) {
+      console.log('3');
       const tmpMonster = await databaseClient<IMonsterModel>(MonsterTable)
         .select()
         .where('id', user[0].latest_monster);
@@ -321,7 +326,7 @@ export async function monsterDex(
   let tmp = interaction.options.getString('pokemon');
   let tempMonster: IMonsterDex = undefined;
 
-  if (searchShiny){
+  if (searchShiny) {
     tmp = tmp.replace(/shiny/i, '');
   }
 
@@ -410,7 +415,7 @@ export async function monsterDex(
 	**Prevolve**: ${prevolve}
     **Evolve**: ${evolve + evo_item}`);
 
-    queueMsg(embed, interaction, true, 0 , undefined, true);
+    queueMsg(embed, interaction, true, 0, undefined, true);
   }
 }
 

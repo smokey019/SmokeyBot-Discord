@@ -25,7 +25,7 @@ export interface runEvent {
 export const commands: Collection<string[], (event: runEvent) => any> =
   new Collection();
 
-const slashCommands = [];
+export const slashCommands = [];
 
 /**
  * Load commands dynamically
@@ -92,13 +92,9 @@ export async function registerSlashCommands() {
       getConfigValue('DISCORD_TOKEN'),
     );
 
-    await rest.put(
-      Routes.applicationGuildCommands(
-        '758820204133613598',
-        '690857004171919370',
-      ),
-      { body: slashCommands },
-    );
+    await rest.put(Routes.applicationCommands('458710213122457600'), {
+      body: slashCommands,
+    });
 
     logger.debug('Successfully reloaded application (/) commands.');
   } catch (error) {

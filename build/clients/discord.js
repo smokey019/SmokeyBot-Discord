@@ -10,7 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.discordClient = exports.initializing = exports.rateLimited = void 0;
+const rest_1 = require("@discordjs/rest");
+const v9_1 = require("discord-api-types/v9");
 const discord_js_1 = require("discord.js");
+const config_1 = require("../config");
 const commands_1 = require("../plugins/commands");
 const exp_gain_1 = require("../plugins/pokemon/exp-gain");
 const monsters_1 = require("../plugins/pokemon/monsters");
@@ -56,7 +59,7 @@ exports.discordClient.on('interactionCreate', (interaction) => __awaiter(void 0,
             yield (0, spawn_monster_1.checkSpawn)(interaction, cache);
         }
     }
-    logger.debug('\n', interaction.options);
+    // logger.debug('\n', interaction.options);
     if (!interaction.isCommand())
         return;
     if (timestamp - GCD < 2)
@@ -85,6 +88,14 @@ exports.discordClient.on('messageCreate', (message) => __awaiter(void 0, void 0,
             yield (0, spawn_monster_1.checkSpawn)(message, cache);
         }
     }
+}));
+/**
+ * Register Slash commands for new servers so they can use the commands ASAP. Do I have to do this?
+ */
+exports.discordClient.on('guildCreate', (guild) => __awaiter(void 0, void 0, void 0, function* () {
+    logger.debug(`\nRegistered commands in new guild '${guild.name}' ID: '${guild.id}'\n`);
+    const rest = new rest_1.REST({ version: '9' }).setToken((0, config_1.getConfigValue)('DISCORD_TOKEN'));
+    yield rest.put(v9_1.Routes.applicationGuildCommands('458710213122457600', guild.id), { body: commands_1.slashCommands });
 }));
 exports.discordClient.on('rateLimit', (error) => {
     const timeoutStr = error.timeout / 1000;

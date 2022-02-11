@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.forceSpawn = exports.spawnMonster = exports.checkSpawn = exports.MONSTER_SPAWNS = void 0;
+exports.forceSpawn = exports.updateSpawn = exports.getSpawn = exports.spawnMonster = exports.checkSpawn = exports.MONSTER_SPAWNS = void 0;
 const discord_js_1 = require("discord.js");
 const cache_1 = require("../../clients/cache");
 const database_1 = require("../../clients/database");
@@ -24,17 +24,20 @@ exports.MONSTER_SPAWNS = (0, cache_1.loadCache)('MONSTER_SPAWNS', 500);
 const logger = (0, logger_1.getLogger)('Pokémon-Spawn');
 function checkSpawn(interaction, cache) {
     return __awaiter(this, void 0, void 0, function* () {
-        let spawn = yield exports.MONSTER_SPAWNS.get(interaction.guild.id);
-        if (!spawn) {
+        const data = yield getSpawn(interaction.guild.id);
+        let spawn = undefined;
+        if (!data) {
             spawn = {
-                monster: undefined,
+                monster: null,
                 spawned_at: (0, utils_1.getCurrentTime)() - 30,
             };
-            exports.MONSTER_SPAWNS.set(interaction.guild.id, spawn);
+            //MONSTER_SPAWNS.set(interaction.guild.id, spawn);
+            yield updateSpawn(interaction.guild.id, spawn);
         }
         else {
             const spawn_timer = (0, utils_1.getRndInteger)((0, utils_1.getRndInteger)(15, 120), 300);
             const timestamp = (0, utils_1.getCurrentTime)();
+            spawn = data.spawn_data;
             if (timestamp - spawn.spawned_at > spawn_timer &&
                 !discord_1.rateLimited &&
                 !discord_1.initializing) {
@@ -85,11 +88,12 @@ function spawnMonster(interaction, cache) {
                     });
                     boostCount++;
                 }
-                exports.MONSTER_SPAWNS.set(interaction.guild.id, spawn_data);
+                //MONSTER_SPAWNS.set(interaction.guild.id, spawn_data);
+                yield updateSpawn(interaction.guild.id, spawn_data);
                 logger.info(`'${interaction.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`);
                 const embed = new discord_js_1.MessageEmbed({
                     color: spawn_data.monster.color,
-                    description: 'Type ~catch <Pokémon> to try and catch it!',
+                    description: 'Type `/catch PokémonName` to try and catch it!',
                     image: {
                         url: spawn_data.monster.images.normal,
                     },
@@ -105,6 +109,61 @@ function spawnMonster(interaction, cache) {
 }
 exports.spawnMonster = spawnMonster;
 /**
+ * Get Spawn from DB
+ * @param guild
+ * @returns spawn_data
+ */
+function getSpawn(guild) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield (0, database_1.databaseClient)('spawns')
+            .select()
+            .where({
+            guild: guild,
+        })
+            .first();
+    });
+}
+exports.getSpawn = getSpawn;
+/**
+ * Update spawn in DB.
+ * @param guild Guild ID: string
+ * @param spawn_data \{ IMonsterModel, Timestamp \}
+ * @returns
+ */
+function updateSpawn(guild, spawn_data) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const current_spawn = yield getSpawn(guild);
+        if (current_spawn) {
+            const update = yield (0, database_1.databaseClient)('spawns')
+                .update({ spawn_data: JSON.stringify(spawn_data) })
+                .where({ guild: guild });
+            if (update) {
+                logger.trace('Updated existing spawn data with a new spawn.');
+                return true;
+            }
+            else {
+                logger.debug('Failed to update existing spawn data.');
+                return false;
+            }
+        }
+        else {
+            const add = yield (0, database_1.databaseClient)('spawns').insert({
+                guild: guild,
+                spawn_data: JSON.stringify(spawn_data),
+            });
+            if (add) {
+                logger.trace('Successfully inserted new spawn data.');
+                return true;
+            }
+            else {
+                logger.debug('Failed to insert new spawn data.');
+                return false;
+            }
+        }
+    });
+}
+exports.updateSpawn = updateSpawn;
+/**
  * Force spawn a selected monster w/ ID.
  * @param message
  * @param cache
@@ -118,21 +177,22 @@ function forceSpawn(interaction, cache) {
             spawned_at: (0, utils_1.getCurrentTime)(),
         };
         try {
-            exports.MONSTER_SPAWNS.set(interaction.guild.id, spawn_data);
+            //MONSTER_SPAWNS.set(interaction.guild.id, spawn_data);
+            yield updateSpawn(interaction.guild.id, spawn_data);
             logger.info(`'${interaction.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`);
             const embed = new discord_js_1.MessageEmbed({
                 color: colors_1.COLOR_PURPLE,
-                description: 'Type ~catch <Pokémon> to try and catch it!',
+                description: 'Type `/catch PokémonName` to try and catch it!',
                 image: {
                     url: spawn_data.monster.images.normal,
                 },
                 title: 'A wild Pokémon has appeared!',
             });
-            (0, queue_1.queueMsg)(embed, interaction, false, 1, monsterChannel, true);
+            (0, queue_1.queueMsg)(embed, interaction, true, 1, monsterChannel, true);
         }
         catch (error) {
             logger.error(error);
-            console.log(spawn_data.monster);
+            logger.error('\n', spawn_data.monster);
         }
     });
 }
