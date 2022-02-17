@@ -580,31 +580,12 @@ exports.checkFavorites = checkFavorites;
  *
  * @param message
  */
-function searchMonsters(interaction, args) {
+function searchMonsters(interaction) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        const splitMsg = args;
-        const isQuote = false;
-        let sort = ['iv', 'high'];
-        let search = undefined;
-        let page = 0;
-        if (isQuote) {
-            const parseSearch = args[0].replace(/ {2,}/gm, ' ').split('"');
-            const splitSort = parseSearch[parseSearch.length - 1].split(' ');
-            search = parseSearch[1].toLowerCase();
-            if (splitSort.length == 3) {
-                sort = [splitSort[1], splitSort[2]];
-            }
-            else if (splitSort.length == 4) {
-                sort = [splitSort[1], splitSort[2]];
-                page = parseInt(splitSort[splitSort.length - 1]) - 1;
-            }
-        }
-        else {
-            const parseSearch = args[0].replace(/ {2,}/gm, ' ').split(' ');
-            sort = [splitMsg[2], splitMsg[3]];
-            search = parseSearch[1].toLowerCase();
-        }
+        const sort = ['iv', 'high'];
+        const search = interaction.options.getString('pokemon').toLowerCase().replace(/ {2,}/g, ' ');
+        const page = 0;
         const pokemon = yield (0, monsters_1.getUsersMonsters)(interaction.user.id);
         if (pokemon.length > 0) {
             let message_contents = [];
@@ -616,14 +597,7 @@ function searchMonsters(interaction, args) {
                 const monster = (0, monsters_1.findMonsterByIDLocal)(element.monster_id);
                 if (!monster)
                     return;
-                if (isQuote &&
-                    monster.name.english.toLowerCase().replace(/♂|♀/g, '') != search)
-                    return;
-                if (!isQuote &&
-                    !monster.name.english
-                        .toLowerCase()
-                        .replace(/♂|♀/g, '')
-                        .match(splitMsg[1].toLowerCase()))
+                if (monster.name.english.toLowerCase().replace(/♂|♀/g, '') != search)
                     return;
                 if (element.shiny) {
                     shiny = ' ⭐';
@@ -722,7 +696,7 @@ function searchMonsters(interaction, args) {
             if (message_contents.length > 10) {
                 let all_monsters = [];
                 all_monsters = (0, utils_1.chunk)(message_contents, 10);
-                if (splitMsg.length > 4 && all_monsters.length > 1) {
+                if (page && all_monsters.length > 1) {
                     if (all_monsters[page]) {
                         message_contents = all_monsters[page];
                     }
@@ -737,8 +711,7 @@ function searchMonsters(interaction, args) {
                     (0, utils_1.format_number)(pokemon.length)} - Pages: ${(0, utils_1.format_number)(all_monsters.length)}`, (_a = interaction.user.avatarURL()) === null || _a === void 0 ? void 0 : _a.toString())
                     .setColor(0xff0000)
                     .setDescription(new_msg);
-                yield interaction.channel
-                    .send({ embeds: [embed] })
+                yield interaction.reply({ embeds: [embed] })
                     .then(() => {
                     var _a;
                     logger.debug(`Sent Pokémon for ${interaction.user.username} in ${(_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.name}!`);
@@ -758,8 +731,7 @@ function searchMonsters(interaction, args) {
                     (0, utils_1.format_number)(pokemon.length)}`, (_b = interaction.user.avatarURL()) === null || _b === void 0 ? void 0 : _b.toString())
                     .setColor(0xff0000)
                     .setDescription(new_msg);
-                yield interaction.channel
-                    .send({ embeds: [embed] })
+                yield interaction.reply({ embeds: [embed] })
                     .then(() => {
                     var _a;
                     logger.debug(`Sent Pokémon for ${interaction.user.username} in ${(_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.name}!`);

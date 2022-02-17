@@ -57,11 +57,10 @@ discordClient.on(
     if (cache && settings) {
       if (cache.settings.smokemon_enabled) {
         await checkExpGain(interaction.user, interaction.guild, interaction);
-        await checkSpawn(interaction, cache);
       }
     }
 
-    // logger.debug('\n', interaction.options);
+    //logger.debug('\n', interaction);
 
     if (!interaction.isCommand()) return;
 
@@ -85,34 +84,46 @@ discordClient.on(
 );
 
 discordClient.on('messageCreate', async (message) => {
+  if (
+    message.author.id == '458710213122457600' ||
+    message.author.id == '758820204133613598'
+  )
+    return;
   const settings: IGuildSettings = await getGuildSettings(message.guild);
   const cache: ICache = await getCache(message.guild, settings);
 
   if (cache && settings) {
     if (cache.settings.smokemon_enabled) {
       await checkExpGain(message.author, message.guild, undefined);
-      await checkSpawn((message as unknown as CommandInteraction), cache);
+      await checkSpawn(message as unknown as CommandInteraction, cache);
     }
   }
 });
-
 
 /**
  * Register Slash commands for new servers so they can use the commands ASAP. Do I have to do this?
  */
 discordClient.on('guildCreate', async (guild: Guild) => {
-
-  logger.debug(`\nRegistered commands in new guild '${guild.name}' ID: '${guild.id}'\n`);
-
-  const rest = new REST({ version: '9' }).setToken(
-    getConfigValue('DISCORD_TOKEN'),
+  logger.debug(
+    `\nRegistered commands in new guild '${guild.name}' ID: '${guild.id}'\n`,
   );
 
-  await rest.put(
-    Routes.applicationGuildCommands('458710213122457600', guild.id),
-    { body: slashCommands },
-  );
+  let token = undefined;
+  let api = undefined;
 
+  if (JSON.parse(getConfigValue('DEV'))) {
+    token = getConfigValue('DISCORD_TOKEN_DEV');
+    api = getConfigValue('API_CLIENT_ID_DEV');
+  } else {
+    token = getConfigValue('DISCORD_TOKEN');
+    api = getConfigValue('API_CLIENT_ID');
+  }
+
+  const rest = new REST({ version: '9' }).setToken(token);
+
+  await rest.put(Routes.applicationGuildCommands(api, guild.id), {
+    body: slashCommands,
+  });
 });
 
 discordClient.on('rateLimit', (error) => {

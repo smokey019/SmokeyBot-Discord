@@ -221,8 +221,11 @@ function monsterInfoLatest(interaction) {
         const user = yield (0, database_1.databaseClient)(MonsterUser_1.MonsterUserTable)
             .select()
             .where('uid', interaction.user.id);
+        console.log('1');
         if (user) {
+            console.log('2');
             if (user[0].latest_monster) {
+                console.log('3');
                 const tmpMonster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
                     .select()
                     .where('id', user[0].latest_monster);

@@ -75,17 +75,17 @@ function releaseMonsterNew(interaction) {
     });
 }
 exports.releaseMonsterNew = releaseMonsterNew;
-function releaseMonster(interaction, args) {
+function releaseMonster(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const tmpMsg = args;
-        if (tmpMsg.length > 1) {
-            if (tmpMsg[1].toString().match(',') || tmpMsg[1].toString().match(' ')) {
+        const tmpMsg = interaction.options.getString('pokemon');
+        if (tmpMsg) {
+            if (tmpMsg.toString().match(',') || tmpMsg.toString().match(' ')) {
                 let multi_dump = [];
-                if (tmpMsg[1].toString().match(',')) {
-                    multi_dump = tmpMsg[1].replace(' ', '').split(',');
+                if (tmpMsg.toString().match(',')) {
+                    multi_dump = tmpMsg.replace(' ', '').split(',');
                 }
-                else if (tmpMsg[1].toString().match(' ')) {
-                    multi_dump = tmpMsg[1].replace(',', '').split(' ');
+                else if (tmpMsg.toString().match(' ')) {
+                    multi_dump = tmpMsg.replace(',', '').split(' ');
                 }
                 if (multi_dump.length < 35) {
                     multi_dump.forEach((element) => __awaiter(this, void 0, void 0, function* () {
@@ -105,14 +105,14 @@ function releaseMonster(interaction, args) {
             }
             else {
                 let to_release = undefined;
-                if (tmpMsg[1] == '^') {
+                if (tmpMsg == '^') {
                     const user = yield (0, database_1.getUser)(interaction.user.id);
                     to_release = yield (0, monsters_1.getUserMonster)(user.latest_monster);
                 }
                 else {
-                    if (isNaN(parseInt(tmpMsg[1])))
+                    if (isNaN(parseInt(tmpMsg)))
                         return;
-                    to_release = yield (0, monsters_1.getUserMonster)(tmpMsg[1]);
+                    to_release = yield (0, monsters_1.getUserMonster)(tmpMsg);
                 }
                 if (!to_release)
                     return;
@@ -128,13 +128,14 @@ function releaseMonster(interaction, args) {
             }
         }
         else {
-            interaction
-                .reply({ content: `Not enough things in ur msg there m8`, ephemeral: true })
-                .then(() => {
-                logger.debug(`${interaction.user.username} not enough things in ur msg there m8`);
-                return;
-            })
-                .catch((error) => logger.error(error));
+            const user = yield (0, database_1.getUser)(interaction.user.id);
+            const last_monster = yield (0, database_1.databaseClient)(Monster_1.MonsterTable)
+                .select()
+                .where('id', user.latest_monster)
+                .first();
+            yield release(last_monster.id);
+            const monster_dex = yield (0, monsters_1.findMonsterByID)(last_monster.monster_id);
+            (0, queue_1.queueMsg)(`Successfully released your monster. Goodbye **${monster_dex.name.english}** :/`, interaction, true);
         }
     });
 }
@@ -143,7 +144,10 @@ function recoverMonster(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         const to_release = yield (0, monsters_1.getUserMonster)(interaction.options.getString('pokemon'));
         if (!to_release) {
-            interaction.reply({ content: 'There was an error processing your request.', ephemeral: true });
+            interaction.reply({
+                content: 'There was an error processing your request.',
+                ephemeral: true,
+            });
             return;
         }
         if (to_release &&

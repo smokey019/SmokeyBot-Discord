@@ -17,4 +17,14 @@ process.on('SIGINT', function () {
 process.on('unhandledRejection', (error) => {
     logger.error(error);
 });
-discord_1.discordClient.login((0, config_1.getConfigValue)('DISCORD_TOKEN'));
+function startUp() {
+    let token = undefined;
+    if (JSON.parse((0, config_1.getConfigValue)('DEV'))) {
+        token = (0, config_1.getConfigValue)('DISCORD_TOKEN_DEV');
+    }
+    else {
+        token = (0, config_1.getConfigValue)('DISCORD_TOKEN');
+    }
+    discord_1.discordClient.login(token);
+}
+startUp();

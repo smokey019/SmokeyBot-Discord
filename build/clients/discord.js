@@ -56,10 +56,9 @@ exports.discordClient.on('interactionCreate', (interaction) => __awaiter(void 0,
     if (cache && settings) {
         if (cache.settings.smokemon_enabled) {
             yield (0, exp_gain_1.checkExpGain)(interaction.user, interaction.guild, interaction);
-            yield (0, spawn_monster_1.checkSpawn)(interaction, cache);
         }
     }
-    // logger.debug('\n', interaction.options);
+    //logger.debug('\n', interaction);
     if (!interaction.isCommand())
         return;
     if (timestamp - GCD < 2)
@@ -80,6 +79,9 @@ exports.discordClient.on('interactionCreate', (interaction) => __awaiter(void 0,
         });
 }));
 exports.discordClient.on('messageCreate', (message) => __awaiter(void 0, void 0, void 0, function* () {
+    if (message.author.id == '458710213122457600' ||
+        message.author.id == '758820204133613598')
+        return;
     const settings = yield (0, database_1.getGuildSettings)(message.guild);
     const cache = yield (0, cache_1.getCache)(message.guild, settings);
     if (cache && settings) {
@@ -94,8 +96,20 @@ exports.discordClient.on('messageCreate', (message) => __awaiter(void 0, void 0,
  */
 exports.discordClient.on('guildCreate', (guild) => __awaiter(void 0, void 0, void 0, function* () {
     logger.debug(`\nRegistered commands in new guild '${guild.name}' ID: '${guild.id}'\n`);
-    const rest = new rest_1.REST({ version: '9' }).setToken((0, config_1.getConfigValue)('DISCORD_TOKEN'));
-    yield rest.put(v9_1.Routes.applicationGuildCommands('458710213122457600', guild.id), { body: commands_1.slashCommands });
+    let token = undefined;
+    let api = undefined;
+    if (JSON.parse((0, config_1.getConfigValue)('DEV'))) {
+        token = (0, config_1.getConfigValue)('DISCORD_TOKEN_DEV');
+        api = (0, config_1.getConfigValue)('API_CLIENT_ID_DEV');
+    }
+    else {
+        token = (0, config_1.getConfigValue)('DISCORD_TOKEN');
+        api = (0, config_1.getConfigValue)('API_CLIENT_ID');
+    }
+    const rest = new rest_1.REST({ version: '9' }).setToken(token);
+    yield rest.put(v9_1.Routes.applicationGuildCommands(api, guild.id), {
+        body: commands_1.slashCommands,
+    });
 }));
 exports.discordClient.on('rateLimit', (error) => {
     const timeoutStr = error.timeout / 1000;

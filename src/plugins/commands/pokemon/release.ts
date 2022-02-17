@@ -1,9 +1,9 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { runEvent } from '..';
-import { releaseMonsterNew } from '../../pokemon/release-monster';
+import { releaseMonster } from '../../pokemon/release-monster';
 
 export async function run(e: runEvent) {
-  await releaseMonsterNew(e.interaction);
+  await releaseMonster(e.interaction);
 }
 
 export const names = ['release', 'r'];

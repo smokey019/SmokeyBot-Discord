@@ -7,6 +7,10 @@ interface IConfig {
 	DB_PASSWORD?: string;
 	DB_USER?: string;
 	DISCORD_TOKEN?: string;
+	DISCORD_TOKEN_DEV?: string;
+	API_CLIENT_ID?: string;
+	API_CLIENT_ID_DEV?: string;
+	DEV?: string;
 	LOG_LEVEL?: string;
 	TWITTER_CONSUMER_KEY?: string;
 	TWITTER_CONSUMER_SECRET?: string;

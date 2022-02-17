@@ -8,10 +8,10 @@ import { IMonsterUserModel } from '../../models/MonsterUser';
 import { chunk, format_number } from '../../utils';
 import { userDex } from './info';
 import {
-    findMonsterByIDLocal,
-    getPokedex,
-    getUsersFavoriteMonsters,
-    getUsersMonsters
+  findMonsterByIDLocal,
+  getPokedex,
+  getUsersFavoriteMonsters,
+  getUsersMonsters
 } from './monsters';
 
 const logger = getLogger('Pokémon');
@@ -672,29 +672,10 @@ export async function checkFavorites(
  */
 export async function searchMonsters(
   interaction: CommandInteraction,
-  args: string[],
 ): Promise<void> {
-  const splitMsg = args;
-  const isQuote = false;
-  let sort = ['iv', 'high'];
-  let search = undefined;
-  let page = 0;
-
-  if (isQuote) {
-    const parseSearch = args[0].replace(/ {2,}/gm, ' ').split('"');
-    const splitSort = parseSearch[parseSearch.length - 1].split(' ');
-    search = parseSearch[1].toLowerCase();
-    if (splitSort.length == 3) {
-      sort = [splitSort[1], splitSort[2]];
-    } else if (splitSort.length == 4) {
-      sort = [splitSort[1], splitSort[2]];
-      page = parseInt(splitSort[splitSort.length - 1]) - 1;
-    }
-  } else {
-    const parseSearch = args[0].replace(/ {2,}/gm, ' ').split(' ');
-    sort = [splitMsg[2], splitMsg[3]];
-    search = parseSearch[1].toLowerCase();
-  }
+  const sort = ['iv', 'high'];
+  const search = interaction.options.getString('pokemon').toLowerCase().replace(/ {2,}/g, ' ');
+  const page = 0;
 
   const pokemon = await getUsersMonsters(interaction.user.id);
 
@@ -710,18 +691,7 @@ export async function searchMonsters(
       const monster = findMonsterByIDLocal(element.monster_id);
       if (!monster) return;
 
-      if (
-        isQuote &&
-        monster.name.english.toLowerCase().replace(/♂|♀/g, '') != search
-      )
-        return;
-
-      if (
-        !isQuote &&
-        !monster.name.english
-          .toLowerCase()
-          .replace(/♂|♀/g, '')
-          .match(splitMsg[1].toLowerCase())
+      if (monster.name.english.toLowerCase().replace(/♂|♀/g, '') != search
       )
         return;
 
@@ -821,7 +791,7 @@ export async function searchMonsters(
 
       all_monsters = chunk(message_contents, 10);
 
-      if (splitMsg.length > 4 && all_monsters.length > 1) {
+      if (page && all_monsters.length > 1) {
         if (all_monsters[page]) {
           message_contents = all_monsters[page];
         }
@@ -842,8 +812,7 @@ export async function searchMonsters(
         )
         .setColor(0xff0000)
         .setDescription(new_msg);
-      await interaction.channel
-        .send({ embeds: [embed] })
+      await interaction.reply({ embeds: [embed] })
         .then(() => {
           logger.debug(
             `Sent Pokémon for ${interaction.user.username} in ${interaction.guild?.name}!`,
@@ -868,8 +837,7 @@ export async function searchMonsters(
         )
         .setColor(0xff0000)
         .setDescription(new_msg);
-      await interaction.channel
-        .send({ embeds: [embed] })
+      await interaction.reply({ embeds: [embed] })
         .then(() => {
           logger.debug(
             `Sent Pokémon for ${interaction.user.username} in ${interaction.guild?.name}!`,

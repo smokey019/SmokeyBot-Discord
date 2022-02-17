@@ -76,18 +76,17 @@ export async function releaseMonsterNew(
 
 export async function releaseMonster(
   interaction: CommandInteraction,
-  args: string[],
 ): Promise<void> {
-  const tmpMsg = args;
+  const tmpMsg = interaction.options.getString('pokemon');
 
-  if (tmpMsg.length > 1) {
-    if (tmpMsg[1].toString().match(',') || tmpMsg[1].toString().match(' ')) {
+  if (tmpMsg) {
+    if (tmpMsg.toString().match(',') || tmpMsg.toString().match(' ')) {
       let multi_dump = [];
 
-      if (tmpMsg[1].toString().match(',')) {
-        multi_dump = tmpMsg[1].replace(' ', '').split(',');
-      } else if (tmpMsg[1].toString().match(' ')) {
-        multi_dump = tmpMsg[1].replace(',', '').split(' ');
+      if (tmpMsg.toString().match(',')) {
+        multi_dump = tmpMsg.replace(' ', '').split(',');
+      } else if (tmpMsg.toString().match(' ')) {
+        multi_dump = tmpMsg.replace(',', '').split(' ');
       }
 
       if (multi_dump.length < 35) {
@@ -116,12 +115,12 @@ export async function releaseMonster(
     } else {
       let to_release = undefined;
 
-      if (tmpMsg[1] == '^') {
+      if (tmpMsg == '^') {
         const user: IMonsterUserModel = await getUser(interaction.user.id);
         to_release = await getUserMonster(user.latest_monster);
       } else {
-        if (isNaN(parseInt(tmpMsg[1]))) return;
-        to_release = await getUserMonster(tmpMsg[1]);
+        if (isNaN(parseInt(tmpMsg))) return;
+        to_release = await getUserMonster(tmpMsg);
       }
 
       if (!to_release) return;
@@ -145,15 +144,19 @@ export async function releaseMonster(
       }
     }
   } else {
-    (interaction as CommandInteraction)
-      .reply({ content: `Not enough things in ur msg there m8`, ephemeral: true })
-      .then(() => {
-        logger.debug(
-          `${interaction.user.username} not enough things in ur msg there m8`,
-        );
-        return;
-      })
-      .catch((error) => logger.error(error));
+    const user: IMonsterUserModel = await getUser(interaction.user.id);
+    const last_monster = await databaseClient<IMonsterModel>(MonsterTable)
+      .select()
+      .where('id', user.latest_monster)
+      .first();
+    await release(last_monster.id);
+
+    const monster_dex = await findMonsterByID(last_monster.monster_id);
+    queueMsg(
+      `Successfully released your monster. Goodbye **${monster_dex.name.english}** :/`,
+      interaction,
+      true,
+    );
   }
 }
 
@@ -163,8 +166,11 @@ export async function recoverMonster(
   const to_release = await getUserMonster(
     interaction.options.getString('pokemon'),
   );
-  if (!to_release){
-    interaction.reply({ content: 'There was an error processing your request.', ephemeral: true })
+  if (!to_release) {
+    interaction.reply({
+      content: 'There was an error processing your request.',
+      ephemeral: true,
+    });
     return;
   }
 

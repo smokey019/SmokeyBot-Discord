@@ -88,13 +88,33 @@ export async function registerSlashCommands() {
   try {
     logger.debug('Started refreshing application (/) commands.');
 
-    const rest = new REST({ version: '9' }).setToken(
-      getConfigValue('DISCORD_TOKEN'),
-    );
+    let token = undefined;
+    let api = undefined;
 
-    await rest.put(Routes.applicationCommands('458710213122457600'), {
-      body: slashCommands,
-    });
+    if (JSON.parse(getConfigValue('DEV'))) {
+      token = getConfigValue('DISCORD_TOKEN_DEV');
+      api = getConfigValue('API_CLIENT_ID_DEV');
+
+      const rest = new REST({ version: '9' }).setToken(token);
+
+      await rest.put(Routes.applicationCommands(api), {
+        body: slashCommands,
+      });
+
+      await rest.put(
+        Routes.applicationGuildCommands(api, '690857004171919370'),
+        { body: slashCommands },
+      );
+    } else {
+      token = getConfigValue('DISCORD_TOKEN');
+      api = getConfigValue('API_CLIENT_ID');
+
+      const rest = new REST({ version: '9' }).setToken(token);
+
+      await rest.put(Routes.applicationCommands(api), {
+        body: slashCommands,
+      });
+    }
 
     logger.debug('Successfully reloaded application (/) commands.');
   } catch (error) {

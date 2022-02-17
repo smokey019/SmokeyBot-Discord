@@ -90,7 +90,9 @@ async function isWeekend(): Promise<any> {
   return await requestGET('GET', 'weekend').then((x: any) => x.is_weekend);
 }
 
-export async function checkVote(interaction: CommandInteraction): Promise<boolean> {
+export async function checkVote(
+  interaction: CommandInteraction,
+): Promise<boolean> {
   const voted = (await dblCache.get(interaction.user.id)) ?? {
     voted: false,
     checked_at: Date.now() - 86401337,

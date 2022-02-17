@@ -10,7 +10,7 @@ process.on('uncaughtException', (error) => {
   throw error;
 });
 
-process.on('SIGINT', function() {
+process.on('SIGINT', function () {
   console.log('\nGracefully shutting down from SIGINT (Ctrl-C)');
   // some other closing procedures go here
   process.exit(1);
@@ -20,4 +20,16 @@ process.on('unhandledRejection', (error) => {
   logger.error(error);
 });
 
-discordClient.login(getConfigValue('DISCORD_TOKEN'));
+function startUp() {
+  let token = undefined;
+
+  if (JSON.parse(getConfigValue('DEV'))) {
+    token = getConfigValue('DISCORD_TOKEN_DEV');
+  } else {
+    token = getConfigValue('DISCORD_TOKEN');
+  }
+
+  discordClient.login(token);
+}
+
+startUp();
