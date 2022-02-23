@@ -7,7 +7,7 @@
     "build": "tsc && pnpm run minify",
     "start-debug": "ts-node ./src/index.ts",
     "start-build": "node ./build/index.js",
-    "start-dist": "node ./dist/index.ts",
+    "start-dist": "node ./dist/index.js",
     "force-update": "pnpm update",
     "force-install": "pnpm install",
     "minify": "uglifyjs-folder build -eo dist -x .js",

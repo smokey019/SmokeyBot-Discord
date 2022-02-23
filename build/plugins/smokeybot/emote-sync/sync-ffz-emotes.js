@@ -48,9 +48,7 @@ exports.cancel_sync = cancel_sync;
  */
 function sync_ffz_emotes(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const channel = interaction.options
-            .getString('channel')
-            .replace(/[^a-zA-Z0-9 ]/g, '');
+        const channel = interaction.options.getString('channel').toLowerCase().trim();
         const userPerms = new discord_js_1.Permissions(interaction.member.permissions);
         if (channel &&
             userPerms.has(discord_js_1.Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS) &&

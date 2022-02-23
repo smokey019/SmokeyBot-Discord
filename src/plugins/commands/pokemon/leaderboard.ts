@@ -1,3 +1,4 @@
+import { SlashCommandBuilder } from '@discordjs/builders';
 import { TextChannel } from 'discord.js';
 import { runEvent } from '..';
 import { GLOBAL_COOLDOWN } from '../../../clients/cache';
@@ -12,7 +13,14 @@ export async function run(e: runEvent) {
   )
     return;
   GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
-  await checkLeaderboard(e.interaction, e.args);
+  await checkLeaderboard(e.interaction);
 }
 
 export const names = ['leaderboard'];
+
+export const SlashCommandData = new SlashCommandBuilder()
+  .setName('leaderboard')
+  .setDescription('Check the leaderboard and see leading Pokemon stats.')
+	.addStringOption(option =>
+		option.setName('input')
+			.setDescription('What to filter the leaderboard by. ie: iv high'));

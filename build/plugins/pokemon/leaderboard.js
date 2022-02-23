@@ -17,16 +17,17 @@ const colors_1 = require("../../colors");
 const Monster_1 = require("../../models/Monster");
 const monsters_1 = require("./monsters");
 const logger = (0, log4js_1.getLogger)('Pokémon-Leaderboard');
-function checkLeaderboard(interaction, args) {
+function checkLeaderboard(interaction) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         let search = undefined;
+        const args = interaction.options.getString('input') !== null ? interaction.options.getString('input').split(' ') : ['iv', 'high'];
+        const type = (_a = args[0]) === null || _a === void 0 ? void 0 : _a.toLowerCase();
+        const sort = (_b = args[1]) === null || _b === void 0 ? void 0 : _b.toLowerCase();
         if (args.includes('iv') && args.includes('high')) {
             args.splice(args.length - 2, 2);
             search = args.join(' ');
         }
-        const type = ((_a = args[0]) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || 'iv';
-        const sort = ((_b = args[1]) === null || _b === void 0 ? void 0 : _b.toLowerCase()) || 'high';
         const monsters = yield getTopPokemon(25, type, sort, search);
         if (monsters) {
             const message_contents = [];
@@ -76,15 +77,7 @@ function checkLeaderboard(interaction, args) {
                 .setAuthor(`Top 25 Pokémon`)
                 .setColor(colors_1.COLOR_GREEN)
                 .setDescription(new_msg);
-            yield interaction.channel
-                .send({ embeds: [embed] })
-                .then((interaction) => {
-                var _a;
-                logger.debug(`Sent leaderboard in ${(_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.name}!`);
-            })
-                .catch((error) => {
-                logger.error(error);
-            });
+            yield interaction.reply({ embeds: [embed] });
         }
         else {
             interaction

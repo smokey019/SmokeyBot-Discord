@@ -41,9 +41,7 @@ export async function cancel_sync(
 export async function sync_ffz_emotes(
   interaction: CommandInteraction,
 ): Promise<void> {
-  const channel = interaction.options
-    .getString('channel')
-    .replace(/[^a-zA-Z0-9 ]/g, '');
+  const channel = interaction.options.getString('channel').toLowerCase().trim();
 
   const userPerms = new Permissions(
     interaction.member.permissions as PermissionString,

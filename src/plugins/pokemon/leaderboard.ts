@@ -9,18 +9,19 @@ const logger = getLogger('Pokémon-Leaderboard');
 
 export async function checkLeaderboard(
   interaction: CommandInteraction,
-  args: string[],
 ): Promise<void> {
   let search = undefined;
+
+  const args = interaction.options.getString('input') !== null ? interaction.options.getString('input').split(' ') : ['iv', 'high'];
+
+  const type = args[0]?.toLowerCase();
+  const sort = args[1]?.toLowerCase();
 
   if (args.includes('iv') && args.includes('high')) {
     args.splice(args.length - 2, 2);
 
     search = args.join(' ');
   }
-
-  const type = args[0]?.toLowerCase() || 'iv';
-  const sort = args[1]?.toLowerCase() || 'high';
 
   const monsters = await getTopPokemon(25, type, sort, search);
 
@@ -83,14 +84,7 @@ export async function checkLeaderboard(
       .setAuthor(`Top 25 Pokémon`)
       .setColor(COLOR_GREEN)
       .setDescription(new_msg);
-    await interaction.channel
-      .send({ embeds: [embed] })
-      .then((interaction) => {
-        logger.debug(`Sent leaderboard in ${interaction.guild?.name}!`);
-      })
-      .catch((error) => {
-        logger.error(error);
-      });
+    await interaction.reply({ embeds: [embed] });
   } else {
     (interaction as CommandInteraction)
       .reply(`There was an error.`)

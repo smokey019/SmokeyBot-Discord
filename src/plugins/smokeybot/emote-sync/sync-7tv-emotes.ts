@@ -1,7 +1,4 @@
-import {
-  CommandInteraction, Permissions,
-  PermissionString
-} from 'discord.js';
+import { CommandInteraction, Permissions, PermissionString } from 'discord.js';
 import { getLogger } from 'log4js';
 import { EmoteQueue } from '../../../clients/queue';
 import { SevenTVEmotes } from '../../../models/7tv-Emotes';
@@ -47,9 +44,7 @@ export async function fetch7tvChannelEmotes(
 export async function sync_7tv_emotes(
   interaction: CommandInteraction,
 ): Promise<void> {
-  const channel = interaction.options
-    .getString('channel')
-    .replace(/[^a-zA-Z0-9 ]/g, '');
+  const channel = interaction.options.getString('channel').toLowerCase().trim();
 
   const userPerms = new Permissions(
     interaction.member.permissions as PermissionString,
