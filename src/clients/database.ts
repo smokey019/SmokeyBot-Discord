@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommandInteraction, Guild } from 'discord.js';
 import knex from 'knex';
 import { getConfigValue } from '../config';
 import { IMonsterUserModel, MonsterUserTable } from '../models/MonsterUser';
-import { SMOKEYBOT_GLOBAL_SETTINGS_CACHE } from './cache';
 import { getLogger } from './logger';
 
 const logger = getLogger('Database');
@@ -33,57 +33,26 @@ export const databaseClient = knex({
   },
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function loadGlobalSetting(which: string): Promise<any> {
-  let settings = await SMOKEYBOT_GLOBAL_SETTINGS_CACHE?.get('main');
+/**
+ * Load setting from DB
+ * @param which
+ * @returns
+ */
+export async function loadGlobalSetting(
+  which:
+    | 'pokemon_user_boost'
+    | 'pokemon_pool_size'
+    | 'global_cooldown'
+    | 'personal_cooldown'
+    | 'pokemon_spawn_time_min'
+    | 'pokemon_spawn_time_max'
+    | 'shiny_odds_retail'
+    | 'shiny_odds_smokemon'
+    | 'perfect_iv_odds',
+): Promise<any> {
+  const settings = await databaseClient('global_smokeybot_settings').first();
 
-  if (!settings) {
-    settings = await databaseClient('global_smokeybot_settings').first();
-
-    SMOKEYBOT_GLOBAL_SETTINGS_CACHE?.set('main', settings);
-
-    switch (which) {
-      case 'pokemon_user_boost':
-        return settings.pokemon_user_boost;
-      case 'pokemon_pool_size':
-        return settings.pokemon_pool_size;
-      case 'global_cooldown':
-        return settings.global_cooldown;
-      case 'personal_cooldown':
-        return settings.personal_cooldown;
-      case 'pokemon_spawn_time_min':
-        return settings.pokemon_spawn_time_min;
-      case 'pokemon_spawn_time_max':
-        return settings.pokemon_spawn_time_max;
-      case 'shiny_odds_retail':
-        return settings.shiny_odds_retail;
-      case 'shiny_odds_smokemon':
-        return settings.shiny_odds_smokemon;
-      case 'perfect_iv_odds':
-        return settings.perfect_iv_odds;
-    }
-  } else {
-    switch (which) {
-      case 'pokemon_user_boost':
-        return settings.pokemon_user_boost;
-      case 'pokemon_pool_size':
-        return settings.pokemon_pool_size;
-      case 'global_cooldown':
-        return settings.global_cooldown;
-      case 'personal_cooldown':
-        return settings.personal_cooldown;
-      case 'pokemon_spawn_time_min':
-        return settings.pokemon_spawn_time_min;
-      case 'pokemon_spawn_time_max':
-        return settings.pokemon_spawn_time_max;
-      case 'shiny_odds_retail':
-        return settings.shiny_odds_retail;
-      case 'shiny_odds_smokemon':
-        return settings.shiny_odds_smokemon;
-      case 'perfect_iv_odds':
-        return settings.perfect_iv_odds;
-    }
-  }
+  return settings[which];
 }
 
 /**
@@ -98,9 +67,10 @@ export async function getGuildSettings(
     GuildSettingsTable,
   )
     .select()
-    .where('guild_id', guild.id);
+    .where('guild_id', guild.id)
+    .first();
 
-  if (!guild_settings[0]) {
+  if (!guild_settings) {
     const insert = await databaseClient<IGuildSettings>(
       GuildSettingsTable,
     ).insert({
@@ -115,9 +85,10 @@ export async function getGuildSettings(
         GuildSettingsTable,
       )
         .select()
-        .where('guild_id', guild.id);
+        .where('guild_id', guild.id)
+        .first();
       if (guild_settings) {
-        return guild_settings[0];
+        return guild_settings;
       } else {
         return undefined;
       }
@@ -125,7 +96,7 @@ export async function getGuildSettings(
       return undefined;
     }
   } else {
-    return guild_settings[0];
+    return guild_settings;
   }
 }
 
@@ -158,7 +129,9 @@ export async function getUser(
  *
  * @param message Discord Message Object
  */
-export async function putGuildSettings(interaction: CommandInteraction): Promise<number> {
+export async function putGuildSettings(
+  interaction: CommandInteraction,
+): Promise<number> {
   const insert =
     interaction.guild != null
       ? await databaseClient<IGuildSettings>(GuildSettingsTable).insert({
