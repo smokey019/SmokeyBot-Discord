@@ -4,7 +4,7 @@ import { getLogger } from '../../clients/logger';
 import { queueMsg } from '../../clients/queue';
 import { IMonsterModel, MonsterTable } from '../../models/Monster';
 import { IMonsterUserModel, MonsterUserTable } from '../../models/MonsterUser';
-import { getRndInteger, jsonFetch } from '../../utils';
+import { getRndInteger } from '../../utils';
 import PokeDex from './data/pokedex_min.json';
 import {
   GenerationEight,
@@ -103,20 +103,18 @@ async function formDex(): Promise<void> {
    * Specific Monster Boosts
    */
 
-  for (let index = 0; index < 150; index++) {
-    MonsterPool.push(1);
-    MonsterPool.push(4);
-    MonsterPool.push(7);
-    MonsterPool.push(1);
-    MonsterPool.push(29);
-    MonsterPool.push(32);
-    MonsterPool.push(111);
-    MonsterPool.push(133);
-    MonsterPool.push(143);
-    MonsterPool.push(149);
+  for (let index = 0; index < 100; index++) {
+    MonsterPool.push(MonsterDex.random().id);
+    MonsterPool.push(MonsterDex.random().id);
+    MonsterPool.push(MonsterDex.random().id);
+    MonsterPool.push(MonsterDex.random().id);
+    MonsterPool.push(MonsterDex.random().id);
+    MonsterPool.push(MonsterDex.random().id);
+    MonsterPool.push(MonsterDex.random().id);
+    MonsterPool.push(MonsterDex.random().id);
   }
 
-  for (let index = 0; index < 2; index++) {
+  for (let index = 0; index < 3; index++) {
     Gens.one.forEach((element) => {
       MonsterPool.push(element);
       MonsterPool.push(element);
@@ -210,14 +208,6 @@ export function getPokedex(): Collection<number, IMonsterDex> {
  */
 export function getRandomMonster(): number {
   return MonsterPool[getRndInteger(0, MonsterPool.length - 1)];
-}
-
-/**
- * get monster's dex info by it's number
- * @param id monster number
- */
-export async function findMonsterByID_DB(id: number): Promise<IMonsterDex> {
-  return await jsonFetch(`https://api.smokey.gg/pokemon/pokedex/${id}`);
 }
 
 /**

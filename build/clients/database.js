@@ -16,7 +16,6 @@ exports.GuildSettingsTable = exports.putGuildSettings = exports.getUser = export
 const knex_1 = __importDefault(require("knex"));
 const config_1 = require("../config");
 const MonsterUser_1 = require("../models/MonsterUser");
-const cache_1 = require("./cache");
 const logger_1 = require("./logger");
 const logger = (0, logger_1.getLogger)('Database');
 exports.databaseClient = (0, knex_1.default)({
@@ -44,56 +43,15 @@ exports.databaseClient = (0, knex_1.default)({
         },
     },
 });
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ * Load setting from DB
+ * @param which
+ * @returns
+ */
 function loadGlobalSetting(which) {
     return __awaiter(this, void 0, void 0, function* () {
-        let settings = yield (cache_1.SMOKEYBOT_GLOBAL_SETTINGS_CACHE === null || cache_1.SMOKEYBOT_GLOBAL_SETTINGS_CACHE === void 0 ? void 0 : cache_1.SMOKEYBOT_GLOBAL_SETTINGS_CACHE.get('main'));
-        if (!settings) {
-            settings = yield (0, exports.databaseClient)('global_smokeybot_settings').first();
-            cache_1.SMOKEYBOT_GLOBAL_SETTINGS_CACHE === null || cache_1.SMOKEYBOT_GLOBAL_SETTINGS_CACHE === void 0 ? void 0 : cache_1.SMOKEYBOT_GLOBAL_SETTINGS_CACHE.set('main', settings);
-            switch (which) {
-                case 'pokemon_user_boost':
-                    return settings.pokemon_user_boost;
-                case 'pokemon_pool_size':
-                    return settings.pokemon_pool_size;
-                case 'global_cooldown':
-                    return settings.global_cooldown;
-                case 'personal_cooldown':
-                    return settings.personal_cooldown;
-                case 'pokemon_spawn_time_min':
-                    return settings.pokemon_spawn_time_min;
-                case 'pokemon_spawn_time_max':
-                    return settings.pokemon_spawn_time_max;
-                case 'shiny_odds_retail':
-                    return settings.shiny_odds_retail;
-                case 'shiny_odds_smokemon':
-                    return settings.shiny_odds_smokemon;
-                case 'perfect_iv_odds':
-                    return settings.perfect_iv_odds;
-            }
-        }
-        else {
-            switch (which) {
-                case 'pokemon_user_boost':
-                    return settings.pokemon_user_boost;
-                case 'pokemon_pool_size':
-                    return settings.pokemon_pool_size;
-                case 'global_cooldown':
-                    return settings.global_cooldown;
-                case 'personal_cooldown':
-                    return settings.personal_cooldown;
-                case 'pokemon_spawn_time_min':
-                    return settings.pokemon_spawn_time_min;
-                case 'pokemon_spawn_time_max':
-                    return settings.pokemon_spawn_time_max;
-                case 'shiny_odds_retail':
-                    return settings.shiny_odds_retail;
-                case 'shiny_odds_smokemon':
-                    return settings.shiny_odds_smokemon;
-                case 'perfect_iv_odds':
-                    return settings.perfect_iv_odds;
-            }
-        }
+        const settings = yield (0, exports.databaseClient)('global_smokeybot_settings').first();
+        return settings[which];
     });
 }
 exports.loadGlobalSetting = loadGlobalSetting;
@@ -106,8 +64,9 @@ function getGuildSettings(guild) {
     return __awaiter(this, void 0, void 0, function* () {
         const guild_settings = yield (0, exports.databaseClient)(exports.GuildSettingsTable)
             .select()
-            .where('guild_id', guild.id);
-        if (!guild_settings[0]) {
+            .where('guild_id', guild.id)
+            .first();
+        if (!guild_settings) {
             const insert = yield (0, exports.databaseClient)(exports.GuildSettingsTable).insert({
                 guild_id: guild.id,
                 smokemon_enabled: 0,
@@ -116,9 +75,10 @@ function getGuildSettings(guild) {
                 logger.info(`Created new guild settings for ${guild.name}.`);
                 const guild_settings = yield (0, exports.databaseClient)(exports.GuildSettingsTable)
                     .select()
-                    .where('guild_id', guild.id);
+                    .where('guild_id', guild.id)
+                    .first();
                 if (guild_settings) {
-                    return guild_settings[0];
+                    return guild_settings;
                 }
                 else {
                     return undefined;
@@ -129,7 +89,7 @@ function getGuildSettings(guild) {
             }
         }
         else {
-            return guild_settings[0];
+            return guild_settings;
         }
     });
 }

@@ -22,6 +22,7 @@ interface IConfig {
   SHINY_ODDS_COMMUNITY?: string;
   TOPGG_KEY?: string;
   SMOKEYBOT_API_TOKEN?: string;
+  API_URL?: string;
 }
 
 const config = dotenv.config({

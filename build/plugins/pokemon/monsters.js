@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.unFavorite = exports.setFavorite = exports.selectMonster = exports.getUsersFavoriteMonsters = exports.getUsersMonsters = exports.getUserMonster = exports.getShinyMonsterDBCount = exports.getMonsterDBCount = exports.findMonsterByName = exports.findMonsterByIDLocal = exports.findMonsterByID = exports.findMonsterByID_DB = exports.getRandomMonster = exports.getPokedex = exports.getAllMonsters = exports.MonsterDex = void 0;
+exports.unFavorite = exports.setFavorite = exports.selectMonster = exports.getUsersFavoriteMonsters = exports.getUsersMonsters = exports.getUserMonster = exports.getShinyMonsterDBCount = exports.getMonsterDBCount = exports.findMonsterByName = exports.findMonsterByIDLocal = exports.findMonsterByID = exports.getRandomMonster = exports.getPokedex = exports.getAllMonsters = exports.MonsterDex = void 0;
 const discord_js_1 = require("discord.js");
 const database_1 = require("../../clients/database");
 const logger_1 = require("../../clients/logger");
@@ -97,19 +97,17 @@ function formDex() {
         /**
          * Specific Monster Boosts
          */
-        for (let index = 0; index < 150; index++) {
-            MonsterPool.push(1);
-            MonsterPool.push(4);
-            MonsterPool.push(7);
-            MonsterPool.push(1);
-            MonsterPool.push(29);
-            MonsterPool.push(32);
-            MonsterPool.push(111);
-            MonsterPool.push(133);
-            MonsterPool.push(143);
-            MonsterPool.push(149);
+        for (let index = 0; index < 100; index++) {
+            MonsterPool.push(exports.MonsterDex.random().id);
+            MonsterPool.push(exports.MonsterDex.random().id);
+            MonsterPool.push(exports.MonsterDex.random().id);
+            MonsterPool.push(exports.MonsterDex.random().id);
+            MonsterPool.push(exports.MonsterDex.random().id);
+            MonsterPool.push(exports.MonsterDex.random().id);
+            MonsterPool.push(exports.MonsterDex.random().id);
+            MonsterPool.push(exports.MonsterDex.random().id);
         }
-        for (let index = 0; index < 2; index++) {
+        for (let index = 0; index < 3; index++) {
             Gens.one.forEach((element) => {
                 MonsterPool.push(element);
                 MonsterPool.push(element);
@@ -192,16 +190,6 @@ function getRandomMonster() {
     return MonsterPool[(0, utils_1.getRndInteger)(0, MonsterPool.length - 1)];
 }
 exports.getRandomMonster = getRandomMonster;
-/**
- * get monster's dex info by it's number
- * @param id monster number
- */
-function findMonsterByID_DB(id) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return yield (0, utils_1.jsonFetch)(`https://api.smokey.gg/pokemon/pokedex/${id}`);
-    });
-}
-exports.findMonsterByID_DB = findMonsterByID_DB;
 /**
  * get monster's dex info by it's number
  * @param id monster number
