@@ -231,7 +231,7 @@ function create_emoji(emote_url, interaction, name) {
                     queueMsg(`SmokeyBot doesn't have the proper permissions. Make sure SmokeyBot can Manage Emoji in the roles section.`, interaction, true, 1);
                     return false;
                 default:
-                    logger.error(`'${err.interaction.trim().replace('\n', '')}'`);
+                    logger.error(err);
                     return false;
             }
         }

@@ -89,8 +89,8 @@ export async function sync_7tv_emotes(
 
       if (!EmoteQueue.has(interaction.guild.id)) {
         emotes.forEach((element: SevenTVEmotes) => {
-          if (element.mime === 'image/webp' || element.mime.match('gif'))
-            return;
+          /*if (element.mime === 'image/webp' || element.mime.match('gif'))
+            return;*/
           const emote_url =
             // element.urls['4'] ||
             (element.urls['3'] || element.urls['2'] || element.urls['1']) ??

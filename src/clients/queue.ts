@@ -3,7 +3,7 @@ import {
   Collection,
   CommandInteraction,
   GuildChannel,
-  TextBasedChannels,
+  TextBasedChannel,
   TextChannel
 } from 'discord.js';
 import { rateLimited } from './discord';
@@ -31,7 +31,7 @@ interface MsgQueueType {
   outgoingMsg: any;
   msg: CommandInteraction;
   reply?: boolean;
-  spawn?: GuildChannel | TextChannel | TextBasedChannels;
+  spawn?: GuildChannel | TextChannel | TextBasedChannel;
   embed?: boolean;
 }
 
@@ -87,7 +87,7 @@ export function queueMsg(
   msg: CommandInteraction,
   reply = false,
   priority = 0,
-  spawn?: GuildChannel | TextChannel | TextBasedChannels,
+  spawn?: GuildChannel | TextChannel | TextBasedChannel,
   embed?: boolean,
 ): boolean {
   if (
@@ -278,7 +278,7 @@ async function create_emoji(
         return false;
 
       default:
-        logger.error(`'${err.interaction.trim().replace('\n', '')}'`);
+        logger.error(err);
         return false;
     }
   }
