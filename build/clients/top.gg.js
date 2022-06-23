@@ -41,6 +41,34 @@ function enableAP() {
     });
 }
 exports.enableAP = enableAP;
+const cache = {
+    // from https://github.com/isaacs/node-lru-cache
+    data: new Map(),
+    timers: new Map(),
+    set: (k, v, ttl) => {
+        if (cache.timers.has(k)) {
+            clearTimeout(cache.timers.get(k));
+        }
+        cache.timers.set(k, setTimeout(() => cache.delete(k), ttl));
+        cache.data.set(k, v);
+    },
+    get: k => cache.data.get(k),
+    has: k => cache.data.has(k),
+    delete: k => {
+        if (cache.timers.has(k)) {
+            clearTimeout(cache.timers.get(k));
+        }
+        cache.timers.delete(k);
+        return cache.data.delete(k);
+    },
+    clear: () => {
+        cache.data.clear();
+        for (const v of cache.timers.values()) {
+            clearTimeout(v);
+        }
+        cache.timers.clear();
+    }
+};
 function requestGET(method = 'GET', path, body) {
     return __awaiter(this, void 0, void 0, function* () {
         let url = `https://top.gg/api/${path}`;

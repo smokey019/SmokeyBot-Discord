@@ -35,7 +35,7 @@ function checkSpawn(interaction, cache) {
             yield updateSpawn(interaction.guild.id, spawn);
         }
         else {
-            const spawn_timer = (0, utils_1.getRndInteger)((0, utils_1.getRndInteger)(15, 120), 300);
+            const spawn_timer = (0, utils_1.getRndInteger)((0, utils_1.getRndInteger)(60, 120), 300);
             const timestamp = (0, utils_1.getCurrentTime)();
             spawn = data.spawn_data;
             if (timestamp - spawn.spawned_at > spawn_timer &&

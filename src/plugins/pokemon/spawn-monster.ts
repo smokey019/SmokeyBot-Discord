@@ -32,7 +32,7 @@ export async function checkSpawn(
     //MONSTER_SPAWNS.set(interaction.guild.id, spawn);
     await updateSpawn(interaction.guild.id, spawn);
   } else {
-    const spawn_timer = getRndInteger(getRndInteger(15, 120), 300);
+    const spawn_timer = getRndInteger(getRndInteger(60, 120), 300);
     const timestamp = getCurrentTime();
     spawn = data.spawn_data;
 
