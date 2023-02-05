@@ -74,7 +74,7 @@ export async function sync_7tv_emotes(
       logger.debug(`Couldn't fetch 7TV Emotes for Twitch channel ${channel}.`);
 
       await interaction.editReply(
-        `There was an error fetching from 7TV's API. \n\n Make sure the username is correct and there are no symbols. \n\n You may have to wait for 7TV's cache to update before getting certain emotes. This can take up to an hour.\n\nExample command: \`~sync-emotes-7tv summit1g\``,
+        `There was an error fetching from 7TV's API. \n\n Make sure the username is correct and there are no symbols. \n\n You may have to wait for 7TV's cache to update before getting certain emotes. This can take up to an hour.\n\nExample command: \`/sync-7tv summit1g\``,
       );
 
       return;
@@ -122,7 +122,7 @@ export async function sync_7tv_emotes(
           });
 
           await interaction.editReply(
-            `**Successfully syncing ${final_emojis.length}/${emotes.length} emotes!**\n\n\nIt will take up to 30 minutes or more depending on the queue.\n\n- Wide emotes will break.\n- GIFs will not upload because they are in a more modern format that Discord does not support yet.\n\n Type \`/cancel-sync\` to cancel. \n Type \`/stats\` to see how many servers are in queue.`,
+            `**Successfully syncing ${final_emojis.length}/${emotes.length} emotes!**\n\n\nIt will take up to 30 minutes or more depending on the queue.\n\n- Wide emotes will look weird.\n- Certain GIFs that are too long may not upload.\n\n Type \`/cancel-sync\` to cancel. \n Type \`/stats\` to see how many servers are in queue.`,
           );
         } else {
           logger.debug(`No emotes found able to be synced for ${channel}..`);
