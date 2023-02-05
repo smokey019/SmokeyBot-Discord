@@ -91,17 +91,17 @@ export async function sync_7tv_emotes(
         emotes.forEach((element: SevenTVEmotes) => {
           /*if (element.mime === 'image/webp' || element.mime.match('gif'))
             return;*/
-          const emote_url =
+          let emote_url =
             // element.urls['4'] ||
-            (element.urls['3'] || element.urls['2'] || element.urls['1']) ??
+            (element.urls['3'][1] || element.urls['2'][1] || element.urls['1'][1]) ??
             undefined;
 
-          /*if (element.mime.match('gif')) {
-            emote_url = element.urls['2'];
-          }*/
+          if (element.mime.match('image/webp') && element.urls['2']) {
+            emote_url = element.urls['1'][1].replace('webp', 'gif');
+          }
 
-          if (!existing_emojis.includes(element.name) && emote_url[1]) {
-            final_emojis.push({ url: emote_url[1], name: element.name });
+          if (!existing_emojis.includes(element.name) && emote_url) {
+            final_emojis.push({ url: emote_url, name: element.name });
           } else {
             logger.trace('emote already detected, not uploading..');
           }

@@ -79,14 +79,14 @@ function sync_7tv_emotes(interaction) {
                         var _a;
                         /*if (element.mime === 'image/webp' || element.mime.match('gif'))
                           return;*/
-                        const emote_url = 
+                        let emote_url = 
                         // element.urls['4'] ||
-                        (_a = (element.urls['3'] || element.urls['2'] || element.urls['1'])) !== null && _a !== void 0 ? _a : undefined;
-                        /*if (element.mime.match('gif')) {
-                          emote_url = element.urls['2'];
-                        }*/
-                        if (!existing_emojis.includes(element.name) && emote_url[1]) {
-                            final_emojis.push({ url: emote_url[1], name: element.name });
+                        (_a = (element.urls['3'][1] || element.urls['2'][1] || element.urls['1'][1])) !== null && _a !== void 0 ? _a : undefined;
+                        if (element.mime.match('image/webp') && element.urls['2']) {
+                            emote_url = element.urls['1'][1].replace('webp', 'gif');
+                        }
+                        if (!existing_emojis.includes(element.name) && emote_url) {
+                            final_emojis.push({ url: emote_url, name: element.name });
                         }
                         else {
                             logger.trace('emote already detected, not uploading..');

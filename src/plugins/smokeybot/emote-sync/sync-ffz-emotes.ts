@@ -20,14 +20,14 @@ export async function cancel_sync(
   const inQueue = EmoteQueue.get(interaction.guild.id);
   if (inQueue) {
     EmoteQueue.delete(interaction.guild.id);
-    inQueue.msg.editReply('Sync cancelled.  You can do another if you wish.');
+    // inQueue.msg.editReply('Sync cancelled.  You can do another if you wish.');
     logger.debug(
       'Sync cancelled by ' +
         interaction.user.username +
         ' in ' +
         interaction.guild.name,
     );
-    interaction.reply({ content: '👍', ephemeral: true });
+    interaction.reply({ content: '👍', ephemeral: false });
     return true;
   } else {
     return false;
