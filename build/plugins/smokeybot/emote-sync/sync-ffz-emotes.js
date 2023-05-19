@@ -72,10 +72,10 @@ function sync_ffz_emotes(interaction) {
                 if (!queue_1.EmoteQueue.has(interaction.guild.id)) {
                     emojis.forEach((element) => {
                         var _a;
-                        const emote_url = (_a = ('https:' + element.urls['4'] ||
-                            'https:' + element.urls['3'] ||
-                            'https:' + element.urls['2'] ||
-                            'https:' + element.urls['1'])) !== null && _a !== void 0 ? _a : undefined;
+                        const emote_url = (_a = ('https://' + element.urls['4'].replace("https:/", "") ||
+                            'https://' + element.urls['3'].replace("https:/", "") ||
+                            'https://' + element.urls['2'].replace("https:/", "") ||
+                            'https://' + element.urls['1'].replace("https:/", ""))) !== null && _a !== void 0 ? _a : undefined;
                         if (!existing_emojis.includes(element.name) &&
                             !emote_url.match('undefined') &&
                             emote_url) {
