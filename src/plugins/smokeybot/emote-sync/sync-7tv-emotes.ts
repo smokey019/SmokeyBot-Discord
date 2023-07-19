@@ -1,7 +1,7 @@
 import { CommandInteraction, Permissions, PermissionString } from 'discord.js';
 import { getLogger } from 'log4js';
 import { EmoteQueue } from '../../../clients/queue';
-import { SevenTVEmotes } from '../../../models/7tv-Emotes';
+import { SevenTVChannel, SevenTVChannelEmotes, SevenTVEmotes } from '../../../models/7tv-Emotes';
 import { jsonFetch } from '../../../utils';
 import { EMOJI_COOLDOWN } from './sync-ffz-emotes';
 
@@ -15,8 +15,9 @@ export let Stv_emoji_queue_attempt_count = 0;
  */
 export async function fetch7tvGlobalEmotes(): Promise<SevenTVEmotes[]> {
   const emotes: SevenTVEmotes[] = await jsonFetch(
-    'https://api.7tv.app/v2/emotes/global',
+    'https://7tv.io/v3/emote-sets/global',
   );
+  // 7tv.io/v3/emote-sets/global
 
   return emotes;
 }
@@ -28,11 +29,12 @@ export async function fetch7tvGlobalEmotes(): Promise<SevenTVEmotes[]> {
  */
 export async function fetch7tvChannelEmotes(
   channel: string,
-): Promise<SevenTVEmotes[]> {
-  const emotes: SevenTVEmotes[] = await jsonFetch(
-    `https://api.7tv.app/v2/users/${channel}/emotes`,
+): Promise<SevenTVChannel[]> {
+  const emotes: SevenTVChannel[] = await jsonFetch(
+    `https://7tv.io/v3/users/twitch/${channel}`,
   );
   Stv_emoji_queue_attempt_count++;
+  // 7tv.io/users/{connection.platform}/{connection.id}
 
   return emotes;
 }
@@ -63,14 +65,18 @@ export async function sync_7tv_emotes(
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let emotes: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let response: any;
 
     if (channel == 'global') {
-      emotes = await fetch7tvGlobalEmotes();
+      response = await fetch7tvGlobalEmotes();
+      emotes = response.emotes;
     } else {
-      emotes = await fetch7tvChannelEmotes(channel);
+      response = await fetch7tvChannelEmotes(channel);
+      emotes = response.emote_set.emotes;
     }
 
-    if (!emotes || emotes.status === 404) {
+    if (!response || response.status === 404 || !emotes) {
       logger.debug(`Couldn't fetch 7TV Emotes for Twitch channel ${channel}.`);
 
       await interaction.editReply(
@@ -88,16 +94,13 @@ export async function sync_7tv_emotes(
       });
 
       if (!EmoteQueue.has(interaction.guild.id)) {
-        emotes.forEach((element: SevenTVEmotes) => {
-          /*if (element.mime === 'image/webp' || element.mime.match('gif'))
-            return;*/
+        emotes.forEach((element: SevenTVChannelEmotes) => {
           let emote_url =
-            // element.urls['4'] ||
-            (element.urls['3'][1] || element.urls['2'][1] || element.urls['1'][1]) ??
+            ('https:' + element.data.host.url + '/2x.png') ??
             undefined;
 
-          if (element.mime.match('image/webp') && element.urls['2']) {
-            emote_url = element.urls['1'][1].replace('webp', 'gif');
+          if (element.data.animated) {
+            emote_url = 'https:' + element.data.host.url + '/2x.gif';
           }
 
           if (!existing_emojis.includes(element.name) && emote_url) {

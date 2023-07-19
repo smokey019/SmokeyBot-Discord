@@ -24,7 +24,8 @@ exports.Stv_emoji_queue_attempt_count = 0;
  */
 function fetch7tvGlobalEmotes() {
     return __awaiter(this, void 0, void 0, function* () {
-        const emotes = yield (0, utils_1.jsonFetch)('https://api.7tv.app/v2/emotes/global');
+        const emotes = yield (0, utils_1.jsonFetch)('https://7tv.io/v3/emote-sets/global');
+        // 7tv.io/v3/emote-sets/global
         return emotes;
     });
 }
@@ -36,8 +37,9 @@ exports.fetch7tvGlobalEmotes = fetch7tvGlobalEmotes;
  */
 function fetch7tvChannelEmotes(channel) {
     return __awaiter(this, void 0, void 0, function* () {
-        const emotes = yield (0, utils_1.jsonFetch)(`https://api.7tv.app/v2/users/${channel}/emotes`);
+        const emotes = yield (0, utils_1.jsonFetch)(`https://7tv.io/v3/users/twitch/${channel}`);
         exports.Stv_emoji_queue_attempt_count++;
+        // 7tv.io/users/{connection.platform}/{connection.id}
         return emotes;
     });
 }
@@ -57,13 +59,17 @@ function sync_7tv_emotes(interaction) {
             logger.debug(`Fetching 7TV Emotes for Twitch channel ${channel} (requested by ${interaction.user.username} in ${interaction.guild.name})..`);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let emotes;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let response;
             if (channel == 'global') {
-                emotes = yield fetch7tvGlobalEmotes();
+                response = yield fetch7tvGlobalEmotes();
+                emotes = response.emotes;
             }
             else {
-                emotes = yield fetch7tvChannelEmotes(channel);
+                response = yield fetch7tvChannelEmotes(channel);
+                emotes = response.emote_set.emotes;
             }
-            if (!emotes || emotes.status === 404) {
+            if (!response || response.status === 404 || !emotes) {
                 logger.debug(`Couldn't fetch 7TV Emotes for Twitch channel ${channel}.`);
                 yield interaction.editReply(`There was an error fetching from 7TV's API. \n\n Make sure the username is correct and there are no symbols. \n\n You may have to wait for 7TV's cache to update before getting certain emotes. This can take up to an hour.\n\nExample command: \`/sync-7tv summit1g\``);
                 return;
@@ -77,13 +83,9 @@ function sync_7tv_emotes(interaction) {
                 if (!queue_1.EmoteQueue.has(interaction.guild.id)) {
                     emotes.forEach((element) => {
                         var _a;
-                        /*if (element.mime === 'image/webp' || element.mime.match('gif'))
-                          return;*/
-                        let emote_url = 
-                        // element.urls['4'] ||
-                        (_a = (element.urls['3'][1] || element.urls['2'][1] || element.urls['1'][1])) !== null && _a !== void 0 ? _a : undefined;
-                        if (element.mime.match('image/webp') && element.urls['2']) {
-                            emote_url = element.urls['1'][1].replace('webp', 'gif');
+                        let emote_url = (_a = ('https:' + element.data.host.url + '/2x.png')) !== null && _a !== void 0 ? _a : undefined;
+                        if (element.data.animated) {
+                            emote_url = 'https:' + element.data.host.url + '/2x.gif';
                         }
                         if (!existing_emojis.includes(element.name) && emote_url) {
                             final_emojis.push({ url: emote_url, name: element.name });

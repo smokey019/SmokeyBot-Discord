@@ -20,6 +20,6 @@ export const SlashCommandData = new SlashCommandBuilder()
   .addStringOption((option) =>
     option
       .setName('channel')
-      .setDescription('Twitch Channel')
+      .setDescription('Twitch Channel ID')
       .setRequired(true),
   );
