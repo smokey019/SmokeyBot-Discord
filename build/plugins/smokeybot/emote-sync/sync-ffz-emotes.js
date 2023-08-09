@@ -71,11 +71,11 @@ function sync_ffz_emotes(interaction) {
                 });
                 if (!queue_1.EmoteQueue.has(interaction.guild.id)) {
                     emojis.forEach((element) => {
-                        var _a;
-                        const emote_url = (_a = ('https://' + element.urls['4'].replace("https:/", "") ||
-                            'https://' + element.urls['3'].replace("https:/", "") ||
-                            'https://' + element.urls['2'].replace("https:/", "") ||
-                            'https://' + element.urls['1'].replace("https:/", ""))) !== null && _a !== void 0 ? _a : undefined;
+                        var _a, _b, _c, _d, _e;
+                        const emote_url = (_e = ('https://' + ((_a = element.urls['4']) === null || _a === void 0 ? void 0 : _a.replace("https:/", "")) ||
+                            'https://' + ((_b = element.urls['3']) === null || _b === void 0 ? void 0 : _b.replace("https:/", "")) ||
+                            'https://' + ((_c = element.urls['2']) === null || _c === void 0 ? void 0 : _c.replace("https:/", "")) ||
+                            'https://' + ((_d = element.urls['1']) === null || _d === void 0 ? void 0 : _d.replace("https:/", "")))) !== null && _e !== void 0 ? _e : undefined;
                         if (!existing_emojis.includes(element.name) &&
                             !emote_url.match('undefined') &&
                             emote_url) {
