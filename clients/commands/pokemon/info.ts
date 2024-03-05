@@ -12,7 +12,7 @@ import {
 
 export async function run(e: runEvent) {
   const channel_name = (e.interaction.channel as TextChannel).name;
-  const id = e.interaction.options.get('pokemon').toString();
+  const id = e.interaction.options.get('pokemon')?.toString();
   if (
     !e.cache.settings.smokemon_enabled ||
     channel_name != e.cache.settings.specific_channel

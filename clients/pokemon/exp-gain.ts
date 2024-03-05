@@ -95,7 +95,6 @@ export async function checkExpGain(user: User, guild: Guild, interaction?: Comma
                       imgs = [evolve.images.normal, monster_dex.images.normal];
                     }
                     const embed = new EmbedBuilder({
-                      color: evolve.color,
                       description: `Nice! **${monster_dex.name.english}** has evolved into **${evolve.name.english}**!`,
                       image: {
                         url: imgs[0],
@@ -152,7 +151,6 @@ export async function checkExpGain(user: User, guild: Guild, interaction?: Comma
                   imgs = [new_monster.images.normal, monster_dex.images.normal];
                 }
                 const embed = new EmbedBuilder({
-                  color: new_monster.color as unknown as number,
                   description: `YO! **${monster_dex.name.english}** has HATCHED into **${new_monster.name.english}**! Congratulations!`,
                   image: {
                     url: imgs[0],

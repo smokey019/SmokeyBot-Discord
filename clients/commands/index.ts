@@ -44,7 +44,7 @@ export async function loadCommands() {
           SlashCommandData?: SlashCommandBuilder;
         };
 
-        logger.debug(
+        logger.trace(
           `Loaded command with alias(es): ${props.names.join(', ')}`,
         );
 
@@ -70,7 +70,7 @@ export async function loadCommands() {
           SlashCommandData?: SlashCommandBuilder;
         };
 
-        logger.debug(
+        logger.trace(
           `Loaded command with alias(es): ${props.names.join(', ')}`,
         );
 

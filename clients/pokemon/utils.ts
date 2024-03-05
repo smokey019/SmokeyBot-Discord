@@ -4,7 +4,6 @@ import { discordClient } from "../../bot";
 import { GLOBAL_COOLDOWN, type ICache } from "../../clients/cache";
 import { getUserDBCount } from "../../clients/database";
 import { dblCache } from "../../clients/top.gg";
-import { COLOR_BLUE } from "../../colors";
 import {
   format_number,
   getCurrentTime,
@@ -129,7 +128,6 @@ export async function getBotStats(
   const ping = Date.now() - interaction.createdTimestamp;
 
   const embed = new EmbedBuilder()
-    .setColor(COLOR_BLUE)
     .setTitle("SmokeyBot Statistics 📊")
     .addFields(
       { name: "Ping 🌩️", value: ping + " ms" },

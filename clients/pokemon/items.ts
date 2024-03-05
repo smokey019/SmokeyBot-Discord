@@ -3,7 +3,6 @@ import {
   type CommandInteraction
 } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
-import { COLOR_BLUE } from '../../colors';
 import { ItemsTable, type IItemsModel } from '../../models/Items';
 import { MonsterTable, type IMonsterModel } from '../../models/Monster';
 import { MonsterUserTable, type IMonsterUserModel } from '../../models/MonsterUser';
@@ -76,7 +75,6 @@ async function listItems(interaction: CommandInteraction, args: string[]) {
   const new_msg = item_message.join('\n');
 
   const embed = new EmbedBuilder({
-    color: 0xff0000 as unknown as number,
     description: new_msg,
     thumbnail: {
       url: `https://cdn.bulbagarden.net/upload/0/03/Bag_Ultra_Ball_Sprite.png`,
@@ -200,7 +198,6 @@ async function msgUserItems(
     const new_msg = item_message.join('\n');
 
     const embed = new EmbedBuilder({
-      color: COLOR_BLUE as unknown as number,
       description: new_msg,
       thumbnail: {
         url: `https://cdn.bulbagarden.net/upload/0/03/Bag_Ultra_Ball_Sprite.png`,
@@ -338,7 +335,6 @@ export async function checkItemEvolution(
           imgs = [evolve.images.normal, monster_dex.images.normal];
         }
         const embed = new EmbedBuilder({
-          color: evolve.color as unknown as number,
           description: `Nice! **${monster_dex.name.english}** has evolved into **${evolve.name.english}** with held item **${item.name.english}**!`,
           image: {
             url: imgs[0],

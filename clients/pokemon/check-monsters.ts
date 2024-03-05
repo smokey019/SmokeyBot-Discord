@@ -1,7 +1,6 @@
 import { CommandInteraction, EmbedBuilder } from "discord.js";
 import { databaseClient, getUser } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
-import { COLOR_GREEN, COLOR_WHITE } from "../../colors";
 import { MonsterTable, type IMonsterModel } from "../../models/Monster";
 import type { IMonsterUserModel } from "../../models/MonsterUser";
 import { chunk, format_number } from "../../utils";
@@ -180,7 +179,6 @@ export async function checkMonstersNew(
           format_number(pokemon.length)
         }`
       )
-      .setColor(COLOR_GREEN)
       .setDescription(new_msg);
 
     queueMsg(embed, interaction, true, 1, undefined, true);
@@ -383,7 +381,7 @@ export async function checkMonsters(
         iconURL: interaction.user.avatarURL()?.toString(),
         url: `https://bot.smokey.gg/user/${interaction.user.id}/pokemon`,
       })
-      .setColor(COLOR_GREEN)
+
       .setDescription(new_msg);
     await interaction.channel
       .send({ embeds: [embed] })
@@ -451,7 +449,6 @@ export async function checkPokedex(
       iconURL: interaction.user.avatarURL()?.toString(),
       url: `https://bot.smokey.gg/user/${interaction.user.id}/pokemon`,
     })
-    .setColor(COLOR_WHITE)
     .setDescription(new_msg);
   await interaction.channel
     .send({ embeds: [embed] })
@@ -642,7 +639,6 @@ export async function checkFavorites(
         iconURL: interaction.user.avatarURL()?.toString(),
         url: `https://bot.smokey.gg/user/${interaction.user.id}/pokemon`,
       })
-      .setColor(COLOR_WHITE)
       .setDescription(new_msg);
     await interaction.channel
       .send({ embeds: [embed] })
@@ -819,7 +815,6 @@ export async function searchMonsters(
           iconURL: interaction.user.avatarURL()?.toString(),
           url: `https://bot.smokey.gg/user/${interaction.user.id}/pokemon`,
         })
-        .setColor(0xff0000)
         .setDescription(new_msg);
       await interaction
         .reply({ embeds: [embed] })
@@ -848,7 +843,6 @@ export async function searchMonsters(
           iconURL: interaction.user.avatarURL()?.toString(),
           url: `https://bot.smokey.gg/user/${interaction.user.id}/pokemon`,
         })
-        .setColor(0xff0000)
         .setDescription(new_msg);
       await interaction
         .reply({ embeds: [embed] })
@@ -892,7 +886,6 @@ async function sendEmbed(
         `https://bot.smokey.gg/user/${interaction.user.id}/pokemon`,
     })
     .setTitle(title)
-    .setColor(color)
     .setDescription(message);
 
   queueMsg(embed, interaction, true, 1, undefined, true);

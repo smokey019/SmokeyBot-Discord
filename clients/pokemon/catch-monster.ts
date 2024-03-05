@@ -2,7 +2,6 @@ import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { GLOBAL_COOLDOWN, getGCD } from '../../clients/cache';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
-import { COLOR_PURPLE } from '../../colors';
 import { MonsterTable, type IMonsterModel } from '../../models/Monster';
 import { MonsterUserTable, type IMonsterUserModel } from '../../models/MonsterUser';
 import { getCurrentTime, getRndInteger } from '../../utils';
@@ -268,7 +267,6 @@ export async function catchMonster(
 
         if (shiny) {
           const embed = new EmbedBuilder()
-            .setColor(COLOR_PURPLE)
             .setTitle('⭐ ' + currentSpawn.name.english + ' ⭐')
             .setDescription(response)
             .setImage(currentSpawn.images.shiny)

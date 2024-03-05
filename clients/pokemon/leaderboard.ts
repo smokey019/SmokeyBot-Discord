@@ -1,7 +1,6 @@
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { getLogger } from 'log4js';
 import { databaseClient } from '../../clients/database';
-import { COLOR_GREEN } from '../../colors';
 import { MonsterTable, type IMonsterModel } from '../../models/Monster';
 import { findMonsterByIDLocal, findMonsterByName } from './monsters';
 
@@ -81,7 +80,6 @@ export async function checkLeaderboard(
     const new_msg = message_contents.join('\n');
 
     const embed = new EmbedBuilder({
-      color: COLOR_GREEN,
       description: new_msg,
       title: `Top 25 Pokémon`,
     });

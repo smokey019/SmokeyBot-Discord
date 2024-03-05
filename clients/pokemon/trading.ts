@@ -2,7 +2,6 @@
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
-import { COLOR_BLUE } from '../../colors';
 import { MonsterTable, type IMonsterModel } from '../../models/Monster';
 import { MonsterUserTable, type IMonsterUserModel } from '../../models/MonsterUser';
 import { TradeTable, type ITrade } from '../../models/Trades';
@@ -67,7 +66,6 @@ export async function startTrade(
           100;
 
         const embed = new EmbedBuilder({
-          color: COLOR_BLUE,
           description: `Successfully initiated trade with <@${to_user}>\nIf they want to accept the trade type ~trade accept!\n\n**Average IV:** ${iv_avg.toFixed(
             2,
           )}%`,
@@ -175,7 +173,6 @@ export async function checkEvolves(
                 imgs = [evolution.images.normal, monster.images.normal];
               }
               const embed = new EmbedBuilder({
-                color: 0x00bc8c,
                 description: `Nice! **${monster.name.english}** has evolved into **${evolution.name.english}** via trade!`,
                 image: {
                   url: imgs[0],

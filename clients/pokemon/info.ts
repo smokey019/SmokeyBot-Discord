@@ -1,7 +1,6 @@
 import { CommandInteraction, EmbedBuilder, type EmbedField } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
-import { COLOR_PURPLE } from '../../colors';
 import { MonsterTable, type IMonsterModel } from '../../models/Monster';
 import { MonsterUserTable, type IMonsterUserModel } from '../../models/MonsterUser';
 import { format_number } from '../../utils';
@@ -235,7 +234,6 @@ export async function monsterEmbed(
       icon_url: img_monster_ball,
       url: `https://pokemondb.net/pokedex/${monster.id}`,
     },
-    color: monster.color,
     image: { url: img },
     thumbnail: thumbnail,
     description: released,
@@ -391,7 +389,6 @@ export async function monsterDex(
     }
 
     const embed = new EmbedBuilder({
-      color: COLOR_PURPLE,
       description: `**Type(s)**: ${monster_types}
 
       **National №**: ${tmpID}

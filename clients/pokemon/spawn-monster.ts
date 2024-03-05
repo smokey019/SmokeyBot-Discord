@@ -7,7 +7,6 @@ import {
   type IGuildSettings
 } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
-import { COLOR_PURPLE } from '../../colors';
 import { getCurrentTime, getRndInteger } from '../../utils';
 import { queueMsg } from '../emote_queue';
 import { findMonsterByID, getRandomMonster } from './monsters';
@@ -204,7 +203,6 @@ export async function forceSpawn(
     );
 
     const embed = new EmbedBuilder({
-      color: COLOR_PURPLE,
       description: 'Type `/catch PokémonName` to try and catch it!',
       image: {
         url: spawn_data.monster.images.normal,

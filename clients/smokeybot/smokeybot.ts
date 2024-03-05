@@ -6,13 +6,11 @@ const logger = getLogger('SmokeyBot');
 async function send_image_message(
   interaction: CommandInteraction,
   image: string,
-  color = 0x00bc8c,
   delete_after = false,
   delete_timer = 6000,
 ) {
   const embed = new EmbedBuilder()
     // .setTitle('<:sumSmash:454911973868699648>')
-    .setColor(color)
     // .setDescription()
     .setImage(image);
   await interaction.channel
