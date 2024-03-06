@@ -53,7 +53,8 @@ async function errorAPI(interaction: CommandInteraction): Promise<any>{
 export async function sync_7tv_emotes(
   interaction: CommandInteraction,
 ): Promise<void> {
-  const channel = await getIDwithUser(interaction.options.get('channel').value.toString().toLowerCase().trim());
+
+  const channel = await getIDwithUser(interaction.options.getString('channel'));
 
   if (
     channel &&
@@ -80,7 +81,7 @@ export async function sync_7tv_emotes(
       emotes = response?.emote_set?.emotes;
     }
 
-    if (!response || response.status === 404 || !emotes || !response.emotes) {
+    if (!response || response.status === 404) {
       logger.debug(`Couldn't fetch 7TV Emotes for Twitch channel ${channel}.`);
 
       return errorAPI(interaction);

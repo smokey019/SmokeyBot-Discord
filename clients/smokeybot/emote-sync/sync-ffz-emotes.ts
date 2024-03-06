@@ -41,7 +41,7 @@ export async function cancel_sync(
 export async function sync_ffz_emotes(
   interaction: CommandInteraction,
 ): Promise<void> {
-  const channel = interaction.options.get('channel').value.toString().toLowerCase().trim();
+  const channel = interaction.options.getString('channel');
 
   if (
     channel &&

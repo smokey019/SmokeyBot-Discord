@@ -1,5 +1,6 @@
 import { ApiClient } from "@twurple/api";
 import { RefreshingAuthProvider } from "@twurple/auth";
+import { getLogger } from "../logger";
 
 const clientId = process.env.TWITCH_CLIENT_ID;
 const clientSecret = process.env.TWITCH_SECRET_ID;
@@ -9,6 +10,7 @@ const authProvider = new RefreshingAuthProvider({
 });
 
 const api = new ApiClient({ authProvider });
+const logger = getLogger('TwitchAPI');
 
 /**
  * Get username with Twitch API
@@ -17,7 +19,9 @@ const api = new ApiClient({ authProvider });
  */
 export async function getIDwithUser(username: string): Promise<string | boolean>{
 
-	if (username.trim() != ''){
+	logger.debug(`Fetching Twitch ID for ${username}.`);
+
+	if (username?.trim() != ''){
 
 		const userID = await api.users.getUserByName(username);
 
