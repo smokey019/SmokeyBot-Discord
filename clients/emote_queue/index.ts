@@ -18,7 +18,7 @@ export const EmoteQueue: Collection<
     msg: CommandInteraction;
   }
 > = new Collection();
-const EMOTE_COOLDOWN = 30 * 1000;
+const EMOTE_COOLDOWN = 15 * 1000;
 const MSG_COOLDOWN = 1.5 * 1000;
 export let last_message = undefined;
 
@@ -191,7 +191,7 @@ async function runEmoteQueue() {
   try {
     const object = EmoteQueue.first();
     if (object && !rateLimited) {
-      const emote = object.emotes?.shift() ?? null;
+      const emote = object.emotes?.shift();
 
       EmoteQueue.set(object.msg.guild.id, object);
 
