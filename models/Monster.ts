@@ -1,4 +1,4 @@
-export const MonsterTable = 'monsters';
+export const MonsterTable = "monsters";
 
 export interface IMonsterModel {
   id?: number;

@@ -1,4 +1,5 @@
 import { Collection, CommandInteraction } from 'discord.js';
+import { Pokemon } from 'fast-poke-fetch';
 import { databaseClient } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { MonsterTable, type IMonsterModel } from '../../models/Monster';
@@ -219,8 +220,16 @@ export async function findMonsterByID(id: number): Promise<IMonsterDex> {
   return monster;
 }
 
+export async function findMonsterByIDAPI(id: number): Promise<any>{
+  return await Pokemon(id);
+}
+
 export function findMonsterByIDLocal(id: number): IMonsterDex {
   return MonsterDex.get(id);
+}
+
+export async function findMonsterByNameAPI(name: string): Promise<any>{
+  return await Pokemon(name);
 }
 
 /**

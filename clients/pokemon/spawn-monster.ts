@@ -9,7 +9,7 @@ import {
 import { getLogger } from '../../clients/logger';
 import { getCurrentTime, getRndInteger } from '../../utils';
 import { queueMsg } from '../emote_queue';
-import { findMonsterByID, getRandomMonster } from './monsters';
+import { findMonsterByID, findMonsterByIDAPI } from './monsters';
 import { getBoostedWeatherSpawns } from './weather';
 
 export const MONSTER_SPAWNS = loadCache('MONSTER_SPAWNS', 500);
@@ -71,7 +71,7 @@ export async function spawnMonster(
     }
   } else {
     const spawn_data = {
-      monster: await findMonsterByID(getRandomMonster()),
+      monster: await findMonsterByIDAPI(Math.floor(Math.random() * (1025 - 1) + 1)),
       spawned_at: getCurrentTime(),
     };
 
@@ -80,18 +80,18 @@ export async function spawnMonster(
     let isBoosted = false;
     try {
       while (
-        !spawn_data.monster?.name.english ||
+        //!spawn_data.monster?.name.english ||
         // spawn_data.monster.forme == "Mega" ||
-        !spawn_data.monster.images ||
-        !spawn_data.monster.images.normal ||
+        //!spawn_data.monster.images ||
+        //!spawn_data.monster.images.normal ||
         (boostCount < 10 && !isBoosted)
       ) {
         logger.trace(
           'Invalid monster found or trying to find a boosted type..',
         );
-        spawn_data.monster = await findMonsterByID(getRandomMonster());
-        spawn_data.monster.type?.forEach((element: string) => {
-          if (boost.boosts.includes(element)) {
+        spawn_data.monster = await findMonsterByIDAPI(Math.floor(Math.random() * (1025 - 1) + 1));
+        spawn_data.monster.types?.forEach((element) => {
+          if (boost.boosts.includes(element.type.name)) {
             isBoosted = true;
           }
         });
@@ -102,13 +102,13 @@ export async function spawnMonster(
       await updateSpawn(interaction.guild.id, spawn_data);
 
       logger.info(
-        `'${interaction.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`,
+        `'${interaction.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.charAt(0).toUpperCase() + spawn_data.monster.name.slice(1)}'`,
       );
 
       const embed = new EmbedBuilder({
         description: 'Type `/catch PokémonName` to try and catch it!',
         image: {
-          url: spawn_data.monster.images.normal,
+          url: spawn_data.monster.sprites.other['official-artwork'].front_default,
         },
         title: 'A wild Pokémon has appeared!',
       });
