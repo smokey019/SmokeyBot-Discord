@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SlashCommandBuilder } from '@discordjs/builders';
-import { REST } from '@discordjs/rest';
-import { Routes } from 'discord-api-types/v9';
-import { Client, Collection, CommandInteraction, Message } from 'discord.js';
-import { readdir } from 'fs';
-import path from 'path';
-import type { IGuildSettings } from '../../clients/database';
-import { getLogger } from '../../clients/logger';
-import type { ICache } from '../cache';
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { REST } from "@discordjs/rest";
+import { Routes } from "discord-api-types/v9";
+import { Client, Collection, CommandInteraction, Message } from "discord.js";
+import { readdir } from "fs";
+import path from "path";
+import { CommandsLoaded, LoadedCommands } from "../..";
+import type { IGuildSettings } from "../../clients/database";
+import { getLogger } from "../../clients/logger";
+import type { ICache } from "../cache";
 
-const logger = getLogger('Commander');
+const logger = getLogger("Commander");
 
 export interface runEvent {
   message?: Message;
@@ -31,11 +32,11 @@ export const slashCommands = [];
  */
 export async function loadCommands() {
   // Load Pokémon Commands
-  readdir(path.join(__dirname, '/pokemon/'), async (err, allFiles) => {
+  readdir(path.join(__dirname, "/pokemon/"), async (err, allFiles) => {
     if (err) console.log(err);
     // const files = allFiles.filter((f) => f.split('.').pop() === 'ts' || 'js');
     const files = allFiles.filter((f) => f.match(/\.ts|\.js/i));
-    if (files.length <= 0) console.log('No commands found!');
+    if (files.length <= 0) console.log("No commands found!");
     else
       for (const file of files) {
         const props = (await import(`./pokemon/${file}`)) as {
@@ -45,7 +46,7 @@ export async function loadCommands() {
         };
 
         logger.trace(
-          `Loaded command with alias(es): ${props.names.join(', ')}`,
+          `Loaded command with alias(es): ${props.names.join(", ")}`
         );
 
         commands.set(props.names, props.run);
@@ -57,11 +58,11 @@ export async function loadCommands() {
   });
 
   // Load SmokeyBot Commands
-  readdir(path.join(__dirname, '/smokeybot/'), async (err, allFiles) => {
+  readdir(path.join(__dirname, "/smokeybot/"), async (err, allFiles) => {
     if (err) console.log(err);
     // const files = allFiles.filter((f) => f.split('.').pop() === 'ts' || 'js');
     const files = allFiles.filter((f) => f.match(/\.ts|\.js/i));
-    if (files.length <= 0) console.log('No commands found!');
+    if (files.length <= 0) console.log("No commands found!");
     else
       for (const file of files) {
         const props = (await import(`./smokeybot/${file}`)) as {
@@ -71,7 +72,7 @@ export async function loadCommands() {
         };
 
         logger.trace(
-          `Loaded command with alias(es): ${props.names.join(', ')}`,
+          `Loaded command with alias(es): ${props.names.join(", ")}`
         );
 
         commands.set(props.names, props.run);
@@ -84,13 +85,18 @@ export async function loadCommands() {
 }
 
 export async function registerSlashCommands() {
+  if (CommandsLoaded) return;
+
   try {
-    logger.debug('Started refreshing application (/) commands.');
+    logger.debug("Attempting to refresh slash commands.");
 
     let token = undefined;
     let api = undefined;
 
-    if (process.env.DEV == 'true') {
+    if (process.env.DEV == "true") {
+
+      // registers only for the test server
+
       token = process.env.DISCORD_TOKEN_DEV;
       api = process.env.API_CLIENT_ID_DEV;
 
@@ -101,10 +107,13 @@ export async function registerSlashCommands() {
       });
 
       await rest.put(
-        Routes.applicationGuildCommands(api, '690857004171919370'),
-        { body: slashCommands },
+        Routes.applicationGuildCommands(api, "690857004171919370"),
+        { body: slashCommands }
       );
     } else {
+
+      // registers for all of discord
+
       token = process.env.DISCORD_TOKEN;
       api = process.env.API_CLIENT_ID;
 
@@ -115,7 +124,9 @@ export async function registerSlashCommands() {
       });
     }
 
-    logger.debug('Successfully reloaded application (/) commands.');
+    logger.debug("Successfully registered slash commands.");
+
+    LoadedCommands();
   } catch (error) {
     console.error(error);
   }

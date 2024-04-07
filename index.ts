@@ -9,14 +9,18 @@ const logger = getLogger("ShardManager");
 
 const ap = AutoPoster(process.env.TOPGG_KEY, manager);
 
+export let CommandsLoaded = false;
+
 ap.on("posted", () => {
   logger.info("Posted stats to Top.gg!");
 });
 
-manager.on("shardCreate", (shard) => logger.info(`Launching shard ${shard.id}`));
+manager.on("shardCreate", (shard) =>
+  logger.info(`Launching shard ${shard.id}`)
+);
 
 manager
-  .spawn({ amount: 'auto' })
+  .spawn({ amount: "auto" })
   .then((shards) => {
     shards.forEach((shard) => {
       shard.on("message", (message) => {
@@ -27,3 +31,7 @@ manager
     });
   })
   .catch(console.error);
+
+export function LoadedCommands() {
+  CommandsLoaded = true;
+}

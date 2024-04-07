@@ -272,9 +272,11 @@ export async function catchMonster(
             .setImage(currentSpawn.images.shiny)
             .setTimestamp();
 
-          queueMsg(embed, interaction, true, 1, undefined, true);
+          //queueMsg(embed, interaction, true, 1, undefined, true);
+          interaction.reply({ embeds: [embed] });
         } else {
-          queueMsg(response, interaction, true, 1);
+          //queueMsg(response, interaction, true, 1);
+          interaction.reply(response);
         }
       }
     } catch (error) {
