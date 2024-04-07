@@ -5,7 +5,6 @@ import { Routes } from "discord-api-types/v9";
 import { Client, Collection, CommandInteraction, Message } from "discord.js";
 import { readdir } from "fs";
 import path from "path";
-import { CommandsLoaded, LoadedCommands } from "../..";
 import type { IGuildSettings } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
 import type { ICache } from "../cache";
@@ -85,8 +84,6 @@ export async function loadCommands() {
 }
 
 export async function registerSlashCommands() {
-  if (CommandsLoaded) return;
-
   try {
     logger.debug("Attempting to refresh slash commands.");
 
@@ -126,7 +123,6 @@ export async function registerSlashCommands() {
 
     logger.debug("Successfully registered slash commands.");
 
-    LoadedCommands();
   } catch (error) {
     console.error(error);
   }

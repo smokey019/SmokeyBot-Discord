@@ -9,8 +9,6 @@ const logger = getLogger("ShardManager");
 
 const ap = AutoPoster(process.env.TOPGG_KEY, manager);
 
-export let CommandsLoaded = false;
-
 ap.on("posted", () => {
   logger.info("Posted stats to Top.gg!");
 });
@@ -31,7 +29,3 @@ manager
     });
   })
   .catch(console.error);
-
-export function LoadedCommands() {
-  CommandsLoaded = true;
-}
