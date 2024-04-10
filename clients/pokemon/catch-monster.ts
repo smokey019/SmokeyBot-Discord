@@ -48,21 +48,13 @@ function monsterMatchesPrevious(
 /**
  * Catches a monster.
  *
- * @notes
- * Consider simplifying the parameters. This function should not have to
- * know about `Message` or the entire `cache`. Monster channel missing or
- * don't have a guild ID? Never call this.
- *
- * @notes
- * Each side of this conditional (match vs no match) should probably be
- * broken out into their own functions. `attemptCapture`, `captureFailed`, `captureSuccess`?
- *
  * @param interaction
  * @param cache
  */
 export async function catchMonster(
   interaction: CommandInteraction
 ): Promise<void> {
+  interaction.reply('https://cdn.discordapp.com/emojis/753418888376614963.webp?size=96&quality=lossless');
   const timestamp = getCurrentTime();
   const GCD = await getGCD(interaction.guild.id);
   //const spawn = await MONSTER_SPAWNS.get(interaction.guild.id);
@@ -72,6 +64,11 @@ export async function catchMonster(
     .value?.toString()
     .toLowerCase();
   const spawn = data.spawn_data;
+  spawn.monster.name = spawn.monster.name.toLowerCase();
+
+  if (spawn.monster.name.match("-")){
+    spawn.monster.name = spawn.monster.name.split("-")[0];
+  }
 
   if (spawn.monster && attempt == spawn.monster.name) {
     logger.trace(
@@ -279,10 +276,10 @@ export async function catchMonster(
             .setTimestamp();
 
           //queueMsg(embed, interaction, true, 1, undefined, true);
-          interaction.reply({ embeds: [embed] });
+          interaction.editReply({ embeds: [embed] });
         } else {
           //queueMsg(response, interaction, true, 1);
-          interaction.reply(response);
+          interaction.editReply(response);
         }
       }
     } catch (error) {
@@ -292,7 +289,7 @@ export async function catchMonster(
     GLOBAL_COOLDOWN.set(interaction.guild.id, getCurrentTime());
 
     //queueMsg(`That is the wrong Pokémon!`, interaction, true, 1);
-    interaction.reply(`That is the wrong Pokémon!`);
+    interaction.editReply(`That is the wrong Pokémon!`);
     logger.trace(`${interaction.user.username} is WRONG!`);
   }
 }
