@@ -54,7 +54,9 @@ function monsterMatchesPrevious(
 export async function catchMonster(
   interaction: CommandInteraction
 ): Promise<void> {
-  interaction.reply('https://cdn.discordapp.com/emojis/753418888376614963.webp?size=96&quality=lossless');
+  await interaction.reply(
+    "https://cdn.discordapp.com/emojis/753418888376614963.webp?size=96&quality=lossless"
+  );
   const timestamp = getCurrentTime();
   const GCD = await getGCD(interaction.guild.id);
   //const spawn = await MONSTER_SPAWNS.get(interaction.guild.id);
@@ -66,8 +68,21 @@ export async function catchMonster(
   const spawn = data.spawn_data;
   spawn.monster.name = spawn.monster.name.toLowerCase();
 
-  if (spawn.monster.name.match("-")){
+  if (
+    spawn.monster.name.match("-") ||
+    spawn.monster.name != "chi-yu" ||
+    spawn.monster.name != "ting-lu" ||
+    spawn.monster.name != "chien-pao" ||
+    spawn.monster.name != "wo-chien" ||
+    spawn.monster.name != "ho-oh" ||
+    spawn.monster.name != "kommo-o" ||
+    spawn.monster.name != "hakamo-o"
+  ) {
     spawn.monster.name = spawn.monster.name.split("-")[0];
+  } else if (spawn.monster.name == "sandy-shocks") {
+    spawn.monster.name = spawn.monster.name.replace("-", " ");
+  } else if (spawn.monster.name == "mr-rime") {
+    spawn.monster.name = spawn.monster.name.replace("-", " ");
   }
 
   if (spawn.monster && attempt == spawn.monster.name) {
@@ -205,9 +220,11 @@ export async function catchMonster(
           response = `_**POGGERS**_! You caught a __***SHINY***__ level **${level} ${
             currentSpawn.name.charAt(0).toUpperCase() +
             currentSpawn.name.slice(1)
-          }**${shiny_msg + legendary}! \n\n Avg IV: **${averageIV}**% \nID: **${
+          }**${shiny_msg + legendary}! \n\n Avg IV: **${averageIV}**% \nPoké #${
+            currentSpawn.id
+          } - ID: **${
             insertMonster[0]
-          }** \n\n *NEW POKéMON!* Added to Pokédex.`;
+          }** \n\n **NEW POKéMON!** Added to Pokédex.`;
           logger.error(
             `'${interaction.guild?.name}' - '${interaction.user.username}' CAUGHT A SHINY POKéMON~'`
           );
@@ -220,9 +237,9 @@ export async function catchMonster(
           }**! You caught a level **${level} ${
             currentSpawn.name.charAt(0).toUpperCase() +
             currentSpawn.name.slice(1)
-          }**${shiny_msg + legendary}! Avg IV: **${averageIV}**% - ID: **${
-            insertMonster[0]
-          }** - *NEW POKéMON!* Added to Pokédex.`;
+          }**${shiny_msg + legendary}! \n\n Avg IV: **${averageIV}**% - Poké #${
+            currentSpawn.id
+          } - ID: **${insertMonster[0]}** - **NEW POKéMON!** Added to Pokédex.`;
           logger.info(
             `'${interaction.guild?.name}' - '${interaction.user.username}' CAUGHT A POKéMON~`
           );
@@ -276,10 +293,10 @@ export async function catchMonster(
             .setTimestamp();
 
           //queueMsg(embed, interaction, true, 1, undefined, true);
-          interaction.editReply({ embeds: [embed] });
+          await interaction.editReply({ embeds: [embed] });
         } else {
           //queueMsg(response, interaction, true, 1);
-          interaction.editReply(response);
+          await interaction.editReply(response);
         }
       }
     } catch (error) {
@@ -289,7 +306,7 @@ export async function catchMonster(
     GLOBAL_COOLDOWN.set(interaction.guild.id, getCurrentTime());
 
     //queueMsg(`That is the wrong Pokémon!`, interaction, true, 1);
-    interaction.editReply(`That is the wrong Pokémon!`);
+    await interaction.editReply(`That is the wrong Pokémon!`);
     logger.trace(`${interaction.user.username} is WRONG!`);
   }
 }
