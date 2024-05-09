@@ -4,12 +4,14 @@ import {
   CommandInteraction,
   GuildChannel,
   TextChannel,
-  type TextBasedChannel
-} from 'discord.js';
-import { rateLimited } from '../../bot';
-import { getLogger } from '../logger';
+  type TextBasedChannel,
+} from "discord.js";
+import { rateLimited } from "../../bot";
+import { getLogger } from "../logger";
 
-const logger = getLogger('Queue');
+const logger = getLogger("Queue");
+let successes = 0;
+let failed = 0;
 
 export const EmoteQueue: Collection<
   string,
@@ -45,28 +47,28 @@ let timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
  * @param queue 'emote' or 'message' queues.
  */
 export async function resetQueue(
-  queue = 'emote',
-  interaction: CommandInteraction,
+  queue = "emote",
+  interaction: CommandInteraction
 ): Promise<void> {
   switch (queue) {
-    case 'emote':
+    case "emote":
       clearTimeout(timerEmoteQ);
       EmoteQueue.clear();
       timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
       await (interaction as CommandInteraction).reply(
-        'Successfully reset emote queue.',
+        "Successfully reset emote queue."
       );
-      logger.error('Reset emote queue.');
+      logger.error("Reset emote queue.");
 
       break;
-    case 'message':
+    case "message":
       clearTimeout(timerMsgQ);
       EmoteQueue.clear();
       timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
       await (interaction as CommandInteraction).reply(
-        'Successfully reset message queue.',
+        "Successfully reset message queue."
       );
-      logger.error('Reset message queue.');
+      logger.error("Reset message queue.");
 
       break;
   }
@@ -88,7 +90,7 @@ export function queueMsg(
   reply = false,
   priority = 0,
   spawn?: GuildChannel | TextChannel | TextBasedChannel,
-  embed?: boolean,
+  embed?: boolean
 ): boolean {
   if (
     outgoingMsg.toString().length >= 2000 ||
@@ -197,7 +199,7 @@ async function runEmoteQueue() {
 
       if (emote) {
         logger.trace(
-          `Attempting to create emoji '${emote.name}' on ${object.msg.guild.name}.`,
+          `Attempting to create emoji '${emote.name}' on ${object.msg.guild.name}.`
         );
         create_emoji(emote.url, object.msg, emote.name);
         timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
@@ -205,8 +207,10 @@ async function runEmoteQueue() {
         const temp = EmoteQueue.first();
         logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
         temp.msg.editReply(
-          'Finished uploading emotes. You can sync again whenever you want.',
+          `Finished uploading ${successes} emotes. ${failed} failed to upload. You can sync again whenever you want.`
         );
+        successes = 0;
+        failed = 0;
         EmoteQueue.delete(EmoteQueue.firstKey());
         timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
       }
@@ -214,22 +218,44 @@ async function runEmoteQueue() {
       timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
     }
   } catch (error) {
-    console.error('Emote Queue Error:', error);
+    console.error("Emote Queue Error:", error);
     timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
   }
 }
 
 /**
+ * Remove a guild from the emote queue.
+ * @param log What to send to logger
+ * @param response Response to user
+ * @param interaction Interaction object
+ */
+async function removeFromQueue(
+  log: string,
+  response: string,
+  interaction: CommandInteraction
+): Promise<any> {
+  EmoteQueue.delete(interaction.guild.id);
+  logger.info(log);
+
+  await interaction.editReply(response);
+
+  // reset numbers
+
+  successes = 0;
+  failed = 0;
+}
+
+/**
  * Function to create an emoji in a Discord server.
  * @param emote_url Emote URL (256kb limit)
- * @param message Discord Message Object
+ * @param interaction Interaction Object
  * @param name String
  * @returns true/false
  */
 async function create_emoji(
   emote_url: string,
   interaction: CommandInteraction,
-  name: string,
+  name: string
 ): Promise<boolean> {
   try {
     if (
@@ -237,8 +263,11 @@ async function create_emoji(
         .create({ attachment: emote_url, name: name })
         .then(async (emoji) => {
           logger.debug(
-            `Created new emoji with name ${emoji.name} in ${emoji.guild.name}.`,
+            `Created new emoji with name ${emoji.name} in ${emoji.guild.name}.`
           );
+
+          successes = successes + 1;
+
           return true;
         })
     ) {
@@ -247,7 +276,35 @@ async function create_emoji(
       return false;
     }
   } catch (err) {
-    switch (err.message) {
+    if (err.message.match("Failed to resize asset")) {
+      logger.trace(`'${name}' is too big, won't be uploaded.`);
+
+      failed = failed + 1;
+
+      return false;
+    } else if (err.message.match("Maximum number")) {
+      await removeFromQueue(
+        `Maximum emojis reached for server '${interaction.guild.name}'.`,
+        `You've reached the maximum amount of emotes for the server.  Make sure you have enough animated AND standard emote slots.  Either one being full will prevent the bot from uploading emotes.`,
+        interaction
+      );
+
+      return false;
+    } else if (err.message.match("Missing Permissions")) {
+      await removeFromQueue(
+        `Improper permissions for server '${interaction.guild.name}'.`,
+        `SmokeyBot doesn't have the proper permissions. Make sure SmokeyBot can Manage Emoji in the roles section.`,
+        interaction
+      );
+
+      return false;
+    } else {
+      logger.error(err);
+
+      return false;
+    }
+
+    /*switch (err.message) {
       case 'Maximum number of emojis reached (50)':
       case 'Maximum number of emojis reached (75)':
       case 'Maximum number of emojis reached (100)':
@@ -280,6 +337,6 @@ async function create_emoji(
       default:
         logger.error(err);
         return false;
-    }
+    }*/
   }
 }

@@ -27,7 +27,7 @@ export async function cancel_sync(
         ' in ' +
         interaction.guild.name,
     );
-    interaction.reply({ content: '👍', ephemeral: false });
+    interaction.editReply({ content: '👍' });
     return true;
   } else {
     return false;
@@ -47,7 +47,7 @@ export async function sync_ffz_emotes(
     channel &&
     !EmoteQueue.has(interaction.guild.id)
   ) {
-    await interaction.reply(`Checking FrankerFaceZ API to sync emotes..`);
+    await interaction.editReply(`Checking FrankerFaceZ API to sync emotes..`);
 
     logger.debug(
       `Fetching FFZ Emotes for Twitch channel ${channel} (requested by ${interaction.user.username} in ${interaction.guild.name})..`,

@@ -60,7 +60,7 @@ export async function sync_7tv_emotes(
     channel &&
     !EmoteQueue.has(interaction.guild.id)
   ) {
-    await interaction.reply(`Checking 7TV API to sync emotes..`);
+    await interaction.editReply(`Checking 7TV API to sync emotes..`);
 
     logger.debug(
       `Fetching 7TV Emotes for Twitch channel ${channel} (requested by ${interaction.user.username} in ${interaction.guild.name})..`,
