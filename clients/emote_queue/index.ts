@@ -303,40 +303,5 @@ async function create_emoji(
 
       return false;
     }
-
-    /*switch (err.message) {
-      case 'Maximum number of emojis reached (50)':
-      case 'Maximum number of emojis reached (75)':
-      case 'Maximum number of emojis reached (100)':
-      case 'Maximum number of emojis reached (250)':
-        EmoteQueue.delete(interaction.guild.id);
-        logger.info(
-          `Maximum emojis reached for server '${interaction.guild.name}'.`,
-        );
-        queueMsg(
-          `You've reached the maximum amount of emotes for the server.`,
-          interaction,
-          true,
-          1,
-        );
-        return false;
-
-      case 'Missing Permissions':
-        EmoteQueue.delete(interaction.guild.id);
-        logger.info(
-          `Improper permissions for server '${interaction.guild.name}'.`,
-        );
-        queueMsg(
-          `SmokeyBot doesn't have the proper permissions. Make sure SmokeyBot can Manage Emoji in the roles section.`,
-          interaction,
-          true,
-          1,
-        );
-        return false;
-
-      default:
-        logger.error(err);
-        return false;
-    }*/
   }
 }

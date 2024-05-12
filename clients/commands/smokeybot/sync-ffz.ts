@@ -8,7 +8,7 @@ import { sync_ffz_emotes } from "../../smokeybot/emote-sync/sync-ffz-emotes";
 export async function run(e: runEvent) {
   GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
 
-  e.interaction.deferReply();
+  await e.interaction.deferReply();
 
   await sync_ffz_emotes(e.interaction);
 }
