@@ -25,7 +25,8 @@
     "mysql2": "^3.9.1",
     "queue": "^7.0.0",
     "topgg-autoposter": "^2.0.2",
-    "utf-8-validate": "^6.0.3"
+    "utf-8-validate": "^6.0.3",
+    "zlib-sync": "^0.1.9"
   },
   "scripts": {
     "dev": "bun run index.ts"

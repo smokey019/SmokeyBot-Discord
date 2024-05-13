@@ -7,7 +7,7 @@ import {
   MonsterUserTable,
   type IMonsterUserModel,
 } from "../../models/MonsterUser";
-import { getCurrentTime, getRndInteger } from "../../utils";
+import { explode, getCurrentTime, getRndInteger } from "../../utils";
 import { userDex } from "./info";
 import { type IMonsterDex } from "./monsters";
 import { getRandomNature } from "./natures";
@@ -76,9 +76,10 @@ export async function catchMonster(
     spawn.monster.name != "wo-chien" ||
     spawn.monster.name != "ho-oh" ||
     spawn.monster.name != "kommo-o" ||
-    spawn.monster.name != "hakamo-o"
+    spawn.monster.name != "hakamo-o" ||
+    spawn.monster.name != "type-null"
   ) {
-    spawn.monster.name = spawn.monster.name.split("-")[0];
+    spawn.monster.name = explode(spawn.monster.name, '-', 3)[0];
   } else if (spawn.monster.name == "sandy-shocks") {
     spawn.monster.name = spawn.monster.name.replace("-", " ");
   } else if (spawn.monster.name == "mr-rime") {
