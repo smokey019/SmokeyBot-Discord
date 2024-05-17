@@ -77,7 +77,8 @@ export async function catchMonster(
     spawn.monster.name != "ho-oh" ||
     spawn.monster.name != "kommo-o" ||
     spawn.monster.name != "hakamo-o" ||
-    spawn.monster.name != "type-null"
+    spawn.monster.name != "type-null" ||
+    spawn.monster.name != "tapu-lele"
   ) {
     spawn.monster.name = explode(spawn.monster.name, '-', 3)[0];
   } else if (spawn.monster.name == "sandy-shocks") {
