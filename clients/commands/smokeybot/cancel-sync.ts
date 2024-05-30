@@ -8,6 +8,7 @@ import { cancel_sync } from '../../smokeybot/emote-sync/sync-ffz-emotes';
 export async function run(e: runEvent) {
   GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
 
+  await e.interaction.deferReply();
   await cancel_sync(e.interaction);
 }
 
