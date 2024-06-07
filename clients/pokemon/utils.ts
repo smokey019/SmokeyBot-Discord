@@ -77,7 +77,7 @@ export function rollGender(): string {
  * Returns a randomized value for if an item is shiny. (1 is shiny, 0 is not)
  */
 export function rollShiny(): 0 | 1 {
-  return getRndInteger(1, 40) >= 40 ? 1 : 0;
+  return getRndInteger(1, parseInt(process.env.SHINY_ODDS_RETAIL)) >= parseInt(process.env.SHINY_ODDS_RETAIL) ? 1 : 0;
 }
 
 export function rollPerfectIV(): 0 | 1 {

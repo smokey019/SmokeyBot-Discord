@@ -192,6 +192,7 @@ async function runMsgQueue() {
 async function runEmoteQueue() {
   try {
     const object = EmoteQueue.first();
+
     if (object && !rateLimited) {
       const emote = object.emotes?.shift();
 
@@ -205,7 +206,7 @@ async function runEmoteQueue() {
         timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
       } else {
         const temp = EmoteQueue.first();
-        logger.debug(`Successfully finished queue for ${temp.msg.guild.name}.`);
+        logger.debug(`Successfully finished ${successes} queue for ${temp.msg.guild.name}. ${failed} failed uploading.`);
         temp.msg.editReply(
           `Finished uploading ${successes} emotes. ${failed} failed to upload. You can sync again whenever you want.`
         );
@@ -215,6 +216,7 @@ async function runEmoteQueue() {
         timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
       }
     } else {
+      logger.trace(`Nothing in queue.  Waiting for something to do..`)
       timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
     }
   } catch (error) {
