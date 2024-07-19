@@ -208,7 +208,7 @@ async function runEmoteQueue() {
         const temp = EmoteQueue.first();
         logger.debug(`Successfully finished ${successes} queue for ${temp.msg.guild.name}. ${failed} failed uploading.`);
         temp.msg.editReply(
-          `Finished uploading ${successes} emotes. ${failed} failed to upload. You can sync again whenever you want.`
+          `Finished uploading ${successes} emotes. ${failed} failed to upload. You can upload single emotes that were missed by using the \`/upload\` command.`
         );
         successes = 0;
         failed = 0;
@@ -269,6 +269,8 @@ async function create_emoji(
           );
 
           successes = successes + 1;
+
+          interaction.editReply(`Uploaded ${successes} emotes so far.  ${failed} have failed.`)
 
           return true;
         })
