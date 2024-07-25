@@ -20,7 +20,7 @@ export const EmoteQueue: Collection<
     msg: CommandInteraction;
   }
 > = new Collection();
-const EMOTE_COOLDOWN = 15 * 1000;
+const EMOTE_COOLDOWN = 10 * 1000;
 const MSG_COOLDOWN = 1.5 * 1000;
 export let last_message = undefined;
 
@@ -270,7 +270,10 @@ async function create_emoji(
 
           successes = successes + 1;
 
-          interaction.editReply(`Uploaded ${successes} emotes so far.  ${failed} have failed.`)
+          const total = EmoteQueue.at(0).emotes.length;
+          const estimatedTime = total * EMOTE_COOLDOWN;
+
+          interaction.editReply(`Uploaded ${successes} emotes so far. \n\n${total} left to upload.  \n\n${failed} have failed. \n\nEstimated ${estimatedTime} seconds left to finish queue.  \`/cancel-sync\` to cancel queue.`)
 
           return true;
         })
