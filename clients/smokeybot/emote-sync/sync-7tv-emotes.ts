@@ -1,8 +1,8 @@
 import { CommandInteraction } from 'discord.js';
-import { getLogger } from 'log4js';
 import type { SevenTVChannel, SevenTVChannelEmotes, SevenTVEmotes } from '../../../models/7tv-Emotes';
 import { jsonFetch } from '../../../utils';
 import { EmoteQueue } from '../../emote_queue';
+import { getLogger } from '../../logger';
 import { getIDwithUser } from '../../twitch';
 import { EMOJI_COOLDOWN } from './sync-ffz-emotes';
 
@@ -90,6 +90,8 @@ export async function sync_7tv_emotes(
 
       const final_emojis = [];
 
+      let detectedemotes = 0;
+
       interaction.guild.emojis.cache.forEach((value) => {
         existing_emojis.push(value.name);
       });
@@ -108,6 +110,7 @@ export async function sync_7tv_emotes(
             final_emojis.push({ url: emote_url, name: element.name });
           } else {
             logger.trace('emote already detected, not uploading..');
+            detectedemotes++;
           }
         });
 
@@ -115,7 +118,7 @@ export async function sync_7tv_emotes(
           EMOJI_COOLDOWN.set(interaction.guild.id, Date.now());
 
           logger.debug(
-            `Syncing ${final_emojis.length}/${emotes.length} total emotes for ${channel}..`,
+            `Syncing ${final_emojis.length}/${emotes.length} total emotes for ${channel}.. ${detectedemotes} already exist on the server.`,
           );
 
           Stv_emoji_queue_count++;
@@ -126,7 +129,7 @@ export async function sync_7tv_emotes(
           });
 
           await interaction.editReply(
-            `**Successfully syncing ${final_emojis.length}/${emotes.length} emotes!**\n\n\nIt will take up to 30 minutes or more depending on the queue.\n\n- Wide emotes will look weird.\n- Certain GIFs that are too long may not upload.\n\n Type \`/cancel-sync\` to cancel. \n Type \`/stats\` to see how many servers are in queue.`,
+            `**Successfully syncing ${final_emojis.length}/${emotes.length} emotes!  ${detectedemotes} already exist on the server.**\n\n\nIt will take up to 30 minutes or more depending on the queue.\n\n- Wide emotes will look weird.\n- Certain GIFs that are too long may not upload.\n\n Type \`/cancel-sync\` to cancel. \n Type \`/stats\` to see how many servers are in queue.`,
           );
         } else {
           logger.debug(`No emotes found able to be synced for ${channel}..`);

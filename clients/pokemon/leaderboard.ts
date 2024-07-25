@@ -1,7 +1,7 @@
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
-import { getLogger } from 'log4js';
 import { databaseClient } from '../../clients/database';
 import { MonsterTable, type IMonsterModel } from '../../models/Monster';
+import { getLogger } from '../logger';
 import { findMonsterByIDLocal, findMonsterByName } from './monsters';
 
 const logger = getLogger('Pokémon-Leaderboard');

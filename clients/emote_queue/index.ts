@@ -6,8 +6,18 @@ import {
   TextChannel,
   type TextBasedChannel,
 } from "discord.js";
+import Queue from "queue";
 import { rateLimited } from "../../bot";
 import { getLogger } from "../logger";
+
+export const q = new Queue({ results: [] });
+q.autostart = true;
+q.concurrency = 1;
+
+q.addEventListener("timeout", (e) => {
+  console.log("job timed out:", e.detail.job.toString().replace(/\n/g, ""));
+  e.detail.next();
+});
 
 const logger = getLogger("Queue");
 let successes = 0;
@@ -199,14 +209,18 @@ async function runEmoteQueue() {
       EmoteQueue.set(object.msg.guild.id, object);
 
       if (emote) {
-        logger.trace(
+        logger.debug(
           `Attempting to create emoji '${emote.name}' on ${object.msg.guild.name}.`
         );
-        create_emoji(emote.url, object.msg, emote.name);
+        q.push(async () => {
+          await create_emoji(emote.url, object.msg, emote.name);
+        });
         timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
       } else {
         const temp = EmoteQueue.first();
-        logger.debug(`Successfully finished ${successes} queue for ${temp.msg.guild.name}. ${failed} failed uploading.`);
+        logger.debug(
+          `Successfully finished ${successes} queue for ${temp.msg.guild.name}. ${failed} failed uploading.`
+        );
         temp.msg.editReply(
           `Finished uploading ${successes} emotes. ${failed} failed to upload. You can upload single emotes that were missed by using the \`/upload\` command.`
         );
@@ -216,7 +230,7 @@ async function runEmoteQueue() {
         timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
       }
     } else {
-      logger.trace(`Nothing in queue.  Waiting for something to do..`)
+      logger.trace(`Nothing in queue.  Waiting for something to do..`);
       timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
     }
   } catch (error) {
@@ -237,7 +251,7 @@ async function removeFromQueue(
   interaction: CommandInteraction
 ): Promise<any> {
   EmoteQueue.delete(interaction.guild.id);
-  logger.info(log);
+  logger.error(log);
 
   await interaction.editReply(response);
 
@@ -268,12 +282,14 @@ async function create_emoji(
             `Created new emoji with name ${emoji.name} in ${emoji.guild.name}.`
           );
 
-          successes = successes + 1;
+          successes++;
 
           const total = EmoteQueue.at(0).emotes.length;
-          const estimatedTime = total * EMOTE_COOLDOWN;
+          const estimatedTime = Math.floor((total * 10) / 60) + ' minutes' || Math.floor(total * 10) + ' seconds';
 
-          interaction.editReply(`Uploaded ${successes} emotes so far. \n\n${total} left to upload.  \n\n${failed} have failed. \n\nEstimated ${estimatedTime} seconds left to finish queue.  \`/cancel-sync\` to cancel queue.`)
+          interaction.editReply(
+            `Uploaded ${successes} emotes so far. \n\n${total} left to upload.  \n\n${failed} failed. \n\nEstimated ${estimatedTime} left to finish queue.  \`/cancel-sync\` to cancel queue.`
+          );
 
           return true;
         })
@@ -284,15 +300,16 @@ async function create_emoji(
     }
   } catch (err) {
     if (err.message.match("Failed to resize asset")) {
-      logger.trace(`'${name}' is too big, won't be uploaded.`);
+      logger.debug(`'${name}' is too big, won't be uploaded.`);
+      interaction.editReply(`\`'${name}'\` is too big, won't be uploaded.`)
 
-      failed = failed + 1;
+      failed++;
 
       return false;
     } else if (err.message.match("Maximum number")) {
       await removeFromQueue(
         `Maximum emojis reached for server '${interaction.guild.name}'.`,
-        `You've reached the maximum amount of emotes for the server.  Make sure you have enough animated AND standard emote slots.  Either one being full will prevent the bot from uploading emotes.`,
+        `You've reached the maximum amount of emotes for the server.  Make sure you have enough animated AND standard emote slots.  Either one being full will prevent the bot from uploading emotes. \n\n Uploaded ${successes} emotes. ${failed} failed.`,
         interaction
       );
 
@@ -300,7 +317,7 @@ async function create_emoji(
     } else if (err.message.match("Missing Permissions")) {
       await removeFromQueue(
         `Improper permissions for server '${interaction.guild.name}'.`,
-        `SmokeyBot doesn't have the proper permissions. Make sure SmokeyBot can Manage Emoji in the roles section.`,
+        `SmokeyBot doesn't have the proper permissions. Make sure SmokeyBot can Manage Emoji in the roles section. \n\n Uploaded ${successes} emotes. ${failed} failed.`,
         interaction
       );
 
