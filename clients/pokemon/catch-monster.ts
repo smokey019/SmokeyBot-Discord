@@ -66,6 +66,12 @@ export async function catchMonster(
     .value?.toString()
     .toLowerCase();
   const spawn = data.spawn_data;
+  if (!spawn.monster.name){
+    spawn.monster = null;
+
+    await updateSpawn(interaction.guild.id, spawn);
+    return;
+  }
   spawn.monster.name = spawn.monster.name.toLowerCase();
 
   if (
