@@ -79,6 +79,7 @@ export async function sync_ffz_emotes(
 
       if (!EmoteQueue.has(interaction.guild.id)) {
         emojis.forEach((element) => {
+          element.name = element.name.replace(/\W/gm, '');
           const emote_url =
             ('https://' + element.urls['4']?.replace("https:/", "") ||
               'https://' + element.urls['3']?.replace("https:/", "") ||

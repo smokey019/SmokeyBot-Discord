@@ -98,6 +98,7 @@ export async function sync_7tv_emotes(
 
       if (!EmoteQueue.has(interaction.guild.id)) {
         emotes?.forEach((element: SevenTVChannelEmotes) => {
+          element.name = element.name.replace(/\W/gm, '');
           let emote_url =
             ('https:' + element.data.host.url + '/2x.png') ??
             undefined;
