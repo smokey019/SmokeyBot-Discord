@@ -42,7 +42,7 @@ async function uploadEmote(interaction: CommandInteraction): Promise<void> {
       await create_emoji(
         "https:" + emote.host.url + "/2x.gif",
         interaction,
-        emote.name,
+        emote.name.replace(/\W/gm, ''),
         "https:" + emote.host.url + "/1x.gif"
       );
     });
@@ -51,7 +51,7 @@ async function uploadEmote(interaction: CommandInteraction): Promise<void> {
       await create_emoji(
         "https:" + emote.host.url + "/2x.png",
         interaction,
-        emote.name
+        emote.name.replace(/\W/gm, '')
       );
     });
   }
