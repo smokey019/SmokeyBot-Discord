@@ -12,7 +12,7 @@ import {
   MonsterDex,
   findMonsterByIDAPI,
   findMonsterByName,
-  type IMonsterDex
+  type IMonsterDex,
 } from "./monsters";
 import { capitalizeFirstLetter, img_monster_ball } from "./utils";
 
@@ -43,7 +43,7 @@ export async function monsterEmbed(
 
   for (let index = 0; index < monster.types.length; index++) {
     const element = monster.types[index];
-    monster_types.push(capitalizeFirstLetter(element.type.name))
+    monster_types.push(capitalizeFirstLetter(element.type.name));
   }
 
   const tmpID = `${monster.id}`.padStart(5, "0");
@@ -162,7 +162,7 @@ export async function monsterEmbed(
   }
 
   let gender = ``;
-  if ((monster.sprites.front_female)) {
+  if (monster.sprites.front_female) {
     if (monster_db.gender == "M") {
       gender = "♂️ ";
     } else if (monster_db.gender == "F") {
@@ -170,10 +170,16 @@ export async function monsterEmbed(
     }
   }
 
-  let title = `Level ${monster_db.level} ${capitalizeFirstLetter(monster.name)} ${gender}${shiny}${favorite}${legendary}`;
+  let title = `Level ${monster_db.level} ${capitalizeFirstLetter(
+    monster.name
+  )} ${gender}${shiny}${favorite}${legendary}`;
 
   if (monster_db.nickname) {
-    title = `Level ${monster_db.level} '${monster_db.nickname}' - ${capitalizeFirstLetter(monster.name)} ${gender}${shiny}${favorite}${legendary}`;
+    title = `Level ${monster_db.level} '${
+      monster_db.nickname
+    }' - ${capitalizeFirstLetter(
+      monster.name
+    )} ${gender}${shiny}${favorite}${legendary}`;
   }
 
   const embedFields: EmbedField[] = [];
@@ -197,7 +203,11 @@ export async function monsterEmbed(
       format_number(next_level_xp),
     inline: false,
   });
-  embedFields.push({ name: "**Type**", value: monster_types.join(" | "), inline: false });
+  embedFields.push({
+    name: "**Type**",
+    value: monster_types.join(" | "),
+    inline: false,
+  });
   embedFields.push({
     name: "**HP**",
     value: `${monster_stats.hp} \n IV: ${monster_db.hp}/31`,
@@ -292,20 +302,17 @@ export async function monsterInfoLatest(
 ): Promise<void> {
   const user = await databaseClient<IMonsterUserModel>(MonsterUserTable)
     .select()
-    .where("uid", interaction.user.id);
-  console.log("1");
+    .where("uid", interaction.user.id).first();
 
   if (user) {
-    console.log("2");
-    if (user[0].latest_monster) {
-      console.log("3");
+    if (user.latest_monster) {
       const tmpMonster = await databaseClient<IMonsterModel>(MonsterTable)
         .select()
-        .where("id", user[0].latest_monster);
+        .where("id", user.latest_monster);
 
       if (!tmpMonster) return;
 
-      monsterEmbed(tmpMonster[0], interaction);
+      await monsterEmbed(tmpMonster[0], interaction);
     }
   }
 }
@@ -325,7 +332,7 @@ export async function monsterInfo(
 
     if (!tmpMonster) return;
 
-    monsterEmbed(tmpMonster[0], interaction);
+    await monsterEmbed(tmpMonster[0], interaction);
   }
 }
 
@@ -346,7 +353,7 @@ export async function currentMonsterInfo(
 
   if (!tmpMonster) return;
 
-  monsterEmbed(tmpMonster[0], interaction);
+  await monsterEmbed(tmpMonster[0], interaction);
 }
 
 /**
