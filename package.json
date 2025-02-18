@@ -7,25 +7,25 @@
     "@types/bun": "latest"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@twurple/api": "^7.0.8",
-    "@twurple/auth": "^7.0.8",
-    "bufferutil": "^4.0.8",
+    "@twurple/api": "^7.2.1",
+    "@twurple/auth": "^7.2.1",
+    "bufferutil": "^4.0.9",
     "datetime-difference": "^1.0.2",
-    "discord.js": "^14.14.1",
-    "dotenv": "^16.4.1",
+    "discord.js": "^14.18.0",
+    "dotenv": "^16.4.7",
     "fast-poke-fetch": "^2.4.3",
-    "javascript-time-ago": "^2.5.9",
+    "javascript-time-ago": "^2.5.11",
     "knex": "^3.1.0",
     "log4js": "^6.9.1",
     "mnemonist": "^0.39.8",
     "moment": "^2.30.1",
-    "mysql2": "^3.9.1",
+    "mysql2": "^3.12.0",
     "queue": "^7.0.0",
     "topgg-autoposter": "^2.0.2",
-    "utf-8-validate": "^6.0.3",
+    "utf-8-validate": "^6.0.5",
     "zlib-sync": "^0.1.9"
   },
   "scripts": {
