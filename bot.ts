@@ -125,7 +125,7 @@ discordClient.on("messageCreate", async (message) => {
     if (cache.settings.smokemon_enabled) {
       await checkExpGain(message.author, message.guild, undefined);
       await checkSpawn(message as unknown as CommandInteraction, cache);
-      console.log(message.content);
+      // console.log(message.content);
       if (
         message.content.match(/twitter|x/gi) &&
         message.author.id == "90514165138989056"

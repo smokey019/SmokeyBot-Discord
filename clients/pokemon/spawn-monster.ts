@@ -1,4 +1,4 @@
-import { EmbedBuilder, type CommandInteraction } from "discord.js";
+import { EmbedBuilder, TextChannel, type CommandInteraction } from "discord.js";
 import { initializing, rateLimited } from "../../bot";
 import { loadCache, type ICache } from "../../clients/cache";
 import {
@@ -121,7 +121,11 @@ export async function spawnMonster(
         title: "A wild Pokémon has appeared!",
       });
 
-      interaction.channel.send({ embeds: [embed] });
+      const monsterChannel = interaction.guild?.channels.cache.find(
+        (ch) => ch.name === cache.settings.specific_channel
+      );
+
+      (monsterChannel as TextChannel).send({ embeds: [embed] });
     } catch (error) {
       logger.error(error);
     }
@@ -218,7 +222,7 @@ export async function forceSpawn(
       title: "A wild Pokémon has appeared!",
     });
 
-    interaction.channel.send({ embeds: [embed] });
+    (monsterChannel as TextChannel).send({ embeds: [embed] });
   } catch (error) {
     logger.error(error);
     logger.error("\n", spawn_data.monster);
