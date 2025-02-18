@@ -277,7 +277,7 @@ export async function monsterEmbed(
   };
 
   try {
-    interaction.channel.send({ embeds: [embed] });
+    interaction.reply({ embeds: [embed] });
   } catch (error) {
     logger.error(error);
   }
