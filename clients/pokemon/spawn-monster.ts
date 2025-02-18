@@ -27,7 +27,7 @@ export async function checkSpawn(
       monster: null,
       spawned_at: getCurrentTime() - 30,
     };
-    //MONSTER_SPAWNS.set(interaction.guild.id, spawn);
+
     await updateSpawn(interaction.guild.id, spawn);
   } else {
     const spawn_timer = getRndInteger(getRndInteger(60, 120), 300);
@@ -102,7 +102,6 @@ export async function spawnMonster(
         boostCount++;
       }
 
-      //MONSTER_SPAWNS.set(interaction.guild.id, spawn_data);
       await updateSpawn(interaction.guild.id, spawn_data);
 
       logger.info(
@@ -113,12 +112,13 @@ export async function spawnMonster(
       );
 
       const embed = new EmbedBuilder({
-        description: "Type `/catch PokémonName` to try and catch it!",
+        description: "Guess by using `/catch PokémonName` to try and catch it!",
         image: {
           url: spawn_data.monster.sprites.other["official-artwork"]
             .front_default,
         },
         title: "A wild Pokémon has appeared!",
+        thumbnail: { url: spawn_data.monster.sprites.other["showdown"].front_default }
       });
 
       const monsterChannel = interaction.guild?.channels.cache.find(

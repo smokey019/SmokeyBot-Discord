@@ -20,6 +20,10 @@ const timeAgo = new TimeAgo("en-US");
 // const SHINY_ODDS_RETAIL = parseInt(getConfigValue('SHINY_ODDS_RETAIL'));
 // const SHINY_ODDS_COMMUNITY = parseInt(getConfigValue('SHINY_ODDS_COMMUNITY'));
 
+export function capitalizeFirstLetter(val: string): string {
+  return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+}
+
 export async function parseArgs(args: string[]): Promise<{
   search: string;
   page: number;
