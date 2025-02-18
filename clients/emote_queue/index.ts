@@ -193,7 +193,10 @@ async function ReadQueue() {
       }
     }
   } else {
-    // Nothing in the queue.
+    // Nothing in the queue. Clear timer.
+    if (timer) {
+      clearInterval(timer);
+    }
   }
 }
 
@@ -214,7 +217,7 @@ async function create_emoji(
     removed: number;
     interaction: CommandInteraction;
   },
-  SmallerImage?: string,
+  SmallerImage?: string
 ): Promise<boolean> {
   if (!data.interaction.guild || !EmoteQueue.has(data.interaction.guild.id))
     return false;
