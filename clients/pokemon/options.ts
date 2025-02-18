@@ -6,7 +6,7 @@ import {
   type IGuildSettings
 } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
-import { queueMsg } from '../emote_queue';
+import { queueMessage } from '../message_queue';
 
 const logger = getLogger('Pokémon');
 
@@ -23,11 +23,10 @@ export async function toggleSmokeMon(
     );
 
     if (!monsterChannel) {
-      queueMsg(
+      queueMessage(
         `You cannot enable smokeMon unless you have a channel called \`pokémon-spawns\` (with the special é). Make sure SmokeyBot has access to read/write in this channel as well.`,
         interaction,
         true,
-        1,
       );
       return;
     }
@@ -43,7 +42,7 @@ export async function toggleSmokeMon(
         `SmokeMon enabled in ${interaction.guild.name} | ${interaction.guild.id}.`,
       );
 
-      queueMsg(
+      queueMessage(
         'smokeMon enabled! This plugin is for fun and SmokeyBot does not own the rights to any images/data and images/data are copyrighted by the Pokémon Company and its affiliates.',
         interaction,
         true,
@@ -76,7 +75,7 @@ export async function toggleSmokeMon(
         `smokeMon disabled in ${interaction.guild.name} | ${interaction.guild.id}.`,
       );
 
-      queueMsg('smokeMon disabled!', interaction, true, 1);
+      queueMessage('smokeMon disabled!', interaction, true, 1);
 
       cache.settings.smokemon_enabled = 0;
 

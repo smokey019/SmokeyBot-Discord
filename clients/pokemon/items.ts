@@ -1,44 +1,44 @@
+import { EmbedBuilder, type CommandInteraction } from "discord.js";
+import { databaseClient, getUser } from "../../clients/database";
+import { ItemsTable, type IItemsModel } from "../../models/Items";
+import { MonsterTable, type IMonsterModel } from "../../models/Monster";
 import {
-  EmbedBuilder,
-  type CommandInteraction
-} from 'discord.js';
-import { databaseClient, getUser } from '../../clients/database';
-import { ItemsTable, type IItemsModel } from '../../models/Items';
-import { MonsterTable, type IMonsterModel } from '../../models/Monster';
-import { MonsterUserTable, type IMonsterUserModel } from '../../models/MonsterUser';
-import { asyncForEach, chunk, format_number } from '../../utils';
-import { queueMsg } from '../emote_queue';
-import Items from './data/items_min.json';
+  MonsterUserTable,
+  type IMonsterUserModel,
+} from "../../models/MonsterUser";
+import { asyncForEach, chunk, format_number } from "../../utils";
+import { queueMessage } from "../message_queue";
+import Items from "./data/items_min.json";
 import {
   findMonsterByID,
   findMonsterByName,
   getUserMonster,
-  type IMonsterDex
-} from './monsters';
+  type IMonsterDex,
+} from "./monsters";
 
-export type Iitem = typeof Items[1];
+export type Iitem = (typeof Items)[1];
 
 export const itemDB = Items;
 
 export async function parseItems(
   interaction: CommandInteraction,
-  args: string[],
+  args: string[]
 ): Promise<void> {
   const command = (interaction as CommandInteraction).commandName;
 
-  if (command == 'buy') {
+  if (command == "buy") {
     await buyItem(interaction, args);
-  } else if (command == 'remove' || command == '-') {
+  } else if (command == "remove" || command == "-") {
     await removeMonsterItem(interaction, args);
-  } else if (command == 'balance') {
+  } else if (command == "balance") {
     await msgBalance(interaction);
-  } else if (command == 'give' || command == '+') {
+  } else if (command == "give" || command == "+") {
     await giveMonsterItem(interaction, args);
-  } else if (command == 'list' || command == 'items' || command == '=') {
+  } else if (command == "list" || command == "items" || command == "=") {
     await msgUserItems(interaction, args);
-  } else if (command == 'shop') {
+  } else if (command == "shop") {
     await listItems(interaction, args);
-  } else if (command == 'update') {
+  } else if (command == "update") {
     await updateItems(interaction);
   }
 }
@@ -52,7 +52,7 @@ async function listItems(interaction: CommandInteraction, args: string[]) {
     item_message.push(
       `ID: ${element.id} - Name: ${
         element.name.english
-      } - Price: ${format_number(element.price)}`,
+      } - Price: ${format_number(element.price)}`
     );
   });
 
@@ -72,25 +72,25 @@ async function listItems(interaction: CommandInteraction, args: string[]) {
     }
   }
 
-  const new_msg = item_message.join('\n');
+  const new_msg = item_message.join("\n");
 
   const embed = new EmbedBuilder({
     description: new_msg,
     thumbnail: {
       url: `https://cdn.bulbagarden.net/upload/0/03/Bag_Ultra_Ball_Sprite.png`,
     },
-    title: `Poké Mart`
+    title: `Poké Mart`,
   });
 
-  queueMsg(embed, interaction, false, 0, undefined, true);
+  interaction.channel.send({ embeds: [embed] });
 }
 
 async function msgUserItems(
   interaction: CommandInteraction,
-  args: string[],
+  args: string[]
 ): Promise<void> {
   const isQuote = false;
-  const sort = ['id', 'high'];
+  const sort = ["id", "high"];
   let search = undefined;
   let page = 0;
 
@@ -99,14 +99,14 @@ async function msgUserItems(
   if (!isNaN(parseInt(args[args.length - 1]))) {
     page = parseInt(args[args.length - 1]);
     args.splice(args.length - 1, 1);
-    search = args.join(' ');
+    search = args.join(" ");
   } else if (args.length >= 2 && isNaN(parseInt(args[args.length - 1]))) {
     page = 0;
-    search = args.join(' ');
-  } else if (args.includes('evolve')) {
-    search = 'Evolve Items';
+    search = args.join(" ");
+  } else if (args.includes("evolve")) {
+    search = "Evolve Items";
   } else {
-    search = args.join(' ');
+    search = args.join(" ");
   }
 
   const sortable_items = [];
@@ -122,13 +122,13 @@ async function msgUserItems(
       if (
         (isQuote &&
           item_dex.name.english.toLowerCase() != search &&
-          search != 'Evolve Items') ||
-        (args.includes('evolve') &&
+          search != "Evolve Items") ||
+        (args.includes("evolve") &&
           !item_dex?.evolve_item &&
-          search == 'Evolve Items') ||
+          search == "Evolve Items") ||
         (search != undefined &&
           !item_dex.name.english.toLowerCase().match(`${search}`) &&
-          search != 'Evolve Items')
+          search != "Evolve Items")
       )
         return;
 
@@ -143,27 +143,27 @@ async function msgUserItems(
       });
     });
 
-    if (sort[0] == 'number' && sort[1] == 'high') {
+    if (sort[0] == "number" && sort[1] == "high") {
       sortable_items.sort(function (a, b) {
         return b.item_number - a.item_number;
       });
-    } else if (sort[0] == 'number' && sort[1] == 'low') {
+    } else if (sort[0] == "number" && sort[1] == "low") {
       sortable_items.sort(function (a, b) {
         return a.item_number - b.item_number;
       });
-    } else if (sort[0] == 'id' && sort[1] == 'high') {
+    } else if (sort[0] == "id" && sort[1] == "high") {
       sortable_items.sort(function (a, b) {
         return b.id - a.id;
       });
-    } else if (sort[0] == 'id' && sort[1] == 'low') {
+    } else if (sort[0] == "id" && sort[1] == "low") {
       sortable_items.sort(function (a, b) {
         return a.id - b.id;
       });
-    } else if (sort[0] == 'name' && sort[1] == 'desc') {
+    } else if (sort[0] == "name" && sort[1] == "desc") {
       sortable_items.sort(function (a, b) {
         return b.name - a.name;
       });
-    } else if (sort[0] == 'name' && sort[1] == 'asc') {
+    } else if (sort[0] == "name" && sort[1] == "asc") {
       sortable_items.sort(function (a, b) {
         return a.name - b.name;
       });
@@ -195,17 +195,17 @@ async function msgUserItems(
       }
     }
 
-    const new_msg = item_message.join('\n');
+    const new_msg = item_message.join("\n");
 
     const embed = new EmbedBuilder({
       description: new_msg,
       thumbnail: {
         url: `https://cdn.bulbagarden.net/upload/0/03/Bag_Ultra_Ball_Sprite.png`,
       },
-      title: `${interaction.user.username}'s search for '${search}' \nFound: ${sortable_items.length} \nTotal Items: ${items.length}`
+      title: `${interaction.user.username}'s search for '${search}' \nFound: ${sortable_items.length} \nTotal Items: ${items.length}`,
     });
 
-    queueMsg(embed, interaction, false, 0, undefined, true);
+    interaction.channel.send({ embeds: [embed] });
   }
 }
 
@@ -221,27 +221,28 @@ async function updateItems(interaction: CommandInteraction): Promise<boolean> {
       });
     });
     await databaseClient<IMonsterUserModel>(MonsterUserTable)
-      .update('items', '[]')
-      .where('uid', interaction.user.id);
+      .update("items", "[]")
+      .where("uid", interaction.user.id);
 
     const newItems = await getUserItems(interaction.user.id);
     (interaction as CommandInteraction).reply(
-      `Successfully transferred ${newItems.length} to the new item inventory!`,
+      `Successfully transferred ${newItems.length} to the new item inventory!`
     );
     return true;
   } else {
-    (interaction as CommandInteraction).reply(
-      `You don't have any old items!`,
-    );
+    (interaction as CommandInteraction).reply(`You don't have any old items!`);
     return false;
   }
 }
 
-async function removeMonsterItem(interaction: CommandInteraction, args: string[]) {
+async function removeMonsterItem(
+  interaction: CommandInteraction,
+  args: string[]
+) {
   const user = await getUser(interaction.user.id);
   const split = args;
   let monster: IMonsterModel = undefined;
-  if (split[2] == 'current') {
+  if (split[2] == "current") {
     monster = await getUserMonster(user.current_monster);
   } else {
     monster = await getUserMonster(split[2]);
@@ -267,7 +268,7 @@ async function removeMonsterItem(interaction: CommandInteraction, args: string[]
 
     if (updateItem && updateMonster) {
       (interaction as CommandInteraction).reply(
-        `Removed item **${itemDex.name.english}** from **${monsterDex.name.english}**.`,
+        `Removed item **${itemDex.name.english}** from **${monsterDex.name.english}**.`
       );
     }
   }
@@ -276,7 +277,7 @@ async function removeMonsterItem(interaction: CommandInteraction, args: string[]
 export async function checkItemEvolution(
   monster: IMonsterModel,
   interaction: CommandInteraction,
-  isTrade = false,
+  isTrade = false
 ): Promise<void> {
   const monster_dex: IMonsterDex = await findMonsterByID(monster.monster_id);
 
@@ -309,8 +310,8 @@ export async function checkItemEvolution(
     if (
       evolve != undefined ||
       evolve?.evoItem == item.name.english ||
-      (evolve?.evoType == 'levelFriendship' && itemDB.item_number == 960) ||
-      (evolve?.evoType == 'trade' && isTrade)
+      (evolve?.evoType == "levelFriendship" && itemDB.item_number == 960) ||
+      (evolve?.evoType == "trade" && isTrade)
     ) {
       let updateMonster = undefined;
       if (!evolve.forme) {
@@ -345,13 +346,16 @@ export async function checkItemEvolution(
           title: `${interaction.user.username}'s ${monster_dex.name.english} is evolving!`,
         });
 
-        queueMsg(embed, interaction, false, 0, undefined, true);
+        interaction.channel.send({ embeds: [embed] });
       }
     }
   }
 }
 
-async function giveMonsterItem(interaction: CommandInteraction, args: string[]) {
+async function giveMonsterItem(
+  interaction: CommandInteraction,
+  args: string[]
+) {
   const user: IMonsterUserModel = await getUser(interaction.user.id);
   const split = args;
   let monster: IMonsterModel = undefined;
@@ -359,16 +363,14 @@ async function giveMonsterItem(interaction: CommandInteraction, args: string[]) 
   if (user && split.length == 4) {
     const item = await getUserItemDB(parseInt(split[2]), interaction.user.id);
 
-    if (split[3] == 'current') {
+    if (split[3] == "current") {
       monster = await getUserMonster(user.current_monster);
     } else {
       monster = await getUserMonster(split[3]);
     }
 
     if (!monster) {
-      (interaction as CommandInteraction).reply(
-        "That monster doesn't exist..",
-      );
+      (interaction as CommandInteraction).reply("That monster doesn't exist..");
       return;
     }
 
@@ -376,7 +378,7 @@ async function giveMonsterItem(interaction: CommandInteraction, args: string[]) 
       if (item.item_number == 50 && monster.level < 100) {
         const updateMonster = await databaseClient<IMonsterModel>(MonsterTable)
           .where({ id: monster.id })
-          .increment('level', 1);
+          .increment("level", 1);
 
         const deleteItem = await deleteItemDB(item.id);
 
@@ -384,7 +386,7 @@ async function giveMonsterItem(interaction: CommandInteraction, args: string[]) 
           const itemDex = getItemByID(item.item_number);
           const monsterDex = await findMonsterByID(monster.monster_id);
           (interaction as CommandInteraction).reply(
-            `Gave **${monsterDex.name.english}** a **${itemDex.name.english}** and it leveled up! Neato!`,
+            `Gave **${monsterDex.name.english}** a **${itemDex.name.english}** and it leveled up! Neato!`
           );
         }
         return;
@@ -394,7 +396,7 @@ async function giveMonsterItem(interaction: CommandInteraction, args: string[]) 
           .update({ held_item: item.id });
 
         const updateItem = await databaseClient<IItemsModel>(ItemsTable)
-          .update('held_by', monster.id)
+          .update("held_by", monster.id)
           .where({
             id: item.id,
           });
@@ -404,7 +406,7 @@ async function giveMonsterItem(interaction: CommandInteraction, args: string[]) 
           const itemDex = getItemByID(item.item_number);
           const monsterDex = await findMonsterByID(monster.monster_id);
           (interaction as CommandInteraction).reply(
-            `Gave **${monsterDex.name.english}** an item - **${itemDex.name.english}**! Neato!`,
+            `Gave **${monsterDex.name.english}** an item - **${itemDex.name.english}**! Neato!`
           );
           await checkItemEvolution(monster, interaction);
           return;
@@ -431,25 +433,22 @@ async function buyItem(interaction: CommandInteraction, args: string[]) {
 
       if (create_item) {
         const updateUser = await databaseClient<IMonsterUserModel>(
-          MonsterUserTable,
+          MonsterUserTable
         )
           .where({ uid: interaction.user.id })
-          .decrement('currency', item_to_buy.price);
+          .decrement("currency", item_to_buy.price);
 
         if (updateUser) {
-          queueMsg(
+          queueMessage(
             `You have purchased **${
               item_to_buy.name.english
             }** for **${format_number(
-              item_to_buy.price,
+              item_to_buy.price
             )}**! Remaining Balance: **${format_number(
-              user.currency - item_to_buy.price,
+              user.currency - item_to_buy.price
             )}**.`,
             interaction,
-            false,
-            0,
-            undefined,
-            true,
+            true
           );
         }
       }
@@ -457,11 +456,13 @@ async function buyItem(interaction: CommandInteraction, args: string[]) {
   }
 }
 
-export async function msgBalance(interaction: CommandInteraction): Promise<void> {
+export async function msgBalance(
+  interaction: CommandInteraction
+): Promise<void> {
   const user = await getUser(interaction.user.id);
   if (user) {
     (interaction as CommandInteraction).reply(
-      `Your current balance is **${format_number(user.currency)}**.`,
+      `Your current balance is **${format_number(user.currency)}**.`
     );
   }
 }
@@ -489,7 +490,7 @@ function getItemByID(item: number): Iitem {
 export async function getItemDB(id: number | string): Promise<IItemsModel> {
   const item = await databaseClient<IItemsModel>(ItemsTable)
     .first()
-    .where('id', id);
+    .where("id", id);
   return item;
 }
 
@@ -504,7 +505,7 @@ async function getUserItemDB(id: number, uid: string): Promise<IItemsModel> {
 async function deleteItemDB(id: number | string): Promise<number> {
   const item = await databaseClient<IItemsModel>(ItemsTable)
     .delete()
-    .where('id', id);
+    .where("id", id);
   return item;
 }
 
@@ -536,6 +537,6 @@ export async function createItemDB(data: IItemsModel): Promise<Array<number>> {
 async function getUserItems(uid: number | string): Promise<Array<IItemsModel>> {
   const items = await databaseClient<IItemsModel>(ItemsTable)
     .select()
-    .where('uid', uid);
+    .where("uid", uid);
   return items;
 }

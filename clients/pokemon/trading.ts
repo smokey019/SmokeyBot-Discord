@@ -1,30 +1,32 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
-import { databaseClient, getUser } from '../../clients/database';
-import { getLogger } from '../../clients/logger';
-import { MonsterTable, type IMonsterModel } from '../../models/Monster';
-import { MonsterUserTable, type IMonsterUserModel } from '../../models/MonsterUser';
-import { TradeTable, type ITrade } from '../../models/Trades';
-import { getCurrentTime } from '../../utils';
-import { queueMsg } from '../emote_queue';
-import { checkItemEvolution, getItemDB } from './items';
+
+import { CommandInteraction, EmbedBuilder } from "discord.js";
+import { databaseClient, getUser } from "../../clients/database";
+import { getLogger } from "../../clients/logger";
+import { MonsterTable, type IMonsterModel } from "../../models/Monster";
+import {
+  MonsterUserTable,
+  type IMonsterUserModel,
+} from "../../models/MonsterUser";
+import { TradeTable, type ITrade } from "../../models/Trades";
+import { getCurrentTime } from "../../utils";
+import { checkItemEvolution, getItemDB } from "./items";
 import {
   findMonsterByID,
   findMonsterByName,
   getUserMonster,
-  type IMonsterDex
-} from './monsters';
+  type IMonsterDex,
+} from "./monsters";
 
-const logger = getLogger('Pokémon-Trade');
+const logger = getLogger("Pokémon-Trade");
 
 export async function startTrade(
   interaction: CommandInteraction,
-  args: string[],
+  args: string[]
 ): Promise<void> {
   // ~trade start @mention id-for-monster
   const split = args;
   const traded_monster = parseInt(split[2]);
-  const to_user = (interaction as any).options.getMentionable('player');
+  const to_user = (interaction as any).options.getMentionable("player");
 
   if (to_user) {
     if (to_user == interaction.user.id) return;
@@ -49,7 +51,7 @@ export async function startTrade(
         const imgs = [];
         if (monsterDB.shiny) {
           imgs[0] = monster.images.shiny;
-          imgs[1] = monster.images['gif-shiny'];
+          imgs[1] = monster.images["gif-shiny"];
         } else {
           imgs[0] = monster.images.normal;
           imgs[1] = monster.images.gif;
@@ -67,7 +69,7 @@ export async function startTrade(
 
         const embed = new EmbedBuilder({
           description: `Successfully initiated trade with <@${to_user}>\nIf they want to accept the trade type ~trade accept!\n\n**Average IV:** ${iv_avg.toFixed(
-            2,
+            2
           )}%`,
           image: {
             url: imgs[0],
@@ -91,42 +93,42 @@ export async function startTrade(
       }
     } else if (!recipient) {
       (interaction as CommandInteraction).reply(
-        `Could not find user <@${to_user}>, make them catch a Pokémon first!`,
+        `Could not find user <@${to_user}>, make them catch a Pokémon first!`
       );
     } else if (check_trade) {
       (interaction as CommandInteraction).reply(
-        `A trade with this Pokémon or user exists already. Close that one and try again.`,
+        `A trade with this Pokémon or user exists already. Close that one and try again.`
       );
     }
   } else {
     (interaction as CommandInteraction).reply(
-      `You need to mention someone m8.`,
+      `You need to mention someone m8.`
     );
   }
 }
 
 export async function parseTrade(
   interaction: CommandInteraction,
-  args: string[],
+  args: string[]
 ): Promise<void> {
   // ~trade start @mention id-for-monster
 
   const command = (interaction as any).commandName;
 
-  if (command == 'start') {
+  if (command == "start") {
     await startTrade(interaction, args);
   } else if (
-    command == 'cancel' ||
-    command == 'delete' ||
-    command == 'del' ||
-    command == '-'
+    command == "cancel" ||
+    command == "delete" ||
+    command == "del" ||
+    command == "-"
   ) {
     await cancelTrade(interaction);
   } else if (
-    command == 'accept' ||
-    command == 'confirm' ||
-    command == 'acc' ||
-    command == '+'
+    command == "accept" ||
+    command == "confirm" ||
+    command == "acc" ||
+    command == "+"
   ) {
     await confirmTrade(interaction);
   }
@@ -134,7 +136,7 @@ export async function parseTrade(
 
 export async function checkEvolves(
   monster_id: number,
-  interaction: CommandInteraction,
+  interaction: CommandInteraction
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
   const db_monster = await databaseClient<IMonsterModel>(MonsterTable)
@@ -145,7 +147,7 @@ export async function checkEvolves(
 
   if (db_monster.length) {
     const monster: IMonsterDex = await findMonsterByID(
-      db_monster[0].monster_id,
+      db_monster[0].monster_id
     );
     const item = (await getItemDB(db_monster[0].held_item)) ?? undefined;
 
@@ -158,9 +160,9 @@ export async function checkEvolves(
 
       if (evolution) {
         if (evolution.evoType) {
-          if (evolution.evoType == 'trade' && !evolution.evoItem) {
+          if (evolution.evoType == "trade" && !evolution.evoItem) {
             const updateMonster = await databaseClient<IMonsterModel>(
-              MonsterTable,
+              MonsterTable
             )
               .where({ id: db_monster[0].id })
               .update({ monster_id: evolution.id });
@@ -183,11 +185,11 @@ export async function checkEvolves(
                 title: `${interaction.user.username}'s ${monster.name.english} is evolving!`,
               });
 
-              queueMsg(embed, interaction);
+              interaction.channel.send({ embeds: [embed] });
             } else {
               return false;
             }
-          } else if (evolution.evoType == 'trade' && evolution.evoItem) {
+          } else if (evolution.evoType == "trade" && evolution.evoItem) {
             checkItemEvolution(db_monster[0], interaction, true);
           } else {
             return false;
@@ -206,7 +208,9 @@ export async function checkEvolves(
   }
 }
 
-export async function confirmTrade(interaction: CommandInteraction): Promise<void> {
+export async function confirmTrade(
+  interaction: CommandInteraction
+): Promise<void> {
   // ~trade accept
 
   const trades = await databaseClient<ITrade>(TradeTable).select().where({
@@ -225,7 +229,7 @@ export async function confirmTrade(interaction: CommandInteraction): Promise<voi
       const monsterDB = await getUserMonster(trade.monster_id);
       const monster = await findMonsterByID(monsterDB.monster_id);
       (interaction as CommandInteraction).reply(
-        `Successfully traded over monster **${monster.name.english}**! Nice dude.`,
+        `Successfully traded over monster **${monster.name.english}**! Nice dude.`
       );
       await checkEvolves(trade.monster_id, interaction);
 
@@ -238,17 +242,19 @@ export async function confirmTrade(interaction: CommandInteraction): Promise<voi
         .update({ latest_monster: trade.monster_id });
     } else {
       logger.error(
-        `There was an error updating monster ${trade.monster_id} for a trade.`,
+        `There was an error updating monster ${trade.monster_id} for a trade.`
       );
     }
   } else {
     (interaction as CommandInteraction).reply(
-      `You don't have any trades to accept m8.`,
+      `You don't have any trades to accept m8.`
     );
   }
 }
 
-export async function cancelTrade(interaction: CommandInteraction): Promise<void> {
+export async function cancelTrade(
+  interaction: CommandInteraction
+): Promise<void> {
   const trades = await databaseClient<ITrade>(TradeTable)
     .select()
     .where({
@@ -269,12 +275,12 @@ export async function cancelTrade(interaction: CommandInteraction): Promise<void
 
     if (cancelTrade) {
       (interaction as CommandInteraction).reply(
-        `Successfully cancelled trade with monster #${trade.monster_id}.`,
+        `Successfully cancelled trade with monster #${trade.monster_id}.`
       );
     }
   } else {
     (interaction as CommandInteraction).reply(
-      `You don't have any trades to cancel m8.`,
+      `You don't have any trades to cancel m8.`
     );
   }
 }
@@ -282,7 +288,7 @@ export async function cancelTrade(interaction: CommandInteraction): Promise<void
 export async function checkTrade(
   monster_id: number,
   to_user: number | string,
-  interaction: CommandInteraction,
+  interaction: CommandInteraction
 ): Promise<boolean> {
   const trades = await databaseClient<ITrade>(TradeTable).select().where({
     monster_id: monster_id,

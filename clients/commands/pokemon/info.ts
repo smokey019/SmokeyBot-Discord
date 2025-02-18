@@ -3,7 +3,7 @@ import { TextChannel } from 'discord.js';
 import type { runEvent } from '..';
 import { GLOBAL_COOLDOWN } from '../../../clients/cache';
 import { getCurrentTime } from '../../../utils';
-import { queueMsg } from '../../emote_queue';
+import { queueMessage } from '../../message_queue';
 import {
   currentMonsterInfo,
   monsterInfo,
@@ -31,7 +31,7 @@ export async function run(e: runEvent) {
 
     await monsterInfoLatest(e.interaction);
   } else {
-    queueMsg('There was an error :\\ ', e.interaction, true);
+    queueMessage('There was an error :\\ ', e.interaction, true);
   }
 }
 

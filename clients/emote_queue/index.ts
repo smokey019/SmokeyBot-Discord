@@ -1,14 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  Collection,
-  CommandInteraction,
-  GuildChannel,
-  TextChannel,
-  type TextBasedChannel,
-} from "discord.js";
+import { Collection, CommandInteraction } from "discord.js";
 import Queue from "queue";
-import { rateLimited } from "../../bot";
+import type {
+  SevenTVChannel,
+  SevenTVChannelEmotes,
+  SevenTVEmotes,
+} from "../../models/7tv-Emotes";
+import type { FFZRoom } from "../../models/FFZ-Emotes";
+import { jsonFetch } from "../../utils";
 import { getLogger } from "../logger";
+import { getIDwithUser } from "../twitch";
 
 export const q = new Queue({ results: [] });
 q.autostart = true;
@@ -19,276 +19,221 @@ q.addEventListener("timeout", (e) => {
   e.detail.next();
 });
 
-const logger = getLogger("Queue");
-let successes = 0;
-let failed = 0;
+const logger = getLogger("Emote Queue");
+export let queue_attempts = 0;
+export let queue_add_success = 0;
+
+let timer: Timer;
 
 export const EmoteQueue: Collection<
   string,
   {
-    emotes: any[];
-    msg: CommandInteraction;
+    emotes: Collection<string, string>;
+    successes: number;
+    failures: number;
+    removed: number;
+    interaction: CommandInteraction;
   }
 > = new Collection();
-const EMOTE_COOLDOWN = 10 * 1000;
-const MSG_COOLDOWN = 1.5 * 1000;
-export let last_message = undefined;
-
-/*export const MsgQueue: Collection<
-  string,
-  { outgoingMsg: any; msg: Message; reply: boolean }
-> = new Collection();*/
-
-interface MsgQueueType {
-  outgoingMsg: any;
-  msg: CommandInteraction;
-  reply?: boolean;
-  spawn?: GuildChannel | TextChannel | TextBasedChannel;
-  embed?: boolean;
-}
-
-const MsgQueue: MsgQueueType[] = [];
-
-let timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
-let timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
 
 /**
- * Reset and clear a queue.
- * @param queue 'emote' or 'message' queues.
+ * Fetch 7TV Global Emotes
+ * @returns Array of 7TV Global Emotes.
  */
-export async function resetQueue(
-  queue = "emote",
+export async function fetch7tvGlobalEmotes(): Promise<SevenTVEmotes[]> {
+  const emotes: SevenTVEmotes[] = await jsonFetch(
+    "https://7tv.io/v3/emote-sets/global"
+  );
+  // 7tv.io/v3/emote-sets/global
+
+  return emotes;
+}
+
+/**
+ * Fetch 7TV Channel Emotes
+ * @param channel Twitch Login
+ * @returns Array of 7TV Channel Emotes.
+ */
+export async function fetch7tvChannelEmotes(
+  channel: string
+): Promise<SevenTVChannel[]> {
+  const emotes: SevenTVChannel[] = await jsonFetch(
+    `https://7tv.io/v3/users/twitch/${channel}`
+  );
+  queue_attempts++;
+  // 7tv.io/users/{connection.platform}/{connection.id}
+
+  return emotes;
+}
+
+/**
+ * Reset emote timer. Admin only.
+ * @param interaction
+ */
+export async function ResetEmoteTimer(
+  interaction: CommandInteraction
+): Promise<any> {
+  if (timer) {
+    clearInterval(timer);
+    timer = setInterval(ReadQueue, 1500);
+    if (timer) {
+      interaction.editReply("Restarted timer.");
+    }
+  } else {
+    interaction.editReply("No timer exists");
+  }
+}
+
+/**
+ * Start emote timer if one doesn't exist. Admin only.
+ * @param interaction
+ */
+export async function StartEmoteTimer(
+  interaction: CommandInteraction
+): Promise<any> {
+  if (timer) {
+    interaction.editReply("Timer already exists.");
+  } else {
+    timer = setInterval(ReadQueue, 1500);
+    interaction.editReply("Started a timer. ID: " + timer);
+  }
+}
+
+async function errorAPI(interaction: CommandInteraction): Promise<any> {
+  return await interaction.editReply(
+    `There was an error fetching from 7TV's API. \n\n Make sure the username is correct and there are no symbols. \n\n You may have to wait for 7TV's cache to update before getting certain emotes. This can take up to an hour.\n\nExample command: \`/sync-7tv summit1g\``
+  );
+}
+
+/**
+ * Remove a particular emote from the queue.
+ * @param guild_id
+ * @param emote
+ * @param interaction
+ */
+export async function RemoveEmote(
   interaction: CommandInteraction
 ): Promise<void> {
-  switch (queue) {
-    case "emote":
-      clearTimeout(timerEmoteQ);
-      EmoteQueue.clear();
-      timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
-      await (interaction as CommandInteraction).reply(
-        "Successfully reset emote queue."
-      );
-      logger.error("Reset emote queue.");
-
-      break;
-    case "message":
-      clearTimeout(timerMsgQ);
-      EmoteQueue.clear();
-      timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
-      await (interaction as CommandInteraction).reply(
-        "Successfully reset message queue."
-      );
-      logger.error("Reset message queue.");
-
-      break;
+  const emote = await interaction.options.getString("emote");
+  if (!emote) {
+    await interaction.editReply("You must enter an emote.");
+    return;
   }
-}
-
-/**
- * Add a message to the message queue.
- * @param outgoingMsg String or Embed
- * @param msg Message to use for data.
- * @param reply Are we replying to the user?
- * @param priority `0` = Low, `1` = High
- * @param spawn Spawn channel. If undefined it won't send to a spawn channel.
- * @param embed true/false
- * @returns `TRUE` if added to the queue.
- */
-export function queueMsg(
-  outgoingMsg: any,
-  msg: CommandInteraction,
-  reply = false,
-  priority = 0,
-  spawn?: GuildChannel | TextChannel | TextBasedChannel,
-  embed?: boolean
-): boolean {
-  if (
-    outgoingMsg.toString().length >= 2000 ||
-    !outgoingMsg ||
-    outgoingMsg == last_message
-  )
-    return false;
-
-  switch (priority) {
-    // low priority
-    case 0:
-      MsgQueue.push({
-        outgoingMsg: outgoingMsg,
-        msg: msg,
-        reply: reply,
-        spawn: spawn,
-        embed: embed,
-      });
-      return true;
-
-    // high priority
-    case 1:
-      MsgQueue.unshift({
-        outgoingMsg: outgoingMsg,
-        msg: msg,
-        reply: reply,
-        spawn: spawn,
-        embed: embed,
-      });
-      return true;
-
-    // low priority
-    default:
-      MsgQueue.push({
-        outgoingMsg: outgoingMsg,
-        msg: msg,
-        reply: reply,
-        spawn: spawn,
-        embed: embed,
-      });
-      return true;
-  }
-}
-
-/**
- * Repeating timed function to run the message queue.
- */
-async function runMsgQueue() {
-  if (MsgQueue.length > 0 && !rateLimited) {
-    const object = MsgQueue.shift();
-    if (!object) {
-      timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
-      return;
+  if (EmoteQueue.has(interaction.guild.id)) {
+    const data = EmoteQueue.get(interaction.guild.id);
+    if (data.emotes.has(emote)) {
+      if (data.emotes.delete(emote)) {
+        await interaction.editReply(
+          `Successfully removed \`${emote}\` from the queue.`
+        );
+      } else {
+        await interaction.editReply(
+          `There was an error deleting \`${emote}\` from the queue.`
+        );
+      }
     } else {
-      try {
-        if (!object.reply && !object.spawn && !object.embed) {
-          object.msg.channel.send(object.outgoingMsg).then(() => {
-            try {
-              logger.debug(`Sent a message in ${object.msg.guild?.name}.`);
-              last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
-            } catch (error) {
-              logger.error(error);
-              timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
-            }
-          });
-        } else if (!object.reply && object.spawn && object.embed) {
-          (object.spawn as TextChannel).send({ embeds: [object.outgoingMsg] });
-          last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
-        } else if (!object.reply && !object.spawn && object.embed) {
-          object.msg.channel.send({ embeds: [object.outgoingMsg] });
-          last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
-        } else if (object.reply && !object.spawn && object.embed) {
-          object.msg.reply({ embeds: [object.outgoingMsg] });
-          last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
-        } else if (!object.reply && object.spawn) {
-          (object.spawn as TextChannel).send(object.outgoingMsg);
-          last_message = `${object.msg.guild.name} -> ${object.outgoingMsg.description}`;
-        } else {
-          await object.msg.reply(object.outgoingMsg);
+      await interaction.editReply(
+        `The emote \`${emote}\` doesn't exist in the queue.  This is case sensitive.`
+      );
+    }
+  } else {
+    await interaction.editReply(`Brother, you are not in the queue.`);
+  }
+}
+
+/**
+ * Check the emote queue for uploads.
+ */
+async function ReadQueue() {
+  // check if there's anything to do
+
+  if (EmoteQueue.size > 0) {
+    // grab first guild's data
+
+    const data = EmoteQueue.get(EmoteQueue.firstKey());
+
+    // check if there's any emotes to upload, this shouldn't happen but just in case
+
+    if (data.emotes.size > 0) {
+      const emote = data.emotes.firstKey();
+      const url = data.emotes.first();
+
+      // create emote, handles error messages over there
+
+      const create = await create_emoji(url, emote, data);
+      data.emotes.delete(emote);
+
+      // check if we created the emote successfully
+
+      if (create) {
+        data.successes++;
+      } else {
+        // make sure we still exist because we can get removed if emote slots are full
+        if (EmoteQueue.has(data.interaction.guild.id)) {
+          data.failures++;
         }
-        timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
-      } catch (error) {
-        logger.error(error);
-        timerMsgQ = setTimeout(runMsgQueue, MSG_COOLDOWN);
+      }
+
+      // are we done?
+
+      if (data.emotes.size === 0) {
+        await data.interaction.editReply(
+          `Finished the emote queue! \n\n Successful: ${data.successes} \n Failures: ${data.failures} \n Removed (by you or detected as existing): ${data.removed}`
+        );
+
+        // delete from guild from queue
+
+        EmoteQueue.delete(data.interaction.guild.id);
+
+        // clear timer if we don't have anymore to upload
+
+        if (EmoteQueue.size === 0) {
+          clearInterval(timer);
+        }
       }
     }
   } else {
-    if (rateLimited) {
-      timerMsgQ = setTimeout(runMsgQueue, 10000);
-    } else {
-      timerMsgQ = setTimeout(runMsgQueue, 500);
-    }
+    // Nothing in the queue.
   }
-}
-
-/**
- * Repeating timed function to run the emote upload queue.
- */
-async function runEmoteQueue() {
-  try {
-    const object = EmoteQueue.first();
-
-    if (object && !rateLimited) {
-      const emote = object.emotes?.shift();
-
-      EmoteQueue.set(object.msg.guild.id, object);
-
-      if (emote) {
-        logger.debug(
-          `Attempting to create emoji '${emote.name}' on ${object.msg.guild.name}.`
-        );
-        q.push(async () => {
-          await create_emoji(emote.url, object.msg, emote.name);
-        });
-        timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
-      } else {
-        const temp = EmoteQueue.first();
-        logger.debug(
-          `Successfully finished ${successes} queue for ${temp.msg.guild.name}. ${failed} failed uploading.`
-        );
-        temp.msg.editReply(
-          `Finished uploading ${successes} emotes. ${failed} failed to upload. You can upload single emotes that were missed by using the \`/upload\` command.`
-        );
-        successes = 0;
-        failed = 0;
-        EmoteQueue.delete(EmoteQueue.firstKey());
-        timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
-      }
-    } else {
-      logger.trace(`Nothing in queue.  Waiting for something to do..`);
-      timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
-    }
-  } catch (error) {
-    console.error("Emote Queue Error:", error);
-    timerEmoteQ = setTimeout(runEmoteQueue, EMOTE_COOLDOWN);
-  }
-}
-
-/**
- * Remove a guild from the emote queue.
- * @param log What to send to logger
- * @param response Response to user
- * @param interaction Interaction object
- */
-async function removeFromQueue(
-  log: string,
-  response: string,
-  interaction: CommandInteraction
-): Promise<any> {
-  EmoteQueue.delete(interaction.guild.id);
-  logger.error(log);
-
-  await interaction.editReply(response);
-
-  // reset numbers
-
-  successes = 0;
-  failed = 0;
 }
 
 /**
  * Function to create an emoji in a Discord server.
  * @param emote_url Emote URL (256kb limit)
- * @param interaction Interaction Object
  * @param name String
+ * @param data emote queue data
  * @returns true/false
  */
 async function create_emoji(
   emote_url: string,
-  interaction: CommandInteraction,
-  name: string
+  name: string,
+  data: {
+    emotes: Collection<string, string>;
+    successes: number;
+    failures: number;
+    removed: number;
+    interaction: CommandInteraction;
+  },
+  SmallerImage?: string,
 ): Promise<boolean> {
+  if (!data.interaction.guild || !EmoteQueue.has(data.interaction.guild.id))
+    return false;
+
+  logger.trace(
+    `Creating new emoji with name ${name} in ${data.interaction.guild.name}...`
+  );
+
   try {
     if (
-      await interaction.guild.emojis
+      await data.interaction.guild.emojis
         .create({ attachment: emote_url, name: name })
         .then(async (emoji) => {
           logger.debug(
             `Created new emoji with name ${emoji.name} in ${emoji.guild.name}.`
           );
 
-          successes++;
-
-          const total = EmoteQueue.at(0).emotes.length;
-          const estimatedTime = Math.floor((total * 10) / 60) + ' minutes' || Math.floor(total * 10) + ' seconds';
-
-          interaction.editReply(
-            `Uploaded ${successes} emotes so far. \n\n${total} left to upload.  \n\n${failed} failed. \n\nEstimated ${estimatedTime} left to finish queue.  \`/cancel-sync\` to cancel queue.`
+          await data.interaction.editReply(
+            `Successfully uploaded emote \`${emoji.name}\`.`
           );
 
           return true;
@@ -300,26 +245,29 @@ async function create_emoji(
     }
   } catch (err) {
     if (err.message.match("Failed to resize asset")) {
-      logger.debug(`'${name}' is too big, won't be uploaded.`);
-      interaction.editReply(`\`'${name}'\` is too big, won't be uploaded.`)
-
-      failed++;
+      logger.debug(`'${name}' is too big, will try to upload 1x.`);
+      await data.interaction.editReply(
+        `'${name}' is too big, We recommend going to the URL of the emote, linking it in a Discord chat then clicking Favorite on the emote. \n\n URL (2x): ${emote_url}`
+      );
 
       return false;
     } else if (err.message.match("Maximum number")) {
-      await removeFromQueue(
-        `Maximum emojis reached for server '${interaction.guild.name}'.`,
-        `You've reached the maximum amount of emotes for the server.  Make sure you have enough animated AND standard emote slots.  Either one being full will prevent the bot from uploading emotes. \n\n Uploaded ${successes} emotes. ${failed} failed.`,
-        interaction
+      logger.debug(
+        `Maximum number of emotes reached in ${data.interaction.guild.name}.`
       );
+
+      await data.interaction.editReply(
+        `You've reached the maximum amount of emotes for the server.  Make sure you have enough animated AND standard emote slots.  Either one being full will prevent the bot from uploading emotes.`
+      );
+      EmoteQueue.delete(data.interaction.guild.id);
 
       return false;
     } else if (err.message.match("Missing Permissions")) {
-      await removeFromQueue(
-        `Improper permissions for server '${interaction.guild.name}'.`,
-        `SmokeyBot doesn't have the proper permissions. Make sure SmokeyBot can Manage Emoji in the roles section. \n\n Uploaded ${successes} emotes. ${failed} failed.`,
-        interaction
+      logger.debug(`Missing Permissions in ${data.interaction.guild.name}.`);
+      await data.interaction.editReply(
+        `SmokeyBot doesn't have the proper permissions. Make sure SmokeyBot can Manage Emoji in the roles section.`
       );
+      EmoteQueue.delete(data.interaction.guild.id);
 
       return false;
     } else {
@@ -327,5 +275,273 @@ async function create_emoji(
 
       return false;
     }
+  }
+}
+
+/**
+ * 7tv portion
+ */
+
+/**
+ * Sync 7tv emotes
+ * @param interaction
+ * @returns
+ */
+export async function sync_7tv_emotes(
+  interaction: CommandInteraction
+): Promise<void> {
+  const channel = await getIDwithUser(interaction.options.getString("channel"));
+
+  if (channel && !EmoteQueue.has(interaction.guild.id)) {
+    await interaction.editReply(`Checking 7TV API to sync emotes..`);
+
+    logger.debug(
+      `Fetching 7TV Emotes for Twitch channel ${channel} (requested by ${interaction.user.username} in ${interaction.guild.name})..`
+    );
+
+    let emotes: any;
+    let response: any;
+
+    if (channel == "global") {
+      response = await fetch7tvGlobalEmotes();
+      if (!response) return await errorAPI(interaction);
+      emotes = response?.emotes;
+    } else {
+      response = await fetch7tvChannelEmotes(channel as string);
+      if (!response) return await errorAPI(interaction);
+      emotes = response?.emote_set?.emotes;
+    }
+
+    if (!response || response.status === 404) {
+      logger.debug(`Couldn't fetch 7TV Emotes for Twitch channel ${channel}.`);
+
+      return await errorAPI(interaction);
+    } else {
+      const existing_emojis = [];
+
+      const final_emojis: Collection<string, string> = new Collection();
+
+      let detectedemotes = 0;
+
+      interaction.guild.emojis.cache.forEach((value) => {
+        existing_emojis.push(value.name);
+      });
+
+      if (!EmoteQueue.has(interaction.guild.id)) {
+        emotes?.forEach((element: SevenTVChannelEmotes) => {
+          element.name = element.name.replace(/\W/gm, "");
+          let emote_url = "https:" + element.data.host.url + "/2x.png";
+
+          if (element.data.animated) {
+            emote_url = "https:" + element.data.host.url + "/1x.gif";
+          }
+
+          if (!existing_emojis.includes(element.name) && emote_url) {
+            final_emojis.set(element.name, emote_url);
+          } else {
+            logger.trace("emote already detected, not uploading..");
+            detectedemotes++;
+          }
+        });
+
+        if (final_emojis.size > 0) {
+          logger.debug(
+            `Syncing ${final_emojis.size}/${emotes.length} total emotes for ${channel}.. ${detectedemotes} already exist on the server.`
+          );
+
+          queue_add_success++;
+
+          EmoteQueue.set(interaction.guild.id, {
+            emotes: final_emojis,
+            successes: 0,
+            failures: 0,
+            removed: detectedemotes,
+            interaction: interaction,
+          });
+
+          await interaction.editReply(
+            `**Successfully syncing ${final_emojis.size}/${emotes.length} emotes!  ${detectedemotes} already exist on the server.**
+            \n * It will take up to 30 minutes or more depending on the queue.
+            \n * Wide emotes will not upload properly.
+            \n * GIFs may not upload or will upload in low quality. This is due to Discord's low upload limit.
+            \n * To get around the upload limit you can link the GIF in any Discord chat and favorite it as a favorite GIF for later instead of in your emoji list.
+            \n * Type \`/cancel-sync\` to cancel.
+            \n * You can remove specific emotes from the queue by using the \`/qremove\` command.`
+          );
+          if (!timer) {
+            timer = setInterval(ReadQueue, 15 * 1000);
+          }
+        } else {
+          logger.debug(`No emotes found able to be synced for ${channel}..`);
+          await interaction.editReply(
+            `No emotes found to sync. If the emote name(s) already exist they will not be overridden.`
+          );
+        }
+      } else {
+        logger.debug(`Error syncing emotes for ${channel}..`);
+
+        const currentQueue = EmoteQueue.get(interaction.guild.id);
+        const emotes = currentQueue.emotes.size;
+
+        await interaction.editReply(
+          `**You already have ${emotes} emotes in a queue. You cannot add more at this time.**`
+        );
+      }
+    }
+  } else if (EmoteQueue.has(interaction.guild.id)) {
+    logger.debug(
+      `Error syncing emotes for ${channel}.. They are already in queue.`
+    );
+
+    const currentQueue = EmoteQueue.get(interaction.guild.id);
+    const emotes = currentQueue.emotes.size;
+
+    await interaction.editReply(
+      `**You already have ${emotes} emotes in a queue. You cannot add more at this time.**`
+    );
+  }
+}
+
+/**
+ * FrankerFaceZ Portion
+ */
+
+export let FFZ_emoji_queue_count = 0;
+export let FFZ_emoji_queue_attempt_count = 0;
+
+/**
+ * Cancel the emote sync for the guild.
+ * @param message
+ */
+export async function cancel_sync(
+  interaction: CommandInteraction
+): Promise<boolean> {
+  const inQueue = EmoteQueue.get(interaction.guild.id);
+  if (inQueue) {
+    EmoteQueue.delete(interaction.guild.id);
+    // inQueue.msg.editReply('Sync cancelled.  You can do another if you wish.');
+    logger.debug(
+      "Sync cancelled by " +
+        interaction.user.username +
+        " in " +
+        interaction.guild.name
+    );
+    await interaction.editReply({ content: "👍" });
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/**
+ *
+ * @param message
+ */
+export async function sync_ffz_emotes(
+  interaction: CommandInteraction
+): Promise<void> {
+  const channel = interaction.options.getString("channel");
+
+  if (channel && !EmoteQueue.has(interaction.guild.id)) {
+    await interaction.editReply(`Checking FrankerFaceZ API to sync emotes..`);
+
+    logger.debug(
+      `Fetching FFZ Emotes for Twitch channel ${channel} (requested by ${interaction.user.username} in ${interaction.guild.name})..`
+    );
+
+    const ffz_emotes: FFZRoom = await jsonFetch(
+      `https://api.frankerfacez.com/v1/room/${channel}`
+    );
+    FFZ_emoji_queue_attempt_count++;
+
+    if (!ffz_emotes || !ffz_emotes.room || !ffz_emotes.room.set) {
+      logger.debug(`Couldn't fetch FFZ Emotes for Twitch channel ${channel}.`);
+
+      await interaction.editReply(
+        `There was an error fetching from FrankerFaceZ's API. \n\n Make sure the username is correct and there are no symbols. \n\n You may have to wait for FFZ's cache to update before getting certain emotes. This can take up to an hour.\n\nExample command: \`/sync-ffz summit1g\``
+      );
+
+      return;
+    } else if (ffz_emotes.room.set) {
+      const emojis = ffz_emotes.sets[ffz_emotes.room.set].emoticons;
+
+      const existing_emojis = [];
+
+      const final_emojis: Collection<string, string> = new Collection();
+
+      interaction.guild.emojis.cache.forEach((value) => {
+        existing_emojis.push(value.name);
+      });
+
+      if (!EmoteQueue.has(interaction.guild.id)) {
+        emojis.forEach((element) => {
+          element.name = element.name.replace(/\W/gm, "");
+          const emote_url =
+            ("https://" + element.urls["4"]?.replace("https:/", "") ||
+              "https://" + element.urls["3"]?.replace("https:/", "") ||
+              "https://" + element.urls["2"]?.replace("https:/", "") ||
+              "https://" + element.urls["1"]?.replace("https:/", "")) ??
+            undefined;
+
+          if (
+            !existing_emojis.includes(element.name) &&
+            !emote_url.match("undefined") &&
+            emote_url
+          ) {
+            final_emojis.set(element.name, emote_url);
+          } else {
+            logger.trace("emote already detected, not uploading..");
+          }
+        });
+
+        if (final_emojis.size > 0) {
+          logger.debug(
+            `Syncing ${final_emojis.size}/${emojis.length} total emotes for ${channel}..`
+          );
+
+          FFZ_emoji_queue_count++;
+
+          EmoteQueue.set(interaction.guild.id, {
+            emotes: final_emojis,
+            successes: 0,
+            failures: 0,
+            removed: 0,
+            interaction: interaction,
+          });
+
+          await interaction.editReply(
+            `**Successfully syncing ${final_emojis.size}/${emojis.length} emotes!** \n\n\n It will take up to 30 minutes or more depending on the queue. \n\n Type \`/cancel-sync\` to cancel. \n Type \`/stats\` to see how many servers are in queue.`
+          );
+          if (!timer) {
+            timer = setInterval(ReadQueue, 15 * 1000);
+          }
+        } else {
+          logger.debug(`No emotes found able to be synced for ${channel}..`);
+
+          await interaction.editReply(
+            `No emotes found to sync. If the emote name(s) already exist they will not be overridden.`
+          );
+        }
+      } else {
+        logger.debug(`Error syncing emotes for ${channel}..`);
+
+        const currentQueue = EmoteQueue.get(interaction.guild.id);
+        const emotes = currentQueue.emotes.size;
+        await interaction.editReply(
+          `**You already have ${emotes} emotes in a queue. You cannot add more at this time.**`
+        );
+      }
+    }
+  } else if (EmoteQueue.has(interaction.guild.id)) {
+    logger.debug(
+      `Error syncing emotes for ${channel}.. They are already in queue.`
+    );
+
+    const currentQueue = EmoteQueue.get(interaction.guild.id);
+    const emotes = currentQueue.emotes.size;
+
+    await interaction.editReply(
+      `**You already have ${emotes} emotes in a queue. You cannot add more at this time.**`
+    );
   }
 }

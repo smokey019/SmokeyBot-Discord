@@ -3,7 +3,7 @@ import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { MonsterTable, type IMonsterModel } from '../../models/Monster';
 import type { IMonsterUserModel } from '../../models/MonsterUser';
-import { queueMsg } from '../emote_queue';
+import { queueMessage } from '../message_queue';
 import { findMonsterByID, getUserMonster } from './monsters';
 
 const logger = getLogger('Pokémon');
@@ -52,7 +52,7 @@ export async function releaseMonsterNew(
   if (monster) {
     const monster_dex = await findMonsterByID(monster.monster_id);
     await release(monster.id);
-    queueMsg(
+    queueMessage(
       `Successfully released ${monster_dex.name.english}.`,
       interaction,
       true,
@@ -66,7 +66,7 @@ export async function releaseMonsterNew(
     await release(monster.id);
 
     const monster_dex = await findMonsterByID(monster.monster_id);
-    queueMsg(
+    queueMessage(
       `Successfully released ${monster_dex.name.english}.`,
       interaction,
       true,
@@ -106,7 +106,7 @@ export async function releaseMonster(
           }
         });
 
-        queueMsg(
+        queueMessage(
           `Attempting to release **${multi_dump.length}** monsters.. Good luck little guys :(`,
           interaction,
           true,
@@ -135,7 +135,7 @@ export async function releaseMonster(
         const released_monster = await release(to_release.id);
 
         if (released_monster) {
-          queueMsg(
+          queueMessage(
             `Successfully released your monster. Goodbye **${monster.name.english}** :(`,
             interaction,
             true,
@@ -152,7 +152,7 @@ export async function releaseMonster(
     await release(last_monster.id);
 
     const monster_dex = await findMonsterByID(last_monster.monster_id);
-    queueMsg(
+    queueMessage(
       `Successfully released your monster. Goodbye **${monster_dex.name.english}** :/`,
       interaction,
       true,
@@ -184,7 +184,7 @@ export async function recoverMonster(
     const released_monster = await recover(to_release.id);
 
     if (released_monster) {
-      queueMsg(
+      queueMessage(
         `Successfully recovered your monster. Welcome back **${monster.name.english}**!`,
         interaction,
         true,

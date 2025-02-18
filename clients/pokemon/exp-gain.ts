@@ -4,7 +4,6 @@ import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { MonsterTable, type IMonsterModel } from '../../models/Monster';
 import { getCurrentTime, getRndInteger } from '../../utils';
-import { queueMsg } from '../emote_queue';
 import { getItemDB } from './items';
 import {
   findMonsterByID,
@@ -14,6 +13,7 @@ import {
   type IMonsterDex
 } from './monsters';
 import { rollShiny } from './utils';
+import { queueMessage } from '../message_queue';
 
 const logger = getLogger('ExpGain');
 
@@ -106,7 +106,7 @@ export async function checkExpGain(user: User, guild: Guild, interaction?: Comma
                     });
 
                     if (interaction){
-                      queueMsg(embed, interaction, false, 0, undefined, true);
+                      queueMessage(embed, interaction, true);
                     }
                   }
                 }
@@ -162,7 +162,7 @@ export async function checkExpGain(user: User, guild: Guild, interaction?: Comma
                 });
 
                 if (interaction){
-                  queueMsg(embed, interaction, false, 0, undefined, true);
+                  queueMessage(embed, interaction, false, 0, undefined, true);
                 }
               } else {
                 console.error('there was an error updating the egg>monster');

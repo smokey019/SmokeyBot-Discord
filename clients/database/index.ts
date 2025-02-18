@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { CommandInteraction, Guild } from 'discord.js';
 import knex from 'knex';
 import { MonsterUserTable, type IMonsterUserModel } from '../../models/MonsterUser';

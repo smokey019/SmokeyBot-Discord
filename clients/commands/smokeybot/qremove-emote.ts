@@ -1,26 +1,30 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { PermissionFlagsBits } from "discord.js";
 import type { runEvent } from "..";
-import { GLOBAL_COOLDOWN } from "../../../clients/cache";
 import { getCurrentTime } from "../../../utils";
-import { sync_ffz_emotes } from "../../emote_queue";
+import { GLOBAL_COOLDOWN } from "../../cache";
+import { RemoveEmote } from "../../emote_queue";
+import { getLogger } from "../../logger";
+
+const logger = getLogger("Emote Remover");
 
 export async function run(e: runEvent) {
+  if (!e.interaction || !e.interaction.guild) return;
   GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
 
   await e.interaction.deferReply();
-
-  await sync_ffz_emotes(e.interaction);
+  await RemoveEmote(e.interaction);
 }
 
-export const names = ["sync-emotes-ffz", "sync-ffz"];
+export const names = ["qremove"];
 
 export const SlashCommandData = new SlashCommandBuilder()
-  .setName("sync-ffz")
-  .setDescription(
-    "Upload your Twitch channel's FrankerFaceZ Emotes to Discord. This won't replace existing emoji."
-  )
+  .setName("qremove")
+  .setDescription("Remove an emote from your existing emote queue.")
   .addStringOption((option) =>
-    option.setName("channel").setDescription("Twitch Channel").setRequired(true)
+    option
+      .setName("emote")
+      .setDescription("Emote name. Case Sensitive.")
+      .setRequired(true)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuildExpressions);

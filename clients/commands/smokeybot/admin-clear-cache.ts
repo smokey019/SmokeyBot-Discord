@@ -1,7 +1,7 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import type { runEvent } from '..';
-import { GLOBAL_COOLDOWN, clearCache } from '../../../clients/cache';
 import { getCurrentTime } from '../../../utils';
+import { GLOBAL_COOLDOWN, clearCache } from '../../cache';
 
 export async function run(e: runEvent) {
   if (e.interaction.user.id != '90514165138989056') return;

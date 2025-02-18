@@ -1,12 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { CommandInteraction } from "discord.js";
 import TimeAgo from "javascript-time-ago";
 import en from "javascript-time-ago/locale/en.json";
 import { URLSearchParams } from "node:url";
 import { getLogger } from "../../clients/logger";
 import {
-    MonsterUserTable,
-    type IMonsterUserModel,
+  MonsterUserTable,
+  type IMonsterUserModel,
 } from "../../models/MonsterUser";
 import { loadCache } from "../cache";
 import { databaseClient } from "../database";

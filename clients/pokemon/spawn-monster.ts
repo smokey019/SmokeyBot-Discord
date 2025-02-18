@@ -1,24 +1,23 @@
-import { EmbedBuilder, type CommandInteraction } from 'discord.js';
-import { initializing, rateLimited } from '../../bot';
-import { loadCache, type ICache } from '../../clients/cache';
+import { EmbedBuilder, type CommandInteraction } from "discord.js";
+import { initializing, rateLimited } from "../../bot";
+import { loadCache, type ICache } from "../../clients/cache";
 import {
   GuildSettingsTable,
   databaseClient,
-  type IGuildSettings
-} from '../../clients/database';
-import { getLogger } from '../../clients/logger';
-import { getCurrentTime, getRndInteger } from '../../utils';
-import { queueMsg } from '../emote_queue';
-import { findMonsterByID, findMonsterByIDAPI } from './monsters';
-import { getBoostedWeatherSpawns } from './weather';
+  type IGuildSettings,
+} from "../../clients/database";
+import { getLogger } from "../../clients/logger";
+import { getCurrentTime, getRndInteger } from "../../utils";
+import { findMonsterByID, findMonsterByIDAPI } from "./monsters";
+import { getBoostedWeatherSpawns } from "./weather";
 
-export const MONSTER_SPAWNS = loadCache('MONSTER_SPAWNS', 500);
+export const MONSTER_SPAWNS = loadCache("MONSTER_SPAWNS", 500);
 
-const logger = getLogger('Pokémon-Spawn');
+const logger = getLogger("Pokémon-Spawn");
 
 export async function checkSpawn(
   interaction: CommandInteraction,
-  cache: ICache,
+  cache: ICache
 ): Promise<void> {
   const data = await getSpawn(interaction.guild.id);
   let spawn = undefined;
@@ -53,10 +52,10 @@ export async function checkSpawn(
  */
 export async function spawnMonster(
   interaction: CommandInteraction,
-  cache: ICache,
+  cache: ICache
 ): Promise<void> {
   const monsterChannel = interaction.guild.channels.cache.find(
-    (ch) => ch.name === cache.settings.specific_channel,
+    (ch) => ch.name === cache.settings.specific_channel
   );
 
   if (!monsterChannel) {
@@ -66,12 +65,14 @@ export async function spawnMonster(
 
     if (updateGuild) {
       logger.error(
-        `Disabled smokeMon for server '${interaction.guild.name}' since no channel to spawn in.`,
+        `Disabled smokeMon for server '${interaction.guild.name}' since no channel to spawn in.`
       );
     }
   } else {
     const spawn_data = {
-      monster: await findMonsterByIDAPI(Math.floor(Math.random() * (1025 - 1) + 1)),
+      monster: await findMonsterByIDAPI(
+        Math.floor(Math.random() * (1025 - 1) + 1)
+      ),
       spawned_at: getCurrentTime(),
     };
 
@@ -84,12 +85,15 @@ export async function spawnMonster(
         // spawn_data.monster.forme == "Mega" ||
         //!spawn_data.monster.images ||
         //!spawn_data.monster.images.normal ||
-        (boostCount < 10 && !isBoosted)
+        boostCount < 10 &&
+        !isBoosted
       ) {
         logger.trace(
-          'Invalid monster found or trying to find a boosted type..',
+          "Invalid monster found or trying to find a boosted type.."
         );
-        spawn_data.monster = await findMonsterByIDAPI(Math.floor(Math.random() * (1025 - 1) + 1));
+        spawn_data.monster = await findMonsterByIDAPI(
+          Math.floor(Math.random() * (1025 - 1) + 1)
+        );
         spawn_data.monster.types?.forEach((element) => {
           if (boost.boosts.includes(element.type.name)) {
             isBoosted = true;
@@ -102,18 +106,22 @@ export async function spawnMonster(
       await updateSpawn(interaction.guild.id, spawn_data);
 
       logger.info(
-        `'${interaction.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.charAt(0).toUpperCase() + spawn_data.monster.name.slice(1)}'`,
+        `'${interaction.guild.name}' - Monster Spawned! -> '${
+          spawn_data.monster.name.charAt(0).toUpperCase() +
+          spawn_data.monster.name.slice(1)
+        }'`
       );
 
       const embed = new EmbedBuilder({
-        description: 'Type `/catch PokémonName` to try and catch it!',
+        description: "Type `/catch PokémonName` to try and catch it!",
         image: {
-          url: spawn_data.monster.sprites.other['official-artwork'].front_default,
+          url: spawn_data.monster.sprites.other["official-artwork"]
+            .front_default,
         },
-        title: 'A wild Pokémon has appeared!',
+        title: "A wild Pokémon has appeared!",
       });
 
-      queueMsg(embed, interaction, false, 1, monsterChannel, true);
+      interaction.channel.send({ embeds: [embed] });
     } catch (error) {
       logger.error(error);
     }
@@ -126,9 +134,9 @@ export async function spawnMonster(
  * @returns spawn_data
  */
 export async function getSpawn(
-  guild: string,
+  guild: string
 ): Promise<{ id: number; spawn_data: any; guild: string }> {
-  return await databaseClient('spawns')
+  return await databaseClient("spawns")
     .select()
     .where({
       guild: guild,
@@ -144,33 +152,33 @@ export async function getSpawn(
  */
 export async function updateSpawn(
   guild: string,
-  spawn_data: any,
+  spawn_data: any
 ): Promise<boolean> {
   const current_spawn = await getSpawn(guild);
 
   if (current_spawn) {
-    const update = await databaseClient('spawns')
+    const update = await databaseClient("spawns")
       .update({ spawn_data: JSON.stringify(spawn_data) })
       .where({ guild: guild });
 
     if (update) {
-      logger.trace('Updated existing spawn data with a new spawn.');
+      logger.trace("Updated existing spawn data with a new spawn.");
       return true;
     } else {
-      logger.debug('Failed to update existing spawn data.');
+      logger.debug("Failed to update existing spawn data.");
       return false;
     }
   } else {
-    const add = await databaseClient('spawns').insert({
+    const add = await databaseClient("spawns").insert({
       guild: guild,
       spawn_data: JSON.stringify(spawn_data),
     });
 
     if (add) {
-      logger.trace('Successfully inserted new spawn data.');
+      logger.trace("Successfully inserted new spawn data.");
       return true;
     } else {
-      logger.debug('Failed to insert new spawn data.');
+      logger.debug("Failed to insert new spawn data.");
       return false;
     }
   }
@@ -183,12 +191,12 @@ export async function updateSpawn(
  */
 export async function forceSpawn(
   interaction: CommandInteraction,
-  cache: ICache,
+  cache: ICache
 ): Promise<void> {
   const monsterChannel = interaction.guild.channels.cache.find(
-    (ch) => ch.name === cache.settings.specific_channel,
+    (ch) => ch.name === cache.settings.specific_channel
   );
-  const monster = parseFloat(interaction.options.get('pokemon').toString());
+  const monster = parseFloat(interaction.options.get("pokemon").toString());
 
   const spawn_data = {
     monster: await findMonsterByID(monster),
@@ -199,20 +207,20 @@ export async function forceSpawn(
     //MONSTER_SPAWNS.set(interaction.guild.id, spawn_data);
     await updateSpawn(interaction.guild.id, spawn_data);
     logger.info(
-      `'${interaction.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`,
+      `'${interaction.guild.name}' - Monster Spawned! -> '${spawn_data.monster.name.english}'`
     );
 
     const embed = new EmbedBuilder({
-      description: 'Type `/catch PokémonName` to try and catch it!',
+      description: "Type `/catch PokémonName` to try and catch it!",
       image: {
         url: spawn_data.monster.images.normal,
       },
-      title: 'A wild Pokémon has appeared!',
+      title: "A wild Pokémon has appeared!",
     });
 
-    queueMsg(embed, interaction, true, 1, monsterChannel, true);
+    interaction.channel.send({ embeds: [embed] });
   } catch (error) {
     logger.error(error);
-    logger.error('\n', spawn_data.monster);
+    logger.error("\n", spawn_data.monster);
   }
 }

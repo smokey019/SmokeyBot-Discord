@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import datetimeDifference from "datetime-difference";
 import moment from "moment";
 

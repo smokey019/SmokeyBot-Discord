@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
@@ -91,7 +90,6 @@ export async function registerSlashCommands() {
     let api = undefined;
 
     if (process.env.DEV == "true") {
-
       // registers only for the test server
 
       token = process.env.DISCORD_TOKEN_DEV;
@@ -108,7 +106,6 @@ export async function registerSlashCommands() {
         { body: slashCommands }
       );
     } else {
-
       // registers for all of discord
 
       token = process.env.DISCORD_TOKEN;
@@ -122,7 +119,6 @@ export async function registerSlashCommands() {
     }
 
     logger.debug("Successfully registered slash commands.");
-
   } catch (error) {
     console.error(error);
   }

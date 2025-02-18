@@ -1,5 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { CommandInteraction, EmbedBuilder } from "discord.js";
+import TimeAgo from "javascript-time-ago";
 import { discordClient } from "../../bot";
 import { GLOBAL_COOLDOWN, type ICache } from "../../clients/cache";
 import { getUserDBCount } from "../../clients/database";
@@ -10,17 +11,11 @@ import {
   getRndInteger,
   theWord,
 } from "../../utils";
-import { EmoteQueue, queueMsg } from "../emote_queue";
-import {
-  Stv_emoji_queue_attempt_count,
-  Stv_emoji_queue_count,
-} from "../smokeybot/emote-sync/sync-7tv-emotes";
-import {
-  FFZ_emoji_queue_attempt_count,
-  FFZ_emoji_queue_count,
-} from "../smokeybot/emote-sync/sync-ffz-emotes";
+import { EmoteQueue, FFZ_emoji_queue_attempt_count, FFZ_emoji_queue_count, queue_add_success, queue_attempts } from "../emote_queue";
 import { getMonsterDBCount, getShinyMonsterDBCount } from "./monsters";
 import { getBoostedWeatherSpawns } from "./weather";
+
+const timeAgo = new TimeAgo("en-US");
 
 // const SHINY_ODDS_RETAIL = parseInt(getConfigValue('SHINY_ODDS_RETAIL'));
 // const SHINY_ODDS_COMMUNITY = parseInt(getConfigValue('SHINY_ODDS_COMMUNITY'));
@@ -90,16 +85,12 @@ export async function voteCommand(
   const voted = (await dblCache.get(interaction.user.id)) ?? { voted: false };
 
   if (!voted.voted) {
-    queueMsg(
+    interaction.reply(
       `You haven't voted yet -- vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
-      interaction,
-      true
     );
   } else {
-    queueMsg(
+    interaction.reply(
       `You've already voted, but maybe others want to vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
-      interaction,
-      true
     );
   }
 }
@@ -110,14 +101,12 @@ export async function checkServerWeather(
 ): Promise<void> {
   const boost = await getBoostedWeatherSpawns(interaction, cache);
 
-  queueMsg(
+  interaction.reply(
     `The current weather is **${
       boost.weather
     }**.  You will find increased spawns of **${boost.boosts.join(
       " / "
     )}** on this server.`,
-    interaction,
-    true
   );
 }
 
@@ -126,11 +115,12 @@ export async function getBotStats(
 ): Promise<void> {
   GLOBAL_COOLDOWN.set(interaction.guild.id, getCurrentTime());
   const ping = Date.now() - interaction.createdTimestamp;
+  const pingNew = timeAgo.format(interaction.createdTimestamp);
 
   const embed = new EmbedBuilder()
     .setTitle("SmokeyBot Statistics 📊")
     .addFields(
-      { name: "Ping 🌩️", value: ping + " ms" },
+      { name: "Requested at 🌩️", value: pingNew },
       {
         name: "Servers in Emote Queue 🔗",
         value: format_number(EmoteQueue.size),
@@ -138,9 +128,9 @@ export async function getBotStats(
       {
         name: "Emote Synchronizations 🔼",
         value: `${format_number(
-          Stv_emoji_queue_count + FFZ_emoji_queue_count
+          queue_attempts + FFZ_emoji_queue_count
         )} / ${format_number(
-          Stv_emoji_queue_attempt_count + FFZ_emoji_queue_attempt_count
+          queue_add_success + FFZ_emoji_queue_attempt_count
         )}`,
       },
       {

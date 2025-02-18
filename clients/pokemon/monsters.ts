@@ -4,7 +4,7 @@ import { getLogger } from '../../clients/logger';
 import { MonsterTable, type IMonsterModel } from '../../models/Monster';
 import { MonsterUserTable, type IMonsterUserModel } from '../../models/MonsterUser';
 import { getRndInteger } from '../../utils';
-import { queueMsg } from '../emote_queue';
+import { queueMessage } from '../message_queue';
 import PokeDex from './data/pokedex_min.json';
 import {
   GenerationEight,
@@ -353,7 +353,7 @@ export async function selectMonster(
       .update({ current_monster: parseInt(tmp) });
 
     if (updateUser) {
-      queueMsg(
+      queueMessage(
         `Selected **Level ${monster.level} ${dex.name.english}**!`,
         interaction,
         true,
@@ -382,7 +382,7 @@ export async function setFavorite(
       .update({ favorite: 1 });
 
     if (updatedMonster) {
-      queueMsg(
+      queueMessage(
         `Favorited monster **Level ${monster.level} ${dex.name.english}**!`,
         interaction,
         true,
@@ -409,7 +409,7 @@ export async function unFavorite(
       .update({ favorite: 0 });
 
     if (updatedMonster) {
-      queueMsg(`Unfavorited monster id ${monster.id}!`, interaction, true);
+      queueMessage(`Unfavorited monster id ${monster.id}!`, interaction, true);
       return true;
     } else {
       return false;

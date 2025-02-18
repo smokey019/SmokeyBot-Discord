@@ -300,10 +300,10 @@ export async function catchMonster(
             )
             .setTimestamp();
 
-          //queueMsg(embed, interaction, true, 1, undefined, true);
+          //queueMessage(embed, interaction, true, 1, undefined, true);
           await interaction.editReply({ embeds: [embed] });
         } else {
-          //queueMsg(response, interaction, true, 1);
+          //queueMessage(response, interaction, true, 1);
           await interaction.editReply(response);
         }
       }
@@ -313,7 +313,7 @@ export async function catchMonster(
   } else if (timestamp - (GCD || 0) > 5) {
     GLOBAL_COOLDOWN.set(interaction.guild.id, getCurrentTime());
 
-    //queueMsg(`That is the wrong Pokémon!`, interaction, true, 1);
+    //queueMessage(`That is the wrong Pokémon!`, interaction, true, 1);
     await interaction.editReply(`That is the wrong Pokémon!`);
     logger.trace(`${interaction.user.username} is WRONG!`);
   }

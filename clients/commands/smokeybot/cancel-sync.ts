@@ -3,7 +3,7 @@ import { PermissionFlagsBits } from 'discord.js';
 import { type runEvent } from '..';
 import { GLOBAL_COOLDOWN } from '../../../clients/cache';
 import { getCurrentTime } from '../../../utils';
-import { cancel_sync } from '../../smokeybot/emote-sync/sync-ffz-emotes';
+import { cancel_sync } from '../../emote_queue';
 
 export async function run(e: runEvent) {
   GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());

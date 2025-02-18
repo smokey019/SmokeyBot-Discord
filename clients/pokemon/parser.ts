@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { CommandInteraction } from 'discord.js';
 import { databaseClient, type IGuildSettings } from '../../clients/database';
 import { parseArgs } from './utils';

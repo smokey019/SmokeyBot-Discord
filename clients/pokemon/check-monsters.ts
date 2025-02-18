@@ -4,7 +4,7 @@ import { getLogger } from "../../clients/logger";
 import { MonsterTable, type IMonsterModel } from "../../models/Monster";
 import type { IMonsterUserModel } from "../../models/MonsterUser";
 import { chunk, format_number } from "../../utils";
-import { queueMsg } from "../emote_queue";
+import { queueMessage } from "../message_queue";
 import { userDex } from "./info";
 import {
   findMonsterByIDLocal,
@@ -181,12 +181,12 @@ export async function checkMonstersNew(
       )
       .setDescription(new_msg);
 
-    queueMsg(embed, interaction, true, 1, undefined, true);
+    interaction.channel.send({ embeds: [embed] });
     logger.debug(
       `Sent Pokémon for ${interaction.user.tag} in ${interaction.guild?.name}!`
     );
   } else {
-    queueMsg("You don't have any Pokémon.", interaction, true);
+    queueMessage("You don't have any Pokémon.", interaction, true);
   }
 }
 
@@ -866,27 +866,4 @@ export async function searchMonsters(
         logger.error(err);
       });
   }
-}
-
-async function sendEmbed(
-  interaction: CommandInteraction,
-  author_title: string,
-  author_icon: string,
-  author_url: string,
-  title: string,
-  message: string,
-  color: any
-): Promise<any> {
-  const embed = new EmbedBuilder()
-    .setAuthor({
-      name: author_title || "SmokeyBot",
-      iconURL: author_icon || interaction.user.avatarURL()?.toString(),
-      url:
-        author_url ||
-        `https://bot.smokey.gg/user/${interaction.user.id}/pokemon`,
-    })
-    .setTitle(title)
-    .setDescription(message);
-
-  queueMsg(embed, interaction, true, 1, undefined, true);
 }

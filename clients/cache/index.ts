@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Collection, CommandInteraction, Guild } from 'discord.js';
 import { LRUCache } from 'mnemonist';
 import { getCurrentTime } from '../../utils';

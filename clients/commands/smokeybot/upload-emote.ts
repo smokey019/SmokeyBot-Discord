@@ -3,7 +3,6 @@ import { CommandInteraction, PermissionFlagsBits } from "discord.js";
 import type { runEvent } from "..";
 import { GLOBAL_COOLDOWN } from "../../../clients/cache";
 import { explode, getCurrentTime, jsonFetch } from "../../../utils";
-import { q } from "../../emote_queue";
 import { getLogger } from "../../logger";
 
 const logger = getLogger("7TV Emote Upload");
@@ -38,22 +37,18 @@ async function uploadEmote(interaction: CommandInteraction): Promise<void> {
   const emote = await jsonFetch(`https://7tv.io/v3/emotes/${emoteCode[2]}`);
 
   if (emote.animated) {
-    q.push(async () => {
-      await create_emoji(
-        "https:" + emote.host.url + "/2x.gif",
-        interaction,
-        emote.name.replace(/\W/gm, ''),
-        "https:" + emote.host.url + "/1x.gif"
-      );
-    });
+    await create_emoji(
+      "https:" + emote.host.url + "/2x.gif",
+      interaction,
+      emote.name.replace(/\W/gm, ""),
+      "https:" + emote.host.url + "/1x.gif"
+    );
   } else {
-    q.push(async () => {
-      await create_emoji(
-        "https:" + emote.host.url + "/2x.png",
-        interaction,
-        emote.name.replace(/\W/gm, '')
-      );
-    });
+    await create_emoji(
+      "https:" + emote.host.url + "/2x.png",
+      interaction,
+      emote.name.replace(/\W/gm, "")
+    );
   }
 }
 
