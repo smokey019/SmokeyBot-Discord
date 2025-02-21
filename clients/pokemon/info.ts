@@ -328,11 +328,11 @@ export async function monsterInfo(
   if (monster_id) {
     const tmpMonster = await databaseClient<IMonsterModel>(MonsterTable)
       .select()
-      .where("id", monster_id);
+      .where("id", monster_id).first();
 
     if (!tmpMonster) return;
 
-    await monsterEmbed(tmpMonster[0], interaction);
+    await monsterEmbed(tmpMonster, interaction);
   }
 }
 
@@ -349,11 +349,11 @@ export async function currentMonsterInfo(
 
   const tmpMonster = await databaseClient<IMonsterModel>(MonsterTable)
     .select()
-    .where("id", user.current_monster);
+    .where("id", user.current_monster).first();
 
   if (!tmpMonster) return;
 
-  await monsterEmbed(tmpMonster[0], interaction);
+  await monsterEmbed(tmpMonster, interaction);
 }
 
 /**

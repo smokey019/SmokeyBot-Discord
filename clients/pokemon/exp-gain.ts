@@ -1,25 +1,33 @@
-import { EmbedBuilder, Guild, User, type CommandInteraction } from 'discord.js';
-import { xp_cache } from '../../clients/cache';
-import { databaseClient, getUser } from '../../clients/database';
-import { getLogger } from '../../clients/logger';
-import { MonsterTable, type IMonsterModel } from '../../models/Monster';
-import { getCurrentTime, getRndInteger } from '../../utils';
-import { getItemDB } from './items';
 import {
-  findMonsterByID,
+  EmbedBuilder,
+  Guild,
+  TextChannel,
+  User,
+  type CommandInteraction,
+} from "discord.js";
+import { xp_cache } from "../../clients/cache";
+import { databaseClient, getUser } from "../../clients/database";
+import { getLogger } from "../../clients/logger";
+import { MonsterTable, type IMonsterModel } from "../../models/Monster";
+import { getCurrentTime, getRndInteger } from "../../utils";
+import { getItemDB } from "./items";
+import {
+  findMonsterByIDAPI,
   getPokedex,
   getRandomMonster,
-  getUserMonster,
-  type IMonsterDex
-} from './monsters';
-import { rollShiny } from './utils';
-import { queueMessage } from '../message_queue';
+  getUserMonster
+} from "./monsters";
+import { capitalizeFirstLetter, rollShiny } from "./utils";
 
-const logger = getLogger('ExpGain');
+const logger = getLogger("ExpGain");
 
-export async function checkExpGain(user: User, guild: Guild, interaction?: CommandInteraction): Promise<void> {
+export async function checkExpGain(
+  user: User,
+  guild: Guild,
+  interaction?: CommandInteraction
+): Promise<void> {
   const timestamp = getCurrentTime();
-  const cacheKey = user.id + ':' + guild.id;
+  const cacheKey = user.id + ":" + guild.id;
   const cache = await xp_cache.get(cacheKey);
 
   if (cache == undefined) {
@@ -33,34 +41,34 @@ export async function checkExpGain(user: User, guild: Guild, interaction?: Comma
       if (!tmpUser) return;
       if (tmpUser.current_monster) {
         const monster: IMonsterModel = await getUserMonster(
-          tmpUser.current_monster,
+          tmpUser.current_monster
         );
-        const monster_dex: IMonsterDex = await findMonsterByID(
-          monster.monster_id,
-        );
+        const monster_dex = await findMonsterByIDAPI(monster.monster_id);
         const held_item = await getItemDB(monster.held_item);
         xp_cache.set(cacheKey, getCurrentTime());
         if (!monster || monster.level >= 100) return;
         const updateExp = await databaseClient(MonsterTable)
           .where({ id: tmpUser.current_monster })
-          .increment('experience', getRndInteger(50, 620));
+          .increment("experience", getRndInteger(50, 620));
         if (updateExp) {
-          logger.trace(
-            `User ${user.username} gained XP in ${guild.name}.`,
-          );
+          logger.trace(`User ${user.username} gained XP in ${guild.name}.`);
 
           if (monster.experience >= monster.level * 1250) {
             const updateLevel = await databaseClient<IMonsterModel>(
-              MonsterTable,
+              MonsterTable
             )
               .where({ id: monster.id })
-              .increment('level', 1);
+              .increment("level", 1);
 
             monster.level++;
 
             if (updateLevel) {
               logger.trace(
-                `User ${user.username}'s Monster ${monster.id} - ${monster_dex.name.english} has leveled up to ${monster.level}!`,
+                `User ${user.username}'s Monster ${
+                  monster.id
+                } - ${capitalizeFirstLetter(
+                  monster_dex.name
+                )} has leveled up to ${monster.level}!`
               );
             }
 
@@ -82,7 +90,7 @@ export async function checkExpGain(user: User, guild: Guild, interaction?: Comma
               if (evolve && evolve.evoLevel) {
                 if (monster.level >= evolve.evoLevel) {
                   const updateMonster = await databaseClient<IMonsterModel>(
-                    MonsterTable,
+                    MonsterTable
                   )
                     .where({ id: monster.id })
                     .update({ monster_id: evolve.id });
@@ -95,31 +103,40 @@ export async function checkExpGain(user: User, guild: Guild, interaction?: Comma
                       imgs = [evolve.images.normal, monster_dex.images.normal];
                     }
                     const embed = new EmbedBuilder({
-                      description: `Nice! **${monster_dex.name.english}** has evolved into **${evolve.name.english}**!`,
+                      description: `Nice! **${capitalizeFirstLetter(
+                        monster_dex.name
+                      )}** has evolved into **${evolve.name.english}**!`,
                       image: {
                         url: imgs[0],
                       },
                       thumbnail: {
                         url: imgs[1],
                       },
-                      title: `${user.username}'s ${monster_dex.name.english} is evolving!`,
+                      title: `${user.username}'s ${capitalizeFirstLetter(
+                        monster_dex.name
+                      )} is evolving!`,
                     });
 
-                    if (interaction){
-                      queueMessage(embed, interaction, true);
+                    if (interaction) {
+                      const monsterChannel =
+                        interaction.guild?.channels.cache.find(
+                          (ch) => ch.name === cache.settings.specific_channel
+                        );
+
+                      (monsterChannel as TextChannel).send({ embeds: [embed] });
                     }
                   }
                 }
               }
             } else if (
-              monster_dex.evoType == 'maxLevel' &&
-              monster_dex.name.english == 'Egg' &&
+              // monster_dex.evoType == "maxLevel" &&
+              capitalizeFirstLetter(monster_dex.name) == "Egg" &&
               monster.level >= 50
             ) {
-              let new_monster = await findMonsterByID(getRandomMonster());
+              let new_monster = await findMonsterByIDAPI(getRandomMonster());
 
               while (new_monster.name.english == "Egg") {
-                new_monster = await findMonsterByID(getRandomMonster());
+                new_monster = await findMonsterByIDAPI(getRandomMonster());
               }
 
               let isShiny = rollShiny();
@@ -132,7 +149,7 @@ export async function checkExpGain(user: User, guild: Guild, interaction?: Comma
               }
 
               const updateMonster = await databaseClient<IMonsterModel>(
-                MonsterTable,
+                MonsterTable
               )
                 .where({ id: monster.id })
                 .update({
@@ -146,26 +163,33 @@ export async function checkExpGain(user: User, guild: Guild, interaction?: Comma
               if (updateMonster) {
                 let imgs = [];
                 if (monster.shiny) {
-                  imgs = [new_monster.images.shiny, monster_dex.images.shiny];
+                  imgs = [new_monster.sprites.other["official-artwork"].front_shiny];
                 } else {
-                  imgs = [new_monster.images.normal, monster_dex.images.normal];
+                  imgs = [new_monster.sprites.other["official-artwork"].front_default];
                 }
                 const embed = new EmbedBuilder({
-                  description: `YO! **${monster_dex.name.english}** has HATCHED into **${new_monster.name.english}**! Congratulations!`,
+                  description: `YO! **${capitalizeFirstLetter(
+                    monster_dex.name
+                  )}** has HATCHED into **${
+                    capitalizeFirstLetter(new_monster.name)
+                  }**! Congratulations!`,
                   image: {
                     url: imgs[0],
                   },
-                  thumbnail: {
-                    url: imgs[1],
-                  },
-                  title: `${user.username}'s ${monster_dex.name.english} has hatched!`,
+                  title: `${user.username}'s ${capitalizeFirstLetter(
+                    monster_dex.name
+                  )} has hatched!`,
                 });
 
-                if (interaction){
-                  queueMessage(embed, interaction, false, 0, undefined, true);
+                if (interaction) {
+                  const monsterChannel = interaction.guild?.channels.cache.find(
+                    (ch) => ch.name === cache.settings.specific_channel
+                  );
+
+                  (monsterChannel as TextChannel).send({ embeds: [embed] });
                 }
               } else {
-                console.error('there was an error updating the egg>monster');
+                console.error("there was an error updating the egg>monster");
               }
             }
           }
