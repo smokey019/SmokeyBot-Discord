@@ -189,6 +189,7 @@ async function ReadQueue() {
 
         if (EmoteQueue.size === 0) {
           clearInterval(timer);
+          timer = undefined;
         }
       }
     }
@@ -196,6 +197,7 @@ async function ReadQueue() {
     // Nothing in the queue. Clear timer.
     if (timer) {
       clearInterval(timer);
+      timer = undefined;
     }
   }
 }
@@ -430,6 +432,11 @@ export async function cancel_sync(
         interaction.guild.name
     );
     await interaction.editReply({ content: "👍" });
+
+    if (EmoteQueue.size === 0 && timer) {
+      clearInterval(timer);
+      timer = undefined;
+    }
     return true;
   } else {
     return false;
