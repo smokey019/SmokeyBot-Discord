@@ -220,7 +220,8 @@ export async function findMonsterByID(id: number): Promise<IMonsterDex> {
 }
 
 export async function findMonsterByIDAPI(id: number): Promise<any>{
-  const data = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+  const fixedId = id.toString().replace('.', '');
+  const data = await fetch(`https://pokeapi.co/api/v2/pokemon/${fixedId}`);
   return await data.json();
 }
 
