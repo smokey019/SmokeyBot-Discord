@@ -112,7 +112,7 @@ export const discordClient = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.DirectMessages,
     GatewayIntentBits.GuildExpressions,
-    //GatewayIntentBits.MessageContent,
+    //GatewayIntentBits.MessageContent, // we do not have permission to use this yet
   ],
   //shards: SHARD_ID,
   //shardCount: TOTAL_SHARDS,
