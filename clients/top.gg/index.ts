@@ -166,16 +166,17 @@ async function makeTopGGRequest(
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      throw new Error(`Top.GG API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Top.GG API error: ${response.status} ${response.statusText}`
+      );
     }
 
     const data = await response.json();
     return data as TopGGResponse;
-
   } catch (error) {
-    if (error.name === 'AbortError') {
-      logger.error('Top.GG API request timed out');
-      throw new Error('Top.GG API request timed out');
+    if (error.name === "AbortError") {
+      logger.error("Top.GG API request timed out");
+      throw new Error("Top.GG API request timed out");
     }
 
     logger.error(`Top.GG API request failed for ${path}:`, error);
@@ -189,7 +190,7 @@ async function makeTopGGRequest(
  * @returns Promise<boolean>
  */
 async function hasVoted(userId: string): Promise<boolean> {
-  if (!userId || typeof userId !== 'string') {
+  if (!userId || typeof userId !== "string") {
     throw new Error("Invalid user ID provided");
   }
 
@@ -197,7 +198,7 @@ async function hasVoted(userId: string): Promise<boolean> {
     const response = await makeTopGGRequest("GET", "bots/check", { userId });
 
     // Handle both number (timestamp) and boolean responses
-    if (typeof response.voted === 'number') {
+    if (typeof response.voted === "number") {
       return response.voted === 1;
     }
 
@@ -231,7 +232,7 @@ async function checkWeekendWithCache(): Promise<boolean> {
   const cached = enhancedCache.get(cacheKey) as WeekendData | undefined;
 
   // Return cached result if still valid
-  if (cached && (Date.now() - cached.time) < WEEKEND_CACHE_TTL) {
+  if (cached && Date.now() - cached.time < WEEKEND_CACHE_TTL) {
     return cached.weekend;
   }
 
@@ -239,10 +240,14 @@ async function checkWeekendWithCache(): Promise<boolean> {
     const isWeekendNow = await isWeekend();
 
     // Cache the result
-    enhancedCache.set(cacheKey, {
-      weekend: isWeekendNow,
-      time: Date.now(),
-    }, WEEKEND_CACHE_TTL);
+    enhancedCache.set(
+      cacheKey,
+      {
+        weekend: isWeekendNow,
+        time: Date.now(),
+      },
+      WEEKEND_CACHE_TTL
+    );
 
     return isWeekendNow;
   } catch (error) {
@@ -264,7 +269,10 @@ async function checkWeekendWithCache(): Promise<boolean> {
  * @param isWeekend - Whether weekend multiplier is active
  * @returns Promise<void>
  */
-async function awardVotingRewards(userId: string, isWeekend: boolean): Promise<void> {
+async function awardVotingRewards(
+  userId: string,
+  isWeekend: boolean
+): Promise<void> {
   try {
     const rewards = isWeekend ? VOTING_REWARDS.weekend : VOTING_REWARDS.normal;
 
@@ -281,7 +289,9 @@ async function awardVotingRewards(userId: string, isWeekend: boolean): Promise<v
     //   });
     // }
 
-    logger.info(`Awarded voting rewards to user ${userId}: ${rewards.currency} currency, ${rewards.rareCandies} rare candies`);
+    logger.info(
+      `Awarded voting rewards to user ${userId}: ${rewards.currency} currency, ${rewards.rareCandies} rare candies`
+    );
   } catch (error) {
     logger.error(`Error awarding voting rewards to user ${userId}:`, error);
     throw error;
@@ -301,9 +311,11 @@ function createVotingEmbed(isWeekend: boolean): EmbedBuilder {
     .setColor(isWeekend ? 0x9966cc : 0x00ff00)
     .setDescription(
       `${isWeekend ? "🎉 **Weekend Bonus Active!**\n" : ""}` +
-      `You received:\n` +
-      `💰 **${rewards.currency.toLocaleString()} currency**\n` +
-      `🍭 **${rewards.rareCandies} Rare Cand${rewards.rareCandies > 1 ? 'ies' : 'y'}**`
+        `You received:\n` +
+        `💰 **${rewards.currency.toLocaleString()} currency**\n` +
+        `🍭 **${rewards.rareCandies} Rare Cand${
+          rewards.rareCandies > 1 ? "ies" : "y"
+        }**`
     )
     .addFields({
       name: "⏰ Next Vote",
@@ -329,7 +341,7 @@ function createVoteReminderEmbed(nextVoteTime: number): EmbedBuilder {
     .setColor(0xffa500)
     .setDescription(
       `You've already received your voting rewards recently!\n\n` +
-      `⏰ **Next vote available:** ${timeAgo.format(nextVoteTime)}`
+        `⏰ **Next vote available:** ${timeAgo.format(nextVoteTime)}`
     )
     .setFooter({
       text: "Vote at top.gg every 12 hours for rewards!",
@@ -344,7 +356,9 @@ function createVoteReminderEmbed(nextVoteTime: number): EmbedBuilder {
  * @param interaction - Discord command interaction
  * @returns Promise<VoteResult>
  */
-export async function checkVote(interaction: CommandInteraction): Promise<VoteResult> {
+export async function checkVote(
+  interaction: CommandInteraction
+): Promise<VoteResult> {
   try {
     const userId = interaction.user.id;
     const currentTime = Date.now();
@@ -360,7 +374,10 @@ export async function checkVote(interaction: CommandInteraction): Promise<VoteRe
     const timeSinceLastCheck = currentTime - voteData.checked_at;
 
     // Check if user is still in cooldown period
-    if (voteData.voted && timeSinceLastCheck < (VOTE_COOLDOWN_MS - VOTE_CACHE_GRACE_PERIOD)) {
+    if (
+      voteData.voted &&
+      timeSinceLastCheck < VOTE_COOLDOWN_MS - VOTE_CACHE_GRACE_PERIOD
+    ) {
       const nextVoteTime = voteData.checked_at + VOTE_COOLDOWN_MS;
 
       await queueMessage(
@@ -428,9 +445,11 @@ export async function checkVote(interaction: CommandInteraction): Promise<VoteRe
             alreadyVoted: false,
             isWeekend: isWeekendNow,
           };
-
         } catch (error) {
-          logger.error(`Error processing vote rewards for user ${userId}:`, error);
+          logger.error(
+            `Error processing vote rewards for user ${userId}:`,
+            error
+          );
 
           await sendUrgentMessage(
             "✅ Vote confirmed, but there was an error processing rewards. Please contact support.",
@@ -445,7 +464,6 @@ export async function checkVote(interaction: CommandInteraction): Promise<VoteRe
             error: "Reward processing error",
           };
         }
-
       } else {
         // User hasn't voted yet
         const embed = new EmbedBuilder()
@@ -453,12 +471,13 @@ export async function checkVote(interaction: CommandInteraction): Promise<VoteRe
           .setColor(0xff6b6b)
           .setDescription(
             "You haven't voted yet! Click the link below to vote and receive rewards:\n\n" +
-            "💰 **2,500 currency** (5,000 on weekends)\n" +
-            "🍭 **1 Rare Candy** (2 on weekends)"
+              "💰 **2,500 currency** (5,000 on weekends)\n" +
+              "🍭 **1 Rare Candy** (2 on weekends)"
           )
           .addFields({
             name: "🔗 Vote Link",
-            value: "[Vote on top.gg](https://top.gg/bot/458710213122457600/vote)",
+            value:
+              "[Vote on top.gg](https://top.gg/bot/458710213122457600/vote)",
             inline: false,
           })
           .setFooter({
@@ -466,12 +485,7 @@ export async function checkVote(interaction: CommandInteraction): Promise<VoteRe
           })
           .setTimestamp();
 
-        await queueMessage(
-          { embeds: [embed] },
-          interaction,
-          true,
-          2
-        );
+        await queueMessage({ embeds: [embed] }, interaction, true, 2);
 
         return {
           success: false,
@@ -495,7 +509,6 @@ export async function checkVote(interaction: CommandInteraction): Promise<VoteRe
       isWeekend: false,
       error: "Unknown state",
     };
-
   } catch (error) {
     logger.error("Unexpected error in checkVote:", error);
 
@@ -546,6 +559,12 @@ async function checkWeekend(): Promise<boolean> {
 
 // Export utility functions for testing
 export {
-  awardVotingRewards, checkWeekendWithCache, EnhancedCache, hasVoted,
-  isWeekend, makeTopGGRequest, VOTE_COOLDOWN_MS, VOTING_REWARDS
+  awardVotingRewards,
+  checkWeekendWithCache,
+  EnhancedCache,
+  hasVoted,
+  isWeekend,
+  makeTopGGRequest,
+  VOTE_COOLDOWN_MS,
+  VOTING_REWARDS
 };

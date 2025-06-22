@@ -408,9 +408,9 @@ class EnhancedShardManager extends EventEmitter {
     };
 
     // Log stats periodically
-    logger.info(
+    /*logger.info(
       `📈 Global Stats: ${totalGuilds} guilds, ${totalUsers} users across ${healthyShards}/${this.shardHealth.size} healthy shards`
-    );
+    );*/
 
     this.emit("globalStatsUpdate", this.globalStats);
   }
