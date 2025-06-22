@@ -1,9 +1,9 @@
-import { SlashCommandBuilder } from '@discordjs/builders';
-import { TextChannel } from 'discord.js';
-import type { runEvent } from '..';
-import { GLOBAL_COOLDOWN } from '../../../clients/cache';
-import { getCurrentTime } from '../../../utils';
-import { voteCommand } from '../../pokemon/utils';
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { TextChannel } from "discord.js";
+import type { runEvent } from "..";
+import { GLOBAL_COOLDOWN } from "../../../clients/cache";
+import { getCurrentTime } from "../../../utils";
+import { checkVote } from "../../top.gg";
 
 export async function run(e: runEvent) {
   const channel_name = (e.interaction.channel as TextChannel).name;
@@ -13,13 +13,14 @@ export async function run(e: runEvent) {
   )
     return;
   GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
-  await voteCommand(e.interaction);
+  await e.interaction.deferReply();
+  await checkVote(e.interaction);
 }
 
-export const names = ['vote'];
+export const names = ["vote"];
 
 export const SlashCommandData = new SlashCommandBuilder()
-  .setName('vote')
+  .setName("vote")
   .setDescription(
-    'Vote for SmokeyBot on Top.GG and receive rewards for the Pokémon plugin!',
+    "Vote for SmokeyBot on Top.GG and receive rewards for the Pokémon plugin!"
   );

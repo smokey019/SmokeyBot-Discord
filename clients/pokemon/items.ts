@@ -509,26 +509,6 @@ async function deleteItemDB(id: number | string): Promise<number> {
   return item;
 }
 
-/*async function sellItemDB(
-  item_id: number | string,
-  uid: number | string,
-  currency: number,
-): Promise<boolean> {
-  const add_currency = await databaseClient<IMonsterUserModel>(MonsterUserTable)
-    .where('uid', uid)
-    .increment('currency', currency);
-  if (add_currency) {
-    const deleteItem = await deleteItemDB(item_id);
-    if (deleteItem) {
-      return true;
-    } else {
-      return false;
-    }
-  } else {
-    return false;
-  }
-}*/
-
 export async function createItemDB(data: IItemsModel): Promise<Array<number>> {
   const item = await databaseClient<IItemsModel>(ItemsTable).insert(data);
   return item;

@@ -1,4 +1,3 @@
-
 import { CommandInteraction, EmbedBuilder } from "discord.js";
 import TimeAgo from "javascript-time-ago";
 import { discordClient } from "../../bot";
@@ -11,7 +10,13 @@ import {
   getRndInteger,
   theWord,
 } from "../../utils";
-import { EmoteQueue, FFZ_emoji_queue_attempt_count, FFZ_emoji_queue_count, queue_add_success, queue_attempts } from "../emote_queue";
+import {
+  EmoteQueue,
+  FFZ_emoji_queue_attempt_count,
+  FFZ_emoji_queue_count,
+  queue_add_success,
+  queue_attempts,
+} from "../emote_queue";
 import { getMonsterDBCount, getShinyMonsterDBCount } from "./monsters";
 import { getBoostedWeatherSpawns } from "./weather";
 
@@ -76,7 +81,10 @@ export function rollGender(): string {
  * Returns a randomized value for if an item is shiny. (1 is shiny, 0 is not)
  */
 export function rollShiny(): 0 | 1 {
-  return getRndInteger(1, parseInt(process.env.SHINY_ODDS_RETAIL)) >= parseInt(process.env.SHINY_ODDS_RETAIL) ? 1 : 0;
+  return getRndInteger(1, parseInt(process.env.SHINY_ODDS_RETAIL)) >=
+    parseInt(process.env.SHINY_ODDS_RETAIL)
+    ? 1
+    : 0;
 }
 
 export function rollPerfectIV(): boolean {
@@ -90,11 +98,11 @@ export async function voteCommand(
 
   if (!voted.voted) {
     interaction.reply(
-      `You haven't voted yet -- vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
+      `You haven't voted yet -- vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`
     );
   } else {
     interaction.reply(
-      `You've already voted, but maybe others want to vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`,
+      `You've already voted, but maybe others want to vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`
     );
   }
 }
@@ -110,7 +118,7 @@ export async function checkServerWeather(
       boost.weather
     }**.  You will find increased spawns of **${boost.boosts.join(
       " / "
-    )}** on this server.`,
+    )}** on this server.`
   );
 }
 
