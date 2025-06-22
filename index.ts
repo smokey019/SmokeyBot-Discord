@@ -74,7 +74,7 @@ class EnhancedShardManager extends EventEmitter {
     this.manager = new ShardingManager("./bot.ts", {
       // Use .js in production
       token: config.token,
-      totalShards: config.isDev ? 1 : 'auto',
+      totalShards: config.isDev ? 1 : "auto",
       respawn: config.respawn,
       shardArgs: config.isDev ? ["--dev"] : [],
       execArgv: config.isDev ? ["--inspect=4000"] : [],
@@ -505,16 +505,14 @@ class EnhancedShardManager extends EventEmitter {
    */
   public async start(): Promise<void> {
     try {
-      logger.info(
-        `🚀 Starting SmokeyBot with 'auto' shard(s)...`
-      );
+      logger.info(`🚀 Starting SmokeyBot with 'auto' shard(s)...`);
       logger.info(
         `Environment: ${config.isDev ? "Development" : "Production"}`
       );
       logger.info(`Respawn: ${config.respawn ? "Enabled" : "Disabled"}`);
 
       const shards = await this.manager.spawn({
-        amount: config.isDev ? 1 : 'auto',
+        amount: config.isDev ? 1 : "auto",
         delay: 5000, // 5 second delay between spawns
         timeout: config.timeout,
       });

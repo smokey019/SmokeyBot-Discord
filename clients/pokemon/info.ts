@@ -35,7 +35,7 @@ const HP_STAT_FORMULA_OFFSET = 10;
 class InfoError extends Error {
   constructor(message: string, public code: string, public userId?: string) {
     super(message);
-    this.name = 'InfoError';
+    this.name = "InfoError";
   }
 }
 
@@ -53,7 +53,7 @@ interface MonsterImages {
   normal?: string;
   shiny?: string;
   gif?: string;
-  'gif-shiny'?: string;
+  "gif-shiny"?: string;
   thumbnail?: string;
   thumbnailShiny?: string;
 }
@@ -83,7 +83,12 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 /**
  * Calculates Pokemon stats using the standard formula
  */
-function calculateStat({ baseStat, iv, level, isHP = false }: StatCalculationInput): number {
+function calculateStat({
+  baseStat,
+  iv,
+  level,
+  isHP = false,
+}: StatCalculationInput): number {
   const cacheKey = `${baseStat}-${iv}-${level}-${isHP}`;
 
   if (statCalculationCache.has(cacheKey)) {
@@ -95,16 +100,16 @@ function calculateStat({ baseStat, iv, level, isHP = false }: StatCalculationInp
   if (isHP) {
     stat = Math.round(
       STAT_FORMULA_BASE * baseStat +
-      (iv * level) / 100 +
-      level +
-      HP_STAT_FORMULA_OFFSET
+        (iv * level) / 100 +
+        level +
+        HP_STAT_FORMULA_OFFSET
     );
   } else {
     stat = Math.round(
       STAT_FORMULA_BASE * baseStat +
-      (iv * level) / 100 +
-      level +
-      STAT_FORMULA_LEVEL_OFFSET
+        (iv * level) / 100 +
+        level +
+        STAT_FORMULA_LEVEL_OFFSET
     );
   }
 
@@ -115,7 +120,10 @@ function calculateStat({ baseStat, iv, level, isHP = false }: StatCalculationInp
 /**
  * Calculates all Pokemon stats from API data and IV values
  */
-function calculateAllStats(apiStats: any[], monsterData: IMonsterModel): MonsterStats {
+function calculateAllStats(
+  apiStats: any[],
+  monsterData: IMonsterModel
+): MonsterStats {
   const stats: MonsterStats = {
     hp: 0,
     attack: 0,
@@ -126,12 +134,12 @@ function calculateAllStats(apiStats: any[], monsterData: IMonsterModel): Monster
   };
 
   const statMapping: Record<string, keyof MonsterStats> = {
-    'hp': 'hp',
-    'attack': 'attack',
-    'defense': 'defense',
-    'special-attack': 'sp_attack',
-    'special-defense': 'sp_defense',
-    'speed': 'speed'
+    hp: "hp",
+    attack: "attack",
+    defense: "defense",
+    "special-attack": "sp_attack",
+    "special-defense": "sp_defense",
+    speed: "speed",
   };
 
   for (const apiStat of apiStats) {
@@ -141,7 +149,7 @@ function calculateAllStats(apiStats: any[], monsterData: IMonsterModel): Monster
         baseStat: apiStat.base_stat,
         iv: monsterData[statName],
         level: monsterData.level,
-        isHP: statName === 'hp'
+        isHP: statName === "hp",
       });
     }
   }
@@ -153,8 +161,13 @@ function calculateAllStats(apiStats: any[], monsterData: IMonsterModel): Monster
  * Calculates average IV percentage
  */
 function calculateAverageIV(monsterData: IMonsterModel): number {
-  const totalIV = monsterData.hp + monsterData.attack + monsterData.defense +
-                  monsterData.sp_attack + monsterData.sp_defense + monsterData.speed;
+  const totalIV =
+    monsterData.hp +
+    monsterData.attack +
+    monsterData.defense +
+    monsterData.sp_attack +
+    monsterData.sp_defense +
+    monsterData.speed;
   return (totalIV / IV_TOTAL) * 100;
 }
 
@@ -169,23 +182,26 @@ function getPokemonImages(monster: any, isShiny: boolean): MonsterImages {
       images.normal = monster.sprites?.other?.["official-artwork"]?.front_shiny;
       images.thumbnail = monster.sprites?.other?.["showdown"]?.front_shiny;
     } else {
-      images.normal = monster.sprites?.other?.["official-artwork"]?.front_default;
+      images.normal =
+        monster.sprites?.other?.["official-artwork"]?.front_default;
       images.thumbnail = monster.sprites?.other?.["showdown"]?.front_default;
     }
 
     // Fallback to regular sprites if official artwork not available
     if (!images.normal) {
-      images.normal = isShiny ? monster.sprites?.front_shiny : monster.sprites?.front_default;
+      images.normal = isShiny
+        ? monster.sprites?.front_shiny
+        : monster.sprites?.front_default;
     }
 
     if (!images.thumbnail) {
       images.thumbnail = images.normal;
     }
   } catch (error) {
-    logger.warn('Failed to get Pokemon images:', error);
+    logger.warn("Failed to get Pokemon images:", error);
     // Provide fallback empty strings to prevent undefined errors
-    images.normal = '';
-    images.thumbnail = '';
+    images.normal = "";
+    images.thumbnail = "";
   }
 
   return images;
@@ -199,24 +215,32 @@ function getDexImages(dexEntry: IMonsterDex, isShiny: boolean): MonsterImages {
 
   try {
     if (dexEntry.region || dexEntry.forme) {
-      images.thumbnail = isShiny ? dexEntry.images?.["gif-shiny"] : dexEntry.images?.gif;
-      images.normal = isShiny ? dexEntry.images?.shiny : dexEntry.images?.normal;
+      images.thumbnail = isShiny
+        ? dexEntry.images?.["gif-shiny"]
+        : dexEntry.images?.gif;
+      images.normal = isShiny
+        ? dexEntry.images?.shiny
+        : dexEntry.images?.normal;
     } else {
-      images.thumbnail = isShiny ? dexEntry.images?.["gif-shiny"] : dexEntry.images?.gif;
-      images.normal = isShiny ? dexEntry.images?.shiny : dexEntry.images?.normal;
+      images.thumbnail = isShiny
+        ? dexEntry.images?.["gif-shiny"]
+        : dexEntry.images?.gif;
+      images.normal = isShiny
+        ? dexEntry.images?.shiny
+        : dexEntry.images?.normal;
     }
 
     // Fallback to normal images if shiny not available
     if (isShiny && !images.normal) {
-      images.normal = dexEntry.images?.normal || '';
+      images.normal = dexEntry.images?.normal || "";
     }
     if (isShiny && !images.thumbnail) {
-      images.thumbnail = dexEntry.images?.gif || '';
+      images.thumbnail = dexEntry.images?.gif || "";
     }
   } catch (error) {
-    logger.warn('Failed to get dex images:', error);
-    images.normal = '';
-    images.thumbnail = '';
+    logger.warn("Failed to get dex images:", error);
+    images.normal = "";
+    images.thumbnail = "";
   }
 
   return images;
@@ -230,12 +254,14 @@ function formatPokemonTypes(types: any[]): string[] {
     return [];
   }
 
-  return types.map(typeData => {
-    if (typeof typeData === 'string') {
-      return capitalizeFirstLetter(typeData);
-    }
-    return capitalizeFirstLetter(typeData?.type?.name || '');
-  }).filter(Boolean);
+  return types
+    .map((typeData) => {
+      if (typeof typeData === "string") {
+        return capitalizeFirstLetter(typeData);
+      }
+      return capitalizeFirstLetter(typeData?.type?.name || "");
+    })
+    .filter(Boolean);
 }
 
 /**
@@ -258,15 +284,18 @@ function formatDate(timestamp: number, includeTime: boolean = false): string {
 
     return date.toLocaleDateString("en-US", options);
   } catch (error) {
-    logger.error('Failed to format date:', error);
-    return 'Unknown Date';
+    logger.error("Failed to format date:", error);
+    return "Unknown Date";
   }
 }
 
 /**
  * Creates embed fields for monster stats
  */
-function createStatsFields(stats: MonsterStats, monsterData: IMonsterModel): EmbedField[] {
+function createStatsFields(
+  stats: MonsterStats,
+  monsterData: IMonsterModel
+): EmbedField[] {
   const fields: EmbedField[] = [
     {
       name: "**HP**",
@@ -297,7 +326,7 @@ function createStatsFields(stats: MonsterStats, monsterData: IMonsterModel): Emb
       name: "**Speed**",
       value: `${stats.speed} \n IV: ${monsterData.speed}/${MAX_IV}\n`,
       inline: true,
-    }
+    },
   ];
 
   return fields;
@@ -313,7 +342,7 @@ function createPokemonEmbed(options: EmbedDisplayOptions): EmbedBuilder {
     embed.setAuthor({
       name: options.title,
       iconURL: options.authorIcon || img_monster_ball,
-      url: options.url
+      url: options.url,
     });
   }
 
@@ -351,18 +380,19 @@ async function sendEmbedResponse(
       await interaction.channel?.send({ embeds: [embed] });
     }
   } catch (error) {
-    logger.error('Failed to send embed response:', error);
+    logger.error("Failed to send embed response:", error);
 
     // Fallback to simple text response
     try {
-      const fallbackMessage = "Error displaying Pokémon information. Please try again.";
+      const fallbackMessage =
+        "Error displaying Pokémon information. Please try again.";
       if (isReply) {
         await queueMessage(fallbackMessage, interaction, false);
       } else {
         await interaction.channel?.send(fallbackMessage);
       }
     } catch (fallbackError) {
-      logger.error('Failed to send fallback response:', fallbackError);
+      logger.error("Failed to send fallback response:", fallbackError);
     }
   }
 }
@@ -386,7 +416,9 @@ export async function checkUniqueMonsters(
       true
     );
 
-    logger.debug(`Sent unique Pokemon count for user ${userId}: ${uniqueCount}/${totalPokemon}`);
+    logger.debug(
+      `Sent unique Pokemon count for user ${userId}: ${uniqueCount}/${totalPokemon}`
+    );
   } catch (error) {
     logger.error(`Error getting unique monsters for user ${userId}:`, error);
     await queueMessage(
@@ -405,7 +437,7 @@ export async function monsterEmbed(
   interaction: CommandInteraction
 ): Promise<void> {
   if (!monster_db) {
-    logger.warn('No monster data provided to monsterEmbed');
+    logger.warn("No monster data provided to monsterEmbed");
     return;
   }
 
@@ -416,8 +448,14 @@ export async function monsterEmbed(
     const apiMonster = await findMonsterByIDAPI(monster_db.monster_id);
 
     if (!apiMonster) {
-      logger.error(`Failed to fetch API data for monster ID: ${monster_db.monster_id}`);
-      await queueMessage("Failed to load Pokémon information. Please try again.", interaction, false);
+      logger.error(
+        `Failed to fetch API data for monster ID: ${monster_db.monster_id}`
+      );
+      await queueMessage(
+        "Failed to load Pokémon information. Please try again.",
+        interaction,
+        false
+      );
       return;
     }
 
@@ -430,7 +468,10 @@ export async function monsterEmbed(
     const averageIV = calculateAverageIV(monster_db);
 
     // Format IDs and experience
-    const nationalNumber = `${apiMonster.id}`.padStart(NATIONAL_NUMBER_PADDING, "0");
+    const nationalNumber = `${apiMonster.id}`.padStart(
+      NATIONAL_NUMBER_PADDING,
+      "0"
+    );
     const nextLevelExp = monster_db.level * EXPERIENCE_MULTIPLIER;
 
     // Get images
@@ -442,10 +483,16 @@ export async function monsterEmbed(
     const genderIcon = formatGenderIcon(apiMonster, monster_db.gender);
 
     // Create title
-    let title = `Level ${monster_db.level} ${capitalizeFirstLetter(apiMonster.name)}${genderIcon}${shinyIcon}${favoriteIcon}`;
+    let title = `Level ${monster_db.level} ${capitalizeFirstLetter(
+      apiMonster.name
+    )}${genderIcon}${shinyIcon}${favoriteIcon}`;
 
     if (monster_db.nickname) {
-      title = `Level ${monster_db.level} '${monster_db.nickname}' - ${capitalizeFirstLetter(apiMonster.name)}${genderIcon}${shinyIcon}${favoriteIcon}`;
+      title = `Level ${monster_db.level} '${
+        monster_db.nickname
+      }' - ${capitalizeFirstLetter(
+        apiMonster.name
+      )}${genderIcon}${shinyIcon}${favoriteIcon}`;
     }
 
     // Create embed fields
@@ -458,7 +505,7 @@ export async function monsterEmbed(
       {
         name: "**National №**",
         value: nationalNumber,
-        inline: true
+        inline: true,
       },
       {
         name: "**Level**",
@@ -467,14 +514,16 @@ export async function monsterEmbed(
       },
       {
         name: "**Exp**",
-        value: `${format_number(monster_db.experience)} / ${format_number(nextLevelExp)}`,
+        value: `${format_number(monster_db.experience)} / ${format_number(
+          nextLevelExp
+        )}`,
         inline: false,
       },
       {
         name: "**Type**",
         value: typeString,
         inline: false,
-      }
+      },
     ];
 
     // Add stat fields
@@ -527,15 +576,23 @@ export async function monsterEmbed(
       thumbnail: images.thumbnail,
       fields: embedFields,
       url: `${POKEMON_DB_BASE_URL}${apiMonster.id}`,
-      authorIcon: img_monster_ball
+      authorIcon: img_monster_ball,
     });
 
     await sendEmbedResponse(interaction, embed, true);
-    logger.debug(`Sent monster embed for monster ID ${monster_db.id} to user ${userId}`);
-
+    logger.debug(
+      `Sent monster embed for monster ID ${monster_db.id} to user ${userId}`
+    );
   } catch (error) {
-    logger.error(`Error creating monster embed for monster ${monster_db.id}:`, error);
-    await queueMessage("An error occurred while displaying Pokémon information. Please try again.", interaction, false);
+    logger.error(
+      `Error creating monster embed for monster ${monster_db.id}:`,
+      error
+    );
+    await queueMessage(
+      "An error occurred while displaying Pokémon information. Please try again.",
+      interaction,
+      false
+    );
   }
 }
 
@@ -553,7 +610,7 @@ function formatGenderIcon(apiMonster: any, gender: string): string {
     }
     return "";
   } catch (error) {
-    logger.warn('Failed to format gender icon:', error);
+    logger.warn("Failed to format gender icon:", error);
     return "";
   }
 }
@@ -573,12 +630,20 @@ export async function monsterInfoLatest(
       .first();
 
     if (!user) {
-      await queueMessage("You don't have any Pokémon yet. Catch some first!", interaction, false);
+      await queueMessage(
+        "You don't have any Pokémon yet. Catch some first!",
+        interaction,
+        false
+      );
       return;
     }
 
     if (!user.latest_monster) {
-      await queueMessage("No recent Pokémon found. Catch a Pokémon first!", interaction, false);
+      await queueMessage(
+        "No recent Pokémon found. Catch a Pokémon first!",
+        interaction,
+        false
+      );
       return;
     }
 
@@ -588,15 +653,25 @@ export async function monsterInfoLatest(
       .first();
 
     if (!monster) {
-      await queueMessage("Latest Pokémon not found. Please try catching another one.", interaction, false);
+      await queueMessage(
+        "Latest Pokémon not found. Please try catching another one.",
+        interaction,
+        false
+      );
       return;
     }
 
     await monsterEmbed(monster, interaction);
-
   } catch (error) {
-    logger.error(`Error getting latest monster info for user ${userId}:`, error);
-    await queueMessage("An error occurred while getting your latest Pokémon. Please try again.", interaction, false);
+    logger.error(
+      `Error getting latest monster info for user ${userId}:`,
+      error
+    );
+    await queueMessage(
+      "An error occurred while getting your latest Pokémon. Please try again.",
+      interaction,
+      false
+    );
   }
 }
 
@@ -607,8 +682,12 @@ export async function monsterInfo(
   interaction: CommandInteraction,
   monster_id: string
 ): Promise<void> {
-  if (!monster_id || typeof monster_id !== 'string') {
-    await queueMessage("Please provide a valid monster ID.", interaction, false);
+  if (!monster_id || typeof monster_id !== "string") {
+    await queueMessage(
+      "Please provide a valid monster ID.",
+      interaction,
+      false
+    );
     return;
   }
 
@@ -621,16 +700,23 @@ export async function monsterInfo(
       .first();
 
     if (!monster) {
-      await queueMessage("Monster not found. Please check the ID and try again.", interaction, false);
+      await queueMessage(
+        "Monster not found. Please check the ID and try again.",
+        interaction,
+        false
+      );
       return;
     }
 
     await monsterEmbed(monster, interaction);
     logger.debug(`Sent monster info for ID ${monster_id} to user ${userId}`);
-
   } catch (error) {
     logger.error(`Error getting monster info for ID ${monster_id}:`, error);
-    await queueMessage("An error occurred while getting Pokémon information. Please try again.", interaction, false);
+    await queueMessage(
+      "An error occurred while getting Pokémon information. Please try again.",
+      interaction,
+      false
+    );
   }
 }
 
@@ -646,12 +732,20 @@ export async function currentMonsterInfo(
     const user: IMonsterUserModel = await getUser(userId);
 
     if (!user) {
-      await queueMessage("User profile not found. Please try catching a Pokémon first.", interaction, false);
+      await queueMessage(
+        "User profile not found. Please try catching a Pokémon first.",
+        interaction,
+        false
+      );
       return;
     }
 
     if (!user.current_monster) {
-      await queueMessage("No current Pokémon selected. Use the select command to choose one.", interaction, false);
+      await queueMessage(
+        "No current Pokémon selected. Use the select command to choose one.",
+        interaction,
+        false
+      );
       return;
     }
 
@@ -661,16 +755,26 @@ export async function currentMonsterInfo(
       .first();
 
     if (!monster) {
-      await queueMessage("Current Pokémon not found. Please select a different one.", interaction, false);
+      await queueMessage(
+        "Current Pokémon not found. Please select a different one.",
+        interaction,
+        false
+      );
       return;
     }
 
     await monsterEmbed(monster, interaction);
     logger.debug(`Sent current monster info for user ${userId}`);
-
   } catch (error) {
-    logger.error(`Error getting current monster info for user ${userId}:`, error);
-    await queueMessage("An error occurred while getting your current Pokémon. Please try again.", interaction, false);
+    logger.error(
+      `Error getting current monster info for user ${userId}:`,
+      error
+    );
+    await queueMessage(
+      "An error occurred while getting your current Pokémon. Please try again.",
+      interaction,
+      false
+    );
   }
 }
 
@@ -700,12 +804,18 @@ export async function monsterDex(
     const dexEntry = findMonsterByName(searchTerm.toLowerCase());
 
     if (!dexEntry) {
-      await queueMessage(`Pokémon "${searchTerm}" not found in the Pokédex.`, interaction, false);
+      await queueMessage(
+        `Pokémon "${searchTerm}" not found in the Pokédex.`,
+        interaction,
+        false
+      );
       return;
     }
 
     // Format Pokemon data
-    const pokemonTypes = Array.isArray(dexEntry.type) ? dexEntry.type.join(" | ") : String(dexEntry.type);
+    const pokemonTypes = Array.isArray(dexEntry.type)
+      ? dexEntry.type.join(" | ")
+      : String(dexEntry.type);
     const dexNumber = `${dexEntry.id}`.padStart(DEX_NUMBER_PADDING, "0");
     const count = await monsterCount(dexEntry.id, userId);
 
@@ -759,15 +869,20 @@ export async function monsterDex(
       title: `#${dexNumber} - ${dexEntry.name.english}${legendaryIcon}`,
       description,
       image: images.normal,
-      thumbnail: images.thumbnail
+      thumbnail: images.thumbnail,
     });
 
     await sendEmbedResponse(interaction, embed, false);
-    logger.debug(`Sent dex info for ${dexEntry.name.english} to user ${userId}`);
-
+    logger.debug(
+      `Sent dex info for ${dexEntry.name.english} to user ${userId}`
+    );
   } catch (error) {
     logger.error(`Error getting dex info for user ${userId}:`, error);
-    await queueMessage("An error occurred while getting Pokédex information. Please try again.", interaction, false);
+    await queueMessage(
+      "An error occurred while getting Pokédex information. Please try again.",
+      interaction,
+      false
+    );
   }
 }
 
@@ -776,23 +891,26 @@ export async function monsterDex(
  */
 export async function monsterCount(id: number, uid: string): Promise<string> {
   if (!id || !uid) {
-    logger.warn('Invalid parameters provided to monsterCount');
-    return '0';
+    logger.warn("Invalid parameters provided to monsterCount");
+    return "0";
   }
 
   try {
     const result = await databaseClient<IMonsterModel>(MonsterTable)
-      .count('id as count')
+      .count("id as count")
       .where({
         monster_id: id,
         uid: uid,
       })
       .first();
 
-    return result || '0';
+    return result || "0";
   } catch (error) {
-    logger.error(`Error getting monster count for ID ${id}, user ${uid}:`, error);
-    return '0';
+    logger.error(
+      `Error getting monster count for ID ${id}, user ${uid}:`,
+      error
+    );
+    return "0";
   }
 }
 
@@ -801,7 +919,7 @@ export async function monsterCount(id: number, uid: string): Promise<string> {
  */
 export async function userDex(user: string): Promise<number[]> {
   if (!user) {
-    logger.warn('No user ID provided to userDex');
+    logger.warn("No user ID provided to userDex");
     return [];
   }
 
@@ -813,16 +931,16 @@ export async function userDex(user: string): Promise<number[]> {
 
   try {
     const pokemon = await databaseClient<IMonsterModel>(MonsterTable)
-      .distinct('monster_id')
-      .where('uid', user)
-      .select('monster_id');
+      .distinct("monster_id")
+      .where("uid", user)
+      .select("monster_id");
 
-    const dexArray = pokemon.map(p => p.monster_id);
+    const dexArray = pokemon.map((p) => p.monster_id);
 
     // Cache the result
     userDexCache.set(user, {
       data: dexArray,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     return dexArray;
@@ -839,7 +957,12 @@ export async function userDex(user: string): Promise<number[]> {
 /**
  * Export for testing - calculates individual stat
  */
-export function calculateSingleStat(baseStat: number, iv: number, level: number, isHP: boolean = false): number {
+export function calculateSingleStat(
+  baseStat: number,
+  iv: number,
+  level: number,
+  isHP: boolean = false
+): number {
   return calculateStat({ baseStat, iv, level, isHP });
 }
 
@@ -866,7 +989,7 @@ export function clearUserDexCache(userId?: string): void {
   } else {
     userDexCache.clear();
   }
-  logger.debug(`Cleared user dex cache${userId ? ` for user ${userId}` : ''}`);
+  logger.debug(`Cleared user dex cache${userId ? ` for user ${userId}` : ""}`);
 }
 
 /**
@@ -874,7 +997,7 @@ export function clearUserDexCache(userId?: string): void {
  */
 export function clearStatCache(): void {
   statCalculationCache.clear();
-  logger.debug('Cleared stat calculation cache');
+  logger.debug("Cleared stat calculation cache");
 }
 
 /**
@@ -888,6 +1011,6 @@ export function getCacheStats(): {
   return {
     userDexCacheSize: userDexCache.size,
     statCacheSize: statCalculationCache.size,
-    userDexKeys: Array.from(userDexCache.keys())
+    userDexKeys: Array.from(userDexCache.keys()),
   };
 }

@@ -27,10 +27,14 @@ import { getCurrentTime } from "./utils";
 const logger = getLogger("DiscordClient");
 
 // Bun-optimized configuration
-const SHARD_ID = parseInt(process.env.SHARD_ID || process.argv.find(arg => arg.startsWith('--shard='))?.split('=')[1] || '0');
-const TOTAL_SHARDS = parseInt(process.env.TOTAL_SHARDS || '1');
+const SHARD_ID = parseInt(
+  process.env.SHARD_ID ||
+    process.argv.find((arg) => arg.startsWith("--shard="))?.split("=")[1] ||
+    "0"
+);
+const TOTAL_SHARDS = parseInt(process.env.TOTAL_SHARDS || "1");
 const IS_COORDINATOR = SHARD_ID === 0;
-const IS_DEV = process.env.DEV === "true" || process.argv.includes('--dev');
+const IS_DEV = process.env.DEV === "true" || process.argv.includes("--dev");
 
 // Performance constants optimized for Bun
 const GLOBAL_COOLDOWN = 2;
@@ -160,7 +164,7 @@ function sendToManager(type: string, data: any): void {
     // Send to the enhanced shard manager
     process.send?.({ type, shardId: SHARD_ID, data, timestamp: Date.now() });
   } catch (error) {
-    logger.error('Failed to send message to manager:', error);
+    logger.error("Failed to send message to manager:", error);
   }
 }
 
@@ -179,8 +183,8 @@ function reportStats(): void {
     messagesProcessed,
   };
 
-  sendToManager('stats', stats);
-  sendToManager('health', {
+  sendToManager("stats", stats);
+  sendToManager("health", {
     healthy: isHealthy(),
     score: shardState.healthScore,
     lastActivity: shardState.lastActivity,
@@ -192,7 +196,7 @@ function reportStats(): void {
  * Send heartbeat to manager
  */
 function sendHeartbeat(): void {
-  sendToManager('heartbeat', {
+  sendToManager("heartbeat", {
     timestamp: Date.now(),
     ping: discordClient.ws.ping,
     guilds: discordClient.guilds.cache.size,
@@ -208,18 +212,20 @@ function sendHeartbeat(): void {
  */
 function updatePresence(activity?: any): void {
   try {
-    const selectedActivity = activity || (IS_COORDINATOR ?
-      ACTIVITIES[Math.floor(Math.random() * ACTIVITIES.length)] :
-      ACTIVITIES[0]
-    );
+    const selectedActivity =
+      activity ||
+      (IS_COORDINATOR
+        ? ACTIVITIES[Math.floor(Math.random() * ACTIVITIES.length)]
+        : ACTIVITIES[0]);
 
     discordClient.user?.setPresence({
-      status: globalRateLimit.isActive ? PresenceUpdateStatus.Idle : PresenceUpdateStatus.Online,
+      status: globalRateLimit.isActive
+        ? PresenceUpdateStatus.Idle
+        : PresenceUpdateStatus.Online,
       //activities: [selectedActivity]
     });
-
   } catch (error) {
-    logger.warn('Presence update failed:', error);
+    logger.warn("Presence update failed:", error);
   }
 }
 
@@ -239,12 +245,15 @@ async function executeCommand(interaction: CommandInteraction): Promise<void> {
     // Fast cooldown check
     const gcd = await getGCD(interaction.guild.id);
     if (getCurrentTime() - (gcd || 0) < GLOBAL_COOLDOWN) return;
-    if (globalRateLimit.isActive && Date.now() < globalRateLimit.endTime) return;
+    if (globalRateLimit.isActive && Date.now() < globalRateLimit.endTime)
+      return;
 
     // Parallel settings fetch (Bun optimized)
     const [settings, cache] = await Promise.all([
       getGuildSettings(interaction.guild),
-      getGuildSettings(interaction.guild).then(s => getCache(interaction.guild, s))
+      getGuildSettings(interaction.guild).then((s) =>
+        getCache(interaction.guild, s)
+      ),
     ]);
 
     if (!settings || !cache) {
@@ -253,7 +262,9 @@ async function executeCommand(interaction: CommandInteraction): Promise<void> {
     }
 
     // Find command
-    const commandFile = commands.find((_r, names) => names.includes(interaction.commandName));
+    const commandFile = commands.find((_r, names) =>
+      names.includes(interaction.commandName)
+    );
     if (!commandFile) {
       await queueMessage("Command not found.", interaction, false);
       return;
@@ -277,16 +288,19 @@ async function executeCommand(interaction: CommandInteraction): Promise<void> {
     if (IS_DEV) {
       const duration = Number(Bun.nanoseconds() - startTime) / 1_000_000; // Convert to ms
       if (duration > 1000) {
-        logger.warn(`Slow command: ${interaction.commandName} took ${duration.toFixed(2)}ms`);
+        logger.warn(
+          `Slow command: ${interaction.commandName} took ${duration.toFixed(
+            2
+          )}ms`
+        );
       }
     }
-
   } catch (error) {
     logger.error(`Command error:`, error);
     try {
       await queueMessage("Command failed. Try again.", interaction, false);
     } catch (replyError) {
-      logger.error('Error response failed:', replyError);
+      logger.error("Error response failed:", replyError);
     }
   }
 }
@@ -301,10 +315,12 @@ async function executeCommand(interaction: CommandInteraction): Promise<void> {
 async function processMessage(message: Message): Promise<void> {
   try {
     // Fast filtering
-    if (EXCLUDED_USERS.has(message.author.id) ||
-        message.author.bot ||
-        !message.guild ||
-        globalRateLimit.isActive) {
+    if (
+      EXCLUDED_USERS.has(message.author.id) ||
+      message.author.bot ||
+      !message.guild ||
+      globalRateLimit.isActive
+    ) {
       return;
     }
 
@@ -313,7 +329,7 @@ async function processMessage(message: Message): Promise<void> {
     // Optimized settings fetch
     const [settings, cache] = await Promise.all([
       getGuildSettings(message.guild),
-      getGuildSettings(message.guild).then(s => getCache(message.guild, s))
+      getGuildSettings(message.guild).then((s) => getCache(message.guild, s)),
     ]);
 
     if (!cache?.settings?.smokemon_enabled) return;
@@ -321,16 +337,24 @@ async function processMessage(message: Message): Promise<void> {
     // Parallel Pokemon processing
     const tasks = [
       checkExpGain(message.author, message.guild, undefined),
-      checkSpawn(message as unknown as CommandInteraction, cache)
+      checkSpawn(message as unknown as CommandInteraction, cache),
     ];
 
     // Twitter link replacement (optimized)
-    if (message.author.id === TWITTER_USER && /(?:twitter|x)\.com/gi.test(message.content)) {
+    if (
+      message.author.id === TWITTER_USER &&
+      /(?:twitter|x)\.com/gi.test(message.content)
+    ) {
       tasks.push(
-        message.reply({
-          content: message.content.replace(/(?:twitter|x)\.com/gi, "fxtwitter.com"),
-          allowedMentions: { repliedUser: false }
-        }).catch(err => logger.warn('Twitter replacement failed:', err))
+        message
+          .reply({
+            content: message.content.replace(
+              /(?:twitter|x)\.com/gi,
+              "fxtwitter.com"
+            ),
+            allowedMentions: { repliedUser: false },
+          })
+          .catch((err) => logger.warn("Twitter replacement failed:", err))
       );
     }
 
@@ -347,9 +371,8 @@ async function processMessage(message: Message): Promise<void> {
         logger.warn(`Slow message processing: ${duration.toFixed(2)}ms`);
       }
     }
-
   } catch (error) {
-    logger.error('Message processing error:', error);
+    logger.error("Message processing error:", error);
   }
 }
 
@@ -362,19 +385,24 @@ async function processMessage(message: Message): Promise<void> {
  */
 async function registerGuildCommands(guild: Guild): Promise<void> {
   try {
-    const token = IS_DEV ? process.env.DISCORD_TOKEN_DEV : process.env.DISCORD_TOKEN;
-    const clientId = IS_DEV ? process.env.API_CLIENT_ID_DEV : process.env.API_CLIENT_ID;
+    const token = IS_DEV
+      ? process.env.DISCORD_TOKEN_DEV
+      : process.env.DISCORD_TOKEN;
+    const clientId = IS_DEV
+      ? process.env.API_CLIENT_ID_DEV
+      : process.env.API_CLIENT_ID;
 
     if (!token || !clientId) return;
 
-    const rest = new REST({ version: '10', timeout: 15000 }).setToken(token);
+    const rest = new REST({ version: "10", timeout: 15000 }).setToken(token);
     await rest.put(Routes.applicationGuildCommands(clientId, guild.id), {
       body: slashCommands,
     });
 
     shardState.guildsReady.add(guild.id);
-    logger.info(`Registered commands for '${guild.name}' (${slashCommands.length} commands)`);
-
+    logger.info(
+      `Registered commands for '${guild.name}' (${slashCommands.length} commands)`
+    );
   } catch (error) {
     logger.error(`Command registration failed for ${guild.name}:`, error);
   }
@@ -389,7 +417,9 @@ async function registerGuildCommands(guild: Guild): Promise<void> {
  */
 function handleRateLimit(rateLimitData: any): void {
   const minutes = Math.round(rateLimitData.timeToReset / 60000);
-  logger.warn(`Rate limited for ${minutes}m (${rateLimitData.route || 'unknown'})`);
+  logger.warn(
+    `Rate limited for ${minutes}m (${rateLimitData.route || "unknown"})`
+  );
 
   // Update state
   globalRateLimit.isActive = true;
@@ -400,7 +430,7 @@ function handleRateLimit(rateLimitData: any): void {
   rateLimited = true;
 
   // Notify manager
-  sendToManager('rateLimit', globalRateLimit);
+  sendToManager("rateLimit", globalRateLimit);
   updatePresence(); // Show idle status
 
   // Reset after timeout
@@ -410,9 +440,9 @@ function handleRateLimit(rateLimitData: any): void {
     shardState.rateLimited = false;
     rateLimited = false;
 
-    sendToManager('rateLimitEnd', {});
+    sendToManager("rateLimitEnd", {});
     updatePresence(); // Reset status
-    logger.info('Rate limit ended');
+    logger.info("Rate limit ended");
   }, rateLimitData.timeToReset);
 }
 
@@ -425,11 +455,13 @@ function handleRateLimit(rateLimitData: any): void {
  */
 function isHealthy(): boolean {
   const now = Date.now();
-  return !shardState.initializing &&
-         !shardState.rateLimited &&
-         (now - shardState.lastActivity) < 300000 &&
-         discordClient.isReady() &&
-         shardState.reconnectAttempts < MAX_RECONNECT_ATTEMPTS;
+  return (
+    !shardState.initializing &&
+    !shardState.rateLimited &&
+    now - shardState.lastActivity < 300000 &&
+    discordClient.isReady() &&
+    shardState.reconnectAttempts < MAX_RECONNECT_ATTEMPTS
+  );
 }
 
 /**
@@ -441,7 +473,7 @@ async function shutdown(): Promise<void> {
     await discordClient.destroy();
     process.exit(0);
   } catch (error) {
-    logger.error('Shutdown error:', error);
+    logger.error("Shutdown error:", error);
     process.exit(1);
   }
 }
@@ -463,9 +495,9 @@ discordClient.on("ready", async () => {
       setTimeout(async () => {
         try {
           await registerSlashCommands();
-          logger.info('Global commands registered');
+          logger.info("Global commands registered");
         } catch (error) {
-          logger.error('Global command registration failed:', error);
+          logger.error("Global command registration failed:", error);
         }
       }, 15000);
 
@@ -486,9 +518,8 @@ discordClient.on("ready", async () => {
     setTimeout(reportStats, 5000);
 
     logger.info(`Discord client ready.`);
-
   } catch (error) {
-    logger.error('Ready event error:', error);
+    logger.error("Ready event error:", error);
     shardState.initializing = false;
     initializing = false;
   }
@@ -531,40 +562,40 @@ discordClient.on("shardReconnecting", (shardId: number) => {
   logger.warn(`Shard ${shardId}: Reconnecting...`);
 });
 
-discordClient.on("error", (error) => logger.error('Client error:', error));
-discordClient.on("warn", (warning) => logger.warn('Client warning:', warning));
+discordClient.on("error", (error) => logger.error("Client error:", error));
+discordClient.on("warn", (warning) => logger.warn("Client warning:", warning));
 
 // ============================================================================
 // PROCESS HANDLERS
 // ============================================================================
 
 // Handle messages from shard manager
-process.on('message', (message: any) => {
+process.on("message", (message: any) => {
   try {
-    if (message.type === 'presenceUpdate') {
+    if (message.type === "presenceUpdate") {
       updatePresence(message.data);
-    } else if (message.type === 'shutdown') {
+    } else if (message.type === "shutdown") {
       shutdown();
-    } else if (message.type === 'rateLimitUpdate') {
+    } else if (message.type === "rateLimitUpdate") {
       Object.assign(globalRateLimit, message.data);
       shardState.rateLimited = globalRateLimit.isActive;
       rateLimited = globalRateLimit.isActive;
     }
   } catch (error) {
-    logger.error('Message handling error:', error);
+    logger.error("Message handling error:", error);
   }
 });
 
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
 
-process.on('unhandledRejection', (reason) => {
-  logger.error('Unhandled rejection:', reason);
+process.on("unhandledRejection", (reason) => {
+  logger.error("Unhandled rejection:", reason);
 });
 
-process.on('uncaughtException', (error) => {
-  logger.error('Uncaught exception:', error);
-  sendToManager('emergency', { error: error.message, shardId: SHARD_ID });
+process.on("uncaughtException", (error) => {
+  logger.error("Uncaught exception:", error);
+  sendToManager("emergency", { error: error.message, shardId: SHARD_ID });
   process.exit(1);
 });
 
@@ -602,21 +633,24 @@ export const emergencyShutdown = shutdown;
  */
 async function startBot(): Promise<void> {
   try {
-    const token = IS_DEV ? process.env.DISCORD_TOKEN_DEV : process.env.DISCORD_TOKEN;
+    const token = IS_DEV
+      ? process.env.DISCORD_TOKEN_DEV
+      : process.env.DISCORD_TOKEN;
 
     if (!token) {
-      throw new Error(`Missing token: ${IS_DEV ? 'DISCORD_TOKEN_DEV' : 'DISCORD_TOKEN'}`);
+      throw new Error(
+        `Missing token: ${IS_DEV ? "DISCORD_TOKEN_DEV" : "DISCORD_TOKEN"}`
+      );
     }
 
     logger.info(`Starting SmokeyBot Shard ${SHARD_ID}/${TOTAL_SHARDS}`);
     logger.info(`Runtime: Bun ${Bun.version}`);
-    logger.info(`Mode: ${IS_DEV ? 'Development' : 'Production'}`);
-    logger.info(`Role: ${IS_COORDINATOR ? 'Coordinator' : 'Worker'}`);
+    logger.info(`Mode: ${IS_DEV ? "Development" : "Production"}`);
+    logger.info(`Role: ${IS_COORDINATOR ? "Coordinator" : "Worker"}`);
 
     await discordClient.login(token);
-
   } catch (error) {
-    logger.error('Startup failed:', error);
+    logger.error("Startup failed:", error);
     process.exit(1);
   }
 }
