@@ -79,8 +79,8 @@ export function rollShiny(): 0 | 1 {
   return getRndInteger(1, parseInt(process.env.SHINY_ODDS_RETAIL)) >= parseInt(process.env.SHINY_ODDS_RETAIL) ? 1 : 0;
 }
 
-export function rollPerfectIV(): 0 | 1 {
-  return getRndInteger(1, 45) >= 45 ? 1 : 0;
+export function rollPerfectIV(): boolean {
+  return getRndInteger(1, 45) >= 45 ? true : false;
 }
 
 export async function voteCommand(
