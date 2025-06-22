@@ -403,7 +403,7 @@ export async function registerSlashCommands(): Promise<void> {
     }
 
     const registrationTime = Date.now() - startTime;
-    logger.info(`Successfully registered ${validSlashCommands.length} slash commands in ${registrationTime}ms`);
+    logger.info(`Successfully registered ${validSlashCommands.length} slash commands in ${msToDetailed(registrationTime)}`);
 
   } catch (error) {
     logger.error('Failed to register slash commands:', error);
