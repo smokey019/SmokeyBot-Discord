@@ -47,7 +47,7 @@ const WILD_ENCOUNTER_PHRASES = [
   "A {pokemon} has appeared!",
   "Wild {pokemon} appeared!",
   "Suddenly, a wild {pokemon} appeared!",
-  "A wild {pokemon} leaped out!"
+  "A wild {pokemon} leaped out!",
 ] as const;
 
 // Types for better type safety
@@ -68,8 +68,6 @@ interface SpawnResult {
   monster?: any;
 }
 
-
-
 /**
  * Get random encounter phrase with Pokémon name
  * @param pokemonName - Name of the Pokémon
@@ -78,7 +76,7 @@ interface SpawnResult {
 function getRandomEncounterPhrase(pokemonName: string): string {
   const randomIndex = Math.floor(Math.random() * WILD_ENCOUNTER_PHRASES.length);
   const phrase = WILD_ENCOUNTER_PHRASES[randomIndex];
-  return phrase.replace('{pokemon}', pokemonName);
+  return phrase.replace("{pokemon}", pokemonName);
 }
 
 /**
@@ -97,7 +95,9 @@ function generateSpawnTimer(): number {
  * @returns Random Pokémon ID
  */
 function getRandomPokemonId(): number {
-  return Math.floor(Math.random() * (POKEMON_ID_MAX - POKEMON_ID_MIN) + POKEMON_ID_MIN);
+  return Math.floor(
+    Math.random() * (POKEMON_ID_MAX - POKEMON_ID_MIN) + POKEMON_ID_MIN
+  );
 }
 
 /**
@@ -107,10 +107,11 @@ function getRandomPokemonId(): number {
  */
 function isValidMonster(monster: Pokemon): boolean {
   if (!monster) return false;
-  if (!monster.name.includes('-')) return false;
+  if (!monster.name.includes("-")) return false;
 
   // Check for required image data
-  const hasOfficialArt = monster.sprites?.other?.["official-artwork"]?.front_default;
+  const hasOfficialArt =
+    monster.sprites?.other?.["official-artwork"]?.front_default;
   const hasShowdownSprite = monster.sprites?.other?.showdown?.front_default;
   const hasNormalImage = monster.sprites?.other?.home?.front_default;
 
@@ -126,7 +127,7 @@ function isValidMonster(monster: Pokemon): boolean {
 function isMonsterBoosted(monster: Pokemon, boostedTypes: string[]): boolean {
   if (!monster.types || !Array.isArray(boostedTypes)) return false;
 
-  return monster.types.some(typeObj =>
+  return monster.types.some((typeObj) =>
     boostedTypes.includes(typeObj.type.name)
   );
 }
@@ -140,7 +141,7 @@ function createSpawnEmbed(monster: Pokemon): EmbedBuilder {
   const pokemonName = monster.name;
   const encounterPhrase = getRandomEncounterPhrase(pokemonName);
 
-  const imageUrl = monster.sprites?.other?.["official-artwork"]?.front_default
+  const imageUrl = monster.sprites?.other?.["official-artwork"]?.front_default;
 
   const thumbnailUrl = monster.sprites?.other?.showdown?.front_default;
 
@@ -179,7 +180,10 @@ async function findSpawnableMonster(
     const boost = await getBoostedWeatherSpawns(interaction, cache);
     const boostedTypes = boost?.boosts || [];
 
-    while (attempts < MAX_BOOST_ATTEMPTS && (!monster || (!isBoosted && attempts < 5))) {
+    while (
+      attempts < MAX_BOOST_ATTEMPTS &&
+      (!monster || (!isBoosted && attempts < 5))
+    ) {
       try {
         const randomId = getRandomPokemonId();
         const candidate = await findMonsterByIDAPI(randomId);
@@ -208,13 +212,18 @@ async function findSpawnableMonster(
 
         attempts++;
       } catch (error) {
-        logger.warn(`Error fetching monster on attempt ${attempts + 1}:`, error);
+        logger.warn(
+          `Error fetching monster on attempt ${attempts + 1}:`,
+          error
+        );
         attempts++;
       }
     }
 
     if (monster && isBoosted) {
-      logger.debug(`Found weather-boosted ${monster.name} after ${attempts} attempts`);
+      logger.debug(
+        `Found weather-boosted ${monster.name} after ${attempts} attempts`
+      );
     } else if (monster) {
       logger.debug(`Found regular ${monster.name} after ${attempts} attempts`);
     }
@@ -294,7 +303,9 @@ export async function spawnMonster(
     // Find the spawn channel
     const channelName = cache.settings?.specific_channel;
     if (!channelName) {
-      logger.error(`No spawn channel configured for guild ${interaction.guild?.name}`);
+      logger.error(
+        `No spawn channel configured for guild ${interaction.guild?.name}`
+      );
       return { success: false, error: "No spawn channel configured" };
     }
 
@@ -365,7 +376,6 @@ export async function spawnMonster(
         return { success: false, error: "Message sending failed" };
       }
     }
-
   } catch (error) {
     logger.error("Error in spawnMonster:", error);
     return { success: false, error: `Unexpected error: ${error.message}` };
@@ -388,11 +398,14 @@ export async function getSpawn(guildId: string): Promise<SpawnRecord | null> {
       .where({ guild: guildId })
       .first();
 
-    if (result && typeof result.spawn_data === 'string') {
+    if (result && typeof result.spawn_data === "string") {
       try {
         result.spawn_data = JSON.parse(result.spawn_data);
       } catch (parseError) {
-        logger.error(`Error parsing spawn_data for guild ${guildId}:`, parseError);
+        logger.error(
+          `Error parsing spawn_data for guild ${guildId}:`,
+          parseError
+        );
         return null;
       }
     }
@@ -410,7 +423,10 @@ export async function getSpawn(guildId: string): Promise<SpawnRecord | null> {
  * @param spawnData - Spawn data to store
  * @returns Promise<boolean>
  */
-export async function updateSpawn(guildId: string, spawnData: SpawnData): Promise<boolean> {
+export async function updateSpawn(
+  guildId: string,
+  spawnData: SpawnData
+): Promise<boolean> {
   try {
     if (!guildId) {
       throw new Error("Guild ID is required");
@@ -475,7 +491,11 @@ export async function forceSpawn(
     }
 
     const monsterId = parseFloat(pokemonOption.toString());
-    if (isNaN(monsterId) || monsterId < POKEMON_ID_MIN || monsterId > POKEMON_ID_MAX) {
+    if (
+      isNaN(monsterId) ||
+      monsterId < POKEMON_ID_MIN ||
+      monsterId > POKEMON_ID_MAX
+    ) {
       return { success: false, error: "Invalid Pokémon ID" };
     }
 
@@ -537,14 +557,18 @@ export async function forceSpawn(
       // Fallback: try direct channel send
       try {
         await spawnChannel.send({ embeds: [embed] });
-        logger.info(`Forced spawn message sent via fallback for ${monster.name}`);
+        logger.info(
+          `Forced spawn message sent via fallback for ${monster.name}`
+        );
         return { success: true, monster };
       } catch (fallbackError) {
-        logger.error("Fallback forced spawn message also failed:", fallbackError);
+        logger.error(
+          "Fallback forced spawn message also failed:",
+          fallbackError
+        );
         return { success: false, error: "Message sending failed" };
       }
     }
-
   } catch (error) {
     logger.error("Error in forceSpawn:", error);
     return { success: false, error: `Unexpected error: ${error.message}` };
@@ -583,7 +607,13 @@ export async function getSpawnStats(guildId: string) {
 
 // Export utility functions for testing
 export {
-  WILD_ENCOUNTER_PHRASES, createSpawnEmbed,
-  findSpawnableMonster, generateSpawnTimer, getRandomEncounterPhrase, getRandomPokemonId, isMonsterBoosted, isValidMonster
+  WILD_ENCOUNTER_PHRASES,
+  createSpawnEmbed,
+  findSpawnableMonster,
+  generateSpawnTimer,
+  getRandomEncounterPhrase,
+  getRandomPokemonId,
+  isMonsterBoosted,
+  isValidMonster
 };
 
