@@ -1,4 +1,4 @@
-import { Collection, CommandInteraction } from "discord.js";
+import { CommandInteraction } from "discord.js";
 import { databaseClient } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
 import { MonsterTable, type IMonsterModel } from "../../models/Monster";
@@ -8,74 +8,18 @@ import {
 } from "../../models/MonsterUser";
 import { getRndInteger } from "../../utils";
 import { queueMessage } from "../message_queue";
-import PokeDex from "./data/pokedex_min.json";
-import {
-  GenerationEight,
-  GenerationExtras,
-  GenerationFive,
-  GenerationFour,
-  GenerationOne,
-  GenerationSeven,
-  GenerationSix,
-  GenerationThree,
-  GenerationTwo,
-} from "./pokemon-list";
 
 const logger = getLogger("Pokémon");
 
-// Constants for better maintainability
-const MONSTER_POOL_BOOST_ITERATIONS = 100;
-const RANDOM_BOOSTS_PER_ITERATION = 8;
-const GENERATION_BOOST_ITERATIONS = 3;
-
-// Cache for API responses to reduce redundant requests
-const apiCache = new Map<string, { data: any; timestamp: number }>();
+// Constants for configuration
+const API_BASE_URL = "https://pokeapi.co/api/v2";
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const API_TIMEOUT = 10000; // 10 seconds
+const MAX_POKEMON_ID = 1025; // Current max Pokemon ID
+const MIN_POKEMON_ID = 1;
 
-// Enhanced error handling
-class MonsterError extends Error {
-  constructor(message: string, public code: string) {
-    super(message);
-    this.name = "MonsterError";
-  }
-}
-
-// Pool and Dex with better initialization
-const MonsterPool: Array<number> = [];
-export const MonsterDex: Collection<number, IMonsterDex> = new Collection();
-
-export type IMonsterDex = (typeof PokeDex)[0];
-
-// Improved generations structure with proper typing
-interface Generations {
-  one: number[];
-  two: number[];
-  three: number[];
-  four: number[];
-  five: number[];
-  six: number[];
-  seven: number[];
-  eight: number[];
-  galar: IMonsterDex[];
-  alola: IMonsterDex[];
-  extras: number[];
-}
-
-let Gens: Generations | undefined = {
-  one: GenerationOne,
-  two: GenerationTwo,
-  three: GenerationThree,
-  four: GenerationFour,
-  five: GenerationFive,
-  six: GenerationSix,
-  seven: GenerationSeven,
-  eight: GenerationEight,
-  galar: [],
-  alola: [],
-  extras: GenerationExtras,
-};
-
-export interface Pokemon {
+// Pokemon interface from PokeAPI
+interface Pokemon {
   abilities: Array<{
     ability: {
       name: string;
@@ -360,353 +304,493 @@ export interface Pokemon {
   weight: number;
 }
 
-/**
- * Validates if a monster entry has required fields
- */
-function isValidMonsterEntry(element: IMonsterDex): boolean {
-  return !!(
-    element?.name?.english &&
-    element?.type &&
-    element?.images?.normal &&
-    !element.name.english.match(/Gmax/)
-  );
-}
-
-/**
- * Safely adds monster to pool with validation
- */
-function addToMonsterPool(monsterId: number, count: number = 1): void {
-  if (typeof monsterId !== "number") {
-    logger.warn(`Invalid monster ID attempted to add to pool: ${monsterId}`);
-    return;
-  }
-
-  for (let i = 0; i < count; i++) {
-    MonsterPool.push(monsterId);
-  }
-}
-
-/**
- * Enhanced Pokedex formation with better error handling and performance
- */
-async function formDex(): Promise<void> {
-  try {
-    logger.info("Forming Pokedex..");
-
-    // Process each Pokemon entry
-    for (const element of PokeDex) {
-      try {
-        // Validate and add to monster pool
-        if (isValidMonsterEntry(element)) {
-          // Handle forme filtering
-          if (element.forme && !element.forme.match("Mega")) {
-            continue;
-          }
-
-          MonsterPool.push(element.id);
-
-          // Categorize regional variants
-          if (element.region === "Alola") {
-            Gens!.alola.push(element);
-          } else if (element.region === "Galar") {
-            Gens!.galar.push(element);
-          }
-        }
-
-        // Add to MonsterDex if valid
-        if (isValidMonsterEntry(element)) {
-          MonsterDex.set(element.id, element);
-        }
-      } catch (error) {
-        logger.error(
-          `Error processing Pokemon entry ${element?.id || "unknown"}:`,
-          error
-        );
-        continue; // Continue processing other entries
-      }
-    }
-
-    // Enhanced monster pool boosting with better performance
-    await boostMonsterPool();
-
-    // Clear generations to save memory
-    Gens = undefined;
-
-    logger.info(
-      `Finished forming Pokedex. Pool size: ${MonsterPool.length}, Dex size: ${MonsterDex.size}`
-    );
-  } catch (error) {
-    logger.error("Critical error during Pokedex formation:", error);
-    throw new MonsterError("Failed to form Pokedex", "POKEDEX_FORMATION_ERROR");
-  }
-}
-
-/**
- * Optimized monster pool boosting logic
- */
-async function boostMonsterPool(): Promise<void> {
-  if (!Gens) return;
-
-  try {
-    // Add random boosts more efficiently
-    for (let index = 0; index < MONSTER_POOL_BOOST_ITERATIONS; index++) {
-      for (let j = 0; j < RANDOM_BOOSTS_PER_ITERATION; j++) {
-        const randomMonster = MonsterDex.random();
-        if (randomMonster) {
-          MonsterPool.push(randomMonster.id);
-        }
-      }
-    }
-
-    // Generation-specific boosts with configurable weights
-    const generationWeights: Record<
-      keyof Omit<Generations, "galar" | "alola">,
-      number
-    > = {
-      one: 3,
-      two: 9,
-      three: 2,
-      four: 2,
-      five: 2,
-      six: 2,
-      seven: 2,
-      eight: 2,
-      extras: 1,
+// Pokemon Species interface for additional data
+interface PokemonSpecies {
+  id: number;
+  name: string;
+  order: number;
+  gender_rate: number;
+  capture_rate: number;
+  base_happiness: number;
+  is_baby: boolean;
+  is_legendary: boolean;
+  is_mythical: boolean;
+  hatch_counter: number;
+  has_gender_differences: boolean;
+  forms_switchable: boolean;
+  growth_rate: {
+    name: string;
+    url: string;
+  };
+  pokedex_numbers: Array<{
+    entry_number: number;
+    pokedex: {
+      name: string;
+      url: string;
     };
+  }>;
+  egg_groups: Array<{
+    name: string;
+    url: string;
+  }>;
+  color: {
+    name: string;
+    url: string;
+  };
+  shape: {
+    name: string;
+    url: string;
+  };
+  evolves_from_species: {
+    name: string;
+    url: string;
+  } | null;
+  evolution_chain: {
+    url: string;
+  };
+  habitat: {
+    name: string;
+    url: string;
+  } | null;
+  generation: {
+    name: string;
+    url: string;
+  };
+  names: Array<{
+    name: string;
+    language: {
+      name: string;
+      url: string;
+    };
+  }>;
+  flavor_text_entries: Array<{
+    flavor_text: string;
+    language: {
+      name: string;
+      url: string;
+    };
+    version: {
+      name: string;
+      url: string;
+    };
+  }>;
+  form_descriptions: Array<{
+    description: string;
+    language: {
+      name: string;
+      url: string;
+    };
+  }>;
+  genera: Array<{
+    genus: string;
+    language: {
+      name: string;
+      url: string;
+    };
+  }>;
+  varieties: Array<{
+    is_default: boolean;
+    pokemon: {
+      name: string;
+      url: string;
+    };
+  }>;
+}
 
-    for (
-      let iteration = 0;
-      iteration < GENERATION_BOOST_ITERATIONS;
-      iteration++
-    ) {
-      Object.entries(generationWeights).forEach(([gen, weight]) => {
-        const generation = Gens![gen as keyof typeof generationWeights];
-        if (Array.isArray(generation)) {
-          generation.forEach((element) => {
-            addToMonsterPool(element, weight);
-          });
-        }
-      });
+// Evolution chain interface
+interface EvolutionChain {
+  id: number;
+  baby_trigger_item: {
+    name: string;
+    url: string;
+  } | null;
+  chain: {
+    is_baby: boolean;
+    species: {
+      name: string;
+      url: string;
+    };
+    evolution_details: Array<{
+      item: {
+        name: string;
+        url: string;
+      } | null;
+      trigger: {
+        name: string;
+        url: string;
+      };
+      gender: number | null;
+      held_item: {
+        name: string;
+        url: string;
+      } | null;
+      known_move: {
+        name: string;
+        url: string;
+      } | null;
+      known_move_type: {
+        name: string;
+        url: string;
+      } | null;
+      location: {
+        name: string;
+        url: string;
+      } | null;
+      min_level: number | null;
+      min_happiness: number | null;
+      min_beauty: number | null;
+      min_affection: number | null;
+      needs_overworld_rain: boolean;
+      party_species: {
+        name: string;
+        url: string;
+      } | null;
+      party_type: {
+        name: string;
+        url: string;
+      } | null;
+      relative_physical_stats: number | null;
+      time_of_day: string;
+      trade_species: {
+        name: string;
+        url: string;
+      } | null;
+      turn_upside_down: boolean;
+    }>;
+    evolves_to: any[]; // Recursive structure
+  };
+}
 
-      // Handle regional variants
-      ["alola", "galar"].forEach((region) => {
-        const regionMons = Gens![region as "alola" | "galar"];
-        regionMons.forEach((element) => {
-          addToMonsterPool(element.id, 2);
-        });
-      });
-    }
-  } catch (error) {
-    logger.error("Error during monster pool boosting:", error);
-    // Continue execution even if boosting fails
+// Error handling
+class PokemonError extends Error {
+  constructor(message: string, public code: string) {
+    super(message);
+    this.name = "PokemonError";
   }
 }
 
+// Cache for API responses
+const apiCache = new Map<string, { data: any; timestamp: number }>();
+
 /**
- * API caching utility
+ * Check if cached data is still valid
+ * @param key - Cache key
+ * @returns Cached data or null if expired/not found
  */
 function getCachedData(key: string): any | null {
   const cached = apiCache.get(key);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return cached.data;
   }
+
+  // Remove expired cache entry
+  if (cached) {
+    apiCache.delete(key);
+  }
+
   return null;
 }
 
 /**
- * Set cached data
+ * Set data in cache
+ * @param key - Cache key
+ * @param data - Data to cache
  */
 function setCachedData(key: string, data: any): void {
   apiCache.set(key, { data, timestamp: Date.now() });
 }
 
 /**
- * Enhanced API fetch with error handling and caching
+ * Make API request with caching and error handling
+ * @param url - API endpoint URL
+ * @param cacheKey - Cache key for the request
+ * @returns Promise resolving to API response data
  */
-async function fetchWithCache(url: string, cacheKey: string): Promise<any> {
+async function makeApiRequest(url: string, cacheKey: string): Promise<any> {
+  // Check cache first
   const cached = getCachedData(cacheKey);
   if (cached) {
     return cached;
   }
 
   try {
-    const response = await fetch(url);
+    // Create request with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
+    const response = await fetch(url, {
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
-      throw new MonsterError(
-        `HTTP ${response.status}: ${response.statusText}`,
+      throw new PokemonError(
+        `API request failed: ${response.status} ${response.statusText}`,
         "API_ERROR"
       );
     }
 
     const data = await response.json();
+
+    // Cache successful response
     setCachedData(cacheKey, data);
+
     return data;
   } catch (error) {
-    logger.error(`Failed to fetch from ${url}:`, error);
+    if (error.name === "AbortError") {
+      throw new PokemonError("API request timed out", "TIMEOUT_ERROR");
+    }
+
+    logger.error(`API request failed for ${url}:`, error);
     throw error;
   }
 }
 
-// Initialize the Pokedex
-formDex().catch((error) => {
-  logger.error("Failed to initialize Pokedex:", error);
-});
-
-// ============================================================================
-// PUBLIC API - All functions below maintain backward compatibility
-// ============================================================================
-
 /**
- * Return monster spawn pool
- * @returns Array of monster IDs in the spawn pool
+ * Validate Pokemon ID
+ * @param id - Pokemon ID to validate
+ * @returns boolean indicating if ID is valid
  */
-export function getAllMonsters(): number[] {
-  return [...MonsterPool]; // Return a copy to prevent external modification
+function isValidPokemonId(id: number): boolean {
+  return typeof id === "number" && id >= MIN_POKEMON_ID && id <= MAX_POKEMON_ID;
 }
 
 /**
- * Return pokedex Collection
- * @returns Collection containing all monster dex data
+ * Normalize Pokemon name for API requests
+ * @param name - Pokemon name
+ * @returns Normalized name
  */
-export function getPokedex(): Collection<number, IMonsterDex> {
-  return MonsterDex;
+function normalizePokemonName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[♂♀]/g, "") // Remove gender symbols
+    .replace(/[^a-z0-9-]/g, "-") // Replace special chars with hyphens
+    .replace(/-+/g, "-") // Replace multiple hyphens with single
+    .replace(/^-|-$/g, ""); // Remove leading/trailing hyphens
 }
 
 /**
- * Get a random monster from the spawn pool
- * @returns Random monster ID from the pool
+ * Get Pokemon name from API response (handles different formats)
+ * @param pokemon - Pokemon API response
+ * @returns Capitalized Pokemon name
+ */
+function getPokemonDisplayName(pokemon: Pokemon): string {
+  if (!pokemon.name) return "Unknown";
+
+  return pokemon.name
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+/**
+ * Check if Pokemon has valid sprite images
+ * @param pokemon - Pokemon API response
+ * @returns boolean indicating if Pokemon has usable images
+ */
+function hasValidSprites(pokemon: Pokemon): boolean {
+  if (!pokemon.sprites) return false;
+
+  // Check for official artwork (preferred)
+  if (pokemon.sprites.other?.["official-artwork"]?.front_default) return true;
+
+  // Check for showdown sprites
+  if (pokemon.sprites.other?.showdown?.front_default) return true;
+
+  // Check for basic sprites
+  if (pokemon.sprites.front_default) return true;
+
+  return false;
+}
+
+/**
+ * Get random Pokemon ID for spawning
+ * @returns Random Pokemon ID
  */
 export function getRandomMonster(): number {
-  if (MonsterPool.length === 0) {
-    logger.warn("Monster pool is empty, cannot get random monster");
-    return 1; // Fallback to Bulbasaur
-  }
-  return MonsterPool[getRndInteger(0, MonsterPool.length - 1)];
+  return getRndInteger(MIN_POKEMON_ID, MAX_POKEMON_ID);
 }
 
 /**
- * Get monster's dex info by its number
- * @param id Monster number
- * @returns Monster dex data or undefined if not found
+ * Get Pokemon data from PokeAPI by ID
+ * @param id - Pokemon ID
+ * @returns Promise resolving to Pokemon data
  */
-export async function findMonsterByID(
-  id: number
-): Promise<IMonsterDex | undefined> {
-  if (typeof id !== "number" || id <= 0) {
-    logger.warn(`Invalid monster ID provided: ${id}`);
-    return undefined;
+export async function findMonsterByID(id: number): Promise<Pokemon | null> {
+  if (!isValidPokemonId(id)) {
+    logger.warn(`Invalid Pokemon ID provided: ${id}`);
+    return null;
   }
 
   try {
-    const monster = MonsterDex.find((mon) => mon.id === id);
-    return monster;
+    const cacheKey = `pokemon-${id}`;
+    const pokemon = await makeApiRequest(
+      `${API_BASE_URL}/pokemon/${id}`,
+      cacheKey
+    );
+    return pokemon as Pokemon;
   } catch (error) {
-    logger.error(`Error finding monster by ID ${id}:`, error);
-    return undefined;
+    logger.error(`Error fetching Pokemon with ID ${id}:`, error);
+    return null;
   }
 }
 
 /**
- * Get monster data from PokeAPI by ID
- * @param id Monster ID
- * @returns API response data
+ * Get Pokemon data from PokeAPI by ID (alias for compatibility)
+ * @param id - Pokemon ID
+ * @returns Promise resolving to Pokemon data
  */
-export async function findMonsterByIDAPI(id: number): Promise<Pokemon> {
-  if (typeof id !== "number" || id <= 0) {
-    throw new MonsterError("Invalid monster ID provided", "INVALID_ID");
-  }
-
-  const fixedId = id.toString().replace(".", "");
-  const cacheKey = `pokemon-${fixedId}`;
-
-  const pokemon: Pokemon = await fetchWithCache(
-    `https://pokeapi.co/api/v2/pokemon/${fixedId}`,
-    cacheKey
-  ).then((r) => r.json());
-
-  return pokemon;
+export async function findMonsterByIDAPI(id: number): Promise<Pokemon | null> {
+  return findMonsterByID(id);
 }
 
 /**
- * Get monster's dex info by ID from local collection (synchronous)
- * @param id Monster number
- * @returns Monster dex data or undefined if not found
+ * Get Pokemon data from PokeAPI by name
+ * @param name - Pokemon name
+ * @returns Promise resolving to Pokemon data
  */
-export function findMonsterByIDLocal(id: number): IMonsterDex | undefined {
-  if (typeof id !== "number" || id <= 0) {
-    logger.warn(`Invalid monster ID provided: ${id}`);
-    return undefined;
-  }
-
-  return MonsterDex.get(id);
-}
-
-/**
- * Get monster data from PokeAPI by name
- * @param name Monster name
- * @returns API response data
- */
-export async function findMonsterByNameAPI(name: string): Promise<any> {
+export async function findMonsterByName(name: string): Promise<Pokemon | null> {
   if (!name || typeof name !== "string") {
-    throw new MonsterError("Invalid monster name provided", "INVALID_NAME");
+    logger.warn("Invalid Pokemon name provided");
+    return null;
   }
 
-  const normalizedName = name.toLowerCase().trim();
-  const cacheKey = `pokemon-name-${normalizedName}`;
+  try {
+    const normalizedName = normalizePokemonName(name);
+    const cacheKey = `pokemon-name-${normalizedName}`;
+    const pokemon = await makeApiRequest(
+      `${API_BASE_URL}/pokemon/${normalizedName}`,
+      cacheKey
+    );
+    return pokemon as Pokemon;
+  } catch (error) {
+    logger.error(`Error fetching Pokemon with name "${name}":`, error);
+    return null;
+  }
+}
 
-  return await fetchWithCache(
-    `https://pokeapi.co/api/v2/pokemon/${normalizedName}`,
-    cacheKey
-  );
+/**
+ * Get Pokemon data from PokeAPI by name (alias for compatibility)
+ * @param name - Pokemon name
+ * @returns Promise resolving to Pokemon data
+ */
+export async function findMonsterByNameAPI(
+  name: string
+): Promise<Pokemon | null> {
+  return findMonsterByName(name);
+}
+
+/**
+ * Get Pokemon species data from PokeAPI
+ * @param id - Pokemon species ID
+ * @returns Promise resolving to species data
+ */
+export async function getPokemonSpecies(
+  id: number
+): Promise<PokemonSpecies | null> {
+  if (!isValidPokemonId(id)) {
+    logger.warn(`Invalid Pokemon species ID provided: ${id}`);
+    return null;
+  }
+
+  try {
+    const cacheKey = `species-${id}`;
+    const species = await makeApiRequest(
+      `${API_BASE_URL}/pokemon-species/${id}`,
+      cacheKey
+    );
+    return species as PokemonSpecies;
+  } catch (error) {
+    logger.error(`Error fetching Pokemon species with ID ${id}:`, error);
+    return null;
+  }
 }
 
 /**
  * Get Pokemon evolution chain from PokeAPI
- * @param id Evolution chain ID
- * @returns Evolution chain data
+ * @param id - Evolution chain ID
+ * @returns Promise resolving to evolution chain data
  */
-export async function getPokemonEvolutions(id: number): Promise<any> {
+export async function getPokemonEvolutions(
+  id: number
+): Promise<EvolutionChain | null> {
   if (typeof id !== "number" || id <= 0) {
-    throw new MonsterError("Invalid evolution chain ID provided", "INVALID_ID");
-  }
-
-  const cacheKey = `evolution-${id}`;
-  return await fetchWithCache(
-    `https://pokeapi.co/api/v2/evolution-chain/${id}`,
-    cacheKey
-  );
-}
-
-/**
- * Find monster by its name in local dex
- * @param name Monster name to search for
- * @returns Monster dex data or undefined if not found
- */
-export function findMonsterByName(name: string): IMonsterDex | undefined {
-  if (!name || typeof name !== "string") {
-    logger.warn("Invalid name provided to findMonsterByName");
-    return undefined;
+    logger.warn(`Invalid evolution chain ID provided: ${id}`);
+    return null;
   }
 
   try {
-    const normalizedSearchName = name.toLowerCase().trim();
-
-    // Use find method for better performance than forEach
-    const monster = MonsterDex.find((element) => {
-      if (!element?.name?.english) return false;
-
-      const normalizedMonsterName = element.name.english
-        .toLowerCase()
-        .replace(/♂|♀/g, "");
-
-      return normalizedMonsterName === normalizedSearchName;
-    });
-
-    return monster;
+    const cacheKey = `evolution-${id}`;
+    const evolution = await makeApiRequest(
+      `${API_BASE_URL}/evolution-chain/${id}`,
+      cacheKey
+    );
+    return evolution as EvolutionChain;
   } catch (error) {
-    logger.error(`Error finding monster by name "${name}":`, error);
-    return undefined;
+    logger.error(`Error fetching evolution chain with ID ${id}:`, error);
+    return null;
   }
+}
+
+/**
+ * Get Pokemon with English name from species data
+ * @param pokemon - Pokemon API response
+ * @returns Promise resolving to Pokemon with English name
+ */
+export async function getPokemonWithEnglishName(
+  pokemon: Pokemon
+): Promise<Pokemon & { englishName?: string }> {
+  try {
+    const species = await getPokemonSpecies(pokemon.id);
+    if (species) {
+      const englishName = species.names.find(
+        (n) => n.language.name === "en"
+      )?.name;
+      return {
+        ...pokemon,
+        englishName: englishName || getPokemonDisplayName(pokemon),
+      };
+    }
+    return { ...pokemon, englishName: getPokemonDisplayName(pokemon) };
+  } catch (error) {
+    logger.error(
+      `Error getting English name for Pokemon ${pokemon.id}:`,
+      error
+    );
+    return { ...pokemon, englishName: getPokemonDisplayName(pokemon) };
+  }
+}
+
+/**
+ * Check if Pokemon is legendary or mythical
+ * @param pokemon - Pokemon API response
+ * @returns Promise resolving to boolean
+ */
+export async function isPokemonLegendary(pokemon: Pokemon): Promise<boolean> {
+  try {
+    const species = await getPokemonSpecies(pokemon.id);
+    return species ? species.is_legendary || species.is_mythical : false;
+  } catch (error) {
+    logger.error(
+      `Error checking legendary status for Pokemon ${pokemon.id}:`,
+      error
+    );
+    return false;
+  }
+}
+
+/**
+ * Get all available Pokemon (for backwards compatibility)
+ * @returns Array of Pokemon IDs
+ */
+export function getAllMonsters(): number[] {
+  const allIds: number[] = [];
+  for (let i = MIN_POKEMON_ID; i <= MAX_POKEMON_ID; i++) {
+    allIds.push(i);
+  }
+  return allIds;
 }
 
 /**
@@ -715,13 +799,13 @@ export function findMonsterByName(name: string): IMonsterDex | undefined {
  */
 export async function getMonsterDBCount(): Promise<string> {
   try {
-    const db_monster = await databaseClient<IMonsterModel>(MonsterTable)
+    const result = await databaseClient<IMonsterModel>(MonsterTable)
       .count("id as count")
       .first();
-    return db_monster || "0";
+    return result?.toString() || "0";
   } catch (error) {
     logger.error("Error getting monster DB count:", error);
-    throw new MonsterError("Failed to get monster count", "DB_ERROR");
+    throw new PokemonError("Failed to get monster count", "DB_ERROR");
   }
 }
 
@@ -731,47 +815,47 @@ export async function getMonsterDBCount(): Promise<string> {
  */
 export async function getShinyMonsterDBCount(): Promise<string> {
   try {
-    const db_monster = await databaseClient<IMonsterModel>(MonsterTable)
+    const result = await databaseClient<IMonsterModel>(MonsterTable)
       .count("id as count")
       .where("shiny", 1)
       .first();
-    return db_monster || "0";
+    return result?.toString() || "0";
   } catch (error) {
     logger.error("Error getting shiny monster DB count:", error);
-    throw new MonsterError("Failed to get shiny monster count", "DB_ERROR");
+    throw new PokemonError("Failed to get shiny monster count", "DB_ERROR");
   }
 }
 
 /**
  * Return user's monster database info
- * @param monster_id Database ID
- * @returns Promise resolving to monster data or undefined
+ * @param monster_id - Database ID
+ * @returns Promise resolving to monster data or null
  */
 export async function getUserMonster(
   monster_id: string | number
-): Promise<IMonsterModel | undefined> {
+): Promise<IMonsterModel | null> {
   if (!monster_id) {
     logger.warn("No monster ID provided to getUserMonster");
-    return undefined;
+    return null;
   }
 
   try {
-    const db_monster = await databaseClient<IMonsterModel>(MonsterTable)
+    const monster = await databaseClient<IMonsterModel>(MonsterTable)
       .select()
       .where("id", monster_id)
-      .first(); // Use first() instead of array indexing
+      .first();
 
-    return db_monster;
+    return monster || null;
   } catch (error) {
     logger.error(`Error getting user monster ${monster_id}:`, error);
-    throw new MonsterError("Failed to get user monster", "DB_ERROR");
+    throw new PokemonError("Failed to get user monster", "DB_ERROR");
   }
 }
 
 /**
  * Get a user's monsters
- * @param uid Discord ID
- * @param released 0 | 1, default 0
+ * @param uid - Discord ID
+ * @param released - 0 | 1, default 0
  * @returns Promise resolving to array of monster models
  */
 export async function getUsersMonsters(
@@ -793,14 +877,14 @@ export async function getUsersMonsters(
     return monsters || [];
   } catch (error) {
     logger.error(`Error getting user monsters for ${uid}:`, error);
-    throw new MonsterError("Failed to get user monsters", "DB_ERROR");
+    throw new PokemonError("Failed to get user monsters", "DB_ERROR");
   }
 }
 
 /**
  * Get a user's favorite monsters
- * @param uid Discord ID
- * @param released 0 | 1, default 0
+ * @param uid - Discord ID
+ * @param released - 0 | 1, default 0
  * @returns Promise resolving to array of favorite monster models
  */
 export async function getUsersFavoriteMonsters(
@@ -823,13 +907,13 @@ export async function getUsersFavoriteMonsters(
     return monsters || [];
   } catch (error) {
     logger.error(`Error getting user favorite monsters for ${uid}:`, error);
-    throw new MonsterError("Failed to get user favorite monsters", "DB_ERROR");
+    throw new PokemonError("Failed to get user favorite monsters", "DB_ERROR");
   }
 }
 
 /**
  * Select a monster for a user
- * @param interaction Discord command interaction
+ * @param interaction - Discord command interaction
  * @returns Promise resolving to success boolean
  */
 export async function selectMonster(
@@ -841,36 +925,47 @@ export async function selectMonster(
   }
 
   try {
-    const tmp = interaction.options.get("pokemon")!.value!.toString();
+    const pokemonId = interaction.options.get("pokemon")!.value!.toString();
 
-    const monster: IMonsterModel | undefined = await getUserMonster(tmp);
+    const monster = await getUserMonster(pokemonId);
     if (!monster) {
-      logger.warn(`Monster not found for selection: ${tmp}`);
-      return false;
-    }
-
-    const dex = await findMonsterByID(monster.monster_id);
-    if (!dex) {
-      logger.error(`Dex entry not found for monster ID: ${monster.monster_id}`);
+      await queueMessage(
+        "Monster not found or you don't own this Pokémon.",
+        interaction,
+        true
+      );
       return false;
     }
 
     if (monster.uid !== interaction.user.id) {
-      logger.warn(
-        `User ${interaction.user.id} attempted to select monster owned by ${monster.uid}`
+      await queueMessage(
+        "You can only select your own Pokémon.",
+        interaction,
+        true
       );
       return false;
     }
+
+    // Get Pokemon data from API
+    const pokemon = await findMonsterByID(monster.monster_id);
+    if (!pokemon) {
+      await queueMessage("Error retrieving Pokémon data.", interaction, true);
+      return false;
+    }
+
+    const pokemonWithName = await getPokemonWithEnglishName(pokemon);
+    const displayName =
+      pokemonWithName.englishName || getPokemonDisplayName(pokemon);
 
     const updateResult = await databaseClient<IMonsterUserModel>(
       MonsterUserTable
     )
       .where({ uid: interaction.user.id })
-      .update({ current_monster: parseInt(tmp) });
+      .update({ current_monster: parseInt(pokemonId) });
 
     if (updateResult) {
       await queueMessage(
-        `Selected **Level ${monster.level} ${dex.name.english}**!`,
+        `Selected **Level ${monster.level} ${displayName}**!`,
         interaction,
         true
       );
@@ -880,13 +975,18 @@ export async function selectMonster(
     return false;
   } catch (error) {
     logger.error("Error in selectMonster:", error);
+    await queueMessage(
+      "An error occurred while selecting your Pokémon.",
+      interaction,
+      true
+    );
     return false;
   }
 }
 
 /**
  * Set a monster as favorite
- * @param interaction Discord command interaction
+ * @param interaction - Discord command interaction
  * @returns Promise resolving to success boolean
  */
 export async function setFavorite(
@@ -898,26 +998,37 @@ export async function setFavorite(
   }
 
   try {
-    const tmp = interaction.options.get("pokemon")!.value!.toString();
+    const pokemonId = interaction.options.get("pokemon")!.value!.toString();
 
-    const monster: IMonsterModel | undefined = await getUserMonster(tmp);
+    const monster = await getUserMonster(pokemonId);
     if (!monster) {
-      logger.warn(`Monster not found for favoriting: ${tmp}`);
-      return false;
-    }
-
-    const dex = await findMonsterByID(monster.monster_id);
-    if (!dex) {
-      logger.error(`Dex entry not found for monster ID: ${monster.monster_id}`);
+      await queueMessage(
+        "Monster not found or you don't own this Pokémon.",
+        interaction,
+        true
+      );
       return false;
     }
 
     if (monster.uid !== interaction.user.id) {
-      logger.warn(
-        `User ${interaction.user.id} attempted to favorite monster owned by ${monster.uid}`
+      await queueMessage(
+        "You can only favorite your own Pokémon.",
+        interaction,
+        true
       );
       return false;
     }
+
+    // Get Pokemon data from API
+    const pokemon = await findMonsterByID(monster.monster_id);
+    if (!pokemon) {
+      await queueMessage("Error retrieving Pokémon data.", interaction, true);
+      return false;
+    }
+
+    const pokemonWithName = await getPokemonWithEnglishName(pokemon);
+    const displayName =
+      pokemonWithName.englishName || getPokemonDisplayName(pokemon);
 
     const updateResult = await databaseClient<IMonsterModel>(MonsterTable)
       .where("id", monster.id)
@@ -925,7 +1036,7 @@ export async function setFavorite(
 
     if (updateResult) {
       await queueMessage(
-        `Favorited monster **Level ${monster.level} ${dex.name.english}**!`,
+        `Favorited **Level ${monster.level} ${displayName}**! ⭐`,
         interaction,
         true
       );
@@ -935,13 +1046,18 @@ export async function setFavorite(
     return false;
   } catch (error) {
     logger.error("Error in setFavorite:", error);
+    await queueMessage(
+      "An error occurred while favoriting your Pokémon.",
+      interaction,
+      true
+    );
     return false;
   }
 }
 
 /**
  * Remove favorite status from a monster
- * @param interaction Discord command interaction
+ * @param interaction - Discord command interaction
  * @returns Promise resolving to success boolean
  */
 export async function unFavorite(
@@ -953,17 +1069,23 @@ export async function unFavorite(
   }
 
   try {
-    const tmp = interaction.options.get("pokemon")!.value!.toString();
+    const pokemonId = interaction.options.get("pokemon")!.value!.toString();
 
-    const monster: IMonsterModel | undefined = await getUserMonster(tmp);
+    const monster = await getUserMonster(pokemonId);
     if (!monster) {
-      logger.warn(`Monster not found for unfavoriting: ${tmp}`);
+      await queueMessage(
+        "Monster not found or you don't own this Pokémon.",
+        interaction,
+        true
+      );
       return false;
     }
 
     if (monster.uid !== interaction.user.id) {
-      logger.warn(
-        `User ${interaction.user.id} attempted to unfavorite monster owned by ${monster.uid}`
+      await queueMessage(
+        "You can only unfavorite your own Pokémon.",
+        interaction,
+        true
       );
       return false;
     }
@@ -974,7 +1096,7 @@ export async function unFavorite(
 
     if (updateResult) {
       await queueMessage(
-        `Unfavorited monster id ${monster.id}!`,
+        `Unfavorited Pokémon ID ${monster.id}!`,
         interaction,
         true
       );
@@ -984,13 +1106,161 @@ export async function unFavorite(
     return false;
   } catch (error) {
     logger.error("Error in unFavorite:", error);
+    await queueMessage(
+      "An error occurred while unfavoriting your Pokémon.",
+      interaction,
+      true
+    );
     return false;
   }
 }
 
-// ============================================================================
-// ADDITIONAL UTILITY FUNCTIONS (New additions that don't break compatibility)
-// ============================================================================
+/**
+ * Search for Pokemon by partial name match
+ * @param partialName - Partial Pokemon name
+ * @param limit - Maximum number of results (default 10)
+ * @returns Promise resolving to array of matching Pokemon
+ */
+export async function searchPokemonByName(
+  partialName: string,
+  limit = 10
+): Promise<Pokemon[]> {
+  if (!partialName || typeof partialName !== "string") {
+    return [];
+  }
+
+  const results: Pokemon[] = [];
+  const searchTerm = partialName.toLowerCase().trim();
+
+  // This is a simplified search - in a real implementation, you might want to
+  // cache a list of all Pokemon names or use a more sophisticated search
+  for (
+    let i = MIN_POKEMON_ID;
+    i <= Math.min(MIN_POKEMON_ID + 100, MAX_POKEMON_ID) &&
+    results.length < limit;
+    i++
+  ) {
+    try {
+      const pokemon = await findMonsterByID(i);
+      if (pokemon && pokemon.name.toLowerCase().includes(searchTerm)) {
+        results.push(pokemon);
+      }
+    } catch (error) {
+      // Continue searching even if one fails
+      continue;
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Get Pokemon type effectiveness information
+ * @param typeId - Type ID or name
+ * @returns Promise resolving to type data
+ */
+export async function getPokemonType(typeId: string | number): Promise<any> {
+  try {
+    const cacheKey = `type-${typeId}`;
+    const typeData = await makeApiRequest(
+      `${API_BASE_URL}/type/${typeId}`,
+      cacheKey
+    );
+    return typeData;
+  } catch (error) {
+    logger.error(`Error fetching type data for ${typeId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Get Pokemon move information
+ * @param moveId - Move ID or name
+ * @returns Promise resolving to move data
+ */
+export async function getPokemonMove(moveId: string | number): Promise<any> {
+  try {
+    const cacheKey = `move-${moveId}`;
+    const moveData = await makeApiRequest(
+      `${API_BASE_URL}/move/${moveId}`,
+      cacheKey
+    );
+    return moveData;
+  } catch (error) {
+    logger.error(`Error fetching move data for ${moveId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Get Pokemon ability information
+ * @param abilityId - Ability ID or name
+ * @returns Promise resolving to ability data
+ */
+export async function getPokemonAbility(
+  abilityId: string | number
+): Promise<any> {
+  try {
+    const cacheKey = `ability-${abilityId}`;
+    const abilityData = await makeApiRequest(
+      `${API_BASE_URL}/ability/${abilityId}`,
+      cacheKey
+    );
+    return abilityData;
+  } catch (error) {
+    logger.error(`Error fetching ability data for ${abilityId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Get Pokemon location areas where it can be encountered
+ * @param pokemon - Pokemon API response
+ * @returns Promise resolving to location area data
+ */
+export async function getPokemonLocationAreas(
+  pokemon: Pokemon
+): Promise<any[]> {
+  try {
+    if (!pokemon.location_area_encounters) return [];
+
+    const cacheKey = `locations-${pokemon.id}`;
+    const locationData = await makeApiRequest(
+      pokemon.location_area_encounters,
+      cacheKey
+    );
+    return locationData || [];
+  } catch (error) {
+    logger.error(
+      `Error fetching location areas for Pokemon ${pokemon.id}:`,
+      error
+    );
+    return [];
+  }
+}
+
+/**
+ * Generate a random Pokemon for spawning with validation
+ * @returns Promise resolving to valid Pokemon data
+ */
+export async function getRandomValidPokemon(): Promise<Pokemon | null> {
+  const maxAttempts = 10;
+  let attempts = 0;
+
+  while (attempts < maxAttempts) {
+    const randomId = getRandomMonster();
+    const pokemon = await findMonsterByID(randomId);
+
+    if (pokemon && hasValidSprites(pokemon)) {
+      return pokemon;
+    }
+
+    attempts++;
+  }
+
+  logger.warn("Failed to find valid Pokemon after maximum attempts");
+  return null;
+}
 
 /**
  * Clear API cache (useful for memory management)
@@ -1004,34 +1274,106 @@ export function clearApiCache(): void {
  * Get cache statistics
  * @returns Object containing cache statistics
  */
-export function getCacheStats(): { size: number; keys: string[] } {
+export function getCacheStats(): {
+  size: number;
+  keys: string[];
+  memoryUsage: string;
+} {
+  const keys = Array.from(apiCache.keys());
+  const memoryUsage = `${Math.round(
+    JSON.stringify([...apiCache.values()]).length / 1024
+  )} KB`;
+
   return {
     size: apiCache.size,
-    keys: Array.from(apiCache.keys()),
+    keys,
+    memoryUsage,
   };
 }
 
 /**
- * Check if Pokedex is properly initialized
- * @returns Boolean indicating if the dex is ready
+ * Check if Pokemon API is accessible
+ * @returns Promise resolving to boolean indicating API availability
  */
-export function isPokedexReady(): boolean {
-  return MonsterDex.size > 0 && MonsterPool.length > 0;
+export async function isPokeApiAvailable(): Promise<boolean> {
+  try {
+    await makeApiRequest(`${API_BASE_URL}/pokemon/1`, "health-check");
+    return true;
+  } catch (error) {
+    logger.error("PokeAPI health check failed:", error);
+    return false;
+  }
 }
 
 /**
- * Get pool statistics
- * @returns Object with pool information
+ * Get Pokemon generation information
+ * @param generationId - Generation ID or name
+ * @returns Promise resolving to generation data
  */
-export function getPoolStats(): {
-  poolSize: number;
-  dexSize: number;
-  uniqueIds: number;
-} {
-  const uniqueIds = new Set(MonsterPool).size;
-  return {
-    poolSize: MonsterPool.length,
-    dexSize: MonsterDex.size,
-    uniqueIds,
-  };
+export async function getPokemonGeneration(
+  generationId: string | number
+): Promise<any> {
+  try {
+    const cacheKey = `generation-${generationId}`;
+    const generationData = await makeApiRequest(
+      `${API_BASE_URL}/generation/${generationId}`,
+      cacheKey
+    );
+    return generationData;
+  } catch (error) {
+    logger.error(`Error fetching generation data for ${generationId}:`, error);
+    return null;
+  }
 }
+
+/**
+ * Get Pokemon region information
+ * @param regionId - Region ID or name
+ * @returns Promise resolving to region data
+ */
+export async function getPokemonRegion(
+  regionId: string | number
+): Promise<any> {
+  try {
+    const cacheKey = `region-${regionId}`;
+    const regionData = await makeApiRequest(
+      `${API_BASE_URL}/region/${regionId}`,
+      cacheKey
+    );
+    return regionData;
+  } catch (error) {
+    logger.error(`Error fetching region data for ${regionId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Clean up expired cache entries
+ */
+export function cleanupExpiredCache(): void {
+  const now = Date.now();
+  let cleaned = 0;
+
+  for (const [key, value] of apiCache.entries()) {
+    if (now - value.timestamp > CACHE_TTL) {
+      apiCache.delete(key);
+      cleaned++;
+    }
+  }
+
+  if (cleaned > 0) {
+    logger.info(`Cleaned up ${cleaned} expired cache entries`);
+  }
+}
+
+/**
+ * Set up periodic cache cleanup (call this once during app initialization)
+ */
+export function setupCacheCleanup(): void {
+  // Clean up cache every 5 minutes
+  setInterval(cleanupExpiredCache, 5 * 60 * 1000);
+}
+
+// Export types for use in other modules
+export type { EvolutionChain, Pokemon, PokemonError, PokemonSpecies };
+
