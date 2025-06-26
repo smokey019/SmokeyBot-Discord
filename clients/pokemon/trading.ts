@@ -1,4 +1,3 @@
-
 import { CommandInteraction, EmbedBuilder } from "discord.js";
 import { databaseClient, getUser } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
@@ -10,12 +9,7 @@ import {
 import { TradeTable, type ITrade } from "../../models/Trades";
 import { getCurrentTime } from "../../utils";
 import { checkItemEvolution, getItemDB } from "./items";
-import {
-  findMonsterByID,
-  findMonsterByName,
-  getUserMonster,
-  type IMonsterDex,
-} from "./monsters";
+import { findMonsterByID, findMonsterByName, getUserMonster } from "./monsters";
 
 const logger = getLogger("Pokémon-Trade");
 
@@ -50,11 +44,11 @@ export async function startTrade(
 
         const imgs = [];
         if (monsterDB.shiny) {
-          imgs[0] = monster.images.shiny;
-          imgs[1] = monster.images["gif-shiny"];
+          imgs[0] = monster.sprites.other["official-artwork"].front_shiny;
+          imgs[1] = monster.sprites.other.showdown.front_shiny;
         } else {
-          imgs[0] = monster.images.normal;
-          imgs[1] = monster.images.gif;
+          imgs[0] = monster.sprites.other["official-artwork"].front_default;
+          imgs[1] = monster.sprites.other.showdown.front_default;
         }
 
         const iv_avg =
@@ -77,7 +71,7 @@ export async function startTrade(
           thumbnail: {
             url: imgs[1],
           },
-          title: `Trading ${monster.name.english}..`,
+          title: `Trading ${monster.name}..`,
         });
 
         await interaction.channel
@@ -146,9 +140,7 @@ export async function checkEvolves(
     });
 
   if (db_monster.length) {
-    const monster: IMonsterDex = await findMonsterByID(
-      db_monster[0].monster_id
-    );
+    const monster = await findMonsterByID(db_monster[0].monster_id);
     const item = (await getItemDB(db_monster[0].held_item)) ?? undefined;
 
     if (monster.evos) {
@@ -175,14 +167,14 @@ export async function checkEvolves(
                 imgs = [evolution.images.normal, monster.images.normal];
               }
               const embed = new EmbedBuilder({
-                description: `Nice! **${monster.name.english}** has evolved into **${evolution.name.english}** via trade!`,
+                description: `Nice! **${monster.name}** has evolved into **${evolution.name.english}** via trade!`,
                 image: {
                   url: imgs[0],
                 },
                 thumbnail: {
                   url: imgs[1],
                 },
-                title: `${interaction.user.username}'s ${monster.name.english} is evolving!`,
+                title: `${interaction.user.username}'s ${monster.name} is evolving!`,
               });
 
               interaction.channel.send({ embeds: [embed] });
@@ -229,7 +221,7 @@ export async function confirmTrade(
       const monsterDB = await getUserMonster(trade.monster_id);
       const monster = await findMonsterByID(monsterDB.monster_id);
       (interaction as CommandInteraction).reply(
-        `Successfully traded over monster **${monster.name.english}**! Nice dude.`
+        `Successfully traded over monster **${monster.name}**! Nice dude.`
       );
       await checkEvolves(trade.monster_id, interaction);
 
