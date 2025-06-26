@@ -10,7 +10,7 @@ import {
 import { explode, getCurrentTime, getRndInteger } from "../../utils";
 import { queueMessage } from "../message_queue";
 import { userDex } from "./info";
-import { type IMonsterDex } from "./monsters";
+import { type Pokemon } from "./monsters";
 import { getRandomNature } from "./natures";
 import { getSpawn, updateSpawn } from "./spawn-monster";
 import { rollGender, rollLevel, rollPerfectIV, rollShiny } from "./utils";
@@ -91,12 +91,12 @@ const SPACE_REPLACEMENT_POKEMON = new Set([
  * Supports multiple languages and handles regional variants.
  *
  * @param interactionContent User input to match
- * @param monsterDex Monster dex entry to match against
+ * @param Pokemon Monster dex entry to match against
  * @returns Boolean indicating if names match
  */
 function monsterMatchesPrevious(
   interactionContent: string,
-  { name }: IMonsterDex
+  { name }: Pokemon
 ): boolean {
   if (!interactionContent || !name) {
     return false;
@@ -106,10 +106,7 @@ function monsterMatchesPrevious(
 
   // Create an array of possible name variations
   const nameVariations = [
-    name.english,
-    name.japanese,
-    name.chinese,
-    name.french
+    name
   ].filter(Boolean); // Remove any undefined/null names
 
   // Check each name variation
@@ -544,7 +541,7 @@ export async function catchMonster(interaction: CommandInteraction): Promise<voi
  * @param pokemonData Pokemon data to match against
  * @returns Boolean indicating match
  */
-export function validatePokemonGuess(userInput: string, pokemonData: IMonsterDex): boolean {
+export function validatePokemonGuess(userInput: string, pokemonData: Pokemon): boolean {
   return monsterMatchesPrevious(userInput, pokemonData);
 }
 

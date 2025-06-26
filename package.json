@@ -25,7 +25,7 @@
     "moment": "^2.30.1",
     "mysql2": "^3.14.1",
     "pokenode-ts": "^1.20.0",
-    "queue": "^7.0.0",
+    "redis": "^5.5.6",
     "topgg-autoposter": "^2.0.2",
     "utf-8-validate": "^6.0.5",
     "zlib-sync": "^0.1.10"

@@ -9,10 +9,9 @@ import {
 import { format_number } from "../../utils";
 import { queueMessage } from "../message_queue";
 import {
-  MonsterDex,
   findMonsterByIDAPI,
   findMonsterByName,
-  type IMonsterDex,
+  type Pokemon
 } from "./monsters";
 import { capitalizeFirstLetter, img_monster_ball } from "./utils";
 
@@ -31,15 +30,6 @@ const STAT_FORMULA_BASE = 2;
 const STAT_FORMULA_LEVEL_OFFSET = 10;
 const HP_STAT_FORMULA_OFFSET = 10;
 
-// Enhanced error handling
-class InfoError extends Error {
-  constructor(message: string, public code: string, public userId?: string) {
-    super(message);
-    this.name = "InfoError";
-  }
-}
-
-// Enhanced interfaces for better type safety
 interface MonsterStats {
   hp: number;
   attack: number;
@@ -49,80 +39,38 @@ interface MonsterStats {
   speed: number;
 }
 
-interface MonsterImages {
-  normal?: string;
-  shiny?: string;
-  gif?: string;
-  "gif-shiny"?: string;
-  thumbnail?: string;
-  thumbnailShiny?: string;
-}
-
-interface StatCalculationInput {
-  baseStat: number;
-  iv: number;
-  level: number;
-  isHP?: boolean;
-}
-
-interface EmbedDisplayOptions {
-  title: string;
-  description: string;
-  image?: string;
-  thumbnail?: string;
-  fields?: EmbedField[];
-  url?: string;
-  authorIcon?: string;
-}
-
-// Cache for frequently accessed data
-const statCalculationCache = new Map<string, number>();
-const userDexCache = new Map<string, { data: number[]; timestamp: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
 /**
  * Calculates Pokemon stats using the standard formula
  */
-function calculateStat({
-  baseStat,
-  iv,
-  level,
-  isHP = false,
-}: StatCalculationInput): number {
-  const cacheKey = `${baseStat}-${iv}-${level}-${isHP}`;
-
-  if (statCalculationCache.has(cacheKey)) {
-    return statCalculationCache.get(cacheKey)!;
-  }
-
-  let stat: number;
-
+function calculateStat(
+  baseStat: number,
+  iv: number,
+  level: number,
+  isHP: boolean = false,
+): number {
   if (isHP) {
-    stat = Math.round(
+    return Math.round(
       STAT_FORMULA_BASE * baseStat +
         (iv * level) / 100 +
         level +
-        HP_STAT_FORMULA_OFFSET
+        HP_STAT_FORMULA_OFFSET,
     );
   } else {
-    stat = Math.round(
+    return Math.round(
       STAT_FORMULA_BASE * baseStat +
         (iv * level) / 100 +
         level +
-        STAT_FORMULA_LEVEL_OFFSET
+        STAT_FORMULA_LEVEL_OFFSET,
     );
   }
-
-  statCalculationCache.set(cacheKey, stat);
-  return stat;
 }
 
 /**
  * Calculates all Pokemon stats from API data and IV values
  */
 function calculateAllStats(
-  apiStats: any[],
-  monsterData: IMonsterModel
+  apiStats: Pokemon["stats"],
+  monsterData: IMonsterModel,
 ): MonsterStats {
   const stats: MonsterStats = {
     hp: 0,
@@ -145,12 +93,12 @@ function calculateAllStats(
   for (const apiStat of apiStats) {
     const statName = statMapping[apiStat.stat.name];
     if (statName) {
-      stats[statName] = calculateStat({
-        baseStat: apiStat.base_stat,
-        iv: monsterData[statName],
-        level: monsterData.level,
-        isHP: statName === "hp",
-      });
+      stats[statName] = calculateStat(
+        apiStat.base_stat,
+        monsterData[statName],
+        monsterData.level,
+        statName === "hp",
+      );
     }
   }
 
@@ -158,24 +106,31 @@ function calculateAllStats(
 }
 
 /**
- * Calculates average IV percentage
+ * Formats Pokemon types for display
  */
-function calculateAverageIV(monsterData: IMonsterModel): number {
-  const totalIV =
-    monsterData.hp +
-    monsterData.attack +
-    monsterData.defense +
-    monsterData.sp_attack +
-    monsterData.sp_defense +
-    monsterData.speed;
-  return (totalIV / IV_TOTAL) * 100;
+function formatPokemonTypes(types: Pokemon["types"]): string[] {
+  if (!Array.isArray(types)) {
+    return [];
+  }
+
+  return types
+    .map((typeData) => {
+      if (typeof typeData === "string") {
+        return capitalizeFirstLetter(typeData);
+      }
+      return capitalizeFirstLetter(typeData?.type?.name || "");
+    })
+    .filter(Boolean);
 }
 
 /**
- * Gets appropriate Pokemon images based on shiny status and regional forms
+ * Gets appropriate Pokemon images based on shiny status
  */
-function getPokemonImages(monster: any, isShiny: boolean): MonsterImages {
-  const images: MonsterImages = {};
+function getPokemonImages(
+  monster: Pokemon,
+  isShiny: boolean,
+): { normal?: string; thumbnail?: string } {
+  const images: { normal?: string; thumbnail?: string } = {};
 
   try {
     if (isShiny) {
@@ -199,7 +154,6 @@ function getPokemonImages(monster: any, isShiny: boolean): MonsterImages {
     }
   } catch (error) {
     logger.warn("Failed to get Pokemon images:", error);
-    // Provide fallback empty strings to prevent undefined errors
     images.normal = "";
     images.thumbnail = "";
   }
@@ -208,60 +162,22 @@ function getPokemonImages(monster: any, isShiny: boolean): MonsterImages {
 }
 
 /**
- * Gets Pokemon images for dex entries
+ * Formats gender icon based on Pokemon data
  */
-function getDexImages(dexEntry: IMonsterDex, isShiny: boolean): MonsterImages {
-  const images: MonsterImages = {};
-
+function formatGenderIcon(apiMonster: Pokemon, gender: string): string {
   try {
-    if (dexEntry.region || dexEntry.forme) {
-      images.thumbnail = isShiny
-        ? dexEntry.images?.["gif-shiny"]
-        : dexEntry.images?.gif;
-      images.normal = isShiny
-        ? dexEntry.images?.shiny
-        : dexEntry.images?.normal;
-    } else {
-      images.thumbnail = isShiny
-        ? dexEntry.images?.["gif-shiny"]
-        : dexEntry.images?.gif;
-      images.normal = isShiny
-        ? dexEntry.images?.shiny
-        : dexEntry.images?.normal;
-    }
-
-    // Fallback to normal images if shiny not available
-    if (isShiny && !images.normal) {
-      images.normal = dexEntry.images?.normal || "";
-    }
-    if (isShiny && !images.thumbnail) {
-      images.thumbnail = dexEntry.images?.gif || "";
-    }
-  } catch (error) {
-    logger.warn("Failed to get dex images:", error);
-    images.normal = "";
-    images.thumbnail = "";
-  }
-
-  return images;
-}
-
-/**
- * Formats Pokemon types for display
- */
-function formatPokemonTypes(types: any[]): string[] {
-  if (!Array.isArray(types)) {
-    return [];
-  }
-
-  return types
-    .map((typeData) => {
-      if (typeof typeData === "string") {
-        return capitalizeFirstLetter(typeData);
+    if (apiMonster.sprites?.front_female) {
+      if (gender === "M") {
+        return "♂️ ";
+      } else if (gender === "F") {
+        return "♀️ ";
       }
-      return capitalizeFirstLetter(typeData?.type?.name || "");
-    })
-    .filter(Boolean);
+    }
+    return "";
+  } catch (error) {
+    logger.warn("Failed to format gender icon:", error);
+    return "";
+  }
 }
 
 /**
@@ -289,210 +205,98 @@ function formatDate(timestamp: number, includeTime: boolean = false): string {
   }
 }
 
-/**
- * Creates embed fields for monster stats
- */
-function createStatsFields(
-  stats: MonsterStats,
-  monsterData: IMonsterModel
-): EmbedField[] {
-  const fields: EmbedField[] = [
-    {
-      name: "**HP**",
-      value: `${stats.hp} \n IV: ${monsterData.hp}/${MAX_IV}`,
-      inline: true,
-    },
-    {
-      name: "**Attack**",
-      value: `${stats.attack} \n IV: ${monsterData.attack}/${MAX_IV}`,
-      inline: true,
-    },
-    {
-      name: "**Defense**",
-      value: `${stats.defense} \n IV: ${monsterData.defense}/${MAX_IV}`,
-      inline: true,
-    },
-    {
-      name: "**Sp. Atk**",
-      value: `${stats.sp_attack} \n IV: ${monsterData.sp_attack}/${MAX_IV}`,
-      inline: true,
-    },
-    {
-      name: "**Sp. Def**",
-      value: `${stats.sp_defense} \n IV: ${monsterData.sp_defense}/${MAX_IV}`,
-      inline: true,
-    },
-    {
-      name: "**Speed**",
-      value: `${stats.speed} \n IV: ${monsterData.speed}/${MAX_IV}\n`,
-      inline: true,
-    },
-  ];
-
-  return fields;
-}
-
-/**
- * Creates a standardized embed for Pokemon information
- */
-function createPokemonEmbed(options: EmbedDisplayOptions): EmbedBuilder {
-  const embed = new EmbedBuilder();
-
-  if (options.title) {
-    embed.setAuthor({
-      name: options.title,
-      iconURL: options.authorIcon || img_monster_ball,
-      url: options.url,
-    });
-  }
-
-  if (options.description) {
-    embed.setDescription(options.description);
-  }
-
-  if (options.image) {
-    embed.setImage(options.image);
-  }
-
-  if (options.thumbnail) {
-    embed.setThumbnail(options.thumbnail);
-  }
-
-  if (options.fields) {
-    embed.addFields(options.fields);
-  }
-
-  return embed;
-}
-
-/**
- * Safely sends an embed response with error handling
- */
-async function sendEmbedResponse(
-  interaction: CommandInteraction,
-  embed: EmbedBuilder,
-  isReply: boolean = true
-): Promise<void> {
-  try {
-    if (isReply) {
-      await queueMessage({ embeds: [embed] }, interaction, false);
-    } else {
-      await interaction.channel?.send({ embeds: [embed] });
-    }
-  } catch (error) {
-    logger.error("Failed to send embed response:", error);
-
-    // Fallback to simple text response
-    try {
-      const fallbackMessage =
-        "Error displaying Pokémon information. Please try again.";
-      if (isReply) {
-        await queueMessage(fallbackMessage, interaction, false);
-      } else {
-        await interaction.channel?.send(fallbackMessage);
-      }
-    } catch (fallbackError) {
-      logger.error("Failed to send fallback response:", fallbackError);
-    }
-  }
-}
-
-/**
- * Enhanced version of checkUniqueMonsters with better error handling
- */
 export async function checkUniqueMonsters(
-  interaction: CommandInteraction
+  interaction: CommandInteraction,
 ): Promise<void> {
-  const userId = interaction.user.id;
-
   try {
-    const userPokedex = await userDex(userId);
-    const totalPokemon = MonsterDex.size;
-    const uniqueCount = userPokedex.length;
-
+    const tempdex = await userDex(interaction.user.id);
     await queueMessage(
-      `You have ${uniqueCount}/${totalPokemon} total unique Pokémon in your Pokédex.`,
+      `You have ${tempdex.length}/1025} total unique Pokémon in your Pokédex.`,
       interaction,
-      true
-    );
-
-    logger.debug(
-      `Sent unique Pokemon count for user ${userId}: ${uniqueCount}/${totalPokemon}`
+      true,
     );
   } catch (error) {
-    logger.error(`Error getting unique monsters for user ${userId}:`, error);
+    logger.error("Error checking unique monsters:", error);
     await queueMessage(
       "An error occurred while checking your Pokédex. Please try again.",
       interaction,
-      true
+      true,
     );
   }
 }
 
-/**
- * Enhanced monsterEmbed with improved error handling and performance
- */
 export async function monsterEmbed(
   monster_db: IMonsterModel,
-  interaction: CommandInteraction
+  interaction: CommandInteraction,
 ): Promise<void> {
   if (!monster_db) {
     logger.warn("No monster data provided to monsterEmbed");
     return;
   }
 
-  const userId = interaction.user.id;
-
   try {
-    // Fetch API data for the monster
-    const apiMonster = await findMonsterByIDAPI(monster_db.monster_id);
+    const monster: Pokemon = await findMonsterByIDAPI(monster_db.monster_id);
 
-    if (!apiMonster) {
+    if (!monster) {
       logger.error(
-        `Failed to fetch API data for monster ID: ${monster_db.monster_id}`
+        `Failed to fetch API data for monster ID: ${monster_db.monster_id}`,
       );
       await queueMessage(
         "Failed to load Pokémon information. Please try again.",
         interaction,
-        false
+        false,
       );
       return;
     }
 
-    // Format Pokemon types
-    const pokemonTypes = formatPokemonTypes(apiMonster.types);
+    // Format Pokemon types using the new function
+    const pokemonTypes = formatPokemonTypes(monster.types);
     const typeString = pokemonTypes.join(" | ");
 
-    // Calculate stats
-    const calculatedStats = calculateAllStats(apiMonster.stats, monster_db);
-    const averageIV = calculateAverageIV(monster_db);
+    // Calculate stats using the new function
+    const calculatedStats = calculateAllStats(monster.stats, monster_db);
+
+    // Calculate average IV
+    const ivAvg =
+      ((monster_db.hp +
+        monster_db.attack +
+        monster_db.defense +
+        monster_db.sp_attack +
+        monster_db.sp_defense +
+        monster_db.speed) /
+        IV_TOTAL) *
+      100;
 
     // Format IDs and experience
-    const nationalNumber = `${apiMonster.id}`.padStart(
-      NATIONAL_NUMBER_PADDING,
-      "0"
-    );
-    const nextLevelExp = monster_db.level * EXPERIENCE_MULTIPLIER;
+    const tmpID = `${monster.id}`.padStart(NATIONAL_NUMBER_PADDING, "0");
+    const nextLevelXp = monster_db.level * EXPERIENCE_MULTIPLIER;
 
-    // Get images
-    const images = getPokemonImages(apiMonster, Boolean(monster_db.shiny));
+    // Get images using the new function
+    const images = getPokemonImages(monster, Boolean(monster_db.shiny));
 
     // Format display icons and text
     const shinyIcon = monster_db.shiny ? " ⭐" : "";
     const favoriteIcon = monster_db.favorite ? " 💟" : "";
-    const genderIcon = formatGenderIcon(apiMonster, monster_db.gender);
+    const genderIcon = formatGenderIcon(monster, monster_db.gender);
+
+    // Format release information
+    let released = " ";
+    if (monster_db.released) {
+      const releaseTime = formatDate(monster_db.released_at);
+      released = `\n***Released on ${releaseTime}***\n\n`;
+    }
 
     // Create title
     let title = `Level ${monster_db.level} ${capitalizeFirstLetter(
-      apiMonster.name
-    )}${genderIcon}${shinyIcon}${favoriteIcon}`;
+      monster.name,
+    )} ${genderIcon}${shinyIcon}${favoriteIcon}`;
 
     if (monster_db.nickname) {
       title = `Level ${monster_db.level} '${
         monster_db.nickname
       }' - ${capitalizeFirstLetter(
-        apiMonster.name
-      )}${genderIcon}${shinyIcon}${favoriteIcon}`;
+        monster.name,
+      )} ${genderIcon}${shinyIcon}${favoriteIcon}`;
     }
 
     // Create embed fields
@@ -502,11 +306,7 @@ export async function monsterEmbed(
         value: monster_db.id.toString(),
         inline: true,
       },
-      {
-        name: "**National №**",
-        value: nationalNumber,
-        inline: true,
-      },
+      { name: "**National №**", value: tmpID, inline: true },
       {
         name: "**Level**",
         value: monster_db.level.toString(),
@@ -515,7 +315,7 @@ export async function monsterEmbed(
       {
         name: "**Exp**",
         value: `${format_number(monster_db.experience)} / ${format_number(
-          nextLevelExp
+          nextLevelXp,
         )}`,
         inline: false,
       },
@@ -524,24 +324,47 @@ export async function monsterEmbed(
         value: typeString,
         inline: false,
       },
+      {
+        name: "**HP**",
+        value: `${calculatedStats.hp} \n IV: ${monster_db.hp}/${MAX_IV}`,
+        inline: true,
+      },
+      {
+        name: "**Attack**",
+        value: `${calculatedStats.attack} \n IV: ${monster_db.attack}/${MAX_IV}`,
+        inline: true,
+      },
+      {
+        name: "**Defense**",
+        value: `${calculatedStats.defense} \n IV: ${monster_db.defense}/${MAX_IV}`,
+        inline: true,
+      },
+      {
+        name: "**Sp. Atk**",
+        value: `${calculatedStats.sp_attack} \n IV: ${monster_db.sp_attack}/${MAX_IV}`,
+        inline: true,
+      },
+      {
+        name: "**Sp. Def**",
+        value: `${calculatedStats.sp_defense} \n IV: ${monster_db.sp_defense}/${MAX_IV}`,
+        inline: true,
+      },
+      {
+        name: "**Speed**",
+        value: `${calculatedStats.speed} \n IV: ${monster_db.speed}/${MAX_IV}\n`,
+        inline: true,
+      },
+      {
+        name: "**Total IV %**",
+        value: `${ivAvg.toFixed(2)}%`,
+        inline: true,
+      },
+      {
+        name: "**Current Owner**",
+        value: `<@${monster_db.uid}>`,
+        inline: true,
+      },
     ];
-
-    // Add stat fields
-    embedFields.push(...createStatsFields(calculatedStats, monster_db));
-
-    // Add IV percentage
-    embedFields.push({
-      name: "**Total IV %**",
-      value: `${averageIV.toFixed(2)}%`,
-      inline: true,
-    });
-
-    // Add ownership information
-    embedFields.push({
-      name: "**Current Owner**",
-      value: `<@${monster_db.uid}>`,
-      inline: true,
-    });
 
     if (monster_db.original_uid !== monster_db.uid) {
       embedFields.push({
@@ -551,89 +374,65 @@ export async function monsterEmbed(
       });
     }
 
-    // Add special information
-    let description = "";
-
-    if (monster_db.released) {
-      const releaseDate = formatDate(monster_db.released_at);
-      description = `\n***Released on ${releaseDate}***\n\n`;
-    }
-
     if (monster_db.egg && monster_db.hatched_at) {
-      const hatchedDate = formatDate(monster_db.hatched_at, true);
+      const hatchedAt = formatDate(monster_db.hatched_at, true);
       embedFields.push({
         name: "**Hatched On**",
-        value: hatchedDate,
+        value: hatchedAt,
         inline: true,
       });
     }
 
-    // Create and send embed
-    const embed = createPokemonEmbed({
-      title,
-      description,
-      image: images.normal,
-      thumbnail: images.thumbnail,
+    const embed = {
+      author: {
+        name: title,
+        icon_url: img_monster_ball,
+        url: `${POKEMON_DB_BASE_URL}${monster.id}`,
+      },
+      image: { url: images.normal },
+      thumbnail: { url: images.thumbnail },
+      description: released,
       fields: embedFields,
-      url: `${POKEMON_DB_BASE_URL}${apiMonster.id}`,
-      authorIcon: img_monster_ball,
-    });
+    };
 
-    await sendEmbedResponse(interaction, embed, true);
-    logger.debug(
-      `Sent monster embed for monster ID ${monster_db.id} to user ${userId}`
-    );
+    try {
+      await interaction.reply({ embeds: [embed] });
+    } catch (error) {
+      logger.error("Error sending embed:", error);
+      await queueMessage(
+        "An error occurred while displaying Pokémon information. Please try again.",
+        interaction,
+        false,
+      );
+    }
   } catch (error) {
-    logger.error(
-      `Error creating monster embed for monster ${monster_db.id}:`,
-      error
-    );
+    logger.error(`Error creating monster embed for monster ${monster_db.id}:`, error);
     await queueMessage(
       "An error occurred while displaying Pokémon information. Please try again.",
       interaction,
-      false
+      false,
     );
   }
 }
 
 /**
- * Formats gender icon based on Pokemon data
- */
-function formatGenderIcon(apiMonster: any, gender: string): string {
-  try {
-    if (apiMonster.sprites?.front_female) {
-      if (gender === "M") {
-        return "♂️ ";
-      } else if (gender === "F") {
-        return "♀️ ";
-      }
-    }
-    return "";
-  } catch (error) {
-    logger.warn("Failed to format gender icon:", error);
-    return "";
-  }
-}
-
-/**
- * Enhanced monsterInfoLatest with better error handling
+ * Get latest Monster caught's information.
+ * @param interaction
  */
 export async function monsterInfoLatest(
-  interaction: CommandInteraction
+  interaction: CommandInteraction,
 ): Promise<void> {
-  const userId = interaction.user.id;
-
   try {
     const user = await databaseClient<IMonsterUserModel>(MonsterUserTable)
       .select()
-      .where("uid", userId)
+      .where("uid", interaction.user.id)
       .first();
 
     if (!user) {
       await queueMessage(
         "You don't have any Pokémon yet. Catch some first!",
         interaction,
-        false
+        false,
       );
       return;
     }
@@ -642,100 +441,95 @@ export async function monsterInfoLatest(
       await queueMessage(
         "No recent Pokémon found. Catch a Pokémon first!",
         interaction,
-        false
+        false,
       );
       return;
     }
 
-    const monster = await databaseClient<IMonsterModel>(MonsterTable)
+    const tmpMonster = await databaseClient<IMonsterModel>(MonsterTable)
       .select()
       .where("id", user.latest_monster)
       .first();
 
-    if (!monster) {
+    if (!tmpMonster) {
       await queueMessage(
         "Latest Pokémon not found. Please try catching another one.",
         interaction,
-        false
+        false,
       );
       return;
     }
 
-    await monsterEmbed(monster, interaction);
+    await monsterEmbed(tmpMonster, interaction);
   } catch (error) {
-    logger.error(
-      `Error getting latest monster info for user ${userId}:`,
-      error
-    );
+    logger.error("Error getting latest monster info:", error);
     await queueMessage(
       "An error occurred while getting your latest Pokémon. Please try again.",
       interaction,
-      false
+      false,
     );
   }
 }
 
 /**
- * Enhanced monsterInfo with better validation
+ * Get a specific Monster's information.
+ * @param interaction
+ * @param monster_id
  */
 export async function monsterInfo(
   interaction: CommandInteraction,
-  monster_id: string
+  monster_id: string,
 ): Promise<void> {
   if (!monster_id || typeof monster_id !== "string") {
     await queueMessage(
       "Please provide a valid monster ID.",
       interaction,
-      false
+      false,
     );
     return;
   }
 
-  const userId = interaction.user.id;
-
   try {
-    const monster = await databaseClient<IMonsterModel>(MonsterTable)
+    const tmpMonster = await databaseClient<IMonsterModel>(MonsterTable)
       .select()
       .where("id", monster_id)
       .first();
 
-    if (!monster) {
+    if (!tmpMonster) {
       await queueMessage(
         "Monster not found. Please check the ID and try again.",
         interaction,
-        false
+        false,
       );
       return;
     }
 
-    await monsterEmbed(monster, interaction);
-    logger.debug(`Sent monster info for ID ${monster_id} to user ${userId}`);
+    await monsterEmbed(tmpMonster, interaction);
   } catch (error) {
     logger.error(`Error getting monster info for ID ${monster_id}:`, error);
     await queueMessage(
       "An error occurred while getting Pokémon information. Please try again.",
       interaction,
-      false
+      false,
     );
   }
 }
 
 /**
- * Enhanced currentMonsterInfo with better error handling
+ * Get current Monster's information.
+ * @param interaction
  */
 export async function currentMonsterInfo(
-  interaction: CommandInteraction
+  interaction: CommandInteraction,
 ): Promise<void> {
-  const userId = interaction.user.id;
-
   try {
-    const user: IMonsterUserModel = await getUser(userId);
+    const user: IMonsterUserModel = await getUser(interaction.user.id);
 
     if (!user) {
       await queueMessage(
         "User profile not found. Please try catching a Pokémon first.",
         interaction,
-        false
+        false,
       );
       return;
     }
@@ -744,48 +538,43 @@ export async function currentMonsterInfo(
       await queueMessage(
         "No current Pokémon selected. Use the select command to choose one.",
         interaction,
-        false
+        false,
       );
       return;
     }
 
-    const monster = await databaseClient<IMonsterModel>(MonsterTable)
+    const tmpMonster = await databaseClient<IMonsterModel>(MonsterTable)
       .select()
       .where("id", user.current_monster)
       .first();
 
-    if (!monster) {
+    if (!tmpMonster) {
       await queueMessage(
         "Current Pokémon not found. Please select a different one.",
         interaction,
-        false
+        false,
       );
       return;
     }
 
-    await monsterEmbed(monster, interaction);
-    logger.debug(`Sent current monster info for user ${userId}`);
+    await monsterEmbed(tmpMonster, interaction);
   } catch (error) {
-    logger.error(
-      `Error getting current monster info for user ${userId}:`,
-      error
-    );
+    logger.error("Error getting current monster info:", error);
     await queueMessage(
       "An error occurred while getting your current Pokémon. Please try again.",
       interaction,
-      false
+      false,
     );
   }
 }
 
 /**
- * Enhanced monsterDex with better error handling and parsing
+ * Get a specific Monster's information from the Pokédex.
+ * @param interaction
  */
 export async function monsterDex(
-  interaction: CommandInteraction
+  interaction: CommandInteraction,
 ): Promise<void> {
-  const userId = interaction.user.id;
-
   try {
     const pokemonOption = interaction.options.get("pokemon")?.value?.toString();
 
@@ -801,216 +590,134 @@ export async function monsterDex(
       searchTerm = searchTerm.replace(/shiny/i, "").trim();
     }
 
-    const dexEntry = findMonsterByName(searchTerm.toLowerCase());
+    const tempMonster: Pokemon | undefined = await findMonsterByName(
+      searchTerm.toLowerCase(),
+    );
 
-    if (!dexEntry) {
+    if (!tempMonster) {
       await queueMessage(
         `Pokémon "${searchTerm}" not found in the Pokédex.`,
         interaction,
-        false
+        false,
       );
       return;
     }
 
     // Format Pokemon data
-    const pokemonTypes = Array.isArray(dexEntry.type)
-      ? dexEntry.type.join(" | ")
-      : String(dexEntry.type);
-    const dexNumber = `${dexEntry.id}`.padStart(DEX_NUMBER_PADDING, "0");
-    const count = await monsterCount(dexEntry.id, userId);
-
-    // Get images
-    const images = getDexImages(dexEntry, Boolean(searchShiny));
+    const pokemonTypes = Array.isArray(tempMonster.type)
+      ? tempMonster.type.join(" | ")
+      : String(tempMonster.type);
+    const tmpID = `${tempMonster.id}`.padStart(DEX_NUMBER_PADDING, "0");
 
     // Format stats
-    const baseStats = dexEntry.baseStats;
-    const stats = {
-      hp: baseStats.hp,
-      attack: baseStats.atk,
-      defense: baseStats.def,
-      sp_attack: baseStats.spa,
-      sp_defense: baseStats.spd,
-      speed: baseStats.spe,
+    const monsterStats = {
+      hp: tempMonster.stats[0].base_stat,
+      attack: tempMonster.stats[1].base_stat,
+      defense: tempMonster.stats[2].base_stat,
+      sp_attack: tempMonster.stats[3].base_stat,
+      sp_defense: tempMonster.stats[4].base_stat,
+      speed: tempMonster.stats[5].base_stat,
     };
 
-    // Format evolution info
-    const evolves = dexEntry.evos?.join(" | ") ?? "None";
-    const prevolves = dexEntry.prevo ?? "None";
+    // Get count and images
+    const count = format_number(await monsterCount(tempMonster.id, interaction.user.id));
 
+    // Format evolution info
+    const evolve = tempMonster.evos?.join(" | ") ?? "None";
+    const prevolve = tempMonster.prevo ?? "None";
+
+    // Evolution item handling - removed problematic evoItem lookup
     let evoItem = "";
-    if (dexEntry.evos && dexEntry.evos.length > 0) {
-      const evolution = findMonsterByName(dexEntry.evos[0]);
-      if (evolution?.evoItem) {
-        evoItem = ` with item ${evolution.evoItem}`;
-      }
-    }
+    // Note: Evolution items would need to be sourced differently
+    // The evoItem property doesn't exist on the IMonsterDex type
 
     // Special indicator
-    const legendaryIcon = dexEntry.special ? " 💠" : "";
+    const legendaryIcon = tempMonster.special ? " 💠" : "";
 
-    const description = `**Type(s)**: ${pokemonTypes}
+    const embed = new EmbedBuilder({
+      description: `**Type(s)**: ${pokemonTypes}
 
-**National №**: ${dexNumber}
-**Your PokeDex Count**: ${format_number(parseInt(count))}
+**National №**: ${tmpID}
+**Your PokeDex Count**: ${count}
 
 **Base Stats**
 
-**HP**: ${stats.hp}
-**Attack**: ${stats.attack}
-**Defense**: ${stats.defense}
-**Sp. Atk**: ${stats.sp_attack}
-**Sp. Def**: ${stats.sp_defense}
-**Speed**: ${stats.speed}
+**HP**: ${monsterStats.hp}
+**Attack**: ${monsterStats.attack}
+**Defense**: ${monsterStats.defense}
+**Sp. Atk**: ${monsterStats.sp_attack}
+**Sp. Def**: ${monsterStats.sp_defense}
+**Speed**: ${monsterStats.speed}
 
-**Prevolve**: ${prevolves}
-**Evolve**: ${evolves}${evoItem}`;
-
-    const embed = createPokemonEmbed({
-      title: `#${dexNumber} - ${dexEntry.name.english}${legendaryIcon}`,
-      description,
-      image: images.normal,
-      thumbnail: images.thumbnail,
+**Prevolve**: ${prevolve}
+**Evolve**: ${evolve}${evoItem}`,
+      image: {
+        url: tempMonster.sprites.other["official-artwork"].front_default,
+      },
+      thumbnail: {
+        url: tempMonster.sprites.other.showdown.front_default,
+      },
+      title: `#${tmpID} - ${tempMonster.name}${legendaryIcon}`,
     });
 
-    await sendEmbedResponse(interaction, embed, false);
-    logger.debug(
-      `Sent dex info for ${dexEntry.name.english} to user ${userId}`
-    );
+    await interaction.channel?.send({ embeds: [embed] });
   } catch (error) {
-    logger.error(`Error getting dex info for user ${userId}:`, error);
+    logger.error("Error getting dex info:", error);
     await queueMessage(
       "An error occurred while getting Pokédex information. Please try again.",
       interaction,
-      false
+      false,
     );
   }
 }
 
-/**
- * Enhanced monsterCount with better error handling
- */
-export async function monsterCount(id: number, uid: string): Promise<string> {
+export async function monsterCount(id: number, uid: string): Promise<number> {
   if (!id || !uid) {
     logger.warn("Invalid parameters provided to monsterCount");
-    return "0";
+    return 0;
   }
 
   try {
-    const result = await databaseClient<IMonsterModel>(MonsterTable)
-      .count("id as count")
+    const pokemon = await databaseClient<IMonsterModel>(MonsterTable)
+      .select("id")
       .where({
         monster_id: id,
         uid: uid,
-      })
-      .first();
+      });
 
-    return result || "0";
+    return pokemon.length;
   } catch (error) {
-    logger.error(
-      `Error getting monster count for ID ${id}, user ${uid}:`,
-      error
-    );
-    return "0";
+    logger.error(`Error getting monster count for ID ${id}, user ${uid}:`, error);
+    return 0;
   }
 }
 
-/**
- * Enhanced userDex with caching and better performance
- */
 export async function userDex(user: string): Promise<number[]> {
   if (!user) {
     logger.warn("No user ID provided to userDex");
     return [];
   }
 
-  // Check cache first
-  const cached = userDexCache.get(user);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data;
-  }
-
   try {
+    const dex: number[] = [];
+
     const pokemon = await databaseClient<IMonsterModel>(MonsterTable)
-      .distinct("monster_id")
-      .where("uid", user)
-      .select("monster_id");
+      .select("monster_id")
+      .where({
+        uid: user,
+      });
 
-    const dexArray = pokemon.map((p) => p.monster_id);
+    if (pokemon.length > 0) {
+      pokemon.forEach((element) => {
+        if (!dex.includes(element.monster_id)) {
+          dex.push(element.monster_id);
+        }
+      });
+    }
 
-    // Cache the result
-    userDexCache.set(user, {
-      data: dexArray,
-      timestamp: Date.now(),
-    });
-
-    return dexArray;
+    return dex;
   } catch (error) {
     logger.error(`Error getting user dex for user ${user}:`, error);
     return [];
   }
-}
-
-// ============================================================================
-// UTILITY FUNCTIONS (Additional exports for testing and debugging)
-// ============================================================================
-
-/**
- * Export for testing - calculates individual stat
- */
-export function calculateSingleStat(
-  baseStat: number,
-  iv: number,
-  level: number,
-  isHP: boolean = false
-): number {
-  return calculateStat({ baseStat, iv, level, isHP });
-}
-
-/**
- * Export for testing - calculates average IV
- */
-export function calculateIVAverage(monster: IMonsterModel): number {
-  return calculateAverageIV(monster);
-}
-
-/**
- * Export for testing - formats Pokemon types
- */
-export function formatTypes(types: any[]): string[] {
-  return formatPokemonTypes(types);
-}
-
-/**
- * Clear user dex cache for a specific user or all users
- */
-export function clearUserDexCache(userId?: string): void {
-  if (userId) {
-    userDexCache.delete(userId);
-  } else {
-    userDexCache.clear();
-  }
-  logger.debug(`Cleared user dex cache${userId ? ` for user ${userId}` : ""}`);
-}
-
-/**
- * Clear stat calculation cache
- */
-export function clearStatCache(): void {
-  statCalculationCache.clear();
-  logger.debug("Cleared stat calculation cache");
-}
-
-/**
- * Get cache statistics
- */
-export function getCacheStats(): {
-  userDexCacheSize: number;
-  statCacheSize: number;
-  userDexKeys: string[];
-} {
-  return {
-    userDexCacheSize: userDexCache.size,
-    statCacheSize: statCalculationCache.size,
-    userDexKeys: Array.from(userDexCache.keys()),
-  };
 }
