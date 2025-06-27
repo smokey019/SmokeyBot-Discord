@@ -27,6 +27,7 @@ import { checkSpawn } from "./clients/pokemon/spawn-monster";
 import { getCurrentTime } from "./utils";
 
 const logger = getLogger("DiscordClient");
+let loaded_commands = false;
 
 // Extract isDev before config to avoid temporal dead zone issues
 const isDev = process.env.DEV === "true" || process.argv.includes("--dev");
@@ -35,8 +36,8 @@ const isDev = process.env.DEV === "true" || process.argv.includes("--dev");
 const config = {
   shardId: parseInt(
     process.env.SHARD_ID ||
-      process.argv.find((arg) => arg.startsWith("--shard="))?.split("=")[1] ||
-      "0"
+    process.argv.find((arg) => arg.startsWith("--shard="))?.split("=")[1] ||
+    "0"
   ),
   totalShards: parseInt(process.env.TOTAL_SHARDS || "1"),
   isDev,
@@ -334,7 +335,7 @@ export const discordClient = new Client({
   ],
   presence: {
     status: PresenceUpdateStatus.Online,
-    activities: [ACTIVITIES[0]],
+    //activities: [ACTIVITIES[0]],
   },
   // Bun-optimized cache settings
   makeCache: Options.cacheWithLimits({
@@ -444,6 +445,16 @@ function handleInterShardMessage(message: InterShardMessage): void {
 
     case "healthCheck":
       respondToHealthCheck(message);
+      break;
+
+    case "globalCommandsReady":
+      loaded_commands = true;
+      logger.debug(`Received loaded commands.`);
+      break;
+
+    case "ready":
+
+      logger.debug(`Another shard has joined.`);
       break;
 
     default:
@@ -634,17 +645,17 @@ function updatePresence(activity?: any): void {
     const status = globalRateLimit.isActive
       ? PresenceUpdateStatus.Idle
       : shardState.healthScore < 50
-      ? PresenceUpdateStatus.DoNotDisturb
-      : PresenceUpdateStatus.Online;
+        ? PresenceUpdateStatus.DoNotDisturb
+        : PresenceUpdateStatus.Online;
 
     discordClient.user?.setPresence({
       status,
-      activities: [selectedActivity],
+      //activities: [selectedActivity],
     });
 
     // Broadcast presence update to other shards if coordinator
     if (IS_COORDINATOR) {
-      sendInterShardMessage("presenceUpdate", { activity: selectedActivity });
+      //sendInterShardMessage("presenceUpdate", { activity: selectedActivity });
     }
   } catch (error) {
     logger.warn("Presence update failed:", error);
@@ -885,8 +896,7 @@ async function registerGuildCommands(guild: Guild): Promise<void> {
 function handleRateLimit(rateLimitData: any): void {
   const minutes = Math.round(rateLimitData.timeToReset / 60000);
   logger.warn(
-    `⚠️  Rate limited for ${minutes}m on route: ${
-      rateLimitData.route || "unknown"
+    `⚠️  Rate limited for ${minutes}m on route: ${rateLimitData.route || "unknown"
     }`
   );
 
@@ -1012,7 +1022,7 @@ discordClient.on("ready", async () => {
     logger.info(`📝 Loaded ${commands.size} commands`);
 
     // Global slash command registration (coordinator only)
-    if (IS_COORDINATOR) {
+    if (IS_COORDINATOR && loaded_commands == false) {
       setTimeout(async () => {
         try {
           await registerSlashCommands();
@@ -1022,6 +1032,7 @@ discordClient.on("ready", async () => {
           await sendInterShardMessage("globalCommandsReady", {
             timestamp: Date.now(),
           });
+          loaded_commands = true;
         } catch (error) {
           logger.error("❌ Global command registration failed:", error);
         }
@@ -1348,7 +1359,7 @@ export const sendInterShardMsg = sendInterShardMessage;
 export { communicationManager, handleInterShardMessage, sendInterShardMessage };
 
 // Configuration export
-  export { config as shardConfig };
+export { config as shardConfig };
 
 /**
  * Enhanced startup function optimized for Bun
@@ -1375,8 +1386,7 @@ async function startBot(): Promise<void> {
     );
     logger.info(`👑 Role: ${IS_COORDINATOR ? "Coordinator" : "Worker"}`);
     logger.info(
-      `📡 Communication: ${
-        config.useRedis ? "Redis" : config.useWebSocket ? "WebSocket" : "Direct"
+      `📡 Communication: ${config.useRedis ? "Redis" : config.useWebSocket ? "WebSocket" : "Direct"
       }`
     );
     logger.info(`💾 Message Cache Limit: ${config.messageMemoryLimit}`);

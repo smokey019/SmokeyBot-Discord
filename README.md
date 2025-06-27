@@ -13,6 +13,16 @@ bun run index.ts
 ```
 
 # Commands:
+
+## Sync Emotes
+```
+// Only static emotes from 7TV
+/sync-7tv channel:sodapoppin type:static
+/sync-7tv channel:sodapoppin type:gif
+
+/sync-ffz channel:xqcow type:static (always static for FFZ)
+```
+
 ## Leaderboard:
 ```
 // Basic usage
