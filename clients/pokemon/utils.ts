@@ -1,8 +1,8 @@
 import { CommandInteraction, EmbedBuilder } from "discord.js";
-import TimeAgo from "javascript-time-ago";
 import { discordClient } from "../../bot";
 import { GLOBAL_COOLDOWN, type ICache } from "../../clients/cache";
 import { getUserDBCount } from "../../clients/database";
+import { getLogger } from "../../clients/logger";
 import {
   format_number,
   getCurrentTime,
@@ -16,138 +16,386 @@ import {
   queue_add_success,
   queue_attempts,
 } from "../emote_queue";
-import { getMonsterDBCount, getShinyMonsterDBCount } from "./monsters";
-import { getBoostedWeatherSpawns } from "./weather";
+import {
+  generatePokemonIVs,
+  getMonsterDBCount,
+  getPokemonTypeColor,
+  getShinyMonsterDBCount
+} from "./monsters";
+import { getBoostedWeatherSpawns, getCurrentWeather } from "./weather";
 
-const timeAgo = new TimeAgo("en-US");
+const logger = getLogger("Pokémon Utils");
 
-// const SHINY_ODDS_RETAIL = parseInt(getConfigValue('SHINY_ODDS_RETAIL'));
-// const SHINY_ODDS_COMMUNITY = parseInt(getConfigValue('SHINY_ODDS_COMMUNITY'));
+// Constants for better maintainability
+const DEFAULT_LEVEL_MIN = 1;
+const DEFAULT_LEVEL_MAX = 49;
+const PERFECT_IV_ODDS = 45;
+const GENDERS = ["M", "F"] as const;
 
+// Types for better type safety
+interface ParsedArgs {
+  search: string;
+  page: number;
+  sort: [string, string];
+  isQuote: boolean;
+  args: string[];
+}
+
+/**
+ * Capitalize first letter of a string
+ * @param val - String to capitalize
+ * @returns Capitalized string
+ */
 export function capitalizeFirstLetter(val: string): string {
+  if (!val || typeof val !== 'string') return '';
   return String(val).charAt(0).toUpperCase() + String(val).slice(1);
 }
 
-export async function parseArgs(args: string[]): Promise<{
-  search: string;
-  page: number;
-  sort: any;
-  isQuote: RegExpMatchArray | boolean;
-  args: any;
-}> {
-  const isQuote = false;
-  const sort = ["id", "high"];
-  let search = undefined;
-  let page = 0;
-
-  if (!isNaN(parseInt(args[args.length - 1]))) {
-    page = parseInt(args[args.length - 1]);
-    args.splice(args.length - 1, 1);
-    search = args.join(" ");
-  } else if (args.length >= 2 && isNaN(parseInt(args[args.length - 1]))) {
-    page = 0;
-    search = args.join(" ");
-  } else {
-    search = args.join(" ");
+/**
+ * Enhanced argument parsing with better type safety
+ * @param args - Array of command arguments
+ * @returns Parsed arguments object
+ */
+export async function parseArgs(args: string[]): Promise<ParsedArgs> {
+  if (!Array.isArray(args)) {
+    return {
+      search: '',
+      page: 0,
+      sort: ["id", "high"],
+      isQuote: false,
+      args: []
+    };
   }
 
+  const workingArgs = [...args]; // Don't mutate original array
+  const sort: [string, string] = ["id", "high"];
+  let search = '';
+  let page = 0;
+
+  // Check if last argument is a page number
+  const lastArg = workingArgs[workingArgs.length - 1];
+  if (lastArg && !isNaN(parseInt(lastArg, 10))) {
+    page = Math.max(0, parseInt(lastArg, 10)); // Ensure non-negative
+    workingArgs.pop(); // Remove page number from search terms
+  }
+
+  // Join remaining arguments as search term
+  search = workingArgs.join(" ").trim();
+
   return {
-    search: search,
-    page: page,
-    sort: sort,
-    isQuote: isQuote,
-    args: args,
+    search,
+    page,
+    sort,
+    isQuote: false,
+    args: workingArgs,
   };
 }
 
 /**
- * Returns a randomized level.
+ * Returns a randomized level within specified bounds
+ * @param min - Minimum level (default: 1)
+ * @param max - Maximum level (default: 49)
+ * @returns Random level
  */
-export function rollLevel(min: number, max: number): number {
-  return getRndInteger(min, max);
+export function rollLevel(
+  min: number = DEFAULT_LEVEL_MIN,
+  max: number = DEFAULT_LEVEL_MAX
+): number {
+  const minLevel = Math.max(1, Math.floor(min));
+  const maxLevel = Math.max(minLevel, Math.floor(max));
+  return getRndInteger(minLevel, maxLevel);
 }
 
 /**
- *
- * @returns Gender in M or F
+ * Returns a random gender
+ * @returns Gender as "M" or "F"
  */
-export function rollGender(): string {
-  const genders = ["M", "F"];
-  return genders[getRndInteger(0, 1)];
+export function rollGender(): "M" | "F" {
+  return GENDERS[getRndInteger(0, 1)];
 }
 
 /**
- * Returns a randomized value for if an item is shiny. (1 is shiny, 0 is not)
+ * Returns whether a Pokemon should be shiny based on configured odds
+ * @returns 1 if shiny, 0 if not
  */
 export function rollShiny(): 0 | 1 {
-  return getRndInteger(1, parseInt(process.env.SHINY_ODDS_RETAIL)) >=
-    parseInt(process.env.SHINY_ODDS_RETAIL)
-    ? 1
-    : 0;
+  const shinyOddsRetail = parseInt(process.env.SHINY_ODDS_RETAIL || "4096", 10);
+
+  if (isNaN(shinyOddsRetail) || shinyOddsRetail <= 0) {
+    logger.warn("Invalid SHINY_ODDS_RETAIL value, using default 4096");
+    return getRndInteger(1, 4096) >= 4096 ? 1 : 0;
+  }
+
+  return getRndInteger(1, shinyOddsRetail) >= shinyOddsRetail ? 1 : 0;
 }
 
-export function rollPerfectIV(): boolean {
-  return getRndInteger(1, 45) >= 45 ? true : false;
+/**
+ * Enhanced perfect IV roll with configurable odds
+ * @param customOdds - Custom odds for perfect IV (default: 45)
+ * @returns Boolean indicating if Pokemon should have perfect IVs
+ */
+export function rollPerfectIV(customOdds: number = PERFECT_IV_ODDS): boolean {
+  const odds = Math.max(1, Math.floor(customOdds));
+  return getRndInteger(1, odds) >= odds;
 }
 
+/**
+ * Generate complete IV stats (enhanced version using monsters.ts)
+ * @param isPerfect - Whether to generate high IV stats
+ * @returns Complete IV object with percentage
+ */
+export function rollCompleteIVs(isPerfect: boolean = false): {
+  ivs: ReturnType<typeof generatePokemonIVs>;
+  percentage: number;
+} {
+  const ivs = generatePokemonIVs(isPerfect);
+  const MAX_IV_TOTAL = 186; // 31 * 6 stats
+  const totalIV = ivs.hp + ivs.attack + ivs.defense + ivs.sp_attack + ivs.sp_defense + ivs.speed;
+  const percentage = parseFloat(((totalIV / MAX_IV_TOTAL) * 100).toFixed(2));
+
+  return { ivs, percentage };
+}
+
+/**
+ * Enhanced server weather check with better error handling
+ * @param interaction - Discord command interaction
+ * @param cache - Server cache
+ */
 export async function checkServerWeather(
   interaction: CommandInteraction,
   cache: ICache
 ): Promise<void> {
-  const boost = await getBoostedWeatherSpawns(interaction, cache);
+  try {
+    const boost = await getBoostedWeatherSpawns(interaction, cache);
 
-  interaction.reply(
-    `The current weather is **${
-      boost.weather
-    }**.  You will find increased spawns of **${boost.boosts.join(
-      " / "
-    )}** on this server.`
-  );
+    if (!boost) {
+      await interaction.reply({
+        content: "Unable to determine current weather. Please try again later.",
+        ephemeral: true
+      });
+      return;
+    }
+
+    const boostedTypes = boost.boosts.join(" / ");
+    const message = `The current weather is **${boost.weather}**. ` +
+                   `You will find increased spawns of **${boostedTypes}** types on this server.`;
+
+    await interaction.reply(message);
+
+  } catch (error) {
+    logger.error("Error checking server weather:", error);
+    await interaction.reply({
+      content: "An error occurred while checking the weather.",
+      ephemeral: true
+    });
+  }
 }
 
-export async function getBotStats(
-  interaction: CommandInteraction
-): Promise<void> {
-  GLOBAL_COOLDOWN.set(interaction.guild.id, getCurrentTime());
-  const ping = Date.now() - interaction.createdTimestamp;
-  const pingNew = timeAgo.format(interaction.createdTimestamp);
+/**
+ * Enhanced bot statistics with better formatting and error handling
+ * @param interaction - Discord command interaction
+ */
+export async function getBotStats(interaction: CommandInteraction): Promise<void> {
+  try {
+    if (interaction.guild?.id) {
+      GLOBAL_COOLDOWN.set(interaction.guild.id, getCurrentTime());
+    }
 
-  const embed = new EmbedBuilder()
-    .setTitle("SmokeyBot Statistics 📊")
-    .addFields(
-      { name: "Requested at 🌩️", value: pingNew },
-      {
-        name: "Servers in Emote Queue 🔗",
-        value: format_number(EmoteQueue.size),
-      },
-      {
-        name: "Emote Synchronizations 🔼",
-        value: `${format_number(
-          queue_attempts + FFZ_emoji_queue_count
-        )} / ${format_number(
-          queue_add_success + FFZ_emoji_queue_attempt_count
-        )}`,
-      },
-      {
-        name: "Servers On This Shard 🖥️",
-        value: format_number(discordClient.guilds.cache.size),
-      },
-      {
-        name: "Total " + theWord() + " 🐾",
-        value: format_number(await getMonsterDBCount()),
-      },
-      {
-        name: "Total Shiny " + theWord() + " 🌟",
-        value: format_number(await getShinyMonsterDBCount()),
-      },
-      {
-        name: "Total " + theWord() + " Users 👤",
-        value: format_number(await getUserDBCount()),
-      }
-    )
-    .setTimestamp();
+    const ping = Date.now() - interaction.createdTimestamp;
+    const wsPing = discordClient.ws.ping;
 
-  await (interaction as CommandInteraction).reply({ embeds: [embed] });
+    // Gather all stats with proper error handling
+    const [monsterCount, shinyCount, userCount] = await Promise.allSettled([
+      (await getMonsterDBCount()).toString(),
+      (await getShinyMonsterDBCount()).toString(),
+      (await getUserDBCount()).toString()
+    ]);
+
+    const getStatValue = (result: PromiseSettledResult<string>): string => {
+      return result.status === 'fulfilled' ? format_number(result.value) : 'Error';
+    };
+
+    // Get current weather if available
+    const currentWeather = interaction.guild?.id
+      ? await getCurrentWeather(interaction.guild.id)
+      : null;
+
+    const embed = new EmbedBuilder()
+      .setTitle("SmokeyBot Statistics 📊")
+      .addFields(
+        {
+          name: "Response Time ⚡",
+          value: `${ping}ms (WS: ${wsPing}ms)`,
+          inline: true
+        },
+        {
+          name: "Servers in Emote Queue 🔗",
+          value: format_number(EmoteQueue.size),
+          inline: true
+        },
+        {
+          name: "Emote Synchronizations 🔼",
+          value: `${format_number(queue_attempts + FFZ_emoji_queue_count)} / ${format_number(queue_add_success + FFZ_emoji_queue_attempt_count)}`,
+          inline: true
+        },
+        {
+          name: "Servers On This Shard 🖥️",
+          value: format_number(discordClient.guilds.cache.size),
+          inline: true
+        },
+        {
+          name: `Total ${theWord()} 🐾`,
+          value: getStatValue(monsterCount),
+          inline: true
+        },
+        {
+          name: `Total Shiny ${theWord()} 🌟`,
+          value: getStatValue(shinyCount),
+          inline: true
+        },
+        {
+          name: `Total ${theWord()} Users 👤`,
+          value: getStatValue(userCount),
+          inline: true
+        }
+      )
+      .setColor(getPokemonTypeColor('normal'))
+      .setTimestamp();
+
+    // Add weather info if available
+    if (currentWeather) {
+      embed.addFields({
+        name: "Current Weather 🌤️",
+        value: `**${currentWeather.weather}** (Boosts: ${currentWeather.boosts.join(", ")})`,
+        inline: false
+      });
+    }
+
+    // Add footer with shard info if available
+    if (discordClient.shard) {
+      embed.setFooter({
+        text: `Shard ${discordClient.shard.ids.join(', ')} | ${discordClient.guilds.cache.size} servers`
+      });
+    }
+
+    await interaction.reply({ embeds: [embed] });
+
+  } catch (error) {
+    logger.error("Error getting bot stats:", error);
+    await interaction.reply({
+      content: "An error occurred while gathering bot statistics.",
+      ephemeral: true
+    });
+  }
 }
 
+/**
+ * Enhanced shiny rate calculator
+ * @param customOdds - Custom shiny odds (optional)
+ * @returns Shiny rate information
+ */
+export function getShinyRateInfo(customOdds?: number): {
+  odds: number;
+  percentage: string;
+  description: string;
+} {
+  const odds = customOdds || parseInt(process.env.SHINY_ODDS_RETAIL || "4096", 10);
+  const percentage = ((1 / odds) * 100).toFixed(4);
+
+  return {
+    odds,
+    percentage: `${percentage}%`,
+    description: `1 in ${format_number(odds)} (${percentage}%)`
+  };
+}
+
+/**
+ * Format time duration in a human-readable way
+ * @param seconds - Duration in seconds
+ * @returns Formatted time string
+ */
+export function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${Math.floor(seconds)}s`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${Math.floor(seconds % 60)}s`;
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  return `${hours}h ${minutes}m`;
+}
+
+/**
+ * Generate random spawn-related values with proper validation
+ * @param config - Configuration for spawn generation
+ * @returns Spawn generation result
+ */
+export function generateSpawnValues(config: {
+  levelRange?: [number, number];
+  forceShiny?: boolean;
+  forcePerfectIV?: boolean;
+}): {
+  level: number;
+  isShiny: boolean;
+  isPerfect: boolean;
+  gender: "M" | "F";
+  ivData: ReturnType<typeof rollCompleteIVs>;
+} {
+  const { levelRange, forceShiny, forcePerfectIV } = config;
+
+  const [minLevel, maxLevel] = levelRange || [DEFAULT_LEVEL_MIN, DEFAULT_LEVEL_MAX];
+  const level = rollLevel(minLevel, maxLevel);
+  const isShiny = forceShiny ?? rollShiny() === 1;
+  const isPerfect = forcePerfectIV ?? rollPerfectIV();
+  const gender = rollGender();
+  const ivData = rollCompleteIVs(isPerfect);
+
+  return {
+    level,
+    isShiny,
+    isPerfect,
+    gender,
+    ivData
+  };
+}
+
+/**
+ * Validate and sanitize user input
+ * @param input - User input string
+ * @param maxLength - Maximum allowed length
+ * @returns Sanitized input
+ */
+export function sanitizeUserInput(input: string, maxLength: number = 100): string {
+  if (!input || typeof input !== 'string') return '';
+
+  return input
+    .trim()
+    .slice(0, maxLength)
+    .replace(/[^\w\s-]/g, '') // Remove special characters except hyphens and spaces
+    .replace(/\s+/g, ' '); // Normalize whitespace
+}
+
+/**
+ * Check if a value is a valid positive integer
+ * @param value - Value to check
+ * @param min - Minimum allowed value
+ * @param max - Maximum allowed value
+ * @returns Boolean indicating validity
+ */
+export function isValidPositiveInteger(
+  value: any,
+  min: number = 1,
+  max: number = Number.MAX_SAFE_INTEGER
+): boolean {
+  const num = parseInt(value, 10);
+  return !isNaN(num) && num >= min && num <= max && Number.isInteger(num);
+}
+
+// Export constants for use in other modules
+export const POKEMON_UTILS_CONSTANTS = {
+  DEFAULT_LEVEL_MIN,
+  DEFAULT_LEVEL_MAX,
+  PERFECT_IV_ODDS,
+  GENDERS
+} as const;
+
+// Export the image URL constant (keeping original)
 export const img_monster_ball = `https://cdn.discordapp.com/attachments/550103813587992586/721256683665621092/pokeball2.png`;
