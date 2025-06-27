@@ -7,7 +7,7 @@ import {
   MonsterUserTable,
   type IMonsterUserModel,
 } from "../../models/MonsterUser";
-import { explode, getCurrentTime, getRndInteger } from "../../utils";
+import { getCurrentTime, getRndInteger } from "../../utils";
 import { queueMessage } from "../message_queue";
 import { userDex } from "./info";
 import {
@@ -68,46 +68,25 @@ interface CatchResult {
 }
 
 /**
- * Special Pokemon names that should maintain hyphens
+ * Special Pokemon names that can maintain hyphens
  */
 const HYPHENATED_POKEMON_EXCEPTIONS = new Set([
+  // Treasures of Ruin (confirmed to have hyphens in canonical names)
   "chi-yu",
   "ting-lu",
   "chien-pao",
   "wo-chien",
+
+  // Legendary with hyphen
   "ho-oh",
+
+  // Kommo-o evolution line (confirmed to have hyphens)
   "kommo-o",
   "hakamo-o",
   "jangmo-o",
-  "type-null",
-  "tapu-lele",
-  "tapu-koko",
-  "tapu-bulu",
-  "tapu-fini",
+
+  // Other confirmed hyphenated names
   "porygon-z",
-  "mime-jr",
-  "nidoran-m",
-  "nidoran-f",
-  "great-tusk",
-  "scream-tail",
-  "brute-bonnet",
-  "flutter-mane",
-  "slither-wing",
-  "sandy-shocks",
-  "iron-treads",
-  "iron-bundle",
-  "iron-hands",
-  "iron-jugulis",
-  "iron-moth",
-  "iron-thorns",
-  "roaring-moon",
-  "iron-valiant",
-  "walking-wake",
-  "iron-leaves",
-  "gouging-fire",
-  "raging-bolt",
-  "iron-boulder",
-  "iron-crown"
 ]);
 
 /**
@@ -176,21 +155,11 @@ function normalizePokemonNameForCatch(pokemonName: string): string {
     return '';
   }
 
-  const lowerName = pokemonName.toLowerCase().trim();
-
-  // Handle space replacement cases
-  if (SPACE_REPLACEMENT_POKEMON.has(lowerName)) {
-    return lowerName.replace("-", " ");
-  }
+  const lowerName = pokemonName.toLowerCase().trim().replace("-", " ");
 
   // Handle hyphenated exceptions
   if (HYPHENATED_POKEMON_EXCEPTIONS.has(lowerName)) {
     return lowerName;
-  }
-
-  // Handle general hyphen cases - take first part only
-  if (lowerName.includes("-")) {
-    return explode(lowerName, '-', 3)[0] || lowerName;
   }
 
   return lowerName;
@@ -512,6 +481,9 @@ export async function catchMonster(interaction: CommandInteraction): Promise<voi
     spawn.monster!.name = normalizedSpawnName;
 
     // Check if user's attempt matches the spawned Pokemon
+    logger.error(userAttempt);
+    logger.error(normalizedSpawnName);
+
     if (userAttempt === normalizedSpawnName) {
       logger.trace(`${interaction.guild?.name} - ${interaction.user.username} | Starting catch process`);
 
