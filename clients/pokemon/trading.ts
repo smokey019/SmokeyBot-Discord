@@ -148,7 +148,7 @@ export async function checkEvolves(
         if (item.item_number == 229) return false;
       }
 
-      const evolution: IMonsterDex = findMonsterByName(monster.evos[0]);
+      const evolution = await findMonsterByName(monster.evos[0]);
 
       if (evolution) {
         if (evolution.evoType) {
