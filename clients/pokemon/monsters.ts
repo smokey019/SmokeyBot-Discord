@@ -638,15 +638,6 @@ export async function findMonsterByID(id: number): Promise<Pokemon | null> {
 }
 
 /**
- * Get Pokemon data from PokeAPI by ID (alias for compatibility)
- * @param id - Pokemon ID
- * @returns Promise resolving to Pokemon data
- */
-export async function findMonsterByIDAPI(id: number): Promise<Pokemon | null> {
-  return findMonsterByID(id);
-}
-
-/**
  * Get Pokemon data from PokeAPI by name
  * @param name - Pokemon name
  * @returns Promise resolving to Pokemon data
@@ -669,17 +660,6 @@ export async function findMonsterByName(name: string): Promise<Pokemon | null> {
     logger.error(`Error fetching Pokemon with name "${name}":`, error);
     return null;
   }
-}
-
-/**
- * Get Pokemon data from PokeAPI by name (alias for compatibility)
- * @param name - Pokemon name
- * @returns Promise resolving to Pokemon data
- */
-export async function findMonsterByNameAPI(
-  name: string
-): Promise<Pokemon | null> {
-  return findMonsterByName(name);
 }
 
 /**
