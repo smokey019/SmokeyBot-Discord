@@ -19,9 +19,13 @@ const DEV_GUILD_ID = "690857004171919370";
 
 // Enhanced error handling
 class CommandError extends Error {
-  constructor(message: string, public code: string, public commandFile?: string) {
+  constructor(
+    message: string,
+    public code: string,
+    public commandFile?: string
+  ) {
     super(message);
-    this.name = 'CommandError';
+    this.name = "CommandError";
   }
 }
 
@@ -61,43 +65,68 @@ interface CommandLoadProgress {
 }
 
 // Enhanced collections with better typing
-export const commands: Collection<string[], (event: runEvent) => any> = new Collection();
+export const commands: Collection<string[], (event: runEvent) => any> =
+  new Collection();
 export const slashCommands: SlashCommandBuilder[] = [];
 
 // Command metadata storage for debugging and monitoring
-const commandMetadata = new Map<string, {
-  file: string;
-  loadTime: number;
-  category: string;
-  aliases: string[];
-}>();
+const commandMetadata = new Map<
+  string,
+  {
+    file: string;
+    loadTime: number;
+    category: string;
+    aliases: string[];
+  }
+>();
 
 /**
  * Validates if a file should be processed as a command
  */
 function isValidCommandFile(fileName: string): boolean {
-  return COMMAND_FILE_EXTENSIONS.test(fileName) && !fileName.startsWith('.');
+  return COMMAND_FILE_EXTENSIONS.test(fileName) && !fileName.startsWith(".");
 }
 
 /**
  * Safely imports a command module with timeout and error handling
  */
-async function safeImportCommand(filePath: string, fileName: string): Promise<CommandModule | null> {
+async function safeImportCommand(
+  filePath: string,
+  fileName: string
+): Promise<CommandModule | null> {
   try {
     const importPromise = import(filePath);
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Import timeout')), MAX_COMMAND_LOAD_TIME);
+      setTimeout(
+        () => reject(new Error("Import timeout")),
+        MAX_COMMAND_LOAD_TIME
+      );
     });
 
-    const module = await Promise.race([importPromise, timeoutPromise]) as CommandModule;
+    const module = (await Promise.race([
+      importPromise,
+      timeoutPromise,
+    ])) as CommandModule;
 
     // Validate required properties
-    if (!module.names || !Array.isArray(module.names) || module.names.length === 0) {
-      throw new CommandError('Command module missing valid names array', 'INVALID_NAMES', fileName);
+    if (
+      !module.names ||
+      !Array.isArray(module.names) ||
+      module.names.length === 0
+    ) {
+      throw new CommandError(
+        "Command module missing valid names array",
+        "INVALID_NAMES",
+        fileName
+      );
     }
 
-    if (!module.run || typeof module.run !== 'function') {
-      throw new CommandError('Command module missing run function', 'INVALID_RUN', fileName);
+    if (!module.run || typeof module.run !== "function") {
+      throw new CommandError(
+        "Command module missing run function",
+        "INVALID_RUN",
+        fileName
+      );
     }
 
     return module;
@@ -110,27 +139,38 @@ async function safeImportCommand(filePath: string, fileName: string): Promise<Co
 /**
  * Registers a single command with comprehensive validation
  */
-function registerCommand(module: CommandModule, fileName: string, category: string): boolean {
+function registerCommand(
+  module: CommandModule,
+  fileName: string,
+  category: string
+): boolean {
   try {
     const startTime = Date.now();
 
     // Validate command names
-    const validNames = module.names.filter(name =>
-      typeof name === 'string' &&
-      name.length > 0 &&
-      name.length <= 32 && // Discord limit
-      /^[\w-]+$/.test(name) // Only alphanumeric, underscore, and hyphen
+    const validNames = module.names.filter(
+      (name) =>
+        typeof name === "string" &&
+        name.length > 0 &&
+        name.length <= 32 && // Discord limit
+        /^[\w-]+$/.test(name) // Only alphanumeric, underscore, and hyphen
     );
 
     if (validNames.length === 0) {
-      throw new CommandError('No valid command names found', 'INVALID_NAMES', fileName);
+      throw new CommandError(
+        "No valid command names found",
+        "INVALID_NAMES",
+        fileName
+      );
     }
 
     // Check for command name conflicts
     for (const existingNames of commands.keys()) {
       for (const newName of validNames) {
         if (existingNames.includes(newName)) {
-          logger.warn(`Command name conflict detected: ${newName} in ${fileName} already exists`);
+          logger.warn(
+            `Command name conflict detected: ${newName} in ${fileName} already exists`
+          );
           return false;
         }
       }
@@ -147,10 +187,15 @@ function registerCommand(module: CommandModule, fileName: string, category: stri
         if (slashData.name && slashData.description) {
           slashCommands.push(module.SlashCommandData);
         } else {
-          logger.warn(`Invalid slash command data in ${fileName}: missing name or description`);
+          logger.warn(
+            `Invalid slash command data in ${fileName}: missing name or description`
+          );
         }
       } catch (slashError) {
-        logger.error(`Error processing slash command data for ${fileName}:`, slashError);
+        logger.error(
+          `Error processing slash command data for ${fileName}:`,
+          slashError
+        );
       }
     }
 
@@ -160,12 +205,15 @@ function registerCommand(module: CommandModule, fileName: string, category: stri
       file: fileName,
       loadTime,
       category,
-      aliases: validNames
+      aliases: validNames,
     });
 
-    logger.trace(`Loaded command with alias(es): ${validNames.join(", ")} from ${fileName} (${loadTime}ms)`);
+    logger.trace(
+      `Loaded command with alias(es): ${validNames.join(
+        ", "
+      )} from ${fileName} (${loadTime}ms)`
+    );
     return true;
-
   } catch (error) {
     logger.error(`Failed to register command from ${fileName}:`, error);
     return false;
@@ -184,7 +232,7 @@ async function loadCommandsFromDirectory(
     loadedCount: 0,
     failedCount: 0,
     totalFiles: 0,
-    errors: []
+    errors: [],
   };
 
   try {
@@ -195,7 +243,9 @@ async function loadCommandsFromDirectory(
         throw new Error(`${dirPath} is not a directory`);
       }
     } catch (statError) {
-      logger.warn(`Directory ${dirPath} does not exist or is not accessible: ${statError.message}`);
+      logger.warn(
+        `Directory ${dirPath} does not exist or is not accessible: ${statError.message}`
+      );
       return result;
     }
 
@@ -238,7 +288,6 @@ async function loadCommandsFromDirectory(
           result.errors.push({ file, error });
           progress.errors.push({ file, error });
         }
-
       } catch (fileError) {
         result.failedCount++;
         const error = `Error processing ${file}: ${fileError.message}`;
@@ -249,10 +298,12 @@ async function loadCommandsFromDirectory(
     }
 
     return result;
-
   } catch (dirError) {
     logger.error(`Error reading directory ${dirPath}:`, dirError);
-    throw new CommandError(`Failed to read command directory: ${dirError.message}`, 'DIR_READ_ERROR');
+    throw new CommandError(
+      `Failed to read command directory: ${dirError.message}`,
+      "DIR_READ_ERROR"
+    );
   }
 }
 
@@ -263,7 +314,7 @@ export async function loadCommands(): Promise<void> {
   const startTime = Date.now();
 
   try {
-    logger.info('Starting command loading process...');
+    logger.info("Starting command loading process...");
 
     // Clear existing commands and metadata
     commands.clear();
@@ -274,18 +325,22 @@ export async function loadCommands(): Promise<void> {
       totalFiles: 0,
       processedFiles: 0,
       successfulLoads: 0,
-      errors: []
+      errors: [],
     };
 
     const loadPromises: Promise<LoadCommandsResult>[] = [];
 
     // Load Pokemon commands
     const pokemonDirPath = path.join(__dirname, "pokemon");
-    loadPromises.push(loadCommandsFromDirectory(pokemonDirPath, "pokemon", progress));
+    loadPromises.push(
+      loadCommandsFromDirectory(pokemonDirPath, "pokemon", progress)
+    );
 
     // Load SmokeyBot commands
     const smokeybotDirPath = path.join(__dirname, "smokeybot");
-    loadPromises.push(loadCommandsFromDirectory(smokeybotDirPath, "smokeybot", progress));
+    loadPromises.push(
+      loadCommandsFromDirectory(smokeybotDirPath, "smokeybot", progress)
+    );
 
     // Wait for all directories to be processed
     const results = await Promise.allSettled(loadPromises);
@@ -296,14 +351,16 @@ export async function loadCommands(): Promise<void> {
     const allErrors: Array<{ file: string; error: string }> = [];
 
     results.forEach((result, index) => {
-      const category = index === 0 ? 'pokemon' : 'smokeybot';
+      const category = index === 0 ? "pokemon" : "smokeybot";
 
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         totalLoaded += result.value.loadedCount;
         totalFailed += result.value.failedCount;
         allErrors.push(...result.value.errors);
 
-        logger.debug(`${category} commands: ${result.value.loadedCount} loaded, ${result.value.failedCount} failed`);
+        logger.debug(
+          `${category} commands: ${result.value.loadedCount} loaded, ${result.value.failedCount} failed`
+        );
       } else {
         logger.error(`Failed to load ${category} commands:`, result.reason);
         totalFailed++;
@@ -313,7 +370,13 @@ export async function loadCommands(): Promise<void> {
     const loadTime = Date.now() - startTime;
 
     // Log summary
-    logger.info(`Command loading completed in ${msToDetailed(loadTime)}: ${totalLoaded} loaded, ${totalFailed} failed, ${slashCommands.length} slash commands`);
+    logger.info(
+      `Command loading completed in ${msToDetailed(
+        loadTime
+      )}: ${totalLoaded} loaded, ${totalFailed} failed, ${
+        slashCommands.length
+      } slash commands`
+    );
 
     if (allErrors.length > 0) {
       logger.warn(`Command loading errors:`);
@@ -324,11 +387,14 @@ export async function loadCommands(): Promise<void> {
 
     // Log command statistics
     logger.debug(`Total commands registered: ${commands.size}`);
-    logger.debug(`Command categories: ${Array.from(new Set(Array.from(commandMetadata.values()).map(m => m.category))).join(', ')}`);
-
+    logger.debug(
+      `Command categories: ${Array.from(
+        new Set(Array.from(commandMetadata.values()).map((m) => m.category))
+      ).join(", ")}`
+    );
   } catch (error) {
-    logger.error('Critical error during command loading:', error);
-    throw new CommandError('Failed to load commands', 'LOAD_COMMANDS_ERROR');
+    logger.error("Critical error during command loading:", error);
+    throw new CommandError("Failed to load commands", "LOAD_COMMANDS_ERROR");
   }
 }
 
@@ -339,44 +405,61 @@ export async function registerSlashCommands(): Promise<void> {
   const startTime = Date.now();
 
   try {
-    logger.info('Starting slash command registration...');
+    logger.info("Starting slash command registration...");
 
     if (slashCommands.length === 0) {
-      logger.warn('No slash commands to register');
+      logger.warn("No slash commands to register");
       return;
     }
 
     // Validate environment variables
     const isDev = process.env.DEV === "true";
-    const token = isDev ? process.env.DISCORD_TOKEN_DEV : process.env.DISCORD_TOKEN;
-    const clientId = isDev ? process.env.API_CLIENT_ID_DEV : process.env.API_CLIENT_ID;
+    const token = isDev
+      ? process.env.DISCORD_TOKEN_DEV
+      : process.env.DISCORD_TOKEN;
+    const clientId = isDev
+      ? process.env.API_CLIENT_ID_DEV
+      : process.env.API_CLIENT_ID;
 
     if (!token || !clientId) {
       throw new CommandError(
-        `Missing required environment variables: ${!token ? 'DISCORD_TOKEN' : ''} ${!clientId ? 'API_CLIENT_ID' : ''}`,
-        'MISSING_ENV_VARS'
+        `Missing required environment variables: ${
+          !token ? "DISCORD_TOKEN" : ""
+        } ${!clientId ? "API_CLIENT_ID" : ""}`,
+        "MISSING_ENV_VARS"
       );
     }
 
     // Validate slash command data
-    const validSlashCommands = slashCommands.filter(command => {
+    const validSlashCommands = slashCommands.filter((command) => {
       try {
         const data = command.toJSON();
-        return data.name && data.description && data.name.length <= 32 && data.description.length <= 100;
+        return (
+          data.name &&
+          data.description &&
+          data.name.length <= 32 &&
+          data.description.length <= 100
+        );
       } catch (error) {
-        logger.warn('Invalid slash command data found:', error);
+        logger.warn("Invalid slash command data found:", error);
         return false;
       }
     });
 
     if (validSlashCommands.length !== slashCommands.length) {
-      logger.warn(`Filtered out ${slashCommands.length - validSlashCommands.length} invalid slash commands`);
+      logger.warn(
+        `Filtered out ${
+          slashCommands.length - validSlashCommands.length
+        } invalid slash commands`
+      );
     }
 
-    const rest = new REST({ version: '10' }).setToken(token);
+    const rest = new REST({ version: "10" }).setToken(token);
 
     if (isDev) {
-      logger.debug(`Registering ${validSlashCommands.length} slash commands for development environment`);
+      logger.debug(
+        `Registering ${validSlashCommands.length} slash commands for development environment`
+      );
 
       // Register global commands for dev
       await rest.put(Routes.applicationCommands(clientId), {
@@ -384,37 +467,55 @@ export async function registerSlashCommands(): Promise<void> {
       });
 
       // Add rate limiting delay
-      await new Promise(resolve => setTimeout(resolve, SLASH_COMMAND_RATE_LIMIT_DELAY));
+      await new Promise((resolve) =>
+        setTimeout(resolve, SLASH_COMMAND_RATE_LIMIT_DELAY)
+      );
 
       // Register guild-specific commands for faster testing
       await rest.put(Routes.applicationGuildCommands(clientId, DEV_GUILD_ID), {
         body: validSlashCommands,
       });
 
-      logger.debug('Development slash commands registered for global and test guild');
+      logger.debug(
+        "Development slash commands registered for global and test guild"
+      );
     } else {
-      logger.debug(`Registering ${validSlashCommands.length} slash commands globally`);
+      logger.debug(
+        `Registering ${validSlashCommands.length} slash commands globally`
+      );
 
       await rest.put(Routes.applicationCommands(clientId), {
         body: validSlashCommands,
       });
 
-      logger.debug('Production slash commands registered globally');
+      logger.debug("Production slash commands registered globally");
     }
 
     const registrationTime = Date.now() - startTime;
-    logger.info(`Successfully registered ${validSlashCommands.length} slash commands in ${msToDetailed(registrationTime)}`);
-
+    logger.info(
+      `Successfully registered ${
+        validSlashCommands.length
+      } slash commands in ${msToDetailed(registrationTime)}`
+    );
   } catch (error) {
-    logger.error('Failed to register slash commands:', error);
+    logger.error("Failed to register slash commands:", error);
 
     // Provide specific error messages
     if (error.code === 50001) {
-      throw new CommandError('Missing access to register slash commands', 'MISSING_PERMISSIONS');
+      throw new CommandError(
+        "Missing access to register slash commands",
+        "MISSING_PERMISSIONS"
+      );
     } else if (error.code === 50035) {
-      throw new CommandError('Invalid slash command data provided', 'INVALID_COMMAND_DATA');
+      throw new CommandError(
+        "Invalid slash command data provided",
+        "INVALID_COMMAND_DATA"
+      );
     } else {
-      throw new CommandError(`Slash command registration failed: ${error.message}`, 'REGISTRATION_ERROR');
+      throw new CommandError(
+        `Slash command registration failed: ${error.message}`,
+        "REGISTRATION_ERROR"
+      );
     }
   }
 }
@@ -431,11 +532,21 @@ export function getCommandStats(): {
   totalSlashCommands: number;
   categories: Record<string, number>;
   averageLoadTime: number;
-  commandList: Array<{ name: string; aliases: string[]; category: string; loadTime: number }>;
+  commandList: Array<{
+    name: string;
+    aliases: string[];
+    category: string;
+    loadTime: number;
+  }>;
 } {
   const categories: Record<string, number> = {};
   let totalLoadTime = 0;
-  const commandList: Array<{ name: string; aliases: string[]; category: string; loadTime: number }> = [];
+  const commandList: Array<{
+    name: string;
+    aliases: string[];
+    category: string;
+    loadTime: number;
+  }> = [];
 
   for (const [name, metadata] of commandMetadata.entries()) {
     categories[metadata.category] = (categories[metadata.category] || 0) + 1;
@@ -444,7 +555,7 @@ export function getCommandStats(): {
       name,
       aliases: metadata.aliases,
       category: metadata.category,
-      loadTime: metadata.loadTime
+      loadTime: metadata.loadTime,
     });
   }
 
@@ -452,8 +563,9 @@ export function getCommandStats(): {
     totalCommands: commands.size,
     totalSlashCommands: slashCommands.length,
     categories,
-    averageLoadTime: commandMetadata.size > 0 ? totalLoadTime / commandMetadata.size : 0,
-    commandList
+    averageLoadTime:
+      commandMetadata.size > 0 ? totalLoadTime / commandMetadata.size : 0,
+    commandList,
   };
 }
 
@@ -466,7 +578,9 @@ export function findCommand(searchName: string): {
   metadata?: any;
 } | null {
   for (const [aliases, runFunction] of commands.entries()) {
-    if (aliases.some(alias => alias.toLowerCase() === searchName.toLowerCase())) {
+    if (
+      aliases.some((alias) => alias.toLowerCase() === searchName.toLowerCase())
+    ) {
       const metadata = commandMetadata.get(aliases[0]);
       return { aliases, run: runFunction, metadata };
     }
@@ -478,14 +592,14 @@ export function findCommand(searchName: string): {
  * Reload commands (useful for development)
  */
 export async function reloadCommands(): Promise<void> {
-  logger.info('Reloading all commands...');
+  logger.info("Reloading all commands...");
 
   try {
     await loadCommands();
     await registerSlashCommands();
-    logger.info('Commands successfully reloaded');
+    logger.info("Commands successfully reloaded");
   } catch (error) {
-    logger.error('Failed to reload commands:', error);
+    logger.error("Failed to reload commands:", error);
     throw error;
   }
 }
@@ -503,32 +617,35 @@ export function validateCommandHealth(): {
 
   // Check if commands are loaded
   if (commands.size === 0) {
-    issues.push('No commands are loaded');
-    recommendations.push('Run loadCommands() to load command modules');
+    issues.push("No commands are loaded");
+    recommendations.push("Run loadCommands() to load command modules");
   }
 
   // Check for slash command coverage
-  const commandsWithSlash = Array.from(commandMetadata.values()).filter(m =>
-    slashCommands.some(sc => sc.name === m.aliases[0])
+  const commandsWithSlash = Array.from(commandMetadata.values()).filter((m) =>
+    slashCommands.some((sc) => sc.name === m.aliases[0])
   ).length;
 
-  const slashCoverage = commands.size > 0 ? (commandsWithSlash / commands.size) * 100 : 0;
+  const slashCoverage =
+    commands.size > 0 ? (commandsWithSlash / commands.size) * 100 : 0;
 
   if (slashCoverage < 80) {
     issues.push(`Low slash command coverage: ${slashCoverage.toFixed(1)}%`);
-    recommendations.push('Consider adding slash command data to more commands');
+    recommendations.push("Consider adding slash command data to more commands");
   }
 
   // Check for slow-loading commands
-  const slowCommands = Array.from(commandMetadata.values()).filter(m => m.loadTime > 1000);
+  const slowCommands = Array.from(commandMetadata.values()).filter(
+    (m) => m.loadTime > 1000
+  );
   if (slowCommands.length > 0) {
     issues.push(`${slowCommands.length} commands took >1s to load`);
-    recommendations.push('Optimize slow-loading command modules');
+    recommendations.push("Optimize slow-loading command modules");
   }
 
   return {
     isHealthy: issues.length === 0,
     issues,
-    recommendations
+    recommendations,
   };
 }

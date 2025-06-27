@@ -10,7 +10,11 @@ import {
 import { explode, getCurrentTime, getRndInteger } from "../../utils";
 import { queueMessage } from "../message_queue";
 import { userDex } from "./info";
-import { type IMonsterDex } from "./monsters";
+import {
+  getPokemonDisplayName,
+  getPokemonSprites,
+  type Pokemon
+} from "./monsters";
 import { getRandomNature } from "./natures";
 import { getSpawn, updateSpawn } from "./spawn-monster";
 import { rollGender, rollLevel, rollPerfectIV, rollShiny } from "./utils";
@@ -74,8 +78,36 @@ const HYPHENATED_POKEMON_EXCEPTIONS = new Set([
   "ho-oh",
   "kommo-o",
   "hakamo-o",
+  "jangmo-o",
   "type-null",
-  "tapu-lele"
+  "tapu-lele",
+  "tapu-koko",
+  "tapu-bulu",
+  "tapu-fini",
+  "porygon-z",
+  "mime-jr",
+  "nidoran-m",
+  "nidoran-f",
+  "great-tusk",
+  "scream-tail",
+  "brute-bonnet",
+  "flutter-mane",
+  "slither-wing",
+  "sandy-shocks",
+  "iron-treads",
+  "iron-bundle",
+  "iron-hands",
+  "iron-jugulis",
+  "iron-moth",
+  "iron-thorns",
+  "roaring-moon",
+  "iron-valiant",
+  "walking-wake",
+  "iron-leaves",
+  "gouging-fire",
+  "raging-bolt",
+  "iron-boulder",
+  "iron-crown"
 ]);
 
 /**
@@ -91,12 +123,12 @@ const SPACE_REPLACEMENT_POKEMON = new Set([
  * Supports multiple languages and handles regional variants.
  *
  * @param interactionContent User input to match
- * @param monsterDex Monster dex entry to match against
+ * @param Pokemon Monster dex entry to match against
  * @returns Boolean indicating if names match
  */
 function monsterMatchesPrevious(
   interactionContent: string,
-  { name }: IMonsterDex
+  { name }: Pokemon
 ): boolean {
   if (!interactionContent || !name) {
     return false;
@@ -106,10 +138,7 @@ function monsterMatchesPrevious(
 
   // Create an array of possible name variations
   const nameVariations = [
-    name.english,
-    name.japanese,
-    name.chinese,
-    name.french
+    name
   ].filter(Boolean); // Remove any undefined/null names
 
   // Check each name variation
@@ -137,11 +166,12 @@ function monsterMatchesPrevious(
 
 /**
  * Normalizes Pokemon names by handling special cases with hyphens and spaces
+ * This is specialized for catching mechanics and differs from the general normalization
  *
  * @param pokemonName Original Pokemon name
  * @returns Normalized Pokemon name
  */
-function normalizePokemonName(pokemonName: string): string {
+function normalizePokemonNameForCatch(pokemonName: string): string {
   if (!pokemonName || typeof pokemonName !== 'string') {
     return '';
   }
@@ -181,7 +211,7 @@ function calculateAverageIV(ivStats: {
   speed: number;
 }): number {
   const totalIV = ivStats.hp + ivStats.attack + ivStats.defense +
-                  ivStats.sp_attack + ivStats.sp_defense + ivStats.speed;
+    ivStats.sp_attack + ivStats.sp_defense + ivStats.speed;
 
   return parseFloat(((totalIV / MAX_IV_TOTAL) * 100).toFixed(2));
 }
@@ -347,7 +377,8 @@ function generateCatchResponse(
     return "Error: Invalid spawn data";
   }
 
-  const pokemonName = spawnData.name.charAt(0).toUpperCase() + spawnData.name.slice(1);
+  // Use the display name function from monsters.ts for consistent formatting
+  const pokemonName = getPokemonDisplayName({ name: spawnData.name } as Pokemon);
   const randomGrats = CATCH_RESPONSES[getRndInteger(0, CATCH_RESPONSES.length - 1)];
   const shinyEmoji = monster.shiny ? " ⭐" : "";
   const legendaryEmoji = ""; // Currently disabled based on commented code
@@ -383,17 +414,27 @@ async function sendCatchResponse(
   spawnData: SpawnData['monster']
 ): Promise<void> {
   try {
-    if (monster.shiny && spawnData?.sprites?.other?.["official-artwork"]?.front_shiny) {
-      const embed = new EmbedBuilder()
-        .setTitle("⭐ " + spawnData.name + " ⭐")
-        .setDescription(response)
-        .setImage(spawnData.sprites.other["official-artwork"].front_shiny)
-        .setTimestamp();
+    if (monster.shiny && spawnData) {
+      // Use the sprite function from monsters.ts for better sprite handling
+      const sprites = getPokemonSprites({ sprites: spawnData.sprites } as Pokemon, true);
+      const shinySprite = sprites.artwork || sprites.default;
 
-      await queueMessage({ embeds: [embed] }, interaction, true);
-    } else {
-      await queueMessage(response, interaction, true);
+      if (shinySprite) {
+        const pokemonName = getPokemonDisplayName({ name: spawnData.name } as Pokemon);
+
+        const embed = new EmbedBuilder()
+          .setTitle("⭐ " + pokemonName + " ⭐")
+          .setDescription(response)
+          .setImage(shinySprite)
+          .setTimestamp();
+
+        await queueMessage({ embeds: [embed] }, interaction, true);
+        return;
+      }
     }
+
+    // Fallback to text response
+    await queueMessage(response, interaction, true);
   } catch (error) {
     logger.error('Failed to send catch response:', error);
     // Fallback to simple text response
@@ -466,8 +507,8 @@ export async function catchMonster(interaction: CommandInteraction): Promise<voi
       return;
     }
 
-    // Normalize the spawned Pokemon name
-    const normalizedSpawnName = normalizePokemonName(spawn.monster!.name);
+    // Normalize the spawned Pokemon name using the specialized function
+    const normalizedSpawnName = normalizePokemonNameForCatch(spawn.monster!.name);
     spawn.monster!.name = normalizedSpawnName;
 
     // Check if user's attempt matches the spawned Pokemon
@@ -499,8 +540,9 @@ export async function catchMonster(interaction: CommandInteraction): Promise<voi
 
         // Log the catch
         const logLevel = monster.shiny ? 'error' : 'info'; // 'error' for shiny to make it stand out
+        const displayName = getPokemonDisplayName({ name: currentSpawn.name } as Pokemon);
         logger[logLevel](
-          `${interaction.guild?.name} - ${interaction.user.username} caught a ${monster.shiny ? 'SHINY ' : ''}${currentSpawn.name} (ID: ${insertedId})`
+          `${interaction.guild?.name} - ${interaction.user.username} caught a ${monster.shiny ? 'SHINY ' : ''}${displayName} (ID: ${insertedId})`
         );
 
       } catch (error) {
@@ -544,17 +586,17 @@ export async function catchMonster(interaction: CommandInteraction): Promise<voi
  * @param pokemonData Pokemon data to match against
  * @returns Boolean indicating match
  */
-export function validatePokemonGuess(userInput: string, pokemonData: IMonsterDex): boolean {
+export function validatePokemonGuess(userInput: string, pokemonData: Pokemon): boolean {
   return monsterMatchesPrevious(userInput, pokemonData);
 }
 
 /**
- * Export for testing - normalizes Pokemon names
+ * Export for testing - normalizes Pokemon names for catching
  * @param name Pokemon name to normalize
  * @returns Normalized name
  */
-export function normalizeName(name: string): string {
-  return normalizePokemonName(name);
+export function normalizeCatchName(name: string): string {
+  return normalizePokemonNameForCatch(name);
 }
 
 /**

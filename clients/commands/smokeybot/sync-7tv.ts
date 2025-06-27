@@ -23,7 +23,15 @@ export const SlashCommandData = new SlashCommandBuilder()
     option
       .setName("channel")
       .setDescription(
-        "Twitch Channel Username (you don't have to use ID anymore)"
+        "Twitch channel to fetch 7tv emotes from."
+      )
+      .setRequired(true)
+  )
+  .addStringOption((option) =>
+    option
+      .setName("type")
+      .setDescription(
+        "Image type. 'static' or 'gif'"
       )
       .setRequired(true)
   )

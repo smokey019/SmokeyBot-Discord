@@ -10,29 +10,27 @@ const authProvider = new RefreshingAuthProvider({
 });
 
 const api = new ApiClient({ authProvider });
-const logger = getLogger('TwitchAPI');
+const logger = getLogger("TwitchAPI");
 
 /**
  * Get username with Twitch API
  * @param username
  * @returns
  */
-export async function getIDwithUser(username: string): Promise<string | boolean>{
+export async function getIDwithUser(
+  username: string
+): Promise<string | boolean> {
+  logger.debug(`Fetching Twitch ID for ${username}.`);
 
-	logger.debug(`Fetching Twitch ID for ${username}.`);
+  if (username?.trim() != "") {
+    const userID = await api.users.getUserByName(username);
 
-	if (username?.trim() != ''){
-
-		const userID = await api.users.getUserByName(username);
-
-		if (userID){
-			return userID.id;
-		}else{
-			return false;
-		}
-
-	}else{
-		return false;
-	}
-
+    if (userID) {
+      return userID.id;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
 }

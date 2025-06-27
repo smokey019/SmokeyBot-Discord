@@ -1,4 +1,3 @@
-
 import datetimeDifference from "datetime-difference";
 import moment from "moment";
 
@@ -138,9 +137,9 @@ interface TimeFormatOptions {
   /** Use short format (s, m, h) instead of full words */
   short?: boolean;
   /** Maximum unit to display (prevents showing days/hours when not needed) */
-  maxUnit?: 'seconds' | 'minutes' | 'hours' | 'days';
+  maxUnit?: "seconds" | "minutes" | "hours" | "days";
   /** Minimum unit to display */
-  minUnit?: 'milliseconds' | 'seconds' | 'minutes' | 'hours';
+  minUnit?: "milliseconds" | "seconds" | "minutes" | "hours";
   /** Include all units even if zero */
   includeZeros?: boolean;
 }
@@ -148,42 +147,45 @@ interface TimeFormatOptions {
 /**
  * Convert milliseconds to human-readable time format
  */
-export function formatTime(milliseconds: number, options: TimeFormatOptions = {}): string {
+export function formatTime(
+  milliseconds: number,
+  options: TimeFormatOptions = {}
+): string {
   const {
     precision = 1,
     short = false,
-    maxUnit = 'days',
-    minUnit = 'milliseconds',
-    includeZeros = false
+    maxUnit = "days",
+    minUnit = "milliseconds",
+    includeZeros = false,
   } = options;
 
   // Handle edge cases
   if (milliseconds < 0) {
-    return short ? '0ms' : '0 milliseconds';
+    return short ? "0ms" : "0 milliseconds";
   }
 
   if (milliseconds === 0) {
-    return short ? '0ms' : '0 milliseconds';
+    return short ? "0ms" : "0 milliseconds";
   }
 
   // Time conversion constants
   const units = [
-    { name: 'day', short: 'd', value: 24 * 60 * 60 * 1000 },
-    { name: 'hour', short: 'h', value: 60 * 60 * 1000 },
-    { name: 'minute', short: 'm', value: 60 * 1000 },
-    { name: 'second', short: 's', value: 1000 },
-    { name: 'millisecond', short: 'ms', value: 1 }
+    { name: "day", short: "d", value: 24 * 60 * 60 * 1000 },
+    { name: "hour", short: "h", value: 60 * 60 * 1000 },
+    { name: "minute", short: "m", value: 60 * 1000 },
+    { name: "second", short: "s", value: 1000 },
+    { name: "millisecond", short: "ms", value: 1 },
   ];
 
   // Find the appropriate units based on maxUnit and minUnit
-  const maxUnitIndex = units.findIndex(unit => unit.name.startsWith(maxUnit));
-  const minUnitIndex = units.findIndex(unit => unit.name.startsWith(minUnit));
+  const maxUnitIndex = units.findIndex((unit) => unit.name.startsWith(maxUnit));
+  const minUnitIndex = units.findIndex((unit) => unit.name.startsWith(minUnit));
 
   const relevantUnits = units.slice(maxUnitIndex, minUnitIndex + 1);
 
   // Calculate time components
   let remaining = milliseconds;
-  const components: Array<{ value: number; unit: typeof units[0] }> = [];
+  const components: Array<{ value: number; unit: (typeof units)[0] }> = [];
 
   for (const unit of relevantUnits) {
     const value = Math.floor(remaining / unit.value);
@@ -195,11 +197,13 @@ export function formatTime(milliseconds: number, options: TimeFormatOptions = {}
   }
 
   // Handle sub-second precision for seconds
-  if (minUnit === 'seconds' && remaining > 0 && components.length > 0) {
+  if (minUnit === "seconds" && remaining > 0 && components.length > 0) {
     const lastComponent = components[components.length - 1];
-    if (lastComponent.unit.name === 'second') {
+    if (lastComponent.unit.name === "second") {
       const fractionalSeconds = remaining / 1000;
-      lastComponent.value = parseFloat((lastComponent.value + fractionalSeconds).toFixed(precision));
+      lastComponent.value = parseFloat(
+        (lastComponent.value + fractionalSeconds).toFixed(precision)
+      );
     }
   }
 
@@ -207,22 +211,25 @@ export function formatTime(milliseconds: number, options: TimeFormatOptions = {}
   if (components.length === 0) {
     // Fallback for very small values
     if (milliseconds < 1000) {
-      return short ? `${milliseconds}ms` : `${milliseconds} millisecond${milliseconds !== 1 ? 's' : ''}`;
+      return short
+        ? `${milliseconds}ms`
+        : `${milliseconds} millisecond${milliseconds !== 1 ? "s" : ""}`;
     }
-    return short ? '0s' : '0 seconds';
+    return short ? "0s" : "0 seconds";
   }
 
   // Create formatted strings
   const formatted = components.map(({ value, unit }) => {
-    const unitName = short ? unit.short : unit.name + (value !== 1 ? 's' : '');
-    const displayValue = unit.name === 'second' && precision > 0 && !Number.isInteger(value)
-      ? value.toFixed(precision)
-      : value.toString();
+    const unitName = short ? unit.short : unit.name + (value !== 1 ? "s" : "");
+    const displayValue =
+      unit.name === "second" && precision > 0 && !Number.isInteger(value)
+        ? value.toFixed(precision)
+        : value.toString();
 
     return short ? `${displayValue}${unitName}` : `${displayValue} ${unitName}`;
   });
 
-  return formatted.join(short ? ' ' : ', ');
+  return formatted.join(short ? " " : ", ");
 }
 
 /**
@@ -257,9 +264,9 @@ export function msToTime(milliseconds: number): string {
  */
 export function msToCompact(milliseconds: number): string {
   if (milliseconds >= 3600000) return `${(milliseconds / 3600000).toFixed(1)}h`; // Hours
-  if (milliseconds >= 60000) return `${(milliseconds / 60000).toFixed(1)}m`;     // Minutes
-  if (milliseconds >= 1000) return `${(milliseconds / 1000).toFixed(1)}s`;      // Seconds
-  return `${milliseconds}ms`;                                                    // Milliseconds
+  if (milliseconds >= 60000) return `${(milliseconds / 60000).toFixed(1)}m`; // Minutes
+  if (milliseconds >= 1000) return `${(milliseconds / 1000).toFixed(1)}s`; // Seconds
+  return `${milliseconds}ms`; // Milliseconds
 }
 
 /**
@@ -269,9 +276,9 @@ export function msToDetailed(milliseconds: number): string {
   return formatTime(milliseconds, {
     precision: 2,
     short: false,
-    maxUnit: 'hours',
-    minUnit: 'milliseconds',
-    includeZeros: false
+    maxUnit: "hours",
+    minUnit: "milliseconds",
+    includeZeros: false,
   });
 }
 
@@ -280,7 +287,9 @@ export function msToDetailed(milliseconds: number): string {
  */
 export function formatUptime(milliseconds: number): string {
   const days = Math.floor(milliseconds / (24 * 60 * 60 * 1000));
-  const hours = Math.floor((milliseconds % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+  const hours = Math.floor(
+    (milliseconds % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)
+  );
   const minutes = Math.floor((milliseconds % (60 * 60 * 1000)) / (60 * 1000));
 
   const parts: string[] = [];
@@ -289,7 +298,7 @@ export function formatUptime(milliseconds: number): string {
   if (hours > 0) parts.push(`${hours}h`);
   if (minutes > 0) parts.push(`${minutes}m`);
 
-  return parts.length > 0 ? parts.join(' ') : '< 1m';
+  return parts.length > 0 ? parts.join(" ") : "< 1m";
 }
 
 // ============================================================================
