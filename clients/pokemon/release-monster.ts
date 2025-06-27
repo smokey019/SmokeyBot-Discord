@@ -3,7 +3,15 @@ import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { MonsterTable, type IMonsterModel } from '../../models/Monster';
 import { queueMessage, sendUrgentMessage } from '../message_queue';
-import { findMonsterByID, getUserMonster } from './monsters';
+import {
+  findMonsterByID,
+  formatPokemonLevel,
+  getPokemonDisplayName,
+  getPokemonRarityEmoji,
+  getPokemonWithEnglishName,
+  getUserMonster,
+  PokemonError
+} from './monsters';
 
 const logger = getLogger('Pokémon Release');
 
@@ -23,10 +31,11 @@ interface BulkReleaseResult {
   successCount: number;
   failedCount: number;
   errors: string[];
-}
-
-interface MonsterWithDex extends IMonsterModel {
-  dexEntry?: any;
+  releasedMonsters: Array<{
+    id: number;
+    name: string;
+    level: number;
+  }>;
 }
 
 /**
@@ -65,7 +74,7 @@ async function release(monster_id: number | string): Promise<ReleaseResult> {
     logger.error('Error releasing monster:', error);
     return {
       success: false,
-      error: `Database error: ${error.message || 'Unknown error'}`
+      error: `Database error: ${error instanceof Error ? error.message : 'Unknown error'}`
     };
   }
 }
@@ -103,7 +112,7 @@ async function recover(monster_id: number | string): Promise<ReleaseResult> {
     logger.error('Error recovering monster:', error);
     return {
       success: false,
-      error: `Database error: ${error.message || 'Unknown error'}`
+      error: `Database error: ${error instanceof Error ? error.message : 'Unknown error'}`
     };
   }
 }
@@ -114,8 +123,8 @@ async function recover(monster_id: number | string): Promise<ReleaseResult> {
  * @returns string | null
  */
 function getOptionValue(option: CommandInteractionOption | null): string | null {
-  if (!option) return null;
-  return option.value?.toString() || null;
+  if (!option || option.value === null || option.value === undefined) return null;
+  return option.value.toString();
 }
 
 /**
@@ -126,9 +135,9 @@ function getOptionValue(option: CommandInteractionOption | null): string | null 
  * @returns boolean
  */
 function validateMonsterOwnership(
-  monster: IMonsterModel,
+  monster: IMonsterModel | null,
   userId: string,
-  shouldBeReleased = false
+  shouldBeReleased: boolean = false
 ): boolean {
   if (!monster) return false;
   if (monster.uid !== userId) return false;
@@ -137,17 +146,46 @@ function validateMonsterOwnership(
 }
 
 /**
- * Get monster with dex entry
+ * Get enhanced monster display info using monsters.ts utilities
  * @param monster - Monster model
- * @returns Promise<MonsterWithDex>
+ * @returns Promise with formatted monster info
  */
-async function getMonsterWithDex(monster: IMonsterModel): Promise<MonsterWithDex> {
+async function getMonsterDisplayInfo(monster: IMonsterModel): Promise<{
+  name: string;
+  level: string;
+  rarity: string;
+  fallbackName: string;
+}> {
   try {
-    const dexEntry = await findMonsterByID(monster.monster_id);
-    return { ...monster, dexEntry };
+    const pokemon = await findMonsterByID(monster.monster_id);
+    if (!pokemon) {
+      return {
+        name: `Monster #${monster.monster_id}`,
+        level: formatPokemonLevel(monster.level),
+        rarity: '',
+        fallbackName: `Monster #${monster.monster_id}`
+      };
+    }
+
+    const pokemonWithName = await getPokemonWithEnglishName(pokemon);
+    const displayName = pokemonWithName.englishName || getPokemonDisplayName(pokemon);
+    const rarityEmoji = await getPokemonRarityEmoji(pokemon);
+    const formattedLevel = formatPokemonLevel(monster.level);
+
+    return {
+      name: displayName,
+      level: formattedLevel,
+      rarity: rarityEmoji,
+      fallbackName: displayName
+    };
   } catch (error) {
-    logger.warn(`Could not find dex entry for monster ${monster.monster_id}:`, error);
-    return monster;
+    logger.warn(`Could not get display info for monster ${monster.monster_id}:`, error);
+    return {
+      name: `Monster #${monster.monster_id}`,
+      level: formatPokemonLevel(monster.level),
+      rarity: '',
+      fallbackName: `Monster #${monster.monster_id}`
+    };
   }
 }
 
@@ -157,23 +195,32 @@ async function getMonsterWithDex(monster: IMonsterModel): Promise<MonsterWithDex
  * @returns string[]
  */
 function parseBulkInput(input: string): string[] {
+  if (!input || typeof input !== 'string') {
+    return [];
+  }
+
   const cleanInput = input.trim();
 
   // Handle comma-separated values
   if (cleanInput.includes(',')) {
-    return cleanInput.split(',').map(id => id.trim()).filter(id => id.length > 0);
+    return cleanInput
+      .split(',')
+      .map(id => id.trim())
+      .filter(id => id.length > 0);
   }
 
   // Handle space-separated values
   if (cleanInput.includes(' ')) {
-    return cleanInput.split(/\s+/).filter(id => id.length > 0);
+    return cleanInput
+      .split(/\s+/)
+      .filter(id => id.length > 0);
   }
 
   return [cleanInput];
 }
 
 /**
- * Process bulk monster release
+ * Process bulk monster release with enhanced tracking
  * @param monsterIds - Array of monster IDs
  * @param userId - User ID
  * @returns Promise<BulkReleaseResult>
@@ -183,7 +230,8 @@ async function processBulkRelease(monsterIds: string[], userId: string): Promise
     totalRequested: monsterIds.length,
     successCount: 0,
     failedCount: 0,
-    errors: []
+    errors: [],
+    releasedMonsters: []
   };
 
   // Process releases with proper error handling
@@ -208,13 +256,30 @@ async function processBulkRelease(monsterIds: string[], userId: string): Promise
 
       const releaseResult = await release(monster.id);
       if (releaseResult.success) {
+        // Get display info for success tracking
+        try {
+          const displayInfo = await getMonsterDisplayInfo(monster);
+          result.releasedMonsters.push({
+            id: monster.id,
+            name: displayInfo.name,
+            level: monster.level
+          });
+        } catch (error) {
+          // Don't fail the release if display info fails
+          result.releasedMonsters.push({
+            id: monster.id,
+            name: `Monster #${monster.monster_id}`,
+            level: monster.level
+          });
+        }
         return true;
       } else {
         result.errors.push(`Failed to release ${monsterId}: ${releaseResult.error}`);
         return false;
       }
     } catch (error) {
-      result.errors.push(`Error processing ${monsterId}: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      result.errors.push(`Error processing ${monsterId}: ${errorMessage}`);
       return false;
     }
   });
@@ -298,16 +363,16 @@ export async function releaseMonster(interaction: CommandInteraction): Promise<v
       return;
     }
 
-    // Get monster with dex entry for display
-    const monsterWithDex = await getMonsterWithDex(targetMonster);
-    const monsterName = monsterWithDex.dexEntry?.name?.english || `Monster #${targetMonster.monster_id}`;
+    // Get enhanced monster display info
+    const displayInfo = await getMonsterDisplayInfo(targetMonster);
 
     // Attempt release
     const releaseResult = await release(targetMonster.id);
 
     if (releaseResult.success) {
+      const shinyIndicator = targetMonster.shiny ? ' ⭐' : '';
       await queueMessage(
-        `Successfully released your monster. Goodbye **${monsterName}** 😢`,
+        `Successfully released your ${displayInfo.level} **${displayInfo.name}**${displayInfo.rarity}${shinyIndicator}. Goodbye little one! 😢`,
         interaction,
         true,
         3 // High priority for success messages
@@ -322,16 +387,25 @@ export async function releaseMonster(interaction: CommandInteraction): Promise<v
 
   } catch (error) {
     logger.error('Error in releaseMonster:', error);
-    await sendUrgentMessage(
-      'An unexpected error occurred while releasing your monster.',
-      interaction,
-      true
-    );
+
+    if (error instanceof PokemonError) {
+      await sendUrgentMessage(
+        `Pokemon error: ${error.message}`,
+        interaction,
+        true
+      );
+    } else {
+      await sendUrgentMessage(
+        'An unexpected error occurred while releasing your monster.',
+        interaction,
+        true
+      );
+    }
   }
 }
 
 /**
- * Handle bulk monster release
+ * Handle bulk monster release with enhanced feedback
  * @param interaction - Discord command interaction
  * @param input - Bulk input string
  */
@@ -360,31 +434,56 @@ async function handleBulkRelease(interaction: CommandInteraction, input: string)
     // Process bulk release
     const result = await processBulkRelease(monsterIds, interaction.user.id);
 
-    // Send summary message
-    let message = `Bulk Release Summary:\n`;
-    message += `📊 Requested: ${result.totalRequested}\n`;
-    message += `✅ Released: ${result.successCount}\n`;
-    message += `❌ Failed: ${result.failedCount}`;
+    // Create enhanced summary message
+    let message = `**Bulk Release Summary**\n`;
+    message += `📊 **Requested:** ${result.totalRequested}\n`;
+    message += `✅ **Released:** ${result.successCount}\n`;
+    message += `❌ **Failed:** ${result.failedCount}`;
 
+    // Show successfully released monsters (limit to avoid message length issues)
+    if (result.releasedMonsters.length > 0) {
+      message += `\n\n**Released Pokemon:**\n`;
+      const displayLimit = Math.min(result.releasedMonsters.length, 10);
+
+      for (let i = 0; i < displayLimit; i++) {
+        const mon = result.releasedMonsters[i];
+        message += `• Level ${mon.level} ${mon.name} (ID: ${mon.id})\n`;
+      }
+
+      if (result.releasedMonsters.length > displayLimit) {
+        message += `... and ${result.releasedMonsters.length - displayLimit} more\n`;
+      }
+    }
+
+    // Show errors (limited)
     if (result.errors.length > 0 && result.errors.length <= 5) {
-      message += `\n\nErrors:\n${result.errors.join('\n')}`;
+      message += `\n**Errors:**\n${result.errors.join('\n')}`;
     } else if (result.errors.length > 5) {
-      message += `\n\n${result.errors.length} errors occurred (too many to display)`;
+      message += `\n\n⚠️ ${result.errors.length} errors occurred (too many to display)`;
     }
 
     if (result.successCount > 0) {
-      message += `\n\nGood luck out there, little ones! 🍀`;
+      message += `\n\n🍀 Good luck out there, little ones!`;
     }
 
     await queueMessage(message, interaction, true, 2);
 
   } catch (error) {
     logger.error('Error in handleBulkRelease:', error);
-    await sendUrgentMessage(
-      'An unexpected error occurred during bulk release.',
-      interaction,
-      true
-    );
+
+    if (error instanceof PokemonError) {
+      await sendUrgentMessage(
+        `Pokemon error during bulk release: ${error.message}`,
+        interaction,
+        true
+      );
+    } else {
+      await sendUrgentMessage(
+        'An unexpected error occurred during bulk release.',
+        interaction,
+        true
+      );
+    }
   }
 }
 
@@ -435,16 +534,16 @@ export async function recoverMonster(interaction: CommandInteraction): Promise<v
       return;
     }
 
-    // Get monster with dex entry for display
-    const monsterWithDex = await getMonsterWithDex(targetMonster);
-    const monsterName = monsterWithDex.dexEntry?.name?.english || `Monster #${targetMonster.monster_id}`;
+    // Get enhanced monster display info
+    const displayInfo = await getMonsterDisplayInfo(targetMonster);
 
     // Attempt recovery
     const recoverResult = await recover(targetMonster.id);
 
     if (recoverResult.success) {
+      const shinyIndicator = targetMonster.shiny ? ' ⭐' : '';
       await queueMessage(
-        `Successfully recovered your monster. Welcome back **${monsterName}**! 🎉`,
+        `Successfully recovered your ${displayInfo.level} **${displayInfo.name}**${displayInfo.rarity}${shinyIndicator}. Welcome back! 🎉`,
         interaction,
         true,
         3 // High priority for success messages
@@ -459,26 +558,30 @@ export async function recoverMonster(interaction: CommandInteraction): Promise<v
 
   } catch (error) {
     logger.error('Error in recoverMonster:', error);
-    await sendUrgentMessage(
-      'An unexpected error occurred while recovering your monster.',
-      interaction,
-      true
-    );
+
+    if (error instanceof PokemonError) {
+      await sendUrgentMessage(
+        `Pokemon error: ${error.message}`,
+        interaction,
+        true
+      );
+    } else {
+      await sendUrgentMessage(
+        'An unexpected error occurred while recovering your monster.',
+        interaction,
+        true
+      );
+    }
   }
 }
 
-/**
- * Simplified release function for backwards compatibility
- * @deprecated Use releaseMonster instead
- */
-export async function releaseMonsterNew(interaction: CommandInteraction): Promise<void> {
-  logger.warn('releaseMonsterNew is deprecated, use releaseMonster instead');
-  return releaseMonster(interaction);
-}
-
-// Export utility functions for testing
+// Export utility functions for testing and backwards compatibility
 export {
-  getMonsterWithDex, parseBulkInput,
-  processBulkRelease, recover, release, validateMonsterOwnership
+  getMonsterDisplayInfo,
+  parseBulkInput,
+  processBulkRelease,
+  recover,
+  release,
+  validateMonsterOwnership
 };
 

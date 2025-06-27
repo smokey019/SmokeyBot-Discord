@@ -153,5 +153,6 @@ export interface IGuildSettings {
   guild_id: number | string;
   smokemon_enabled: number;
   specific_channel: string;
+  announcements_enabled: number;
   prefixes: string;
 }

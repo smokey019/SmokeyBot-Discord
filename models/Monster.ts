@@ -22,6 +22,7 @@ export interface IMonsterModel {
   favorite?: 0 | 1;
   held_item?: number | null;
   nickname?: string;
+  nickname_set_at?: string | null;
   avg_iv?: number;
   gender?: string;
   egg?: number;

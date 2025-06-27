@@ -7,11 +7,15 @@ import { chunk, format_number } from "../../utils";
 import { queueMessage } from "../message_queue";
 import { userDex } from "./info";
 import {
-  findMonsterByIDAPI,
+  calculateIVPercentage,
+  findMonsterByID,
+  getPokemonDisplayName,
   getPokemonSpecies,
+  getPokemonWithEnglishName,
   getUsersFavoriteMonsters,
   getUsersMonsters,
-  type Pokemon,
+  isPokemonLegendary,
+  type Pokemon
 } from "./monsters";
 
 const logger = getLogger("Pokémon");
@@ -20,10 +24,9 @@ const logger = getLogger("Pokémon");
 const MAX_EMBED_LENGTH = 2000;
 const DEFAULT_PAGE_SIZE = 20;
 const SEARCH_PAGE_SIZE = 10;
-const MAX_IV_TOTAL = 186; // 31 * 6 stats
 const TRIM_SUFFIX = "...";
-const API_REQUEST_DELAY = 100; // Delay between API requests to avoid rate limits
-const BATCH_SIZE = 5; // Number of Pokemon to process simultaneously
+const API_REQUEST_DELAY = 50; // Reduced delay since we're using existing caching
+const BATCH_SIZE = 10; // Increased batch size since caching is more efficient
 
 // Error handling
 class CheckMonstersError extends Error {
@@ -78,50 +81,22 @@ interface EmbedOptions {
   footer?: string;
 }
 
-// Cache for processed monster data to avoid repeated API calls
-const monsterDataCache = new Map<
-  number,
-  { pokemon: Pokemon; species: any; timestamp: number }
->();
-const MONSTER_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
-
-/**
- * Get Pokemon display name from API data
- * @param pokemon - Pokemon API data
- * @returns Pokemon display name
- */
-function getPokemonDisplayName(pokemon: Pokemon): string {
-  if (!pokemon.name) return "Unknown Pokemon";
-
-  // Convert API name to display format
-  return pokemon.name
-    .split("-")
-    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+interface PokemonDisplayData {
+  pokemon: Pokemon;
+  species: any;
+  englishName: string;
+  special?: string;
 }
 
 /**
- * Get Pokemon with species data and determine special status
+ * Get comprehensive Pokemon data with caching leveraging monsters.ts functions
  * @param pokemonId - Pokemon ID
  * @returns Combined Pokemon and species data
  */
-async function getPokemonWithSpecies(
-  pokemonId: number
-): Promise<{ pokemon: Pokemon; species: any; special?: string } | null> {
-  const cacheKey = pokemonId;
-  const cached = monsterDataCache.get(cacheKey);
-
-  if (cached && Date.now() - cached.timestamp < MONSTER_CACHE_TTL) {
-    return {
-      pokemon: cached.pokemon,
-      species: cached.species,
-      special: getSpecialStatus(cached.species),
-    };
-  }
-
+async function getPokemonDisplayData(pokemonId: number): Promise<PokemonDisplayData | null> {
   try {
     const [pokemon, species] = await Promise.all([
-      findMonsterByIDAPI(pokemonId),
+      findMonsterByID(pokemonId),
       getPokemonSpecies(pokemonId),
     ]);
 
@@ -130,15 +105,19 @@ async function getPokemonWithSpecies(
       return null;
     }
 
-    // Cache the result
-    monsterDataCache.set(cacheKey, {
+    // Use existing function for English name
+    const pokemonWithName = await getPokemonWithEnglishName(pokemon);
+    const englishName = pokemonWithName.englishName || getPokemonDisplayName(pokemon);
+
+    // Determine special status using existing function and species data
+    const special = await getSpecialStatus(pokemon, species);
+
+    return {
       pokemon,
       species: species || null,
-      timestamp: Date.now(),
-    });
-
-    const special = getSpecialStatus(species);
-    return { pokemon, species, special };
+      englishName,
+      special,
+    };
   } catch (error) {
     logger.error(`Error fetching Pokemon data for ID ${pokemonId}:`, error);
     return null;
@@ -146,39 +125,27 @@ async function getPokemonWithSpecies(
 }
 
 /**
- * Determine special status from species data
+ * Determine special status using existing Pokemon functions
+ * @param pokemon - Pokemon API response
  * @param species - Pokemon species data
  * @returns Special status string or undefined
  */
-function getSpecialStatus(species: any): string | undefined {
+async function getSpecialStatus(pokemon: Pokemon, species: any): Promise<string | undefined> {
   if (!species) return undefined;
 
-  if (species.is_legendary) return "Legendary";
   if (species.is_mythical) return "Mythical";
+  if (species.is_legendary) return "Legendary";
+
+  // Check for legendary using existing function as fallback
+  const isLegendary = await isPokemonLegendary(pokemon);
+  if (isLegendary) return "Legendary";
 
   // Check for Ultra Beasts (they're in Alola region and have specific characteristics)
-  if (
-    species.generation?.name === "generation-vii" &&
-    species.habitat === null
-  ) {
+  if (species.generation?.name === "generation-vii" && species.habitat === null) {
     return "Ultrabeast";
   }
 
   return undefined;
-}
-
-/**
- * Get Pokemon English name from species data
- * @param species - Pokemon species data
- * @returns English name or fallback name
- */
-function getPokemonEnglishName(species: any, fallbackName: string): string {
-  if (!species?.names) return fallbackName;
-
-  const englishName = species.names.find(
-    (name: any) => name.language.name === "en"
-  );
-  return englishName?.name || fallbackName;
 }
 
 /**
@@ -189,22 +156,8 @@ function getPokemonEnglishName(species: any, fallbackName: string): string {
 function isMegaForm(pokemon: Pokemon): boolean {
   return (
     pokemon.name.includes("mega") ||
-    pokemon.forms.some((form) => form.name.includes("mega"))
+    pokemon.forms?.some((form) => form.name.includes("mega"))
   );
-}
-
-/**
- * Calculates average IV percentage from individual IV values
- */
-function calculateAverageIV(monster: IMonsterModel): number {
-  const totalIV =
-    monster.hp +
-    monster.attack +
-    monster.defense +
-    monster.sp_attack +
-    monster.sp_defense +
-    monster.speed;
-  return parseFloat(((totalIV / MAX_IV_TOTAL) * 100).toFixed(2));
 }
 
 /**
@@ -226,20 +179,26 @@ function getMonsterIcons(
 }
 
 /**
- * Formats a monster entry for display
+ * Formats a monster entry for display using existing utility functions
  */
 function formatMonsterEntry(
   monster: IMonsterModel,
-  pokemon: Pokemon,
+  englishName: string,
   special?: string,
-  englishName?: string,
   isCurrentMonster: boolean = false
 ): string {
   const icons = getMonsterIcons(monster, special);
-  const averageIV = calculateAverageIV(monster);
-  const displayName = englishName || getPokemonDisplayName(pokemon);
+  // Use existing IV calculation function
+  const averageIV = calculateIVPercentage({
+    hp: monster.hp,
+    attack: monster.attack,
+    defense: monster.defense,
+    sp_attack: monster.sp_attack,
+    sp_defense: monster.sp_defense,
+    speed: monster.speed,
+  });
 
-  const baseText = `**${monster.id}** - **${displayName}${icons.shiny}${icons.favorite}${icons.legendary}** - **Level ${monster.level}** - **Avg IV ${averageIV}%**`;
+  const baseText = `**${monster.id}** - **${englishName}${icons.shiny}${icons.favorite}${icons.legendary}** - **Level ${monster.level}** - **Avg IV ${averageIV}%**`;
 
   return isCurrentMonster ? `__${baseText}__` : baseText;
 }
@@ -279,13 +238,12 @@ function sortMonsters(
     "name asc": (a, b) => a.name.localeCompare(b.name),
   };
 
-  const sortFunction =
-    sortFunctions[sortType] || sortFunctions[SortType.ID_HIGH];
+  const sortFunction = sortFunctions[sortType] || sortFunctions[SortType.ID_HIGH];
   return [...monsters].sort(sortFunction);
 }
 
 /**
- * Applies filters to monster list using PokeAPI data
+ * Applies filters to monster list using improved Pokemon data fetching
  */
 async function filterMonsters(
   monsters: IMonsterModel[],
@@ -295,13 +253,13 @@ async function filterMonsters(
 
   const filteredMonsters: IMonsterModel[] = [];
 
-  // Process in batches to avoid overwhelming the API
+  // Process in batches to manage API calls efficiently
   for (let i = 0; i < monsters.length; i += BATCH_SIZE) {
     const batch = monsters.slice(i, i + BATCH_SIZE);
 
     const batchPromises = batch.map(async (monster) => {
       try {
-        const pokemonData = await getPokemonWithSpecies(monster.monster_id);
+        const pokemonData = await getPokemonDisplayData(monster.monster_id);
         if (!pokemonData) return null;
 
         const { pokemon, special } = pokemonData;
@@ -337,7 +295,7 @@ async function filterMonsters(
     const batchResults = await Promise.all(batchPromises);
     filteredMonsters.push(...(batchResults.filter(Boolean) as IMonsterModel[]));
 
-    // Add delay between batches
+    // Add delay between batches if needed
     if (i + BATCH_SIZE < monsters.length) {
       await new Promise((resolve) => setTimeout(resolve, API_REQUEST_DELAY));
     }
@@ -347,7 +305,7 @@ async function filterMonsters(
 }
 
 /**
- * Processes monsters into display format using PokeAPI
+ * Processes monsters into display format using improved Pokemon data fetching
  */
 async function processMonsters(
   monsters: IMonsterModel[],
@@ -355,33 +313,35 @@ async function processMonsters(
 ): Promise<ProcessedMonster[]> {
   const processed: ProcessedMonster[] = [];
 
-  // Process in batches to manage API rate limits
+  // Process in batches to manage API rate limits efficiently
   for (let i = 0; i < monsters.length; i += BATCH_SIZE) {
     const batch = monsters.slice(i, i + BATCH_SIZE);
 
     const batchPromises = batch.map(async (monster) => {
       try {
-        const pokemonData = await getPokemonWithSpecies(monster.monster_id);
+        const pokemonData = await getPokemonDisplayData(monster.monster_id);
         if (!pokemonData) {
-          logger.warn(
-            `Pokemon data not found for monster ID: ${monster.monster_id}`
-          );
+          logger.warn(`Pokemon data not found for monster ID: ${monster.monster_id}`);
           return null;
         }
 
-        const { pokemon, species, special } = pokemonData;
-        const englishName = getPokemonEnglishName(
-          species,
-          getPokemonDisplayName(pokemon)
-        );
+        const { pokemon, englishName, special } = pokemonData;
         const isCurrentMonster = currentMonsterId === monster.id;
-        const averageIV = calculateAverageIV(monster);
+
+        // Use existing IV calculation function
+        const averageIV = calculateIVPercentage({
+          hp: monster.hp,
+          attack: monster.attack,
+          defense: monster.defense,
+          sp_attack: monster.sp_attack,
+          sp_defense: monster.sp_defense,
+          speed: monster.speed,
+        });
 
         const formattedMessage = formatMonsterEntry(
           monster,
-          pokemon,
-          special,
           englishName,
+          special,
           isCurrentMonster
         );
 
@@ -406,7 +366,7 @@ async function processMonsters(
     const batchResults = await Promise.all(batchPromises);
     processed.push(...(batchResults.filter(Boolean) as ProcessedMonster[]));
 
-    // Add delay between batches
+    // Add delay between batches if needed
     if (i + BATCH_SIZE < monsters.length) {
       await new Promise((resolve) => setTimeout(resolve, API_REQUEST_DELAY));
     }
@@ -508,8 +468,7 @@ async function sendEmbedResponse(
 
     // Fallback to simple text response
     try {
-      const fallbackMessage =
-        "Error displaying Pokémon list. Please try again.";
+      const fallbackMessage = "Error displaying Pokémon list. Please try again.";
       if (isReply) {
         await queueMessage(fallbackMessage, interaction, false);
       } else {
@@ -522,7 +481,7 @@ async function sendEmbedResponse(
 }
 
 /**
- * Enhanced version of checkMonstersNew with PokeAPI integration
+ * Enhanced version of checkMonstersNew with improved Pokemon data fetching
  */
 export async function checkMonstersNew(
   interaction: CommandInteraction,
@@ -535,7 +494,7 @@ export async function checkMonstersNew(
   try {
     logger.debug(`Fetching Pokémon for ${username} in ${guildName}..`);
 
-    // Fetch monsters based on favorites flag
+    // Fetch monsters based on favorites flag using existing functions
     let pokemon: IMonsterModel[];
     if (favorites) {
       pokemon = await getUsersFavoriteMonsters(userId);
@@ -567,15 +526,12 @@ export async function checkMonstersNew(
     const user: IMonsterUserModel = await getUser(userId);
     const currentMonster = user?.current_monster
       ? await databaseClient<IMonsterModel>(MonsterTable)
-          .first()
-          .where("id", user.current_monster)
+        .first()
+        .where("id", user.current_monster)
       : null;
 
     // Process and sort monsters
-    const processedMonsters = await processMonsters(
-      pokemon,
-      currentMonster?.id
-    );
+    const processedMonsters = await processMonsters(pokemon, currentMonster?.id);
     const sortedMonsters = sortMonsters(processedMonsters, sortOption);
 
     // Create paginated content
@@ -611,7 +567,7 @@ export async function checkMonstersNew(
 }
 
 /**
- * Enhanced version of checkMonsters with PokeAPI integration
+ * Enhanced version of checkMonsters with improved Pokemon data fetching
  */
 export async function checkMonsters(
   interaction: CommandInteraction,
@@ -640,13 +596,8 @@ export async function checkMonsters(
     }
 
     // Apply filters
-    if (
-      filterType &&
-      filterType.match(/legendary|mythical|ultrabeast|shiny|mega/i)
-    ) {
-      await interaction.channel?.send(
-        "Applying filters... This may take a moment."
-      );
+    if (filterType?.match(/legendary|mythical|ultrabeast|shiny|mega/i)) {
+      await interaction.channel?.send("Applying filters... This may take a moment.");
       pokemon = await filterMonsters(pokemon, filterType);
     }
 
@@ -663,15 +614,12 @@ export async function checkMonsters(
     const user: IMonsterUserModel = await getUser(userId);
     const currentMonster = user?.current_monster
       ? await databaseClient<IMonsterModel>(MonsterTable)
-          .first()
-          .where("id", user.current_monster)
+        .first()
+        .where("id", user.current_monster)
       : null;
 
     // Process and sort monsters
-    const processedMonsters = await processMonsters(
-      pokemon,
-      currentMonster?.id
-    );
+    const processedMonsters = await processMonsters(pokemon, currentMonster?.id);
     const sortedMonsters = sortMonsters(processedMonsters, sortKey);
 
     // Handle pagination
@@ -680,7 +628,7 @@ export async function checkMonsters(
 
     if (
       splitMsg.length >= 4 &&
-      !filterType.match(/legendary|mythical|ultrabeast|shiny|mega/i)
+      !filterType?.match(/legendary|mythical|ultrabeast|shiny|mega/i)
     ) {
       const pageNum = parseInt(splitMsg[splitMsg.length - 1]);
       if (!isNaN(pageNum) && pageNum > 0) {
@@ -718,11 +666,9 @@ export async function checkMonsters(
 }
 
 /**
- * Enhanced Pokedex checker with PokeAPI integration
+ * Enhanced Pokedex checker with improved Pokemon data fetching
  */
-export async function checkPokedex(
-  interaction: CommandInteraction
-): Promise<void> {
+export async function checkPokedex(interaction: CommandInteraction): Promise<void> {
   const userId = interaction.user.id;
 
   try {
@@ -749,25 +695,19 @@ export async function checkPokedex(
 
       const batchPromises = batchIds.map(async (id) => {
         try {
-          const pokemonData = await getPokemonWithSpecies(id);
+          const pokemonData = await getPokemonDisplayData(id);
           if (!pokemonData) return null;
 
-          const { pokemon, species } = pokemonData;
-          const count = userPokemon.filter(
-            (pokemonId) => pokemonId === id
-          ).length;
+          const { englishName } = pokemonData;
+          const count = userPokemon.filter((pokemonId) => pokemonId === id).length;
           const hasMonster = userPokemonSet.has(id);
-          const displayName = getPokemonEnglishName(
-            species,
-            getPokemonDisplayName(pokemon)
-          );
 
           if (hasMonster && !showMissing) {
-            return { id, name: displayName, count, display: true };
+            return { id, name: englishName, count, display: true };
           } else if (!hasMonster && showMissing) {
-            return { id, name: displayName, count: 0, display: true };
+            return { id, name: englishName, count: 0, display: true };
           } else if (!showMissing) {
-            return { id, name: displayName, count, display: true };
+            return { id, name: englishName, count, display: true };
           }
 
           return null;
@@ -788,7 +728,7 @@ export async function checkPokedex(
         }
       });
 
-      // Add delay between batches
+      // Add delay between batches if needed
       await new Promise((resolve) => setTimeout(resolve, API_REQUEST_DELAY));
     }
 
@@ -815,7 +755,7 @@ export async function checkPokedex(
 }
 
 /**
- * Enhanced favorites checker with PokeAPI integration
+ * Enhanced favorites checker with improved Pokemon data fetching
  */
 export async function checkFavorites(
   interaction: CommandInteraction,
@@ -826,9 +766,7 @@ export async function checkFavorites(
   const guildName = interaction.guild?.name;
 
   try {
-    logger.debug(
-      `Fetching Favorite Pokémon for ${interaction.user.tag} in ${guildName}..`
-    );
+    logger.debug(`Fetching Favorite Pokémon for ${interaction.user.tag} in ${guildName}..`);
 
     const splitMsg = args;
     const sortKey = [splitMsg[1], splitMsg[2]].filter(Boolean).join(" ");
@@ -846,10 +784,7 @@ export async function checkFavorites(
     }
 
     // Apply filters
-    if (
-      filterType &&
-      filterType.match(/legendary|mythical|ultrabeast|shiny|mega/i)
-    ) {
+    if (filterType?.match(/legendary|mythical|ultrabeast|shiny|mega/i)) {
       await interaction.channel?.send(
         "Applying filters to favorites... This may take a moment."
       );
@@ -875,7 +810,7 @@ export async function checkFavorites(
 
     if (
       splitMsg.length >= 4 &&
-      !filterType.match(/legendary|mythical|ultrabeast|shiny|mega/i)
+      !filterType?.match(/legendary|mythical|ultrabeast|shiny|mega/i)
     ) {
       const pageNum = parseInt(splitMsg[splitMsg.length - 1]);
       if (!isNaN(pageNum) && pageNum > 0) {
@@ -895,9 +830,7 @@ export async function checkFavorites(
       description: content.join("\n"),
       authorName: `${username}'s Favorites\nShowing: ${format_number(
         content.length
-      )}/${format_number(pokemon.length)}\nTotal: ${format_number(
-        pokemon.length
-      )}`,
+      )}/${format_number(pokemon.length)}\nTotal: ${format_number(pokemon.length)}`,
       authorIcon: interaction.user.avatarURL()?.toString(),
       authorUrl: `https://bot.smokey.gg/user/${userId}/pokemon`,
     });
@@ -915,11 +848,9 @@ export async function checkFavorites(
 }
 
 /**
- * Enhanced search function with PokeAPI integration
+ * Enhanced search function with improved Pokemon data fetching
  */
-export async function searchMonsters(
-  interaction: CommandInteraction
-): Promise<void> {
+export async function searchMonsters(interaction: CommandInteraction): Promise<void> {
   const userId = interaction.user.id;
   const username = interaction.user.username;
   const guildName = interaction.guild?.name;
@@ -967,15 +898,11 @@ export async function searchMonsters(
 
       const batchPromises = batch.map(async (monster) => {
         try {
-          const pokemonData = await getPokemonWithSpecies(monster.monster_id);
+          const pokemonData = await getPokemonDisplayData(monster.monster_id);
           if (!pokemonData) return null;
 
-          const { pokemon, species } = pokemonData;
-          const displayName = getPokemonEnglishName(
-            species,
-            getPokemonDisplayName(pokemon)
-          );
-          const cleanName = displayName.toLowerCase().replace(/♂|♀/g, "");
+          const { englishName } = pokemonData;
+          const cleanName = englishName.toLowerCase().replace(/♂|♀/g, "");
 
           if (cleanName === searchTerm || cleanName.includes(searchTerm)) {
             return monster;
@@ -989,11 +916,9 @@ export async function searchMonsters(
       });
 
       const batchResults = await Promise.all(batchPromises);
-      matchedMonsters.push(
-        ...(batchResults.filter(Boolean) as IMonsterModel[])
-      );
+      matchedMonsters.push(...(batchResults.filter(Boolean) as IMonsterModel[]));
 
-      // Add delay between batches
+      // Add delay between batches if needed
       if (i + BATCH_SIZE < pokemon.length) {
         await new Promise((resolve) => setTimeout(resolve, API_REQUEST_DELAY));
       }
@@ -1021,19 +946,16 @@ export async function searchMonsters(
       description: content.join("\n"),
       authorName: `${username}'s search for '${searchTerm}' - Total: ${format_number(
         matchedMonsters.length
-      )}/${format_number(pokemon.length)}${
-        content.length !== matchedMonsters.length
+      )}/${format_number(pokemon.length)}${content.length !== matchedMonsters.length
           ? ` - Pages: ${Math.ceil(matchedMonsters.length / SEARCH_PAGE_SIZE)}`
           : ""
-      }`,
+        }`,
       authorIcon: interaction.user.avatarURL()?.toString(),
       authorUrl: `https://bot.smokey.gg/user/${userId}/pokemon`,
     });
 
     await sendEmbedResponse(interaction, embed, true);
-    logger.debug(
-      `Sent Pokémon search results for ${username} in ${guildName}!`
-    );
+    logger.debug(`Sent Pokémon search results for ${username} in ${guildName}!`);
   } catch (error) {
     logger.error(`Error in searchMonsters for user ${userId}:`, error);
     await queueMessage(
@@ -1045,87 +967,7 @@ export async function searchMonsters(
 }
 
 /**
- * Clean up expired cache entries
- */
-export function cleanupMonsterCache(): void {
-  const now = Date.now();
-  let cleaned = 0;
-
-  for (const [key, value] of monsterDataCache.entries()) {
-    if (now - value.timestamp > MONSTER_CACHE_TTL) {
-      monsterDataCache.delete(key);
-      cleaned++;
-    }
-  }
-
-  if (cleaned > 0) {
-    logger.info(`Cleaned up ${cleaned} expired monster cache entries`);
-  }
-}
-
-/**
- * Set up periodic cache cleanup
- */
-export function setupMonsterCacheCleanup(): void {
-  // Clean up cache every 5 minutes
-  setInterval(cleanupMonsterCache, 5 * 60 * 1000);
-}
-
-/**
- * Get cache statistics
- */
-export function getMonsterCacheStats(): { size: number; memoryUsage: string } {
-  const memoryUsage = `${Math.round(
-    JSON.stringify([...monsterDataCache.values()]).length / 1024
-  )} KB`;
-
-  return {
-    size: monsterDataCache.size,
-    memoryUsage,
-  };
-}
-
-/**
- * Clear all monster cache
- */
-export function clearMonsterCache(): void {
-  monsterDataCache.clear();
-  logger.info("Monster data cache cleared");
-}
-
-/**
- * Pre-warm cache with commonly accessed Pokemon
- * @param pokemonIds - Array of Pokemon IDs to cache
- */
-export async function preWarmMonsterCache(pokemonIds: number[]): Promise<void> {
-  logger.info(`Pre-warming monster cache with ${pokemonIds.length} Pokemon...`);
-
-  for (let i = 0; i < pokemonIds.length; i += BATCH_SIZE) {
-    const batch = pokemonIds.slice(i, i + BATCH_SIZE);
-
-    const promises = batch.map(async (id) => {
-      try {
-        await getPokemonWithSpecies(id);
-      } catch (error) {
-        logger.warn(`Failed to pre-warm cache for Pokemon ${id}:`, error);
-      }
-    });
-
-    await Promise.all(promises);
-
-    // Add delay between batches
-    if (i + BATCH_SIZE < pokemonIds.length) {
-      await new Promise((resolve) => setTimeout(resolve, API_REQUEST_DELAY));
-    }
-  }
-
-  logger.info(
-    `Monster cache pre-warming complete. Cache size: ${monsterDataCache.size}`
-  );
-}
-
-/**
- * Get comprehensive monster statistics using PokeAPI
+ * Get comprehensive monster statistics using improved Pokemon data fetching
  * @param userId - User ID to get stats for
  * @returns Monster statistics object
  */
@@ -1158,12 +1000,22 @@ export async function getMonsterStats(userId: string): Promise<{
 
       const batchPromises = batch.map(async (monster) => {
         totalLevel += monster.level;
-        totalIV += calculateAverageIV(monster);
+
+        // Use existing IV calculation function
+        const averageIV = calculateIVPercentage({
+          hp: monster.hp,
+          attack: monster.attack,
+          defense: monster.defense,
+          sp_attack: monster.sp_attack,
+          sp_defense: monster.sp_defense,
+          speed: monster.speed,
+        });
+        totalIV += averageIV;
 
         if (monster.shiny) shinyCount++;
 
         try {
-          const pokemonData = await getPokemonWithSpecies(monster.monster_id);
+          const pokemonData = await getPokemonDisplayData(monster.monster_id);
           if (pokemonData?.special) {
             switch (pokemonData.special) {
               case "Legendary":
@@ -1184,7 +1036,7 @@ export async function getMonsterStats(userId: string): Promise<{
 
       await Promise.all(batchPromises);
 
-      // Add delay between batches
+      // Add delay between batches if needed
       if (i + BATCH_SIZE < allMonsters.length) {
         await new Promise((resolve) => setTimeout(resolve, API_REQUEST_DELAY));
       }
@@ -1198,9 +1050,7 @@ export async function getMonsterStats(userId: string): Promise<{
       mythical: mythicalCount,
       ultrabeasts: ultrabeastCount,
       averageLevel:
-        allMonsters.length > 0
-          ? Math.round(totalLevel / allMonsters.length)
-          : 0,
+        allMonsters.length > 0 ? Math.round(totalLevel / allMonsters.length) : 0,
       averageIV:
         allMonsters.length > 0 ? Math.round(totalIV / allMonsters.length) : 0,
     };
@@ -1215,10 +1065,17 @@ export async function getMonsterStats(userId: string): Promise<{
 // ============================================================================
 
 /**
- * Export for testing - calculates average IV
+ * Export for testing - calculates average IV using existing function
  */
 export function calculateMonsterIV(monster: IMonsterModel): number {
-  return calculateAverageIV(monster);
+  return calculateIVPercentage({
+    hp: monster.hp,
+    attack: monster.attack,
+    defense: monster.defense,
+    sp_attack: monster.sp_attack,
+    sp_defense: monster.sp_defense,
+    speed: monster.speed,
+  });
 }
 
 /**
@@ -1264,30 +1121,16 @@ export function createPagination(
 }
 
 /**
- * Export for testing - gets Pokemon with species data
+ * Export for testing - gets Pokemon display data
  */
-export async function getPokemonWithSpeciesForTesting(
+export async function getPokemonDisplayDataForTesting(
   pokemonId: number
-): Promise<any> {
-  return getPokemonWithSpecies(pokemonId);
+): Promise<PokemonDisplayData | null> {
+  return getPokemonDisplayData(pokemonId);
 }
 
 /**
- * Export for testing - gets Pokemon display name
- */
-export function getPokemonDisplayNameForTesting(pokemon: Pokemon): string {
-  return getPokemonDisplayName(pokemon);
-}
-
-/**
- * Export for testing - gets special status
- */
-export function getSpecialStatusForTesting(species: any): string | undefined {
-  return getSpecialStatus(species);
-}
-
-/**
- * Batch process monsters to avoid rate limits
+ * Batch process monsters to avoid rate limits using improved efficiency
  * @param monsters - Array of monsters to process
  * @param batchSize - Number of monsters to process at once
  * @returns Promise resolving to processed monsters

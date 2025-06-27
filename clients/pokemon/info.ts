@@ -9,8 +9,13 @@ import {
 import { format_number } from "../../utils";
 import { queueMessage } from "../message_queue";
 import {
-  findMonsterByIDAPI,
+  findMonsterByID,
   findMonsterByName,
+  getPokemonEvolutions,
+  getPokemonSpecies,
+  getPokemonWithEnglishName,
+  getUserMonster,
+  isPokemonLegendary,
   type Pokemon
 } from "./monsters";
 import { capitalizeFirstLetter, img_monster_ball } from "./utils";
@@ -106,7 +111,7 @@ function calculateAllStats(
 }
 
 /**
- * Formats Pokemon types for display
+ * Formats Pokemon types for display from API format
  */
 function formatPokemonTypes(types: Pokemon["types"]): string[] {
   if (!Array.isArray(types)) {
@@ -114,12 +119,8 @@ function formatPokemonTypes(types: Pokemon["types"]): string[] {
   }
 
   return types
-    .map((typeData) => {
-      if (typeof typeData === "string") {
-        return capitalizeFirstLetter(typeData);
-      }
-      return capitalizeFirstLetter(typeData?.type?.name || "");
-    })
+    .sort((a, b) => a.slot - b.slot) // Ensure correct order
+    .map((typeData) => capitalizeFirstLetter(typeData.type.name))
     .filter(Boolean);
 }
 
@@ -205,13 +206,115 @@ function formatDate(timestamp: number, includeTime: boolean = false): string {
   }
 }
 
+/**
+ * Get evolution information for a Pokemon
+ */
+async function getPokemonEvolutionInfo(pokemonId: number): Promise<{
+  preEvolutions: string[];
+  evolutions: string[];
+  evolutionItems: string[];
+}> {
+  try {
+    const species = await getPokemonSpecies(pokemonId);
+    if (!species) {
+      return { preEvolutions: [], evolutions: [], evolutionItems: [] };
+    }
+
+    // Extract evolution chain ID from URL
+    const chainId = parseInt(species.evolution_chain.url.split('/').slice(-2, -1)[0]);
+    const evolutionChain = await getPokemonEvolutions(chainId);
+
+    if (!evolutionChain) {
+      return { preEvolutions: [], evolutions: [], evolutionItems: [] };
+    }
+
+    const preEvolutions: string[] = [];
+    const evolutions: string[] = [];
+    const evolutionItems: string[] = [];
+
+    // Helper function to extract evolution names recursively
+    function extractEvolutions(chain: any, currentSpeciesName: string): void {
+      if (chain.species.name === currentSpeciesName) {
+        // Found current Pokemon, get evolutions
+        if (chain.evolves_to && chain.evolves_to.length > 0) {
+          chain.evolves_to.forEach((evolution: any) => {
+            evolutions.push(capitalizeFirstLetter(evolution.species.name));
+
+            // Check for evolution items
+            if (evolution.evolution_details && evolution.evolution_details.length > 0) {
+              evolution.evolution_details.forEach((detail: any) => {
+                if (detail.item && detail.item.name) {
+                  evolutionItems.push(capitalizeFirstLetter(detail.item.name));
+                }
+              });
+            }
+          });
+        }
+        return;
+      }
+
+      // Check if current Pokemon is an evolution
+      if (chain.evolves_to && chain.evolves_to.length > 0) {
+        chain.evolves_to.forEach((evolution: any) => {
+          if (evolution.species.name === currentSpeciesName) {
+            preEvolutions.push(capitalizeFirstLetter(chain.species.name));
+          } else {
+            extractEvolutions(evolution, currentSpeciesName);
+          }
+        });
+      }
+    }
+
+    // Get current Pokemon name from species
+    const currentPokemonName = species.name;
+    extractEvolutions(evolutionChain.chain, currentPokemonName);
+
+    return { preEvolutions, evolutions, evolutionItems };
+  } catch (error) {
+    logger.error(`Error getting evolution info for Pokemon ${pokemonId}:`, error);
+    return { preEvolutions: [], evolutions: [], evolutionItems: [] };
+  }
+}
+
+/**
+ * Get base stats from Pokemon API response
+ */
+function extractBaseStats(pokemon: Pokemon): MonsterStats {
+  const stats: MonsterStats = {
+    hp: 0,
+    attack: 0,
+    defense: 0,
+    sp_attack: 0,
+    sp_defense: 0,
+    speed: 0,
+  };
+
+  const statMapping: Record<string, keyof MonsterStats> = {
+    hp: "hp",
+    attack: "attack",
+    defense: "defense",
+    "special-attack": "sp_attack",
+    "special-defense": "sp_defense",
+    speed: "speed",
+  };
+
+  for (const apiStat of pokemon.stats) {
+    const statName = statMapping[apiStat.stat.name];
+    if (statName) {
+      stats[statName] = apiStat.base_stat;
+    }
+  }
+
+  return stats;
+}
+
 export async function checkUniqueMonsters(
   interaction: CommandInteraction,
 ): Promise<void> {
   try {
     const tempdex = await userDex(interaction.user.id);
     await queueMessage(
-      `You have ${tempdex.length}/1025} total unique Pokémon in your Pokédex.`,
+      `You have ${tempdex.length}/1025 total unique Pokémon in your Pokédex.`,
       interaction,
       true,
     );
@@ -235,7 +338,8 @@ export async function monsterEmbed(
   }
 
   try {
-    const monster: Pokemon = await findMonsterByIDAPI(monster_db.monster_id);
+    // Use the monsters.ts function instead of direct API call
+    const monster: Pokemon | null = await findMonsterByID(monster_db.monster_id);
 
     if (!monster) {
       logger.error(
@@ -249,11 +353,15 @@ export async function monsterEmbed(
       return;
     }
 
-    // Format Pokemon types using the new function
+    // Get enhanced Pokemon data with English name
+    const pokemonWithName = await getPokemonWithEnglishName(monster);
+    const displayName = pokemonWithName.englishName || capitalizeFirstLetter(monster.name);
+
+    // Format Pokemon types using the updated function
     const pokemonTypes = formatPokemonTypes(monster.types);
     const typeString = pokemonTypes.join(" | ");
 
-    // Calculate stats using the new function
+    // Calculate stats using the existing function
     const calculatedStats = calculateAllStats(monster.stats, monster_db);
 
     // Calculate average IV
@@ -271,7 +379,7 @@ export async function monsterEmbed(
     const tmpID = `${monster.id}`.padStart(NATIONAL_NUMBER_PADDING, "0");
     const nextLevelXp = monster_db.level * EXPERIENCE_MULTIPLIER;
 
-    // Get images using the new function
+    // Get images using the existing function
     const images = getPokemonImages(monster, Boolean(monster_db.shiny));
 
     // Format display icons and text
@@ -287,16 +395,10 @@ export async function monsterEmbed(
     }
 
     // Create title
-    let title = `Level ${monster_db.level} ${capitalizeFirstLetter(
-      monster.name,
-    )} ${genderIcon}${shinyIcon}${favoriteIcon}`;
+    let title = `Level ${monster_db.level} ${displayName} ${genderIcon}${shinyIcon}${favoriteIcon}`;
 
     if (monster_db.nickname) {
-      title = `Level ${monster_db.level} '${
-        monster_db.nickname
-      }' - ${capitalizeFirstLetter(
-        monster.name,
-      )} ${genderIcon}${shinyIcon}${favoriteIcon}`;
+      title = `Level ${monster_db.level} '${monster_db.nickname}' - ${displayName} ${genderIcon}${shinyIcon}${favoriteIcon}`;
     }
 
     // Create embed fields
@@ -446,10 +548,8 @@ export async function monsterInfoLatest(
       return;
     }
 
-    const tmpMonster = await databaseClient<IMonsterModel>(MonsterTable)
-      .select()
-      .where("id", user.latest_monster)
-      .first();
+    // Use the monsters.ts function instead of direct database call
+    const tmpMonster = await getUserMonster(user.latest_monster);
 
     if (!tmpMonster) {
       await queueMessage(
@@ -490,10 +590,8 @@ export async function monsterInfo(
   }
 
   try {
-    const tmpMonster = await databaseClient<IMonsterModel>(MonsterTable)
-      .select()
-      .where("id", monster_id)
-      .first();
+    // Use the monsters.ts function instead of direct database call
+    const tmpMonster = await getUserMonster(monster_id);
 
     if (!tmpMonster) {
       await queueMessage(
@@ -543,10 +641,8 @@ export async function currentMonsterInfo(
       return;
     }
 
-    const tmpMonster = await databaseClient<IMonsterModel>(MonsterTable)
-      .select()
-      .where("id", user.current_monster)
-      .first();
+    // Use the monsters.ts function instead of direct database call
+    const tmpMonster = await getUserMonster(user.current_monster);
 
     if (!tmpMonster) {
       await queueMessage(
@@ -590,9 +686,8 @@ export async function monsterDex(
       searchTerm = searchTerm.replace(/shiny/i, "").trim();
     }
 
-    const tempMonster: Pokemon | undefined = await findMonsterByName(
-      searchTerm.toLowerCase(),
-    );
+    // Use the monsters.ts function instead of local dex lookup
+    const tempMonster: Pokemon | null = await findMonsterByName(searchTerm.toLowerCase());
 
     if (!tempMonster) {
       await queueMessage(
@@ -603,39 +698,55 @@ export async function monsterDex(
       return;
     }
 
-    // Format Pokemon data
-    const pokemonTypes = Array.isArray(tempMonster.type)
-      ? tempMonster.type.join(" | ")
-      : String(tempMonster.type);
+    // Get enhanced Pokemon data
+    const [pokemonWithName, isLegendary, evolutionInfo] = await Promise.all([
+      getPokemonWithEnglishName(tempMonster),
+      isPokemonLegendary(tempMonster),
+      getPokemonEvolutionInfo(tempMonster.id)
+    ]);
+
+    const displayName = pokemonWithName.englishName || capitalizeFirstLetter(tempMonster.name);
+
+    // Format Pokemon types using the API format
+    const pokemonTypes = formatPokemonTypes(tempMonster.types);
+    const typeString = pokemonTypes.join(" | ");
+
     const tmpID = `${tempMonster.id}`.padStart(DEX_NUMBER_PADDING, "0");
 
-    // Format stats
-    const monsterStats = {
-      hp: tempMonster.stats[0].base_stat,
-      attack: tempMonster.stats[1].base_stat,
-      defense: tempMonster.stats[2].base_stat,
-      sp_attack: tempMonster.stats[3].base_stat,
-      sp_defense: tempMonster.stats[4].base_stat,
-      speed: tempMonster.stats[5].base_stat,
-    };
+    // Extract base stats using the helper function
+    const monsterStats = extractBaseStats(tempMonster);
 
-    // Get count and images
+    // Get count using existing function
     const count = format_number(await monsterCount(tempMonster.id, interaction.user.id));
 
     // Format evolution info
-    const evolve = tempMonster.evos?.join(" | ") ?? "None";
-    const prevolve = tempMonster.prevo ?? "None";
+    const evolve = evolutionInfo.evolutions.length > 0
+      ? evolutionInfo.evolutions.join(" | ")
+      : "None";
+    const prevolve = evolutionInfo.preEvolutions.length > 0
+      ? evolutionInfo.preEvolutions.join(" | ")
+      : "None";
 
-    // Evolution item handling - removed problematic evoItem lookup
+    // Format evolution items
     let evoItem = "";
-    // Note: Evolution items would need to be sourced differently
-    // The evoItem property doesn't exist on the IMonsterDex type
+    if (evolutionInfo.evolutionItems.length > 0) {
+      evoItem = `\n**Evolution Items**: ${evolutionInfo.evolutionItems.join(" | ")}`;
+    }
 
-    // Special indicator
-    const legendaryIcon = tempMonster.special ? " 💠" : "";
+    // Use the legendary check from monsters.ts
+    const legendaryIcon = isLegendary ? " 💠" : "";
+
+    // Get appropriate image
+    const imageUrl = searchShiny
+      ? tempMonster.sprites?.other?.["official-artwork"]?.front_shiny || tempMonster.sprites?.front_shiny
+      : tempMonster.sprites?.other?.["official-artwork"]?.front_default || tempMonster.sprites?.front_default;
+
+    const thumbnailUrl = searchShiny
+      ? tempMonster.sprites?.other?.showdown?.front_shiny || tempMonster.sprites?.front_shiny
+      : tempMonster.sprites?.other?.showdown?.front_default || tempMonster.sprites?.front_default;
 
     const embed = new EmbedBuilder({
-      description: `**Type(s)**: ${pokemonTypes}
+      description: `**Type(s)**: ${typeString}
 
 **National №**: ${tmpID}
 **Your PokeDex Count**: ${count}
@@ -651,13 +762,9 @@ export async function monsterDex(
 
 **Prevolve**: ${prevolve}
 **Evolve**: ${evolve}${evoItem}`,
-      image: {
-        url: tempMonster.sprites.other["official-artwork"].front_default,
-      },
-      thumbnail: {
-        url: tempMonster.sprites.other.showdown.front_default,
-      },
-      title: `#${tmpID} - ${tempMonster.name}${legendaryIcon}`,
+      image: { url: imageUrl || "" },
+      thumbnail: { url: thumbnailUrl || "" },
+      title: `#${tmpID} - ${displayName}${legendaryIcon}`,
     });
 
     await interaction.channel?.send({ embeds: [embed] });

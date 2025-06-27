@@ -13,11 +13,14 @@ import { getCurrentTime, getRndInteger } from "../../utils";
 import { spawnChannelMessage } from "../message_queue";
 import { getItemDB } from "./items";
 import {
-  findMonsterByIDAPI,
+  findMonsterByID,
+  getPokemonDisplayName,
+  getPokemonEvolutionInfo,
   getPokemonSpecies,
-  getRandomMonster,
+  getPokemonSprites,
+  getRandomValidPokemon,
   getUserMonster,
-  type Pokemon,
+  type Pokemon
 } from "./monsters";
 import { rollShiny } from "./utils";
 
@@ -38,48 +41,17 @@ const EGG_ID = 0.1; // Local Egg ID, does not actually exist in Pokemon/PokeAPI
 const MIN_EXP_TIMER = 5;
 const MAX_EXP_TIMER = 300;
 
-// Cache for evolution data to avoid repeated API calls
-const evolutionDataCache = new Map<
-  number,
-  {
-    evolutions: EvolutionData[];
-    timestamp: number;
-  }
->();
-const EVOLUTION_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
-
-// Types for evolution handling
-interface EvolutionData {
-  id: number;
-  name: string;
-  minLevel?: number;
-  triggerItem?: string;
-  triggerCondition?: string;
-}
-
+// Enhanced evolution interface using monsters.ts types
 interface ProcessedEvolution {
   pokemon: Pokemon;
   species: any;
   minLevel: number;
-}
-
-/**
- * Get Pokemon display name from API data
- * @param pokemon - Pokemon API response
- * @returns Formatted display name
- */
-function getPokemonDisplayName(pokemon: Pokemon): string {
-  if (!pokemon.name) return "Unknown Pokemon";
-
-  return pokemon.name
-    .split("-")
-    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+  evolutionMethod: string;
 }
 
 /**
  * Check if Pokemon is an egg based on its ID
- * @param pokemon - Pokemon API response
+ * @param monster - Monster database model
  * @returns boolean indicating if it's an egg
  */
 function isEgg(monster: IMonsterModel): boolean {
@@ -87,119 +59,20 @@ function isEgg(monster: IMonsterModel): boolean {
 }
 
 /**
- * Get evolution chain data from PokeAPI
- * @param speciesUrl - Species URL from Pokemon data
- * @returns Evolution chain data
+ * Get the best sprite URL for a Pokemon using existing sprite functions
+ * @param pokemon - Pokemon API data
+ * @param isShiny - Whether the Pokemon is shiny
+ * @returns Best available sprite URL
  */
-async function getEvolutionChain(speciesUrl: string): Promise<any> {
-  try {
-    // Extract species ID from URL
-    const speciesId = speciesUrl.split("/").slice(-2)[0];
-    const species = await getPokemonSpecies(parseInt(speciesId));
+function getBestPokemonSpriteUrl(pokemon: Pokemon, isShiny: boolean): string {
+  const sprites = getPokemonSprites(pokemon, isShiny);
 
-    if (!species?.evolution_chain?.url) {
-      return null;
-    }
-
-    // Fetch evolution chain
-    const evolutionChainId = species.evolution_chain.url
-      .split("/")
-      .slice(-2)[0];
-    const response = await fetch(
-      `https://pokeapi.co/api/v2/evolution-chain/${evolutionChainId}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Evolution chain API error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    logger.error("Error fetching evolution chain:", error);
-    return null;
-  }
+  // Use existing sprite priority: artwork > showdown > default
+  return sprites.artwork || sprites.showdown || sprites.default || "";
 }
 
 /**
- * Parse evolution chain to find possible evolutions for a Pokemon
- * @param evolutionChain - Evolution chain data from API
- * @param currentPokemonName - Current Pokemon's name
- * @returns Array of possible evolutions
- */
-function parseEvolutionChain(
-  evolutionChain: any,
-  currentPokemonName: string
-): EvolutionData[] {
-  const evolutions: EvolutionData[] = [];
-
-  function traverseChain(chain: any): void {
-    if (!chain) return;
-
-    // Check if this is an evolution from our current Pokemon
-    if (chain.species.name === currentPokemonName.toLowerCase()) {
-      // Process all possible evolutions
-      chain.evolves_to.forEach((evolution: any) => {
-        const evolutionDetails = evolution.evolution_details[0]; // Take first evolution method
-
-        if (evolutionDetails) {
-          const pokemonId = parseInt(
-            evolution.species.url.split("/").slice(-2)[0]
-          );
-
-          evolutions.push({
-            id: pokemonId,
-            name: evolution.species.name,
-            minLevel: evolutionDetails.min_level,
-            triggerItem: evolutionDetails.item?.name,
-            triggerCondition: evolutionDetails.trigger?.name,
-          });
-        }
-      });
-    }
-
-    // Continue traversing the chain
-    chain.evolves_to.forEach((nextChain: any) => traverseChain(nextChain));
-  }
-
-  traverseChain(evolutionChain.chain);
-  return evolutions;
-}
-
-/**
- * Get cached evolution data or fetch from API
- * @param pokemon - Current Pokemon data
- * @returns Array of possible evolutions
- */
-async function getEvolutionData(pokemon: Pokemon): Promise<EvolutionData[]> {
-  const cacheKey = pokemon.id;
-  const cached = evolutionDataCache.get(cacheKey);
-
-  if (cached && Date.now() - cached.timestamp < EVOLUTION_CACHE_TTL) {
-    return cached.evolutions;
-  }
-
-  try {
-    const evolutionChain = await getEvolutionChain(pokemon.species.url);
-    if (!evolutionChain) {
-      evolutionDataCache.set(cacheKey, {
-        evolutions: [],
-        timestamp: Date.now(),
-      });
-      return [];
-    }
-
-    const evolutions = parseEvolutionChain(evolutionChain, pokemon.name);
-    evolutionDataCache.set(cacheKey, { evolutions, timestamp: Date.now() });
-
-    return evolutions;
-  } catch (error) {
-    logger.error(`Error getting evolution data for ${pokemon.name}:`, error);
-    return [];
-  }
-}
-
-/**
- * Check if Pokemon can evolve at current level
+ * Check if Pokemon can evolve at current level using existing evolution functions
  * @param pokemon - Current Pokemon data
  * @param currentLevel - Pokemon's current level
  * @param hasEverstone - Whether Pokemon holds an Everstone
@@ -211,80 +84,81 @@ async function checkForEvolution(
   hasEverstone: boolean
 ): Promise<ProcessedEvolution | null> {
   if (hasEverstone) {
-    logger.debug(`Evolution prevented by Everstone for ${pokemon.name}`);
+    logger.debug(`Evolution prevented by Everstone for ${getPokemonDisplayName(pokemon)}`);
     return null;
   }
 
   try {
-    const evolutions = await getEvolutionData(pokemon);
+    // Use existing comprehensive evolution function
+    const evolutionInfo = await getPokemonEvolutionInfo(pokemon.id);
 
-    // Find level-based evolutions that the Pokemon qualifies for
-    const levelEvolutions = evolutions.filter(
-      (evo) =>
-        evo.minLevel &&
-        currentLevel >= evo.minLevel &&
-        evo.triggerCondition === "level-up"
-    );
-
-    if (levelEvolutions.length === 0) {
+    if (!evolutionInfo.evolutions || evolutionInfo.evolutions.length === 0) {
       return null;
     }
 
-    // Take the first valid evolution (could be enhanced to handle multiple)
-    const evolution = levelEvolutions[0];
+    // Find level-based evolutions
+    const evolutionMethods = evolutionInfo.evolutionMethods || [];
 
-    // Fetch the evolution Pokemon data
-    const [evolvedPokemon, evolvedSpecies] = await Promise.all([
-      findMonsterByIDAPI(evolution.id),
-      getPokemonSpecies(evolution.id),
-    ]);
+    for (let i = 0; i < evolutionInfo.evolutions.length; i++) {
+      const evolutionName = evolutionInfo.evolutions[i];
+      const method = evolutionMethods[i];
 
-    if (!evolvedPokemon) {
-      logger.warn(
-        `Could not fetch evolution Pokemon data for ID ${evolution.id}`
-      );
-      return null;
+      // Check if this is a level-based evolution
+      if (method && method.toLowerCase().includes('level')) {
+        const levelMatch = method.match(/level (\d+)/i);
+        const requiredLevel = levelMatch ? parseInt(levelMatch[1]) : null;
+
+        if (requiredLevel && currentLevel >= requiredLevel) {
+          // Find the evolution Pokemon by name
+          try {
+            // Convert display name back to API format for searching
+            const searchName = evolutionName.toLowerCase().replace(/\s+/g, '-');
+
+            // Try to find by name first, then by scanning IDs if needed
+            let evolvedPokemon: Pokemon | null = null;
+
+            // Simple approach: try common ID ranges based on the current Pokemon
+            const searchStart = Math.max(1, pokemon.id - 10);
+            const searchEnd = Math.min(1025, pokemon.id + 50);
+
+            for (let id = searchStart; id <= searchEnd; id++) {
+              const candidate = await findMonsterByID(id);
+              if (candidate && getPokemonDisplayName(candidate).toLowerCase() === evolutionName.toLowerCase()) {
+                evolvedPokemon = candidate;
+                break;
+              }
+            }
+
+            if (!evolvedPokemon) {
+              logger.warn(`Could not find evolution Pokemon: ${evolutionName}`);
+              continue;
+            }
+
+            const evolvedSpecies = await getPokemonSpecies(evolvedPokemon.id);
+
+            return {
+              pokemon: evolvedPokemon,
+              species: evolvedSpecies,
+              minLevel: requiredLevel,
+              evolutionMethod: method,
+            };
+          } catch (error) {
+            logger.warn(`Error finding evolution ${evolutionName}:`, error);
+            continue;
+          }
+        }
+      }
     }
 
-    return {
-      pokemon: evolvedPokemon,
-      species: evolvedSpecies,
-      minLevel: evolution.minLevel!,
-    };
+    return null;
   } catch (error) {
-    logger.error(`Error checking evolution for ${pokemon.name}:`, error);
+    logger.error(`Error checking evolution for ${getPokemonDisplayName(pokemon)}:`, error);
     return null;
   }
 }
 
 /**
- * Get Pokemon sprite URL based on shiny status
- * @param pokemon - Pokemon API data
- * @param isShiny - Whether the Pokemon is shiny
- * @returns Sprite URL
- */
-function getPokemonSpriteUrl(pokemon: Pokemon, isShiny: boolean): string {
-  const sprites = pokemon.sprites;
-
-  if (isShiny) {
-    return (
-      sprites.other?.["official-artwork"]?.front_shiny ||
-      sprites.front_shiny ||
-      sprites.other?.["official-artwork"]?.front_default ||
-      sprites.front_default ||
-      ""
-    );
-  } else {
-    return (
-      sprites.other?.["official-artwork"]?.front_default ||
-      sprites.front_default ||
-      ""
-    );
-  }
-}
-
-/**
- * Handle Pokemon evolution
+ * Handle Pokemon evolution with improved messaging
  * @param monster - Monster database model
  * @param currentPokemon - Current Pokemon API data
  * @param evolution - Evolution data
@@ -308,29 +182,26 @@ async function handleEvolution(
       return;
     }
 
-    // Get sprite URLs
-    const evolvedSpriteUrl = getPokemonSpriteUrl(
-      evolution.pokemon,
-      Boolean(monster.shiny)
-    );
-    const originalSpriteUrl = getPokemonSpriteUrl(
-      currentPokemon,
-      Boolean(monster.shiny)
-    );
+    // Get sprite URLs using existing sprite functions
+    const evolvedSpriteUrl = getBestPokemonSpriteUrl(evolution.pokemon, Boolean(monster.shiny));
+    const originalSpriteUrl = getBestPokemonSpriteUrl(currentPokemon, Boolean(monster.shiny));
 
-    // Get display names
+    // Get display names using existing function
     const originalName = getPokemonDisplayName(currentPokemon);
     const evolvedName = getPokemonDisplayName(evolution.pokemon);
 
     const embed = new EmbedBuilder()
       .setTitle(`${user.username}'s ${originalName} is evolving!`)
       .setDescription(
-        `Nice! **${originalName}** has evolved into **${evolvedName}**!`
+        `✨ **${originalName}** has evolved into **${evolvedName}**! ✨\n\n` +
+        `Evolution triggered by: **${evolution.evolutionMethod}**` +
+        (monster.shiny ? "\n⭐ *Your shiny Pokemon remains shiny!*" : "")
       )
       .setImage(evolvedSpriteUrl)
       .setThumbnail(originalSpriteUrl)
       .setColor(monster.shiny ? 0xffd700 : 0x00ff00)
-      .setTimestamp();
+      .setTimestamp()
+      .setFooter({ text: `Level ${monster.level} → Level ${monster.level}` });
 
     // Send evolution message using the message queue
     if (interaction) {
@@ -340,26 +211,10 @@ async function handleEvolution(
           `${user.username}'s ${originalName} evolved into ${evolvedName}!`
         );
       } catch (messageError) {
-        logger.error(
-          "Failed to send evolution message via queue:",
-          messageError
-        );
+        logger.error("Failed to send evolution message via queue:", messageError);
 
         // Fallback: try direct channel send
-        try {
-          const monsterChannel = interaction.guild?.channels.cache.find(
-            (ch) => ch.name === "pokémon-spawns" // Default channel name
-          ) as TextChannel;
-
-          if (monsterChannel) {
-            await monsterChannel.send({ embeds: [embed] });
-          }
-        } catch (fallbackError) {
-          logger.error(
-            "Evolution message fallback also failed:",
-            fallbackError
-          );
-        }
+        await sendFallbackMessage(embed, interaction);
       }
     }
   } catch (error) {
@@ -368,7 +223,7 @@ async function handleEvolution(
 }
 
 /**
- * Handle egg hatching
+ * Handle egg hatching with improved Pokemon selection
  * @param monster - Monster database model
  * @param currentPokemon - Current Pokemon (egg) API data
  * @param user - Discord user
@@ -381,44 +236,40 @@ async function handleEggHatch(
   interaction?: CommandInteraction
 ): Promise<void> {
   try {
-    // Get a random Pokemon that's not an egg
-    let attempts = 0;
-    let newPokemon: Pokemon | null = null;
-
-    while (attempts < 10) {
-      const randomId = getRandomMonster();
-      const candidate = await findMonsterByIDAPI(randomId);
-
-      if (candidate && !isEgg(monster)) {
-        newPokemon = candidate;
-        break;
-      }
-      attempts++;
-    }
+    // Use existing function to get a random valid Pokemon
+    const newPokemon = await getRandomValidPokemon();
 
     if (!newPokemon) {
       logger.error("Failed to find valid Pokemon for egg hatching");
       return;
     }
 
-    // Determine shiny status
-    let isShiny = rollShiny();
+    // Determine shiny status with enhanced logic
+    let isShiny = Boolean(monster.shiny); // Inherit egg's shiny status
 
-    // Give extra shiny chance for egg hatching
-    if (!isShiny && !monster.shiny) {
-      isShiny = rollShiny();
-    } else if (monster.shiny) {
-      isShiny = 1;
+    // Give extra shiny chance for egg hatching if not already shiny
+    if (!isShiny) {
+      isShiny = rollShiny() === 1;
+
+      // Give a second chance for eggs (eggs are rare!)
+      if (!isShiny) {
+        isShiny = rollShiny() === 1;
+      }
     }
+
+    // Determine level and experience for hatched Pokemon
+    const hatchLevel = getRndInteger(MIN_HATCH_LEVEL, MAX_HATCH_LEVEL);
+    const hatchExp = getRndInteger(MIN_HATCH_EXP, MAX_HATCH_EXP);
 
     // Update the monster in database
     const updateResult = await databaseClient<IMonsterModel>(MonsterTable)
       .where({ id: monster.id })
       .update({
         monster_id: newPokemon.id,
-        level: getRndInteger(MIN_HATCH_LEVEL, MAX_HATCH_LEVEL),
-        experience: getRndInteger(MIN_HATCH_EXP, MAX_HATCH_EXP),
-        shiny: isShiny,
+        level: hatchLevel,
+        experience: hatchExp,
+        shiny: isShiny ? 1 : 0,
+        egg: 0, // No longer an egg
         hatched_at: Date.now(),
       });
 
@@ -427,48 +278,42 @@ async function handleEggHatch(
       return;
     }
 
-    // Get sprite URL
-    const spriteUrl = getPokemonSpriteUrl(newPokemon, Boolean(isShiny));
+    // Get sprite URL using existing function
+    const spriteUrl = getBestPokemonSpriteUrl(newPokemon, isShiny);
 
-    // Get display names
+    // Get display names using existing function
     const eggName = getPokemonDisplayName(currentPokemon);
     const hatchedName = getPokemonDisplayName(newPokemon);
 
+    // Get Pokemon species for additional info
+    const species = await getPokemonSpecies(newPokemon.id);
+    const isLegendary = species?.is_legendary || species?.is_mythical;
+
     const embed = new EmbedBuilder()
-      .setTitle(`${user.username}'s ${eggName} has hatched!`)
+      .setTitle(`🥚 ${user.username}'s ${eggName} has hatched! 🐣`)
       .setDescription(
-        `YO! **${eggName}** has HATCHED into **${hatchedName}**! Congratulations!${
-          isShiny ? " ✨ It's shiny! ✨" : ""
-        }`
+        `**Congratulations!** Your **${eggName}** has hatched into a **${hatchedName}**!` +
+        (isShiny ? "\n✨ **It's shiny!** ✨" : "") +
+        (isLegendary ? "\n💠 **It's a legendary Pokémon!** 💠" : "") +
+        `\n\n**Level:** ${hatchLevel}\n**Experience:** ${hatchExp}`
       )
       .setImage(spriteUrl)
-      .setColor(isShiny ? 0xffd700 : 0x87ceeb)
-      .setTimestamp();
+      .setColor(isShiny ? 0xffd700 : isLegendary ? 0xff6b9d : 0x87ceeb)
+      .setTimestamp()
+      .setFooter({ text: "Egg Hatched Successfully!" });
 
     // Send hatch message using the message queue
     if (interaction) {
       try {
         await spawnChannelMessage(embed, interaction, 3); // High priority for hatching
         logger.info(
-          `${user.username}'s egg hatched into ${hatchedName}${
-            isShiny ? " (shiny)" : ""
-          }!`
+          `${user.username}'s egg hatched into ${hatchedName}${isShiny ? " (shiny)" : ""}!`
         );
       } catch (messageError) {
         logger.error("Failed to send hatch message via queue:", messageError);
 
         // Fallback: try direct channel send
-        try {
-          const monsterChannel = interaction.guild?.channels.cache.find(
-            (ch) => ch.name === "pokémon-spawns" // Default channel name
-          ) as TextChannel;
-
-          if (monsterChannel) {
-            await monsterChannel.send({ embeds: [embed] });
-          }
-        } catch (fallbackError) {
-          logger.error("Hatch message fallback also failed:", fallbackError);
-        }
+        await sendFallbackMessage(embed, interaction);
       }
     }
   } catch (error) {
@@ -477,7 +322,81 @@ async function handleEggHatch(
 }
 
 /**
- * Main experience gain function with PokeAPI integration
+ * Fallback message sending when queue fails
+ * @param embed - Embed to send
+ * @param interaction - Command interaction
+ */
+async function sendFallbackMessage(
+  embed: EmbedBuilder,
+  interaction: CommandInteraction
+): Promise<void> {
+  try {
+    // Try multiple channel name variations
+    const channelNames = ["pokémon-spawns", "pokemon-spawns", "spawns", "pokemon"];
+    let monsterChannel: TextChannel | undefined;
+
+    for (const channelName of channelNames) {
+      monsterChannel = interaction.guild?.channels.cache.find(
+        (ch) => ch.name === channelName
+      ) as TextChannel;
+
+      if (monsterChannel) break;
+    }
+
+    if (monsterChannel) {
+      await monsterChannel.send({ embeds: [embed] });
+    } else {
+      // Last resort: send to interaction channel
+      if (interaction.channel instanceof TextChannel) {
+        await interaction.channel.send({ embeds: [embed] });
+      }
+    }
+  } catch (fallbackError) {
+    logger.error("All message sending methods failed:", fallbackError);
+  }
+}
+
+/**
+ * Check if a monster qualifies for experience gain
+ * @param monster - Monster to check
+ * @returns boolean indicating if monster can gain experience
+ */
+function canGainExperience(monster: IMonsterModel): boolean {
+  return monster.level < MAX_LEVEL && !isEgg(monster);
+}
+
+/**
+ * Calculate level up requirements
+ * @param currentLevel - Current level
+ * @param currentExp - Current experience
+ * @param expGain - Experience being gained
+ * @returns Object with level up information
+ */
+function calculateLevelUp(
+  currentLevel: number,
+  currentExp: number,
+  expGain: number
+): {
+  willLevelUp: boolean;
+  newLevel: number;
+  requiredExp: number;
+  totalExp: number;
+} {
+  const requiredExp = currentLevel * EXP_PER_LEVEL;
+  const totalExp = currentExp + expGain;
+  const willLevelUp = totalExp >= requiredExp;
+  const newLevel = willLevelUp ? currentLevel + 1 : currentLevel;
+
+  return {
+    willLevelUp,
+    newLevel,
+    requiredExp,
+    totalExp,
+  };
+}
+
+/**
+ * Main experience gain function with improved Pokemon integration
  * @param user - Discord user
  * @param guild - Discord guild
  * @param interaction - Command interaction (optional)
@@ -510,13 +429,19 @@ export async function checkExpGain(
     }
 
     const monster = await getUserMonster(tmpUser.current_monster);
-    if (!monster || monster.level >= MAX_LEVEL) {
+    if (!monster) {
       xp_cache.set(cacheKey, getCurrentTime());
       return;
     }
 
-    // Get Pokemon data from API
-    const pokemonData = await findMonsterByIDAPI(monster.monster_id);
+    // Check if monster can gain experience
+    if (!canGainExperience(monster)) {
+      xp_cache.set(cacheKey, getCurrentTime());
+      return;
+    }
+
+    // Get Pokemon data from API using existing function
+    const pokemonData = await findMonsterByID(monster.monster_id);
     if (!pokemonData) {
       logger.error(`Could not fetch Pokemon data for monster ${monster.id}`);
       xp_cache.set(cacheKey, getCurrentTime());
@@ -524,16 +449,17 @@ export async function checkExpGain(
     }
 
     // Get held item data
-    const heldItem = monster.held_item
-      ? await getItemDB(monster.held_item)
-      : null;
+    const heldItem = monster.held_item ? await getItemDB(monster.held_item) : null;
     const hasEverstone = heldItem?.item_number === EVERSTONE_ITEM_ID;
 
     // Update cache immediately to prevent spam
     xp_cache.set(cacheKey, getCurrentTime());
 
-    // Gain experience
+    // Calculate experience gain
     const expGain = getRndInteger(MIN_EXP_GAIN, MAX_EXP_GAIN);
+    const levelUpInfo = calculateLevelUp(monster.level, monster.experience, expGain);
+
+    // Update experience in database
     const updateExpResult = await databaseClient(MonsterTable)
       .where({ id: tmpUser.current_monster })
       .increment("experience", expGain);
@@ -547,12 +473,9 @@ export async function checkExpGain(
       `User ${user.username} gained ${expGain} XP in ${guild.name}.`
     );
 
-    // Check for level up
-    const requiredExp = monster.level * EXP_PER_LEVEL;
-    if (monster.experience + expGain >= requiredExp) {
-      const updateLevelResult = await databaseClient<IMonsterModel>(
-        MonsterTable
-      )
+    // Handle level up
+    if (levelUpInfo.willLevelUp) {
+      const updateLevelResult = await databaseClient<IMonsterModel>(MonsterTable)
         .where({ id: monster.id })
         .increment("level", 1);
 
@@ -561,30 +484,28 @@ export async function checkExpGain(
         return;
       }
 
-      const newLevel = monster.level + 1;
       const pokemonName = getPokemonDisplayName(pokemonData);
 
       logger.trace(
-        `${user.username}'s ${pokemonName} leveled up to ${newLevel}!`
+        `${user.username}'s ${pokemonName} leveled up to ${levelUpInfo.newLevel}!`
       );
 
-      // Check for evolution or egg hatching
-      if (isEgg(monster) && newLevel >= EGG_HATCH_LEVEL) {
+      // Check for egg hatching
+      if (isEgg(monster) && levelUpInfo.newLevel >= EGG_HATCH_LEVEL) {
         await handleEggHatch(monster, pokemonData, user, interaction);
-      } else if (!hasEverstone) {
+        return; // Exit early as monster has transformed
+      }
+
+      // Check for evolution (only if not an egg and doesn't have Everstone)
+      if (!isEgg(monster) && !hasEverstone) {
         const evolution = await checkForEvolution(
           pokemonData,
-          newLevel,
+          levelUpInfo.newLevel,
           hasEverstone
         );
+
         if (evolution) {
-          await handleEvolution(
-            monster,
-            pokemonData,
-            evolution,
-            user,
-            interaction
-          );
+          await handleEvolution(monster, pokemonData, evolution, user, interaction);
         }
       }
     }
@@ -596,67 +517,138 @@ export async function checkExpGain(
 }
 
 /**
- * Clear evolution cache (for memory management)
+ * Force evolve a Pokemon (admin/testing function)
+ * @param monsterId - Monster database ID
+ * @param user - Discord user
+ * @param interaction - Command interaction
+ * @returns Success boolean
  */
-export function clearEvolutionCache(): void {
-  evolutionDataCache.clear();
-  logger.info("Evolution cache cleared");
-}
-
-/**
- * Get evolution cache statistics
- */
-export function getEvolutionCacheStats(): {
-  size: number;
-  memoryUsage: string;
-} {
-  const memoryUsage = `${Math.round(
-    JSON.stringify([...evolutionDataCache.values()]).length / 1024
-  )} KB`;
-
-  return {
-    size: evolutionDataCache.size,
-    memoryUsage,
-  };
-}
-
-/**
- * Pre-warm evolution cache for commonly used Pokemon
- * @param pokemonIds - Array of Pokemon IDs to cache
- */
-export async function preWarmEvolutionCache(
-  pokemonIds: number[]
-): Promise<void> {
-  logger.info(
-    `Pre-warming evolution cache with ${pokemonIds.length} Pokemon...`
-  );
-
-  for (const id of pokemonIds) {
-    try {
-      const pokemon = await findMonsterByIDAPI(id);
-      if (pokemon) {
-        await getEvolutionData(pokemon);
-      }
-    } catch (error) {
-      logger.warn(
-        `Failed to pre-warm evolution cache for Pokemon ${id}:`,
-        error
-      );
+export async function forceEvolution(
+  monsterId: number,
+  user: User,
+  interaction: CommandInteraction
+): Promise<boolean> {
+  try {
+    const monster = await getUserMonster(monsterId);
+    if (!monster) {
+      logger.error(`Monster ${monsterId} not found for force evolution`);
+      return false;
     }
-  }
 
-  logger.info(
-    `Evolution cache pre-warming complete. Cache size: ${evolutionDataCache.size}`
-  );
+    const pokemonData = await findMonsterByID(monster.monster_id);
+    if (!pokemonData) {
+      logger.error(`Pokemon data not found for monster ${monsterId}`);
+      return false;
+    }
+
+    const evolution = await checkForEvolution(pokemonData, monster.level, false);
+    if (!evolution) {
+      logger.info(`No evolution available for monster ${monsterId}`);
+      return false;
+    }
+
+    await handleEvolution(monster, pokemonData, evolution, user, interaction);
+    return true;
+  } catch (error) {
+    logger.error(`Error in forceEvolution for monster ${monsterId}:`, error);
+    return false;
+  }
 }
 
-// Export utility functions for testing
-export {
-  checkForEvolution,
-  getEvolutionData,
-  getPokemonDisplayName,
-  getPokemonSpriteUrl,
-  isEgg,
-  parseEvolutionChain
-};
+/**
+ * Force hatch an egg (admin/testing function)
+ * @param monsterId - Monster database ID (must be an egg)
+ * @param user - Discord user
+ * @param interaction - Command interaction
+ * @returns Success boolean
+ */
+export async function forceHatch(
+  monsterId: number,
+  user: User,
+  interaction: CommandInteraction
+): Promise<boolean> {
+  try {
+    const monster = await getUserMonster(monsterId);
+    if (!monster) {
+      logger.error(`Monster ${monsterId} not found for force hatch`);
+      return false;
+    }
 
+    if (!isEgg(monster)) {
+      logger.error(`Monster ${monsterId} is not an egg`);
+      return false;
+    }
+
+    const pokemonData = await findMonsterByID(monster.monster_id);
+    if (!pokemonData) {
+      logger.error(`Pokemon data not found for monster ${monsterId}`);
+      return false;
+    }
+
+    await handleEggHatch(monster, pokemonData, user, interaction);
+    return true;
+  } catch (error) {
+    logger.error(`Error in forceHatch for monster ${monsterId}:`, error);
+    return false;
+  }
+}
+
+/**
+ * Get experience statistics for a user
+ * @param userId - User ID
+ * @returns Experience statistics
+ */
+export async function getExpStats(userId: string): Promise<{
+  totalMonsters: number;
+  maxLevelMonsters: number;
+  averageLevel: number;
+  totalExperience: number;
+  eggsRemaining: number;
+} | null> {
+  try {
+    const monsters = await databaseClient<IMonsterModel>(MonsterTable)
+      .select()
+      .where({ uid: userId, released: 0 });
+
+    if (!monsters.length) {
+      return null;
+    }
+
+    let totalExperience = 0;
+    let totalLevel = 0;
+    let maxLevelCount = 0;
+    let eggCount = 0;
+
+    monsters.forEach((monster) => {
+      totalExperience += monster.experience;
+      totalLevel += monster.level;
+
+      if (monster.level >= MAX_LEVEL) {
+        maxLevelCount++;
+      }
+
+      if (isEgg(monster)) {
+        eggCount++;
+      }
+    });
+
+    return {
+      totalMonsters: monsters.length,
+      maxLevelMonsters: maxLevelCount,
+      averageLevel: Math.round(totalLevel / monsters.length),
+      totalExperience,
+      eggsRemaining: eggCount,
+    };
+  } catch (error) {
+    logger.error(`Error getting exp stats for user ${userId}:`, error);
+    return null;
+  }
+}
+
+// Export utility functions for testing and backwards compatibility
+export {
+  calculateLevelUp,
+  canGainExperience, checkForEvolution,
+  getBestPokemonSpriteUrl,
+  isEgg
+};

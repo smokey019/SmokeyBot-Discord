@@ -3,7 +3,6 @@ import TimeAgo from "javascript-time-ago";
 import { discordClient } from "../../bot";
 import { GLOBAL_COOLDOWN, type ICache } from "../../clients/cache";
 import { getUserDBCount } from "../../clients/database";
-import { dblCache } from "../../clients/top.gg";
 import {
   format_number,
   getCurrentTime,
@@ -89,22 +88,6 @@ export function rollShiny(): 0 | 1 {
 
 export function rollPerfectIV(): boolean {
   return getRndInteger(1, 45) >= 45 ? true : false;
-}
-
-export async function voteCommand(
-  interaction: CommandInteraction
-): Promise<void> {
-  const voted = (await dblCache.get(interaction.user.id)) ?? { voted: false };
-
-  if (!voted.voted) {
-    interaction.reply(
-      `You haven't voted yet -- vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`
-    );
-  } else {
-    interaction.reply(
-      `You've already voted, but maybe others want to vote here and get free stuff for the Pokémon plugin every 12 hours! https://top.gg/bot/458710213122457600/vote`
-    );
-  }
 }
 
 export async function checkServerWeather(
