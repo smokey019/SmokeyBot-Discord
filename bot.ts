@@ -1025,6 +1025,7 @@ discordClient.on("ready", async () => {
     if (IS_COORDINATOR && loaded_commands == false) {
       setTimeout(async () => {
         try {
+          if (loaded_commands == true) return;
           await registerSlashCommands();
           logger.info("✅ Global commands registered");
 
@@ -1359,7 +1360,7 @@ export const sendInterShardMsg = sendInterShardMessage;
 export { communicationManager, handleInterShardMessage, sendInterShardMessage };
 
 // Configuration export
-export { config as shardConfig };
+  export { config as shardConfig };
 
 /**
  * Enhanced startup function optimized for Bun
