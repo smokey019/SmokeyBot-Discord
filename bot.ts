@@ -343,7 +343,10 @@ export const discordClient = new Client({
     BaseGuildEmojiManager: 0,
     GuildBanManager: 0,
     GuildInviteManager: 0,
-    GuildMemberManager: 0,
+    GuildMemberManager: {
+			maxSize: 200,
+			keepOverLimit: member => member.id === member.client.user.id,
+		},
     GuildStickerManager: 0,
     GuildScheduledEventManager: 0,
     MessageManager: config.messageMemoryLimit,

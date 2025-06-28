@@ -155,14 +155,14 @@ function normalizePokemonNameForCatch(pokemonName: string): string {
     return '';
   }
 
-  const lowerName = pokemonName.toLowerCase().trim().replace("-", " ");
+  const lowerName = pokemonName.toLowerCase().trim();
 
   // Handle hyphenated exceptions
   if (HYPHENATED_POKEMON_EXCEPTIONS.has(lowerName)) {
     return lowerName;
   }
 
-  return lowerName;
+  return lowerName.replace("-", " ");
 }
 
 /**
