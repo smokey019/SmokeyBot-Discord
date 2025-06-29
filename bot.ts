@@ -344,7 +344,7 @@ export const discordClient = new Client({
     GuildBanManager: 0,
     GuildInviteManager: 0,
     GuildMemberManager: {
-			maxSize: 200,
+			maxSize: 25,
 			keepOverLimit: member => member.id === member.client.user.id,
 		},
     GuildStickerManager: 0,
