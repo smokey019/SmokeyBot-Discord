@@ -464,6 +464,8 @@ class EmoteQueueManager {
           ? ` (ETA: ${Math.round((data.estimatedCompletion.getTime() - Date.now()) / 1000)}s)`
           : '';
 
+          logger.debug(`${progressPercent}% (${data.successes}`);
+
         await data.interaction
           .editReply(`🚀 **Uploading emotes...** ${progressPercent}% (${data.successes} completed)${eta}`)
           .catch(() => { });

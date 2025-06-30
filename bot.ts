@@ -341,14 +341,14 @@ export const discordClient = new Client({
   makeCache: Options.cacheWithLimits({
     ApplicationCommandManager: 0,
     BaseGuildEmojiManager: 0,
-    GuildBanManager: 0,
-    GuildInviteManager: 0,
+    GuildBanManager: 5,
+    GuildInviteManager: 5,
     GuildMemberManager: {
 			maxSize: 25,
 			keepOverLimit: member => member.id === member.client.user.id,
 		},
-    GuildStickerManager: 0,
-    GuildScheduledEventManager: 0,
+    GuildStickerManager: 5,
+    GuildScheduledEventManager: 1,
     MessageManager: config.messageMemoryLimit,
     PresenceManager: 0,
     ReactionManager: 0,
@@ -356,7 +356,7 @@ export const discordClient = new Client({
     StageInstanceManager: 0,
     ThreadManager: 0,
     ThreadMemberManager: 0,
-    UserManager: 0,
+    UserManager: 25,
     VoiceStateManager: 0,
   }),
   sweepers: {
