@@ -1384,6 +1384,12 @@ export function getPokemonSprites(
     default: undefined as string | undefined,
   };
 
+  // Early validation
+  if (!pokemon || !pokemon.sprites) {
+    logger.warn(`Invalid pokemon data provided to getPokemonSprites: ${pokemon?.id || 'undefined'}`);
+    return sprites;
+  }
+
   try {
     if (isShiny) {
       sprites.artwork =
@@ -1438,6 +1444,12 @@ export function getPokemonBaseStats(pokemon: Pokemon): {
     total: 0,
   };
 
+  // Validate pokemon object and stats array
+  if (!pokemon || !pokemon.stats || !Array.isArray(pokemon.stats)) {
+    logger.warn(`Invalid pokemon data provided to getPokemonBaseStats: ${pokemon?.id || 'undefined'}`);
+    return stats;
+  }
+
   const statMapping: Record<string, keyof typeof stats> = {
     hp: "hp",
     attack: "attack",
@@ -1448,6 +1460,10 @@ export function getPokemonBaseStats(pokemon: Pokemon): {
   };
 
   for (const apiStat of pokemon.stats) {
+    if (!apiStat || !apiStat.stat || typeof apiStat.base_stat !== 'number') {
+      continue; // Skip invalid stat entries
+    }
+
     const statName = statMapping[apiStat.stat.name];
     if (statName && statName !== "total") {
       stats[statName] = apiStat.base_stat;
@@ -1767,6 +1783,12 @@ export async function getPokemonRarity(pokemon: Pokemon): Promise<{
   factors: string[];
 }> {
   const factors: string[] = [];
+getPokemonRarityEmoji
+  // Early validation
+  if (!pokemon || !pokemon.id) {
+    logger.warn(`Invalid pokemon data provided to getPokemonRarity: ${pokemon?.id || 'undefined'}`);
+    return { category: "Common", factors: ["Invalid pokemon data"] };
+  }
 
   try {
     const [species, isLegendary] = await Promise.all([
@@ -1784,7 +1806,7 @@ export async function getPokemonRarity(pokemon: Pokemon): Promise<{
       return { category: "Legendary", factors };
     }
 
-    // Base stat total calculation
+    // Base stat total calculation with validation
     const baseStats = getPokemonBaseStats(pokemon);
     if (baseStats.total >= 600) {
       factors.push("High base stat total (600+)");
@@ -2283,6 +2305,12 @@ export function generateCatchResponseMessage(config: {
  * @returns Emoji string for rarity
  */
 export async function getPokemonRarityEmoji(pokemon: Pokemon): Promise<string> {
+  // Early validation
+  if (!pokemon || !pokemon.id) {
+    logger.warn(`Invalid pokemon data provided to getPokemonRarityEmoji: ${pokemon?.id || 'undefined'}`);
+    return "";
+  }
+
   try {
     const [isLegendary, species] = await Promise.all([
       isPokemonLegendary(pokemon),
@@ -2292,7 +2320,7 @@ export async function getPokemonRarityEmoji(pokemon: Pokemon): Promise<string> {
     if (species?.is_mythical) return " 🌟";
     if (species?.is_legendary || isLegendary) return " 💠";
 
-    // Check base stat total for rarity
+    // Check base stat total for rarity with validation
     const baseStats = getPokemonBaseStats(pokemon);
     if (baseStats.total >= 600) return " 💎";
     if (baseStats.total >= 500) return " 🔹";
@@ -2435,7 +2463,7 @@ export function isPokemonSpawnable(pokemon: Pokemon): boolean {
  * @returns Boolean indicating if Pokemon is weather boosted
  */
 export function isPokemonWeatherBoosted(pokemon: Pokemon, boostedTypes: string[]): boolean {
-  if (!pokemon.types || !Array.isArray(boostedTypes) || boostedTypes.length === 0) {
+  if (!pokemon || !pokemon.types || !Array.isArray(boostedTypes) || boostedTypes.length === 0) {
     return false;
   }
 
@@ -2712,6 +2740,16 @@ export async function getPokemonSpawnRarity(pokemon: Pokemon): Promise<{
   embedColor?: number;
   specialText?: string;
 }> {
+  // Early validation
+  if (!pokemon || !pokemon.id) {
+    logger.warn(`Invalid pokemon data provided to getPokemonSpawnRarity: ${pokemon?.id || 'undefined'}`);
+    return {
+      isSpecial: false,
+      rarity: 'common',
+      embedColor: getPokemonTypeColor('normal')
+    };
+  }
+
   try {
     const [isLegendary, species, rarity] = await Promise.all([
       isPokemonLegendary(pokemon),

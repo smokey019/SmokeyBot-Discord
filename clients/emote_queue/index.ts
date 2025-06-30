@@ -444,6 +444,12 @@ class EmoteQueueManager {
       return false;
     }
 
+    const existingEmojis = new Set(data.interaction.guild.emojis.cache.map((e: any) => e.name));
+
+    if (existingEmojis.has(name)) {
+      return false;
+    }
+
     logger.trace(`Creating emoji ${name} in ${data.interaction.guild.name}`);
 
     try {
@@ -464,7 +470,7 @@ class EmoteQueueManager {
           ? ` (ETA: ${Math.round((data.estimatedCompletion.getTime() - Date.now()) / 1000)}s)`
           : '';
 
-          logger.debug(`${progressPercent}% (${data.successes}`);
+        logger.debug(`${progressPercent}% (${data.successes}`);
 
         await data.interaction
           .editReply(`🚀 **Uploading emotes...** ${progressPercent}% (${data.successes} completed)${eta}`)
