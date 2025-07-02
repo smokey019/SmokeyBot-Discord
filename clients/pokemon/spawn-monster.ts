@@ -140,7 +140,6 @@ function isMonsterBoosted(monster: Pokemon, boostedTypes: string[]): boolean {
  */
 async function createSpawnEmbed(monster: Pokemon, isForced: boolean = false): Promise<EmbedBuilder> {
   const displayName = getPokemonDisplayName(monster);
-  const encounterPhrase = await getRandomEncounterPhrase(monster.name);
 
   // Get sprites using the centralized function
   const sprites = getPokemonSprites(monster, false);
@@ -151,7 +150,7 @@ async function createSpawnEmbed(monster: Pokemon, isForced: boolean = false): Pr
   const embedColor = isForced ? 0xff6b6b : getPokemonTypeColor(primaryType);
 
   const embed = new EmbedBuilder()
-    .setTitle(encounterPhrase)
+    .setTitle(`A wild Pokémon has appeared!`)
     .setDescription("Guess by using `/catch PokémonName` to try and catch it!")
     .setColor(embedColor)
     .setTimestamp();
