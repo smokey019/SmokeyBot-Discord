@@ -409,7 +409,7 @@ export const discordClient = new Client({
       filter: () => (user) => {
         // Don't sweep the bot itself or recently active users
         if (user.id === user.client.user.id) return false;
-        return user.bot || !user.lastMessageChannelId;
+        return user.bot;
       },
     },
 
