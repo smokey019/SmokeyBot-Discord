@@ -337,37 +337,124 @@ export const discordClient = new Client({
     status: PresenceUpdateStatus.Online,
     //activities: [ACTIVITIES[0]],
   },
-  // Bun-optimized cache settings
+  // Memory-optimized cache settings for Discord.js 14.20+
   makeCache: Options.cacheWithLimits({
+    // Application & Command caches - disable if not using slash commands
     ApplicationCommandManager: 0,
+    AutoModerationRuleManager: 0,
+
+    // Channel-related caches - major memory savers
+    ThreadManager: 0, // Disable thread caching unless needed
+    ThreadMemberManager: 0,
+
+    // Emoji & Sticker caches
     BaseGuildEmojiManager: 0,
-    GuildBanManager: 5,
-    GuildInviteManager: 5,
+    GuildStickerManager: 0,
+
+    // Guild management caches
+    GuildBanManager: 0, // Only cache if you need ban info
+    GuildInviteManager: 0, // Disable unless tracking invites
+    GuildScheduledEventManager: 0,
+
+    // Member & User caches - critical for memory usage
     GuildMemberManager: {
-			maxSize: 25,
-			keepOverLimit: member => member.id === member.client.user.id,
-		},
-    GuildStickerManager: 5,
-    GuildScheduledEventManager: 1,
-    MessageManager: config.messageMemoryLimit,
+      maxSize: 15, // Reduced from 25
+      keepOverLimit: (member) => {
+        // Keep bot itself and any privileged users
+        return member.id === member.client.user.id ||
+          member.permissions?.has('Administrator') ||
+          member.permissions?.has('ManageGuild');
+      },
+    },
+    UserManager: {
+      maxSize: 15, // Reduced from 25
+      keepOverLimit: (user) => user.id === user.client.user.id,
+    },
+
+    // Message caching - biggest memory consumer
+    MessageManager: Math.min(config.messageMemoryLimit || 10, 10), // Cap at 10
+
+    // Presence & Voice - disable unless needed
     PresenceManager: 0,
+    VoiceStateManager: 0,
+
+    // Reaction caches - disable unless needed
     ReactionManager: 0,
     ReactionUserManager: 0,
+
+    // Stage & Integration caches
     StageInstanceManager: 0,
-    ThreadManager: 0,
-    ThreadMemberManager: 0,
-    UserManager: 25,
-    VoiceStateManager: 0,
   }),
+
+  // Aggressive sweeping configuration
   sweepers: {
     ...Options.DefaultSweeperSettings,
+
+    // Message sweeping - most important for memory
     messages: {
-      interval: config.sweepInterval,
-      lifetime: config.messageLifetime,
+      interval: Math.min(config.sweepInterval || 300, 300), // Max 5 minutes
+      lifetime: Math.min(config.messageLifetime || 3600, 1800), // Max 30 minutes
+      filter: () => (message) => {
+        // Keep pinned messages and bot's own messages longer
+        if (message.pinned || message.author.id === message.client.user.id) {
+          return false;
+        }
+        return true;
+      },
     },
+
+    // User sweeping - remove cached users aggressively
     users: {
-      interval: config.sweepInterval,
-      filter: () => (user) => user.bot && user.id !== user.client.user.id,
+      interval: config.sweepInterval || 300,
+      filter: () => (user) => {
+        // Don't sweep the bot itself or recently active users
+        if (user.id === user.client.user.id) return false;
+        return user.bot || !user.lastMessageChannelId;
+      },
+    },
+
+    // Guild member sweeping
+    guildMembers: {
+      interval: 600, // 10 minutes
+      filter: () => (member) => {
+        // Keep privileged members and the bot itself
+        if (member.id === member.client.user.id) return false;
+        if (member.permissions?.has('Administrator')) return false;
+        if (member.permissions?.has('ManageGuild')) return false;
+        return true;
+      },
+    },
+
+    // Thread sweeping - if you use threads
+    threads: {
+      interval: 3600, // 1 hour
+      lifetime: 14400, // 4 hours
+    },
+
+    // Presence sweeping
+    presences: {
+      interval: 300, // 5 minutes
+      filter: () => () => true, // Sweep all presences
+    },
+  },
+
+  // Additional memory optimizations
+  allowedMentions: {
+    parse: ['users'], // Limit mention parsing
+    repliedUser: false,
+  },
+
+  // Disable unnecessary REST options that can consume memory
+  rest: {
+    timeout: 15000,
+    retries: 2,
+  },
+
+  // WebSocket options for better memory management
+  ws: {
+    compress: true, // Enable compression to reduce memory usage
+    properties: {
+      browser: 'Discord.js/Bun', // Identify as Bun runtime
     },
   },
 });
@@ -1409,6 +1496,22 @@ async function startBot(): Promise<void> {
 
     process.exit(1);
   }
+}
+
+// Additional memory optimization: Periodic manual cleanup
+if (typeof process !== 'undefined') {
+  setInterval(() => {
+    // Force garbage collection if available (Bun supports this)
+    if (global.gc) {
+      global.gc();
+    }
+
+    // Log memory usage for monitoring
+    const memUsage = process.memoryUsage();
+    if (memUsage.heapUsed > 500 * 1024 * 1024) { // 500MB threshold
+      console.warn(`High memory usage detected: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`);
+    }
+  }, 600000); // Every 10 minutes
 }
 
 // Start the bot
