@@ -38,7 +38,7 @@ bun run index.ts
 
 ## Nickname:
 ```
-// Enhanced set nickname
+// set nickname
 /nickname set "Thunder Bolt"
 
 // Remove current nickname

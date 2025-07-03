@@ -32,7 +32,7 @@ let loaded_commands = false;
 // Extract isDev before config to avoid temporal dead zone issues
 const isDev = process.env.DEV === "true" || process.argv.includes("--dev");
 
-// Enhanced configuration with environment validation
+// configuration with environment validation
 const config = {
   shardId: parseInt(
     process.env.SHARD_ID ||
@@ -68,7 +68,7 @@ const IS_COORDINATOR = config.shardId === 0;
 const EXCLUDED_USERS = new Set(["458710213122457600", "758820204133613598"]);
 const TWITTER_USER = "90514165138989056";
 
-// Enhanced bot activities
+// bot activities
 const ACTIVITIES = [
   { name: "with Pokémon", type: ActivityType.Playing },
   { name: "trainers catch Pokémon", type: ActivityType.Watching },
@@ -78,7 +78,7 @@ const ACTIVITIES = [
   { name: "legendary encounters", type: ActivityType.Competing },
 ];
 
-// Enhanced interfaces for better type safety
+// interfaces for better type safety
 interface ShardState {
   rateLimited: boolean;
   initializing: boolean;
@@ -130,7 +130,7 @@ interface CommunicationManager {
   isConnected(): boolean;
 }
 
-// Enhanced state management
+// state management
 const shardState: ShardState = {
   rateLimited: false,
   initializing: true,
@@ -324,7 +324,7 @@ if (config.useRedis) {
   communicationManager = new WebSocketCommunicationManager();
 }
 
-// Enhanced Discord client optimized for Bun
+// Discord client optimized for Bun
 export const discordClient = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -460,7 +460,7 @@ export const discordClient = new Client({
 });
 
 // ============================================================================
-// ENHANCED COMMUNICATION SYSTEM
+// COMMUNICATION SYSTEM
 // ============================================================================
 
 /**
@@ -593,7 +593,7 @@ async function respondToHealthCheck(message: InterShardMessage): Promise<void> {
 }
 
 // ============================================================================
-// ENHANCED METRICS AND MONITORING
+// METRICS AND MONITORING
 // ============================================================================
 
 /**
@@ -680,7 +680,7 @@ async function getDetailedHealth(): Promise<any> {
 }
 
 /**
- * Enhanced stats reporting
+ * stats reporting
  */
 async function reportStats(): Promise<void> {
   try {
@@ -702,7 +702,7 @@ async function reportStats(): Promise<void> {
 }
 
 /**
- * Send heartbeat with enhanced data
+ * Send heartbeat with data
  */
 function sendHeartbeat(): void {
   const heartbeatData = {
@@ -718,11 +718,11 @@ function sendHeartbeat(): void {
 }
 
 // ============================================================================
-// ENHANCED PRESENCE MANAGEMENT
+// PRESENCE MANAGEMENT
 // ============================================================================
 
 /**
- * Enhanced presence updates with activity rotation
+ * presence updates with activity rotation
  */
 function updatePresence(activity?: any): void {
   try {
@@ -758,7 +758,7 @@ function updatePresence(activity?: any): void {
 // ============================================================================
 
 /**
- * Enhanced command execution with comprehensive error handling
+ * command execution with comprehensive error handling
  */
 async function executeCommand(interaction: CommandInteraction): Promise<void> {
   const startTime = Bun.nanoseconds();
@@ -766,7 +766,7 @@ async function executeCommand(interaction: CommandInteraction): Promise<void> {
   try {
     if (!interaction.guild) return;
 
-    // Enhanced cooldown and rate limit checks
+    // cooldown and rate limit checks
     const [gcd, currentTime] = await Promise.all([
       getGCD(interaction.guild.id),
       Promise.resolve(getCurrentTime()),
@@ -860,7 +860,7 @@ async function executeCommand(interaction: CommandInteraction): Promise<void> {
 }
 
 // ============================================================================
-// ENHANCED MESSAGE PROCESSING
+// MESSAGE PROCESSING
 // ============================================================================
 
 /**
@@ -870,7 +870,7 @@ async function processMessage(message: Message): Promise<void> {
   const startTime = Bun.nanoseconds();
 
   try {
-    // Fast filtering with enhanced checks
+    // Fast filtering with checks
     if (
       EXCLUDED_USERS.has(message.author.id) ||
       message.author.bot ||
@@ -897,7 +897,7 @@ async function processMessage(message: Message): Promise<void> {
 
     if (!cache?.settings?.smokemon_enabled) return;
 
-    // Enhanced parallel processing with error boundaries
+    // parallel processing with error boundaries
     const tasks = [
       checkExpGain(message.author, message.guild, undefined).catch((error) => {
         logger.error("Exp gain check failed:", error);
@@ -933,11 +933,11 @@ async function processMessage(message: Message): Promise<void> {
 }
 
 // ============================================================================
-// ENHANCED COMMAND REGISTRATION
+// COMMAND REGISTRATION
 // ============================================================================
 
 /**
- * Register commands for new guild with enhanced error handling
+ * Register commands for new guild with error handling
  */
 async function registerGuildCommands(guild: Guild): Promise<void> {
   try {
@@ -977,11 +977,11 @@ async function registerGuildCommands(guild: Guild): Promise<void> {
 }
 
 // ============================================================================
-// ENHANCED RATE LIMIT HANDLING
+// RATE LIMIT HANDLING
 // ============================================================================
 
 /**
- * Enhanced rate limit handling with inter-shard coordination
+ * rate limit handling with inter-shard coordination
  */
 function handleRateLimit(rateLimitData: any): void {
   const minutes = Math.round(rateLimitData.timeToReset / 60000);
@@ -1026,11 +1026,11 @@ function handleRateLimit(rateLimitData: any): void {
 }
 
 // ============================================================================
-// ENHANCED HEALTH AND UTILITY FUNCTIONS
+// HEALTH AND UTILITY FUNCTIONS
 // ============================================================================
 
 /**
- * Enhanced health check with multiple criteria
+ * health check with multiple criteria
  */
 function isHealthy(): boolean {
   const now = Date.now();
@@ -1054,7 +1054,7 @@ function isHealthy(): boolean {
 }
 
 /**
- * Enhanced graceful shutdown with cleanup
+ * graceful shutdown with cleanup
  */
 async function shutdown(): Promise<void> {
   logger.info(`🛑 Shard ${config.shardId}: Initiating shutdown...`);
@@ -1087,7 +1087,7 @@ async function shutdown(): Promise<void> {
 }
 
 // ============================================================================
-// ENHANCED EVENT HANDLERS
+// EVENT HANDLERS
 // ============================================================================
 
 discordClient.on("ready", async () => {
@@ -1209,10 +1209,10 @@ discordClient.on("guildDelete", async (guild: Guild) => {
   });
 });
 
-// Enhanced rate limit handling
+// rate limit handling
 discordClient.rest.on("rateLimited", handleRateLimit);
 
-// Enhanced error handlers with better logging and recovery
+// error handlers with better logging and recovery
 discordClient.on("shardError", (error, shardId) => {
   logger.error(`💥 Shard ${shardId} error:`, error);
   shardState.reconnectAttempts++;
@@ -1277,7 +1277,7 @@ if (config.isDev) {
 }
 
 // ============================================================================
-// ENHANCED PROCESS HANDLERS
+// PROCESS HANDLERS
 // ============================================================================
 
 // Handle messages from shard manager (enhanced)
@@ -1325,7 +1325,7 @@ process.on("message", async (message: any) => {
   }
 });
 
-// Enhanced signal handlers
+// signal handlers
 const handleShutdownSignal = async (signal: string) => {
   logger.info(`📨 Received ${signal}, shutting down gracefully...`);
   await shutdown();
@@ -1334,7 +1334,7 @@ const handleShutdownSignal = async (signal: string) => {
 process.on("SIGINT", () => handleShutdownSignal("SIGINT"));
 process.on("SIGTERM", () => handleShutdownSignal("SIGTERM"));
 
-// Enhanced error handlers
+// error handlers
 process.on("unhandledRejection", (reason, promise) => {
   logger.error("💥 Unhandled promise rejection:", reason);
   logger.error("Promise:", promise);
@@ -1389,7 +1389,7 @@ setInterval(() => {
 }, 60000); // Check every minute
 
 // ============================================================================
-// ENHANCED EXPORTS AND UTILITIES
+// EXPORTS AND UTILITIES
 // ============================================================================
 
 /**
@@ -1421,7 +1421,7 @@ export function getShardStats() {
 }
 
 /**
- * Get enhanced bot statistics with detailed metrics
+ * Get bot statistics with detailed metrics
  */
 export async function getBotStats() {
   const metrics = await getShardMetrics();
@@ -1440,20 +1440,20 @@ export async function getBotStats() {
   };
 }
 
-// Backward compatibility and enhanced exports
+// Backward compatibility and exports
 export const getBotStatsLegacy = getShardStats; // Legacy compatibility
 export const isShardHealthy = isHealthy;
 export const emergencyShutdown = shutdown;
 export const sendInterShardMsg = sendInterShardMessage;
 
-// Enhanced communication exports
+// communication exports
 export { communicationManager, handleInterShardMessage, sendInterShardMessage };
 
 // Configuration export
   export { config as shardConfig };
 
 /**
- * Enhanced startup function optimized for Bun
+ * startup function optimized for Bun
  */
 async function startBot(): Promise<void> {
   try {
@@ -1467,7 +1467,7 @@ async function startBot(): Promise<void> {
       );
     }
 
-    // Enhanced startup logging
+    // startup logging
     logger.info(
       `🚀 Starting SmokeyBot Shard ${config.shardId}/${config.totalShards}`
     );
@@ -1509,7 +1509,7 @@ if (typeof process !== 'undefined') {
     // Log memory usage for monitoring
     const memUsage = process.memoryUsage();
     if (memUsage.heapUsed > 500 * 1024 * 1024) { // 500MB threshold
-      console.warn(`High memory usage detected: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`);
+      logger.warn(`High memory usage detected: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`);
     }
   }, 600000); // Every 10 minutes
 }

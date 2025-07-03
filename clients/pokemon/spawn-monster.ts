@@ -19,6 +19,7 @@ import {
   getRandomMonster,
   type Pokemon
 } from "./monsters";
+import { replaceLettersSimple } from "./utils";
 import { getBoostedWeatherSpawns } from "./weather";
 
 export const MONSTER_SPAWNS = loadCache("MONSTER_SPAWNS");
@@ -150,7 +151,7 @@ async function createSpawnEmbed(monster: Pokemon, isForced: boolean = false): Pr
   const embedColor = isForced ? 0xff6b6b : getPokemonTypeColor(primaryType);
 
   const embed = new EmbedBuilder()
-    .setTitle(`A wild Pokémon has appeared!`)
+    .setTitle(`A wild ${replaceLettersSimple(displayName, 0.5)} has appeared!`)
     .setDescription("Guess by using `/catch PokémonName` to try and catch it!")
     .setColor(embedColor)
     .setTimestamp();

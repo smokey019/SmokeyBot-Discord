@@ -274,7 +274,7 @@ export async function clearCache(category: string = DEFAULT_CACHE): Promise<bool
 }
 
 /**
- * Enhanced cache interface with better type safety
+ * cache interface with better type safety
  */
 export interface ICache {
   tweet: any[];
@@ -314,7 +314,7 @@ export async function getGCD(guild_id: string): Promise<number> {
 }
 
 /**
- * Enhanced cache retrieval with better type safety and error handling
+ * cache retrieval with better type safety and error handling
  * @param guild - Discord guild object
  * @param settings - Guild settings from database
  * @returns Cached guild data

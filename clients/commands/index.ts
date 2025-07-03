@@ -17,7 +17,7 @@ const MAX_COMMAND_LOAD_TIME = 30000; // 30 seconds timeout
 const SLASH_COMMAND_RATE_LIMIT_DELAY = 100; // ms between registrations
 const DEV_GUILD_ID = "690857004171919370";
 
-// Enhanced error handling
+// error handling
 class CommandError extends Error {
   constructor(
     message: string,
@@ -29,7 +29,7 @@ class CommandError extends Error {
   }
 }
 
-// Enhanced interfaces for better type safety
+// interfaces for better type safety
 export interface runEvent {
   message?: Message;
   interaction?: CommandInteraction;
@@ -64,7 +64,7 @@ interface CommandLoadProgress {
   errors: Array<{ file: string; error: string }>;
 }
 
-// Enhanced collections with better typing
+// collections with better typing
 export const commands: Collection<string[], (event: runEvent) => any> =
   new Collection();
 export const slashCommands: SlashCommandBuilder[] = [];
@@ -221,7 +221,7 @@ function registerCommand(
 }
 
 /**
- * Loads commands from a specific directory with enhanced error handling
+ * Loads commands from a specific directory with error handling
  */
 async function loadCommandsFromDirectory(
   dirPath: string,
@@ -308,7 +308,7 @@ async function loadCommandsFromDirectory(
 }
 
 /**
- * Enhanced command loading with comprehensive error handling and progress tracking
+ * command loading with comprehensive error handling and progress tracking
  */
 export async function loadCommands(): Promise<void> {
   const startTime = Date.now();
@@ -399,7 +399,7 @@ export async function loadCommands(): Promise<void> {
 }
 
 /**
- * Enhanced slash command registration with better error handling and rate limiting
+ * slash command registration with better error handling and rate limiting
  */
 export async function registerSlashCommands(): Promise<void> {
   const startTime = Date.now();

@@ -9,7 +9,7 @@ const logger = getLogger("Commands");
 
 export async function run(e: runEvent) {
   try {
-    // Enhanced channel validation with type safety
+    // channel validation with type safety
     const channel = e.interaction.channel as TextChannel;
     if (!channel) {
       logger.warn("Command used in invalid channel context");
@@ -20,7 +20,7 @@ export async function run(e: runEvent) {
     const guildId = e.interaction.guild?.id;
     const userId = e.interaction.user?.id;
 
-    // Enhanced settings validation
+    // settings validation
     if (!e.cache?.settings) {
       logger.warn(`No settings found for guild ${guildId}`);
       return;
@@ -32,7 +32,7 @@ export async function run(e: runEvent) {
       return;
     }
 
-    // Enhanced channel restriction check with better logging
+    // channel restriction check with better logging
     if (
       e.cache.settings.specific_channel &&
       channelName !== e.cache.settings.specific_channel
@@ -64,7 +64,7 @@ export async function run(e: runEvent) {
       // Continue execution as cooldown failure shouldn't break the command
     }
 
-    // Enhanced interaction response with fallback
+    // interaction response with fallback
     try {
       await e.interaction.editReply("Fetching your Pokémon collection...");
     } catch (editError) {
@@ -78,7 +78,7 @@ export async function run(e: runEvent) {
       }
     }
 
-    // Enhanced checkMonstersNew call with comprehensive error handling
+    // checkMonstersNew call with comprehensive error handling
     try {
       await checkMonstersNew(e.interaction);
       logger.debug(

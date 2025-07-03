@@ -34,7 +34,7 @@ const SHINY_BONUS = 1000;
 const STREAK_BONUS = 250;
 const STREAK_RESET_COUNT = 10;
 
-// Enhanced error types
+// error types
 class CatchError extends Error {
   constructor(message: string, public code: string, public userId?: string) {
     super(message);

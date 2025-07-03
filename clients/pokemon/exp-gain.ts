@@ -1,9 +1,9 @@
 import {
-  EmbedBuilder,
-  Guild,
-  TextChannel,
-  User,
-  type CommandInteraction,
+    EmbedBuilder,
+    Guild,
+    TextChannel,
+    User,
+    type CommandInteraction,
 } from "discord.js";
 import { xp_cache } from "../../clients/cache";
 import { databaseClient, getUser } from "../../clients/database";
@@ -13,14 +13,14 @@ import { getCurrentTime, getRndInteger } from "../../utils";
 import { spawnChannelMessage } from "../message_queue";
 import { getItemDB } from "./items";
 import {
-  findMonsterByID,
-  getPokemonDisplayName,
-  getPokemonEvolutionInfo,
-  getPokemonSpecies,
-  getPokemonSprites,
-  getRandomValidPokemon,
-  getUserMonster,
-  type Pokemon
+    findMonsterByID,
+    getPokemonDisplayName,
+    getPokemonEvolutionInfo,
+    getPokemonSpecies,
+    getPokemonSprites,
+    getRandomValidPokemon,
+    getUserMonster,
+    type Pokemon
 } from "./monsters";
 import { rollShiny } from "./utils";
 
@@ -41,7 +41,7 @@ const EGG_ID = 0.1; // Local Egg ID, does not actually exist in Pokemon/PokeAPI
 const MIN_EXP_TIMER = 5;
 const MAX_EXP_TIMER = 300;
 
-// Enhanced evolution interface using monsters.ts types
+// evolution interface using monsters.ts types
 interface ProcessedEvolution {
   pokemon: Pokemon;
   species: any;
@@ -244,7 +244,7 @@ async function handleEggHatch(
       return;
     }
 
-    // Determine shiny status with enhanced logic
+    // Determine shiny status with logic
     let isShiny = Boolean(monster.shiny); // Inherit egg's shiny status
 
     // Give extra shiny chance for egg hatching if not already shiny
@@ -647,8 +647,9 @@ export async function getExpStats(userId: string): Promise<{
 
 // Export utility functions for testing and backwards compatibility
 export {
-  calculateLevelUp,
-  canGainExperience, checkForEvolution,
-  getBestPokemonSpriteUrl,
-  isEgg
+    calculateLevelUp,
+    canGainExperience, checkForEvolution,
+    getBestPokemonSpriteUrl,
+    isEgg
 };
+

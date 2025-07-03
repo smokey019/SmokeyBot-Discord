@@ -3,26 +3,26 @@ import { databaseClient, getUser } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
 import { MonsterTable, type IMonsterModel } from "../../models/Monster";
 import {
-  MonsterUserTable,
-  type IMonsterUserModel,
+    MonsterUserTable,
+    type IMonsterUserModel,
 } from "../../models/MonsterUser";
 import { TradeTable, type ITrade } from "../../models/Trades";
 import { getCurrentTime } from "../../utils";
 import { getItemDB } from "./items";
 import {
-  calculateIVPercentage,
-  findMonsterByID,
-  formatPokemonLevel,
-  getPokemonDisplayName,
-  getPokemonEvolutionInfo,
-  getPokemonEvolutions,
-  getPokemonRarityEmoji,
-  getPokemonSpecies,
-  getPokemonSprites,
-  getPokemonTypeColor,
-  getPokemonWithEnglishName,
-  getUserMonster,
-  PokemonError
+    calculateIVPercentage,
+    findMonsterByID,
+    formatPokemonLevel,
+    getPokemonDisplayName,
+    getPokemonEvolutionInfo,
+    getPokemonEvolutions,
+    getPokemonRarityEmoji,
+    getPokemonSpecies,
+    getPokemonSprites,
+    getPokemonTypeColor,
+    getPokemonWithEnglishName,
+    getUserMonster,
+    PokemonError
 } from "./monsters";
 
 const logger = getLogger("Pokémon-Trade");
@@ -31,7 +31,7 @@ const logger = getLogger("Pokémon-Trade");
 const TRADE_TIMEOUT_HOURS = 24;
 const MAX_ACTIVE_TRADES_PER_USER = 5;
 
-// Enhanced trade result types
+// trade result types
 interface TradeInitiationResult {
   success: boolean;
   error?: string;
@@ -48,7 +48,7 @@ interface EvolutionResult {
 }
 
 /**
- * Enhanced trade initiation with comprehensive validation
+ * trade initiation with comprehensive validation
  * @param interaction - Discord command interaction
  * @param args - Command arguments (deprecated, use interaction options)
  */
@@ -170,7 +170,7 @@ export async function startTrade(
 }
 
 /**
- * Enhanced trade parsing with better command handling
+ * trade parsing with better command handling
  * @param interaction - Discord command interaction
  * @param args - Command arguments (deprecated)
  */
@@ -213,7 +213,7 @@ export async function parseTrade(
 }
 
 /**
- * Enhanced evolution checking using proper PokeAPI data
+ * evolution checking using proper PokeAPI data
  * @param monsterId - Database monster ID
  * @param interaction - Discord command interaction
  * @returns Promise<EvolutionResult>
@@ -321,7 +321,7 @@ export async function checkTradeEvolution(
 }
 
 /**
- * Enhanced trade confirmation with evolution checking
+ * trade confirmation with evolution checking
  * @param interaction - Discord command interaction
  */
 export async function confirmTrade(interaction: CommandInteraction): Promise<void> {
@@ -415,7 +415,7 @@ export async function confirmTrade(interaction: CommandInteraction): Promise<voi
 }
 
 /**
- * Enhanced trade cancellation
+ * trade cancellation
  * @param interaction - Discord command interaction
  */
 export async function cancelTrade(interaction: CommandInteraction): Promise<void> {
@@ -466,7 +466,7 @@ export async function cancelTrade(interaction: CommandInteraction): Promise<void
 }
 
 /**
- * Enhanced trade validation
+ * trade validation
  * @param monsterId - Monster ID to trade
  * @param toUser - Recipient user ID
  * @param fromUser - Sender user ID
@@ -579,7 +579,7 @@ async function createTrade(
 }
 
 /**
- * Create enhanced trade embed using monsters.ts utilities
+ * Create trade embed using monsters.ts utilities
  * @param monster - Monster database record
  * @param pokemon - Pokemon API data
  * @param toUserId - Recipient user ID
@@ -821,7 +821,7 @@ async function createEvolutionEmbed(
 
 // Export utility functions for testing
 export {
-  createTrade, createTradeEmbed,
-  findTradeEvolution
+    createTrade, createTradeEmbed,
+    findTradeEvolution
 };
 

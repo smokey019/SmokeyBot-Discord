@@ -17,7 +17,7 @@ const PROCESSING_INTERVAL = 100; // Process every 100ms
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second base delay
 
-// Enhanced statistics interface
+// statistics interface
 interface QueueStatistics {
   // Basic counters
   processed: number;
@@ -76,7 +76,7 @@ interface QueueStatistics {
   isHealthy: boolean;
 }
 
-// Enhanced message interface with timing data
+// message interface with timing data
 interface QueuedMessage {
   id: string;
   type: "interaction_reply" | "interaction_edit" | "channel_message";
@@ -105,7 +105,7 @@ class MessageQueueManager {
   private timer?: Timer;
   private startTime = new Date();
 
-  // Enhanced statistics tracking
+  // statistics tracking
   private stats: QueueStatistics = {
     processed: 0,
     failed: 0,
@@ -148,7 +148,7 @@ class MessageQueueManager {
     this.startStatsUpdater();
   }
 
-  // Enhanced queue addition with better timing tracking
+  // queue addition with better timing tracking
   private addToQueue<T>(
     type: QueuedMessage["type"],
     payload: any,
@@ -257,7 +257,7 @@ class MessageQueueManager {
     this.performanceSamples = this.performanceSamples.filter(s => s.timestamp > cutoff);
   }
 
-  // Enhanced processing with timing
+  // processing with timing
   private async processQueue() {
     if (this.processing || this.queue.length === 0) return;
 
@@ -296,7 +296,7 @@ class MessageQueueManager {
     }
   }
 
-  // Enhanced message processing with detailed timing
+  // message processing with detailed timing
   private async processMessage(message: QueuedMessage) {
     const processStart = performance.now();
     const waitTime = processStart - message.queuedAt.getTime();
@@ -385,7 +385,7 @@ class MessageQueueManager {
     });
   }
 
-  // Enhanced error handling with categorization
+  // error handling with categorization
   private async handleMessageError(message: QueuedMessage, error: any) {
     message.retries++;
     this.stats.retries++;
@@ -632,7 +632,7 @@ const messageQueue = new MessageQueueManager();
 // ==================== PUBLIC API (Backwards Compatible) ====================
 
 /**
- * Enhanced message sending with proper queue management
+ * message sending with proper queue management
  * @param message Message content
  * @param interaction Discord interaction
  * @param edit Whether to edit existing reply or send new one
@@ -786,3 +786,4 @@ export function shutdownMessageQueue(): void {
 
 // Export the queue manager for advanced usage
 export { messageQueue, type PerformanceSample, type QueueStatistics };
+

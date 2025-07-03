@@ -1,16 +1,16 @@
 import {
-  ChannelType,
-  CommandInteraction,
-  EmbedBuilder,
-  PermissionFlagsBits,
-  type GuildChannel,
-  type TextChannel
+    ChannelType,
+    CommandInteraction,
+    EmbedBuilder,
+    PermissionFlagsBits,
+    type GuildChannel,
+    type TextChannel
 } from 'discord.js';
 import { cacheClient, type ICache } from '../../clients/cache';
 import {
-  databaseClient,
-  GuildSettingsTable,
-  type IGuildSettings
+    databaseClient,
+    GuildSettingsTable,
+    type IGuildSettings
 } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { format_number } from '../../utils';
@@ -18,7 +18,7 @@ import { queueMessage } from '../message_queue';
 
 const logger = getLogger('Pokémon-Settings');
 
-// Enhanced error handling
+// error handling
 class SettingsError extends Error {
   constructor(message: string, public code: string) {
     super(message);
@@ -117,7 +117,7 @@ export async function handleSettings(interaction: CommandInteraction): Promise<v
 }
 
 /**
- * Enhanced SmokeMon toggle with comprehensive validation
+ * SmokeMon toggle with comprehensive validation
  * @param interaction - Discord command interaction
  * @param cache - Guild cache
  */
@@ -640,6 +640,6 @@ export function getSettingsHelp(): string {
 
 // Export utility functions and types for testing
 export {
-  ALTERNATIVE_SPAWN_CHANNELS, DEFAULT_SPAWN_CHANNEL, getGuildCache, hasAdminPermissions, SETTINGS_CONFIG, validateSettingValue, validateSpawnChannel, type SettingConfig
+    ALTERNATIVE_SPAWN_CHANNELS, DEFAULT_SPAWN_CHANNEL, getGuildCache, hasAdminPermissions, SETTINGS_CONFIG, validateSettingValue, validateSpawnChannel, type SettingConfig
 };
 

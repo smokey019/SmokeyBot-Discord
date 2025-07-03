@@ -42,6 +42,193 @@ interface ParsedArgs {
 }
 
 /**
+ * Options for configuring letter replacement behavior
+ */
+interface ReplaceLettersOptions {
+  /** Probability of replacing each letter (0-1). Default: 0.7 */
+  replaceProbability?: number;
+  /** Character to replace letters with. Default: '-' */
+  replacementChar?: string;
+  /** Whether to preserve the first letter of each word. Default: false */
+  preserveFirstLetter?: boolean;
+  /** Whether to preserve the last letter of each word. Default: false */
+  preserveLastLetter?: boolean;
+  /** Whether to preserve spaces and punctuation. Default: true */
+  preserveNonLetters?: boolean;
+  /** Custom regex pattern for characters to replace. Overrides default letter matching */
+  customPattern?: RegExp;
+}
+
+/**
+ * Replaces random letters in a string with a specified character (default: dash)
+ *
+ * @param input - The input string to process
+ * @param options - Configuration options for replacement behavior
+ * @returns The string with random letters replaced
+ *
+ * @example
+ * ```typescript
+ * // Basic usage - replaces ~70% of letters with dashes
+ * replaceRandomLetters("Hello World!") // "H-l-- W-r-d!"
+ *
+ * // Custom probability
+ * replaceRandomLetters("Hello World!", { replaceProbability: 0.9 }) // "----o ----d!"
+ *
+ * // Preserve first and last letters of words
+ * replaceRandomLetters("Hello World!", {
+ *   preserveFirstLetter: true,
+ *   preserveLastLetter: true
+ * }) // "H---o W---d!"
+ *
+ * // Custom replacement character
+ * replaceRandomLetters("Hello World!", { replacementChar: '*' }) // "H*l** W*r*d!"
+ * ```
+ */
+export function replaceRandomLetters(
+  input: string,
+  options: ReplaceLettersOptions = {}
+): string {
+  // Destructure options with defaults for backwards compatibility
+  const {
+    replaceProbability = 0.7,
+    replacementChar = '-',
+    preserveFirstLetter = false,
+    preserveLastLetter = false,
+    preserveNonLetters = true,
+    customPattern
+  } = options;
+
+  // Validate inputs
+  if (typeof input !== 'string') {
+    throw new TypeError('Input must be a string');
+  }
+
+  if (replaceProbability < 0 || replaceProbability > 1) {
+    throw new RangeError('replaceProbability must be between 0 and 1');
+  }
+
+  if (typeof replacementChar !== 'string') {
+    throw new TypeError('replacementChar must be a string');
+  }
+
+  // Handle empty string
+  if (input.length === 0) {
+    return input;
+  }
+
+  // Default pattern matches letters (a-z, A-Z) and unicode letters
+  const letterPattern = customPattern || /\p{L}/u;
+
+  // Split into words if we need to preserve first/last letters
+  if (preserveFirstLetter || preserveLastLetter) {
+    return input.split(/(\s+|[^\p{L}]+)/u).map(segment => {
+      // Skip non-word segments (spaces, punctuation)
+      if (!letterPattern.test(segment)) {
+        return segment;
+      }
+
+      return processWord(segment, {
+        replaceProbability,
+        replacementChar,
+        preserveFirstLetter,
+        preserveLastLetter,
+        letterPattern
+      });
+    }).join('');
+  }
+
+  // Simple character-by-character processing
+  return Array.from(input).map(char => {
+    // Skip non-letters if preserveNonLetters is true
+    if (preserveNonLetters && !letterPattern.test(char)) {
+      return char;
+    }
+
+    // Skip non-letters entirely if preserveNonLetters is false
+    if (!letterPattern.test(char)) {
+      return preserveNonLetters ? char : char;
+    }
+
+    // Replace with probability
+    return Math.random() < replaceProbability ? replacementChar : char;
+  }).join('');
+}
+
+/**
+ * Helper function to process individual words when preserving first/last letters
+ */
+function processWord(
+  word: string,
+  config: {
+    replaceProbability: number;
+    replacementChar: string;
+    preserveFirstLetter: boolean;
+    preserveLastLetter: boolean;
+    letterPattern: RegExp;
+  }
+): string {
+  const chars = Array.from(word);
+
+  return chars.map((char, index) => {
+    // Skip non-letters
+    if (!config.letterPattern.test(char)) {
+      return char;
+    }
+
+    // Preserve first letter
+    if (config.preserveFirstLetter && index === 0) {
+      return char;
+    }
+
+    // Preserve last letter
+    if (config.preserveLastLetter && index === chars.length - 1) {
+      return char;
+    }
+
+    // Replace with probability
+    return Math.random() < config.replaceProbability ? config.replacementChar : char;
+  }).join('');
+}
+
+/**
+ * Simplified version with just probability control for basic use cases
+ *
+ * @param input - The input string to process
+ * @param probability - Probability of replacing each letter (0-1). Default: 0.7
+ * @returns The string with random letters replaced with dashes
+ *
+ * @example
+ * ```typescript
+ * replaceLettersSimple("Hello World!") // "H-l-- W-r-d!"
+ * replaceLettersSimple("Hello World!", 0.9) // "----o ----d!"
+ * ```
+ */
+export function replaceLettersSimple(input: string, probability: number = 0.7): string {
+  return replaceRandomLetters(input, { replaceProbability: probability });
+}
+
+/**
+ * Preset function for creating redacted text (preserves first and last letters)
+ *
+ * @param input - The input string to redact
+ * @param intensity - How much to redact (0-1). Default: 0.8
+ * @returns Redacted string with first and last letters of words preserved
+ *
+ * @example
+ * ```typescript
+ * createRedactedText("Hello World!") // "H---o W---d!"
+ * createRedactedText("Secret Message", 0.9) // "S----t M-----e"
+ * ```
+ */
+export function createRedactedText(input: string, intensity: number = 0.8): string {
+  return replaceRandomLetters(input, {
+    replaceProbability: intensity,
+    preserveFirstLetter: true,
+    preserveLastLetter: true
+  });
+}
+
+/**
  * Capitalize first letter of a string
  * @param val - String to capitalize
  * @returns Capitalized string
@@ -52,7 +239,7 @@ export function capitalizeFirstLetter(val: string): string {
 }
 
 /**
- * Enhanced argument parsing with better type safety
+ * argument parsing with better type safety
  * @param args - Array of command arguments
  * @returns Parsed arguments object
  */
@@ -130,7 +317,7 @@ export function rollShiny(): 0 | 1 {
 }
 
 /**
- * Enhanced perfect IV roll with configurable odds
+ * perfect IV roll with configurable odds
  * @param customOdds - Custom odds for perfect IV (default: 45)
  * @returns Boolean indicating if Pokemon should have perfect IVs
  */
@@ -140,7 +327,7 @@ export function rollPerfectIV(customOdds: number = PERFECT_IV_ODDS): boolean {
 }
 
 /**
- * Generate complete IV stats (enhanced version using monsters.ts)
+ * Generate complete IV stats (version using monsters.ts)
  * @param isPerfect - Whether to generate high IV stats
  * @returns Complete IV object with percentage
  */
@@ -157,7 +344,7 @@ export function rollCompleteIVs(isPerfect: boolean = false): {
 }
 
 /**
- * Enhanced server weather check with better error handling
+ * server weather check with better error handling
  * @param interaction - Discord command interaction
  * @param cache - Server cache
  */
@@ -192,7 +379,7 @@ export async function checkServerWeather(
 }
 
 /**
- * Enhanced bot statistics with better formatting and error handling
+ * bot statistics with better formatting and error handling
  * @param interaction - Discord command interaction
  */
 export async function getBotStats(interaction: CommandInteraction): Promise<void> {
@@ -290,7 +477,7 @@ export async function getBotStats(interaction: CommandInteraction): Promise<void
 }
 
 /**
- * Enhanced shiny rate calculator
+ * shiny rate calculator
  * @param customOdds - Custom shiny odds (optional)
  * @returns Shiny rate information
  */

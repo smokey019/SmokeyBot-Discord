@@ -3,20 +3,20 @@ import { databaseClient, getUser } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
 import { MonsterTable, type IMonsterModel } from "../../models/Monster";
 import {
-  MonsterUserTable,
-  type IMonsterUserModel,
+    MonsterUserTable,
+    type IMonsterUserModel,
 } from "../../models/MonsterUser";
 import { format_number } from "../../utils";
 import { queueMessage } from "../message_queue";
 import {
-  findMonsterByID,
-  findMonsterByName,
-  getPokemonEvolutions,
-  getPokemonSpecies,
-  getPokemonWithEnglishName,
-  getUserMonster,
-  isPokemonLegendary,
-  type Pokemon
+    findMonsterByID,
+    findMonsterByName,
+    getPokemonEvolutions,
+    getPokemonSpecies,
+    getPokemonWithEnglishName,
+    getUserMonster,
+    isPokemonLegendary,
+    type Pokemon
 } from "./monsters";
 import { capitalizeFirstLetter, img_monster_ball } from "./utils";
 
@@ -353,7 +353,7 @@ export async function monsterEmbed(
       return;
     }
 
-    // Get enhanced Pokemon data with English name
+    // Get Pokemon data with English name
     const pokemonWithName = await getPokemonWithEnglishName(monster);
     const displayName = pokemonWithName.englishName || capitalizeFirstLetter(monster.name);
 
@@ -698,7 +698,7 @@ export async function monsterDex(
       return;
     }
 
-    // Get enhanced Pokemon data
+    // Get Pokemon data
     const [pokemonWithName, isLegendary, evolutionInfo] = await Promise.all([
       getPokemonWithEnglishName(tempMonster),
       isPokemonLegendary(tempMonster),

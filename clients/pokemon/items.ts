@@ -4,21 +4,21 @@ import { getLogger } from "../../clients/logger";
 import { ItemsTable, type IItemsModel } from "../../models/Items";
 import { MonsterTable, type IMonsterModel } from "../../models/Monster";
 import {
-  MonsterUserTable,
-  type IMonsterUserModel,
+    MonsterUserTable,
+    type IMonsterUserModel,
 } from "../../models/MonsterUser";
 import { asyncForEach, chunk, format_number } from "../../utils";
 import { queueMessage } from "../message_queue";
 import Items from "./data/items_min.json";
 import {
-  findMonsterByID,
-  findMonsterByName,
-  getPokemonDisplayName,
-  getPokemonEvolutionInfo,
-  getPokemonSprites,
-  getUserMonster,
-  searchPokemonByName,
-  type Pokemon
+    findMonsterByID,
+    findMonsterByName,
+    getPokemonDisplayName,
+    getPokemonEvolutionInfo,
+    getPokemonSprites,
+    getUserMonster,
+    searchPokemonByName,
+    type Pokemon
 } from "./monsters";
 
 const logger = getLogger("Items");
@@ -27,7 +27,7 @@ export type Iitem = (typeof Items)[1];
 
 export const itemDB = Items;
 
-// Enhanced error handling
+// error handling
 class ItemError extends Error {
   constructor(message: string, public code: string) {
     super(message);
@@ -45,7 +45,7 @@ const EVOLUTION_STONE_NAMES = [
   'dawn-stone', 'ice-stone'
 ];
 
-// Enhanced item evolution result interface
+// item evolution result interface
 interface ItemEvolutionResult {
   canEvolve: boolean;
   targetPokemon?: Pokemon;
@@ -145,7 +145,7 @@ async function findEvolutionPokemon(evolutionName: string): Promise<Pokemon | nu
 }
 
 /**
- * Enhanced item evolution checking using existing Pokemon functions
+ * item evolution checking using existing Pokemon functions
  * @param monster - Monster to check for evolution
  * @param interaction - Discord interaction
  * @param isTrade - Whether this is a trade evolution
@@ -259,7 +259,7 @@ async function executeEvolution(
 }
 
 /**
- * Enhanced item parsing with better error handling
+ * item parsing with better error handling
  */
 export async function parseItems(
   interaction: CommandInteraction,
@@ -312,7 +312,7 @@ export async function parseItems(
 }
 
 /**
- * Enhanced item shop listing with better pagination
+ * item shop listing with better pagination
  */
 async function listItems(
   interaction: CommandInteraction,
@@ -348,7 +348,7 @@ async function listItems(
 }
 
 /**
- * Enhanced user items display with improved search and filtering
+ * user items display with improved search and filtering
  */
 async function msgUserItems(
   interaction: CommandInteraction,
@@ -484,7 +484,7 @@ function createPaginatedContent(
 }
 
 /**
- * Enhanced item removal with better feedback
+ * item removal with better feedback
  */
 async function removeMonsterItem(
   interaction: CommandInteraction,
@@ -566,7 +566,7 @@ async function removeMonsterItem(
 }
 
 /**
- * Enhanced item giving with special item handling
+ * item giving with special item handling
  */
 async function giveMonsterItem(
   interaction: CommandInteraction,
@@ -727,7 +727,7 @@ async function giveRegularItem(
 }
 
 /**
- * Enhanced item purchasing with better validation
+ * item purchasing with better validation
  */
 async function buyItem(
   interaction: CommandInteraction,
@@ -802,7 +802,7 @@ async function buyItem(
 }
 
 /**
- * Enhanced balance display
+ * balance display
  */
 export async function msgBalance(interaction: CommandInteraction): Promise<void> {
   try {
@@ -827,7 +827,7 @@ export async function msgBalance(interaction: CommandInteraction): Promise<void>
 }
 
 /**
- * Enhanced update items function with better feedback
+ * update items function with better feedback
  */
 async function updateItems(interaction: CommandInteraction): Promise<boolean> {
   try {
@@ -928,5 +928,6 @@ async function getUserItems(uid: number | string): Promise<Array<IItemsModel>> {
 // ============================================================================
 
 export {
-  checkItemCanEvolve, EVOLUTION_STONE_NAMES, findEvolutionPokemon, MAX_POKEMON_LEVEL, RARE_CANDY_ID
+    checkItemCanEvolve, EVOLUTION_STONE_NAMES, findEvolutionPokemon, MAX_POKEMON_LEVEL, RARE_CANDY_ID
 };
+

@@ -1,8 +1,8 @@
 import { Collection, CommandInteraction, EmbedBuilder } from "discord.js";
 import type {
-  SevenTVChannel,
-  SevenTVChannelEmotes,
-  SevenTVEmotes,
+    SevenTVChannel,
+    SevenTVChannelEmotes,
+    SevenTVEmotes,
 } from "../../models/7tv-Emotes";
 import type { FFZRoom } from "../../models/FFZ-Emotes";
 import { jsonFetch } from "../../utils";
@@ -18,7 +18,7 @@ const STATS_RESET_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
 
 const logger = getLogger("Emote Queue");
 
-// Enhanced stats tracking with detailed metrics
+// stats tracking with detailed metrics
 interface DetailedStats {
   // Upload Statistics
   totalAttempts: number;
@@ -150,11 +150,11 @@ const stats: DetailedStats = {
   },
 };
 
-// Enhanced API caching with performance tracking (moved before class)
+// API caching with performance tracking (moved before class)
 const apiCache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-// Enhanced queue data structure
+// queue data structure
 interface QueueData {
   emotes: Collection<string, string>;
   successes: number;
@@ -197,7 +197,7 @@ class PerformanceMonitor {
   }
 }
 
-// Enhanced queue manager with detailed tracking
+// queue manager with detailed tracking
 class EmoteQueueManager {
   private queue: Collection<string, QueueData> = new Collection();
   private timer?: Timer;
@@ -318,7 +318,7 @@ class EmoteQueueManager {
       data.startedProcessing = new Date();
     }
 
-    // Enhanced rate limiting with backoff
+    // rate limiting with backoff
     const lastApiCall = this.rateLimitMap.get(guildId) || 0;
     const now = Date.now();
     const timeSinceLastCall = now - lastApiCall;
@@ -527,7 +527,7 @@ class EmoteQueueManager {
     return false;
   }
 
-  // Enhanced admin functions
+  // admin functions
   async resetTimer(interaction: CommandInteraction): Promise<void> {
     this.stopTimer();
     this.startTimer();
@@ -816,7 +816,7 @@ export const queue_add_success = () => stats.totalSuccesses;
 export const FFZ_emoji_queue_count = () => stats.ffzSuccesses;
 export const FFZ_emoji_queue_attempt_count = () => stats.ffzAttempts;
 
-// Enhanced API functions
+// API functions
 export async function fetch7tvGlobalEmotes(): Promise<SevenTVEmotes[]> {
   stats.sevenTvAttempts++;
   const data = await cachedFetch<SevenTVEmotes[]>(
@@ -839,7 +839,7 @@ export async function fetch7tvChannelEmotes(channel: string): Promise<SevenTVCha
   return data || [];
 }
 
-// Enhanced sync functions with better tracking
+// sync functions with better tracking
 export async function sync_7tv_emotes(interaction: CommandInteraction): Promise<void> {
   const channel = interaction.options.getString("channel").toLowerCase();
   const channelID = await getIDwithUser(channel);
@@ -988,7 +988,7 @@ export async function sync_ffz_emotes(interaction: CommandInteraction): Promise<
   );
 }
 
-// Helper functions (unchanged but with enhanced logging)
+// Helper functions (unchanged but with logging)
 function getBestFFZUrl(urls: Record<string, string>): string {
   return (
     urls["4"]?.replace("https:/", "https://") ||
@@ -1041,7 +1041,7 @@ async function processEmotes<T>(
   return { finalEmotes, detectedExisting, skippedByType };
 }
 
-// Enhanced utility functions
+// utility functions
 export async function RemoveEmote(interaction: CommandInteraction): Promise<void> {
   const emote = interaction.options.getString("emote");
   if (!emote) {
@@ -1074,7 +1074,7 @@ export async function cancel_sync(interaction: CommandInteraction): Promise<bool
   }
 }
 
-// Enhanced admin functions
+// admin functions
 export async function ResetEmoteTimer(interaction: CommandInteraction): Promise<void> {
   await queueManager.resetTimer(interaction);
 }
@@ -1083,7 +1083,7 @@ export async function StartEmoteTimer(interaction: CommandInteraction): Promise<
   await queueManager.startTimerAdmin(interaction);
 }
 
-// Export enhanced stats functions
+// Export stats functions
 export function getQueueStats() {
   return queueManager.getDetailedStats();
 }

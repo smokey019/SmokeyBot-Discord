@@ -5,16 +5,16 @@ import { MonsterTable, type IMonsterModel } from '../../models/Monster';
 import { format_number } from '../../utils';
 import { queueMessage } from '../message_queue';
 import {
-  calculateIVPercentage,
-  findMonsterByID,
-  formatPokemonTypes,
-  getPokemonDisplayName,
-  getPokemonRarity,
-  getPokemonSpecies,
-  getPokemonWithEnglishName,
-  isPokemonLegendary,
-  searchPokemonByName,
-  type Pokemon
+    calculateIVPercentage,
+    findMonsterByID,
+    formatPokemonTypes,
+    getPokemonDisplayName,
+    getPokemonRarity,
+    getPokemonSpecies,
+    getPokemonWithEnglishName,
+    isPokemonLegendary,
+    searchPokemonByName,
+    type Pokemon
 } from './monsters';
 
 const logger = getLogger('Pokémon-Leaderboard');
@@ -26,7 +26,7 @@ const DEFAULT_PAGE_SIZE = 15;
 const BATCH_SIZE = 10;
 const API_REQUEST_DELAY = 50;
 
-// Enhanced interfaces for better type safety
+// interfaces for better type safety
 interface LeaderboardOptions {
   type: string;
   sort: string;
@@ -97,7 +97,7 @@ enum FilterType {
 }
 
 /**
- * Enhanced leaderboard function with comprehensive search options
+ * leaderboard function with comprehensive search options
  */
 export async function checkLeaderboard(interaction: CommandInteraction): Promise<void> {
   try {
@@ -539,7 +539,7 @@ function createSearchInfo(options: LeaderboardOptions): string {
 }
 
 /**
- * Create leaderboard embed with enhanced formatting
+ * Create leaderboard embed with formatting
  */
 async function createLeaderboardEmbed(
   result: LeaderboardResult,
@@ -760,7 +760,7 @@ export async function showLeaderboardHelp(interaction: CommandInteraction): Prom
 
 // Export utility functions for testing and external use
 export {
-  applyAdvancedFilters,
-  createSearchInfo, FilterType, getSortingParams, parseLeaderboardOptions, processLeaderboardEntries, SortDirection, SortType, type LeaderboardOptions, type LeaderboardResult, type ProcessedLeaderboardEntry
+    applyAdvancedFilters,
+    createSearchInfo, FilterType, getSortingParams, parseLeaderboardOptions, processLeaderboardEntries, SortDirection, SortType, type LeaderboardOptions, type LeaderboardResult, type ProcessedLeaderboardEntry
 };
 

@@ -7,7 +7,7 @@ import { getLogger } from "./clients/logger";
 
 const logger = getLogger("ShardManager");
 
-// Enhanced configuration with environment validation
+// configuration with environment validation
 const config = {
   token: process.env.DISCORD_TOKEN || process.env.DISCORD_TOKEN_DEV,
   topggKey: process.env.TOPGG_KEY,
@@ -23,7 +23,7 @@ const config = {
   maxShardRestarts: parseInt(process.env.MAX_SHARD_RESTARTS || "5"),
 };
 
-// Enhanced error handling
+// error handling
 class ShardManagerError extends Error {
   constructor(
     message: string,
@@ -270,7 +270,7 @@ class EnhancedShardManager extends EventEmitter {
       this.communicationManager = new WebSocketCommunicationManager();
     }
 
-    // Create enhanced sharding manager optimized for Bun
+    // Create sharding manager optimized for Bun
     this.manager = new ShardingManager("./bot.ts", {
       token: config.token,
       totalShards: config.isDev ? 1 : "auto",
@@ -285,7 +285,7 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
-   * Setup enhanced event handlers for shards
+   * Setup event handlers for shards
    */
   private setupEventHandlers(): void {
     this.manager.on("shardCreate", (shard) => {
@@ -377,7 +377,7 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
-   * Handle messages from shards with enhanced processing
+   * Handle messages from shards with processing
    */
   private handleShardMessage(shard: Shard, message: any): void {
     const health = this.shardHealth.get(shard.id);
@@ -391,7 +391,7 @@ class EnhancedShardManager extends EventEmitter {
       return;
     }
 
-    // Enhanced message type handling
+    // message type handling
     switch (message.type) {
       case "stats":
         this.updateShardHealth(shard.id, {
@@ -605,7 +605,7 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
-   * Setup Top.gg integration with enhanced error handling
+   * Setup Top.gg integration with error handling
    */
   private setupTopGG(): void {
     if (!config.topggKey) {
@@ -817,7 +817,7 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
-   * Enhanced broadcast evaluation with timeout and error handling
+   * broadcast evaluation with timeout and error handling
    */
   public async broadcastEval<T>(
     script: (client: any) => T,
@@ -906,7 +906,7 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
-   * Start the enhanced shard manager
+   * Start the shard manager
    */
   public async start(): Promise<void> {
     try {
@@ -952,11 +952,11 @@ class EnhancedShardManager extends EventEmitter {
   }
 }
 
-// Create and export enhanced shard manager instance
+// Create and export shard manager instance
 export const enhancedManager = new EnhancedShardManager();
 export const manager = enhancedManager.manager; // Backward compatibility
 
-// Graceful process handlers with enhanced logging
+// Graceful process handlers with logging
 const handleShutdown = async (signal: string) => {
   logger.info(`Received ${signal}, initiating graceful shutdown...`);
   try {
@@ -991,7 +991,7 @@ process.on("uncaughtException", (error) => {
   process.exit(1);
 });
 
-// Enhanced startup with better error handling
+// startup with better error handling
 const startManager = async () => {
   try {
     await enhancedManager.start();
@@ -1029,5 +1029,6 @@ startManager();
 // Export types and utilities for external use
 export { ShardManagerError };
 export type {
-  CommunicationManager, GlobalStatistics, InterShardMessage, ShardHealthMetrics
+    CommunicationManager, GlobalStatistics, InterShardMessage, ShardHealthMetrics
 };
+

@@ -4,8 +4,8 @@ import en from "javascript-time-ago/locale/en.json";
 import { URLSearchParams } from "node:url";
 import { getLogger } from "../../clients/logger";
 import {
-  MonsterUserTable,
-  type IMonsterUserModel,
+    MonsterUserTable,
+    type IMonsterUserModel,
 } from "../../models/MonsterUser";
 import { loadCache } from "../cache";
 import { databaseClient } from "../database";
@@ -65,7 +65,7 @@ interface VoteResult {
 }
 
 /**
- * Enhanced cache implementation with TTL support
+ * cache implementation with TTL support
  */
 class EnhancedCache<T = any> {
   private data = new Map<string, T>();
@@ -115,11 +115,11 @@ class EnhancedCache<T = any> {
   }
 }
 
-// Enhanced cache instance
+// cache instance
 const enhancedCache = new EnhancedCache<any>();
 
 /**
- * Enhanced API request function with better error handling and timeouts
+ * API request function with better error handling and timeouts
  * @param method - HTTP method
  * @param path - API endpoint path
  * @param body - Request body for GET parameters
@@ -352,7 +352,7 @@ function createVoteReminderEmbed(nextVoteTime: number): EmbedBuilder {
 }
 
 /**
- * Enhanced vote checking with comprehensive error handling
+ * vote checking with comprehensive error handling
  * @param interaction - Discord command interaction
  * @returns Promise<VoteResult>
  */
@@ -559,12 +559,13 @@ async function checkWeekend(): Promise<boolean> {
 
 // Export utility functions for testing
 export {
-  awardVotingRewards,
-  checkWeekendWithCache,
-  EnhancedCache,
-  hasVoted,
-  isWeekend,
-  makeTopGGRequest,
-  VOTE_COOLDOWN_MS,
-  VOTING_REWARDS
+    awardVotingRewards,
+    checkWeekendWithCache,
+    EnhancedCache,
+    hasVoted,
+    isWeekend,
+    makeTopGGRequest,
+    VOTE_COOLDOWN_MS,
+    VOTING_REWARDS
 };
+

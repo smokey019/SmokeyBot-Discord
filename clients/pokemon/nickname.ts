@@ -4,11 +4,11 @@ import { getLogger } from '../../clients/logger';
 import { MonsterTable, type IMonsterModel } from '../../models/Monster';
 import { queueMessage } from '../message_queue';
 import {
-  findMonsterByID,
-  getPokemonDisplayName,
-  getPokemonSprites,
-  getUserMonster,
-  type Pokemon,
+    findMonsterByID,
+    getPokemonDisplayName,
+    getPokemonSprites,
+    getUserMonster,
+    type Pokemon,
 } from './monsters';
 
 const logger = getLogger('Nickname');
@@ -18,7 +18,7 @@ const MAX_NICKNAME_LENGTH = 32;
 const MIN_NICKNAME_LENGTH = 1;
 const NICKNAME_COOLDOWN = 5 * 60 * 1000; // 5 minutes
 
-// Enhanced error handling
+// error handling
 class NicknameError extends Error {
   constructor(message: string, public code: string) {
     super(message);
@@ -131,7 +131,7 @@ async function isNicknameUniqueForUser(
 }
 
 /**
- * Enhanced set nickname function with comprehensive validation
+ * set nickname function with comprehensive validation
  * @param interaction - Discord command interaction
  */
 export async function setNickname(interaction: CommandInteraction): Promise<void> {
@@ -210,7 +210,7 @@ export async function setNickname(interaction: CommandInteraction): Promise<void
     }
     */
 
-    // Get Pokémon data for enhanced messaging
+    // Get Pokémon data for messaging
     const pokemonData = await findMonsterByID(monster.monster_id);
     if (!pokemonData) {
       logger.warn(`Pokemon data not found for monster ${monster.id}`);
@@ -447,7 +447,7 @@ export async function setNicknameById(interaction: CommandInteraction): Promise<
 }
 
 /**
- * Send enhanced success message with Pokémon information
+ * Send success message with Pokémon information
  * @param interaction - Discord interaction
  * @param monster - Monster model
  * @param pokemonData - Pokemon API data
@@ -578,9 +578,9 @@ export async function batchUpdateNicknames(
 
 // Export utility functions and constants for testing
 export {
-  INAPPROPRIATE_PATTERNS, isNicknameUniqueForUser,
-  MAX_NICKNAME_LENGTH,
-  MIN_NICKNAME_LENGTH,
-  PROFANITY_LIST, sanitizeNickname
+    INAPPROPRIATE_PATTERNS, isNicknameUniqueForUser,
+    MAX_NICKNAME_LENGTH,
+    MIN_NICKNAME_LENGTH,
+    PROFANITY_LIST, sanitizeNickname
 };
 
