@@ -162,7 +162,7 @@ function normalizePokemonNameForCatch(pokemonName: string): string {
     return lowerName;
   }
 
-  return lowerName.replace("-", " ");
+  return lowerName.split("-")[0];
 }
 
 /**
