@@ -393,9 +393,9 @@ export async function getBotStats(interaction: CommandInteraction): Promise<void
 
     // Gather all stats with proper error handling
     const [monsterCount, shinyCount, userCount] = await Promise.allSettled([
-      (await getMonsterDBCount()).toString(),
-      (await getShinyMonsterDBCount()).toString(),
-      (await getUserDBCount()).toString()
+      (getMonsterDBCount()).toString(),
+      (getShinyMonsterDBCount()).toString(),
+      (getUserDBCount()).toString()
     ]);
 
     const getStatValue = (result: PromiseSettledResult<string>): string => {
@@ -422,7 +422,7 @@ export async function getBotStats(interaction: CommandInteraction): Promise<void
         },
         {
           name: "Emote Synchronizations 🔼",
-          value: `${format_number(queue_attempts + FFZ_emoji_queue_count)} / ${format_number(queue_add_success + FFZ_emoji_queue_attempt_count)}`,
+          value: `${format_number(queue_attempts() + FFZ_emoji_queue_count())} / ${format_number(queue_add_success() + FFZ_emoji_queue_attempt_count())}`,
           inline: true
         },
         {
