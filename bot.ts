@@ -394,13 +394,6 @@ export const discordClient = new Client({
     messages: {
       interval: Math.min(config.sweepInterval || 300, 300), // Max 5 minutes
       lifetime: Math.min(config.messageLifetime || 3600, 1800), // Max 30 minutes
-      filter: () => (message) => {
-        // Keep pinned messages and bot's own messages longer
-        if (message.pinned || message.author?.id === message.client.user.id) {
-          return false;
-        }
-        return true;
-      },
     },
 
     // User sweeping - remove cached users aggressively
