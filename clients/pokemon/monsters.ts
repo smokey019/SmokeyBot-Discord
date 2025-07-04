@@ -555,7 +555,7 @@ async function makeApiRequest(url: string, cacheKey: string): Promise<any> {
  * @returns boolean indicating if ID is valid
  */
 function isValidPokemonId(id: number): boolean {
-  return typeof id === "number" && id >= MIN_POKEMON_ID && id <= MAX_POKEMON_ID;
+  return typeof id === "number" && id >= MIN_POKEMON_ID && id <= MAX_POKEMON_ID && !id.toString().includes(".");
 }
 
 /**
@@ -2348,7 +2348,7 @@ export function isValidPokemonIdRange(
   maxId: number = 1025
 ): boolean {
   return (
-    typeof id === "number" && id >= minId && id <= maxId && Number.isInteger(id)
+    typeof id === "number" && id >= minId && id <= maxId && Number.isInteger(id) && !id.toString().includes(".")
   );
 }
 
