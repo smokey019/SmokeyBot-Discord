@@ -396,7 +396,7 @@ export const discordClient = new Client({
       lifetime: Math.min(config.messageLifetime || 3600, 1800), // Max 30 minutes
       filter: () => (message) => {
         // Keep pinned messages and bot's own messages longer
-        if (message?.pinned || message?.author?.id === message?.client?.user?.id) {
+        if (message.pinned || message.author?.id === message.client.user.id) {
           return false;
         }
         return true;
