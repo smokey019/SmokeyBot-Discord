@@ -365,7 +365,7 @@ export async function checkServerWeather(
 
     const boostedTypes = boost.boosts.join(" / ");
     const message = `The current weather is **${boost.weather}**. ` +
-                   `You will find increased spawns of **${boostedTypes}** types on this server.`;
+      `You will find increased spawns of **${boostedTypes}** types on this server.`;
 
     await interaction.reply(message);
 
@@ -393,9 +393,9 @@ export async function getBotStats(interaction: CommandInteraction): Promise<void
 
     // Gather all stats with proper error handling
     const [monsterCount, shinyCount, userCount] = await Promise.allSettled([
-      (getMonsterDBCount()).toString(),
-      (getShinyMonsterDBCount()).toString(),
-      (getUserDBCount()).toString()
+      getMonsterDBCount(),        // Returns Promise<string>
+      getShinyMonsterDBCount(),   // Returns Promise<string>
+      getUserDBCount()            // Returns Promise<string>
     ]);
 
     const getStatValue = (result: PromiseSettledResult<string>): string => {

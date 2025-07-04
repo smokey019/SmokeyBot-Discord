@@ -784,7 +784,7 @@ export async function getMonsterDBCount(): Promise<string> {
     const result = await databaseClient<IMonsterModel>(MonsterTable)
       .count("id as count")
       .first();
-    return result?.toString() || "0";
+    return result?.count || "0";
   } catch (error) {
     logger.error("Error getting monster DB count:", error);
     throw new PokemonError("Failed to get monster count", "DB_ERROR");
@@ -801,7 +801,7 @@ export async function getShinyMonsterDBCount(): Promise<string> {
       .count("id as count")
       .where("shiny", 1)
       .first();
-    return result?.toString() || "0";
+    return result?.count || "0";
   } catch (error) {
     logger.error("Error getting shiny monster DB count:", error);
     throw new PokemonError("Failed to get shiny monster count", "DB_ERROR");
