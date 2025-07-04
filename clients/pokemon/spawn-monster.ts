@@ -13,7 +13,6 @@ import {
   findMonsterByID,
   formatPokemonTypes,
   getPokemonDisplayName,
-  getPokemonSpawnRarity,
   getPokemonSprites,
   getPokemonTypeColor,
   getRandomMonster,
@@ -81,12 +80,11 @@ interface SpawnResult {
  * @param pokemonName - Name of the Pokémon
  * @returns Random encounter phrase
  */
-async function getRandomEncounterPhrase(pokemonName: string): Promise<string> {
+function getRandomEncounterPhrase(pokemonName: string): string {
   const randomIndex = Math.floor(Math.random() * WILD_ENCOUNTER_PHRASES.length);
   const phrase = WILD_ENCOUNTER_PHRASES[randomIndex];
 
-  const rarity = await getPokemonSpawnRarity({ name: pokemonName } as Pokemon);
-  return phrase.replace("{pokemon}", rarity.rarity + ' monster');
+  return phrase;
 }
 
 /**
@@ -140,7 +138,7 @@ function isMonsterBoosted(monster: Pokemon, boostedTypes: string[]): boolean {
  * @returns EmbedBuilder
  */
 async function createSpawnEmbed(monster: Pokemon, isForced: boolean = false): Promise<EmbedBuilder> {
-  const displayName = getPokemonDisplayName(monster);
+  const displayName = getPokemonDisplayName(monster).split(" ")[0];
 
   // Get sprites using the centralized function
   const sprites = getPokemonSprites(monster, false);
@@ -150,8 +148,10 @@ async function createSpawnEmbed(monster: Pokemon, isForced: boolean = false): Pr
   const primaryType = monster.types?.[0]?.type?.name || 'normal';
   const embedColor = isForced ? 0xff6b6b : getPokemonTypeColor(primaryType);
 
+  const phrase = getRandomEncounterPhrase(replaceLettersSimple(displayName, 0.5));
+
   const embed = new EmbedBuilder()
-    .setTitle(`A wild ${replaceLettersSimple(displayName, 0.5)} has appeared!`)
+    .setTitle(phrase)
     .setDescription("Guess by using `/catch PokémonName` to try and catch it!")
     .setColor(embedColor)
     .setTimestamp();
