@@ -84,7 +84,7 @@ function getRandomEncounterPhrase(pokemonName: string): string {
   const randomIndex = Math.floor(Math.random() * WILD_ENCOUNTER_PHRASES.length);
   const phrase = WILD_ENCOUNTER_PHRASES[randomIndex];
 
-  return phrase;
+  return phrase.replace("{pokemon}", pokemonName);
 }
 
 /**

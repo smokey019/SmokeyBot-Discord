@@ -14,6 +14,7 @@ export async function run(e: runEvent) {
     return;
   GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());
 
+  await e.interaction.deferReply();
   await selectMonster(e.interaction);
 }
 
