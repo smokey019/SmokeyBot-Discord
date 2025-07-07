@@ -40,7 +40,6 @@ export const databaseClient: Knex = knex({
     password: process.env.DB_PASSWORD!,
     user: process.env.DB_USER!,
     charset: 'utf8mb4',
-    timezone: 'UTC',
   },
   pool: {
     min: 0,

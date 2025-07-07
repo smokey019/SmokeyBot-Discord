@@ -1,4 +1,5 @@
 import { REST } from "@discordjs/rest";
+import { heapStats } from "bun:jsc";
 import { Routes } from "discord-api-types/v10";
 import {
   ActivityType,
@@ -1500,9 +1501,9 @@ if (typeof process !== 'undefined') {
     }
 
     // Log memory usage for monitoring
-    const memUsage = process.memoryUsage();
-    if (memUsage.heapUsed > 500 * 1024 * 1024) { // 500MB threshold
-      logger.warn(`High memory usage detected: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`);
+    const memUsage = heapStats();
+    if (memUsage.heapSize > 500 * 1024 * 1024) { // 500MB threshold
+      logger.warn(`High memory usage detected: ${Math.round(memUsage.heapSize / 1024 / 1024)}MB`);
     }
   }, 600000); // Every 10 minutes
 }
