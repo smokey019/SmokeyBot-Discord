@@ -1495,8 +1495,8 @@ async function startBot(): Promise<void> {
 if (typeof process !== 'undefined') {
   setInterval(() => {
     // Force garbage collection if available (Bun supports this)
-    if (global.gc) {
-      global.gc();
+    if (Bun.gc) {
+      Bun.gc();
     }
 
     // Log memory usage for monitoring
