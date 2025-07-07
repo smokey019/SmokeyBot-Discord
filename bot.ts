@@ -1494,12 +1494,15 @@ async function startBot(): Promise<void> {
 
 // Additional memory optimization: Periodic manual cleanup
 if (typeof process !== 'undefined') {
+  logger.debug('Setting Garbage Collector timer..')
   setInterval(() => {
     // Force garbage collection if available (Bun supports this)
     if (Bun.gc) {
+      logger.debug('Forcing a garbage collection.');
       Bun.gc();
+    } else {
+      logger.debug('No garbage collection available.');
     }
-
     // Log memory usage for monitoring
     const memUsage = heapStats();
     if (memUsage.heapSize > 500 * 1024 * 1024) { // 500MB threshold
