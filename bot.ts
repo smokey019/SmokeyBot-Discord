@@ -359,7 +359,7 @@ export const discordClient = new Client({
 
     // Member & User caches - critical for memory usage
     GuildMemberManager: {
-      maxSize: 15, // Reduced from 25
+      maxSize: 25, // Reduced from 25
       keepOverLimit: (member) => {
         // Keep bot itself and any privileged users
         return member.id === member.client.user.id ||
@@ -368,7 +368,7 @@ export const discordClient = new Client({
       },
     },
     UserManager: {
-      maxSize: 15, // Reduced from 25
+      maxSize: 25, // Reduced from 25
       keepOverLimit: (user) => user.id === user.client.user.id,
     },
 
@@ -401,9 +401,7 @@ export const discordClient = new Client({
     users: {
       interval: config.sweepInterval || 300,
       filter: () => (user) => {
-        // Don't sweep the bot itself or recently active users
         if (user.id === user.client.user.id) return false;
-        return user.bot;
       },
     },
 
