@@ -246,11 +246,11 @@ async function findSpawnableMonster(
     if (monster) {
       const displayName = getPokemonDisplayName(monster);
       if (isBoosted) {
-        logger.debug(
+        logger.trace(
           `Found weather-boosted ${displayName} after ${attempts} attempts`
         );
       } else {
-        logger.debug(`Found regular ${displayName} after ${attempts} attempts`);
+        logger.trace(`Found regular ${displayName} after ${attempts} attempts`);
       }
     }
 

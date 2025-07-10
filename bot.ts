@@ -1496,10 +1496,10 @@ if (typeof process !== 'undefined') {
   setInterval(() => {
     // Force garbage collection if available (Bun supports this)
     if (Bun.gc) {
-      logger.debug('Forcing a garbage collection.');
+      logger.trace('Forcing a garbage collection.');
       Bun.gc();
     } else {
-      logger.debug('No garbage collection available.');
+      logger.trace('No garbage collection available.');
     }
     // Log memory usage for monitoring
     const memUsage = heapStats();
