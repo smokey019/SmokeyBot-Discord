@@ -604,7 +604,14 @@ async function handleShardCommand(data: any): Promise<void> {
  */
 async function respondToHealthCheck(message: InterShardMessage): Promise<void> {
   const health = await getDetailedHealth();
-  await sendInterShardMessage("healthResponse", health, message.fromShard);
+  
+  // Don't respond to manager requests (fromShard: -1)
+  if (message.fromShard !== undefined && message.fromShard >= 0) {
+    await sendInterShardMessage("healthResponse", health, message.fromShard);
+  } else {
+    // If from manager, send response back through manager
+    sendToManager("healthResponse", health);
+  }
 }
 
 /**
@@ -613,11 +620,19 @@ async function respondToHealthCheck(message: InterShardMessage): Promise<void> {
 async function respondToGuildStatsRequest(message: InterShardMessage): Promise<void> {
   const guildStats = await getGuildShardStats();
   const currentShardId = config.actualShardId >= 0 ? config.actualShardId : config.shardId;
-  await sendInterShardMessage("guildStatsResponse", {
+  const responseData = {
     shardId: currentShardId,
     guilds: guildStats,
     requestId: message.data.requestId
-  }, message.fromShard);
+  };
+  
+  // Don't respond to manager requests (fromShard: -1) via inter-shard
+  if (message.fromShard !== undefined && message.fromShard >= 0) {
+    await sendInterShardMessage("guildStatsResponse", responseData, message.fromShard);
+  } else {
+    // If from manager, send response back through manager
+    sendToManager("guildStatsReceived", responseData);
+  }
 }
 
 /**
