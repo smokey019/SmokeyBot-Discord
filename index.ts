@@ -278,12 +278,17 @@ class EnhancedShardManager extends EventEmitter {
       throw new ShardManagerError("Missing Discord token", "MISSING_TOKEN");
     }
 
-    // Initialize communication manager
+    // Initialize communication manager for cross-server communication only
+    // For same-server shards, we use direct shard messaging
     if (config.useRedis) {
       this.communicationManager = new RedisCommunicationManager();
+      logger.info("📡 Redis communication enabled for cross-server messaging");
     } else if (config.useWebSocket) {
       this.communicationManager = new WebSocketCommunicationManager();
+      logger.info("📡 WebSocket communication enabled for cross-server messaging");
     }
+    
+    logger.info("🔗 Using direct shard messaging for same-server communication");
 
     // Create sharding manager optimized for Bun
     this.manager = new ShardingManager("./bot.ts", {
@@ -311,9 +316,10 @@ class EnhancedShardManager extends EventEmitter {
       this.setupShardEventHandlers(shard);
     });
 
-    // Setup communication message handling
+    // Setup communication message handling for cross-server messages
     if (this.communicationManager) {
       this.communicationManager.subscribe((message) => {
+        logger.debug(`Received cross-server message: ${message.type}`);
         this.handleInterShardMessage(message);
       });
     }
@@ -504,8 +510,19 @@ class EnhancedShardManager extends EventEmitter {
         break;
 
       case "inter-shard":
-        // Handle inter-shard communication
-        this.handleInterShardMessage(message.data as InterShardMessage);
+        // Handle inter-shard communication - route the message
+        const interShardMessage = message.data as InterShardMessage;
+        logger.debug(`Routing inter-shard message from shard ${shard.id}: ${interShardMessage.type}`);
+        
+        // Route the message to target shard(s)
+        if (interShardMessage.toShard === "all") {
+          await this.broadcastInterShardMessage(interShardMessage);
+        } else if (typeof interShardMessage.toShard === "number") {
+          await this.sendInterShardMessage(interShardMessage.toShard, interShardMessage);
+        }
+        
+        // Also handle it locally for manager processing
+        this.handleInterShardMessage(interShardMessage);
         break;
 
       default:
@@ -514,12 +531,12 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
-   * Handle inter-shard communication messages
+   * Handle inter-shard communication messages (manager processing)
    */
   private handleInterShardMessage(message: InterShardMessage): void {
-    logger.debug(`Inter-shard message: ${message.type}`, message);
+    logger.debug(`Processing inter-shard message: ${message.type}`);
 
-    // Handle specific message types
+    // Handle specific message types that the manager needs to process
     switch (message.type) {
       case "guildJoined":
         this.updateGuildDistribution(message.data);
@@ -527,13 +544,11 @@ class EnhancedShardManager extends EventEmitter {
       case "guildLeft":
         this.removeFromGuildDistribution(message.data);
         break;
-    }
-
-    // Route message to specific shard or broadcast
-    if (message.toShard === "all") {
-      this.broadcastInterShardMessage(message);
-    } else if (typeof message.toShard === "number") {
-      this.sendInterShardMessage(message.toShard, message);
+      case "ready":
+        logger.info(`Inter-shard ready notification from shard ${message.fromShard}`);
+        break;
+      default:
+        logger.debug(`Manager doesn't need to process message type: ${message.type}`);
     }
 
     // Emit event for external listeners
@@ -550,6 +565,7 @@ class EnhancedShardManager extends EventEmitter {
     const shard = this.manager.shards.get(shardId);
     if (shard) {
       try {
+        logger.debug(`Sending inter-shard message to shard ${shardId}: ${message.type}`);
         await shard.send({
           type: "inter-shard",
           data: message,
@@ -560,6 +576,8 @@ class EnhancedShardManager extends EventEmitter {
           error,
         );
       }
+    } else {
+      logger.warn(`Cannot send message to shard ${shardId}: shard not found`);
     }
   }
 
@@ -569,18 +587,23 @@ class EnhancedShardManager extends EventEmitter {
   private async broadcastInterShardMessage(
     message: InterShardMessage,
   ): Promise<void> {
+    logger.debug(`Broadcasting inter-shard message: ${message.type} to ${this.manager.shards.size} shards`);
+    
     const promises = Array.from(this.manager.shards.values()).map(
       async (shard) => {
-        try {
-          await shard.send({
-            type: "inter-shard",
-            data: message,
-          });
-        } catch (error) {
-          logger.error(
-            `Failed to broadcast inter-shard message to shard ${shard.id}:`,
-            error,
-          );
+        // Don't send the message back to the sender
+        if (shard.id !== message.fromShard) {
+          try {
+            await shard.send({
+              type: "inter-shard",
+              data: message,
+            });
+          } catch (error) {
+            logger.error(
+              `Failed to broadcast inter-shard message to shard ${shard.id}:`,
+              error,
+            );
+          }
         }
       },
     );
@@ -892,7 +915,7 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
-   * Send message to specific shard via communication manager
+   * Send message to specific shard via manager routing
    */
   public async sendToShard(
     shardId: number,
@@ -901,17 +924,15 @@ class EnhancedShardManager extends EventEmitter {
   ): Promise<void> {
     const message: InterShardMessage = {
       type,
+      fromShard: -1, // From manager
       toShard: shardId,
       data,
       timestamp: Date.now(),
       id: `${Date.now()}-${Math.random().toString(36).substring(2)}`,
     };
 
-    if (this.communicationManager) {
-      await this.communicationManager.sendToShard(shardId, message);
-    } else {
-      await this.sendInterShardMessage(shardId, message);
-    }
+    // Manager always routes directly to shards
+    await this.sendInterShardMessage(shardId, message);
   }
 
   /**
@@ -920,17 +941,15 @@ class EnhancedShardManager extends EventEmitter {
   public async broadcastToAllShards(type: string, data: any): Promise<void> {
     const message: InterShardMessage = {
       type,
+      fromShard: -1, // From manager
       toShard: "all",
       data,
       timestamp: Date.now(),
       id: `${Date.now()}-${Math.random().toString(36).substring(2)}`,
     };
 
-    if (this.communicationManager) {
-      await this.communicationManager.broadcast(message);
-    } else {
-      await this.broadcastInterShardMessage(message);
-    }
+    // Manager always broadcasts directly to shards
+    await this.broadcastInterShardMessage(message);
   }
 
   /**
@@ -1122,9 +1141,12 @@ class EnhancedShardManager extends EventEmitter {
       logger.info(`Respawn: ${config.respawn ? "Enabled" : "Disabled"}`);
       logger.info(`Communication: ${config.useRedis ? "Redis" : config.useWebSocket ? "WebSocket" : "Direct"}`);
 
-      // Initialize communication manager if configured
+      // Initialize cross-server communication manager if configured
       if (this.communicationManager) {
         await this.communicationManager.initialize();
+        logger.info("✅ Cross-server communication initialized");
+      } else {
+        logger.info("💻 Single-server mode - no cross-server communication");
       }
 
       const shards = await this.manager.spawn({

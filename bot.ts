@@ -327,14 +327,11 @@ class WebSocketCommunicationManager implements CommunicationManager {
   }
 }
 
-// Communication manager instance
+// Communication manager instance - only for coordinator shard
 let communicationManager: CommunicationManager | undefined;
 
-if (config.useRedis) {
-  communicationManager = new RedisCommunicationManager();
-} else if (config.useWebSocket) {
-  communicationManager = new WebSocketCommunicationManager();
-}
+// Only initialize communication manager after we know if we're the coordinator
+// This will be set in the ready event
 
 // Discord client optimized for Bun
 export const discordClient = new Client({
@@ -490,9 +487,10 @@ async function sendInterShardMessage(
   data: any,
   toShard?: number | "all"
 ): Promise<void> {
+  const currentShardId = config.actualShardId >= 0 ? config.actualShardId : config.shardId;
   const message: InterShardMessage = {
     type,
-    fromShard: config.shardId,
+    fromShard: currentShardId,
     toShard: toShard || "all",
     data,
     timestamp: Date.now(),
@@ -500,10 +498,11 @@ async function sendInterShardMessage(
   };
 
   try {
-    if (communicationManager) {
+    if (IS_COORDINATOR && communicationManager) {
+      // Coordinator can send directly through communication manager
       await communicationManager.send(message);
     } else {
-      // Fallback to manager communication
+      // Worker shards send through manager (index.ts)
       sendToManager("inter-shard", message);
     }
   } catch (error) {
@@ -613,8 +612,9 @@ async function respondToHealthCheck(message: InterShardMessage): Promise<void> {
  */
 async function respondToGuildStatsRequest(message: InterShardMessage): Promise<void> {
   const guildStats = await getGuildShardStats();
+  const currentShardId = config.actualShardId >= 0 ? config.actualShardId : config.shardId;
   await sendInterShardMessage("guildStatsResponse", {
-    shardId: config.shardId,
+    shardId: currentShardId,
     guilds: guildStats,
     requestId: message.data.requestId
   }, message.fromShard);
@@ -1172,19 +1172,29 @@ discordClient.on("ready", async () => {
     logger.info(`📊 Connected to ${discordClient.guilds.cache.size} guilds`);
     logger.info(`🔧 Shard ${config.shardId}/${config.totalShards}${wasTemporary ? ' (ID updated from temporary)' : ''}`);
     logger.info(`👑 Role: ${IS_COORDINATOR ? 'Coordinator' : 'Worker'}`);
-    // Initialize communication manager
-    if (communicationManager) {
+    // Initialize communication manager only for coordinator shard
+    if (IS_COORDINATOR) {
       try {
-        await communicationManager.initialize();
-        communicationManager.subscribe((message) => {
-          handleInterShardMessage(message).catch(error => {
-            logger.error('Error handling inter-shard message:', error);
+        if (config.useRedis) {
+          communicationManager = new RedisCommunicationManager();
+        } else if (config.useWebSocket) {
+          communicationManager = new WebSocketCommunicationManager();
+        }
+        
+        if (communicationManager) {
+          await communicationManager.initialize();
+          communicationManager.subscribe((message) => {
+            handleInterShardMessage(message).catch(error => {
+              logger.error('Error handling inter-shard message:', error);
+            });
           });
-        });
-        logger.info("✅ Inter-shard communication initialized");
+          logger.info("✅ Coordinator inter-shard communication initialized");
+        }
       } catch (error) {
-        logger.error("❌ Failed to initialize communication:", error);
+        logger.error("❌ Failed to initialize coordinator communication:", error);
       }
+    } else {
+      logger.info("🔗 Worker shard - will communicate through manager");
     }
 
     // Load commands
