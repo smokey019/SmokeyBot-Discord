@@ -513,7 +513,7 @@ async function sendInterShardMessage(
  * Handle inter-shard messages
  */
 async function handleInterShardMessage(message: InterShardMessage): Promise<void> {
-  logger.debug(`Received inter-shard message: ${message.type}`, message);
+  logger.debug(`Received inter-shard message: ${message.type}`);
 
   switch (message.type) {
     case "presenceUpdate":
@@ -634,7 +634,7 @@ function handleGuildStatsResponse(data: any): void {
  */
 async function getGuildShardStats(): Promise<GuildShardInfo[]> {
   const guilds: GuildShardInfo[] = [];
-  
+
   for (const [guildId, guild] of discordClient.guilds.cache) {
     try {
       guilds.push({
@@ -648,7 +648,7 @@ async function getGuildShardStats(): Promise<GuildShardInfo[]> {
       logger.warn(`Failed to get stats for guild ${guild.name}:`, error);
     }
   }
-  
+
   return guilds;
 }
 
@@ -672,7 +672,7 @@ function calculateCpuUsage(): number {
 /**
  * Measure event loop lag
  */
-function measureEventLoopLag(): Promise<number> {
+async function measureEventLoopLag(): Promise<number> {
   const start = Bun.nanoseconds();
   return new Promise<number>((resolve) => {
     setImmediate(() => {
@@ -1154,10 +1154,10 @@ async function shutdown(): Promise<void> {
 
 discordClient.on("ready", async () => {
   try {
+    config.shardId = discordClient.shard.ids[0];
     logger.info(`🎉 Discord client ready as ${discordClient.user?.tag}`);
     logger.info(`📊 Connected to ${discordClient.guilds.cache.size} guilds`);
     logger.info(`🔧 Shard ${config.shardId}/${config.totalShards}`);
-
     // Initialize communication manager
     if (communicationManager) {
       try {
