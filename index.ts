@@ -406,14 +406,12 @@ class EnhancedShardManager extends EventEmitter {
         this.updateShardHealth(shard.id, { status: "spawning" });
       },
       message: (message: any) => {
-        try {
-          this.handleShardMessage(shard, message);
-        } catch (error) {
+        this.handleShardMessage(shard, message).catch(error => {
           logger.error(
             `Error handling message from shard ${shard.id}:`,
             error,
           );
-        }
+        });
       },
       error: (error: Error) => {
         logger.error(`Shard ${shard.id} error:`, error);
@@ -430,7 +428,7 @@ class EnhancedShardManager extends EventEmitter {
   /**
    * Handle messages from shards with processing
    */
-  private handleShardMessage(shard: Shard, message: any): void {
+  private async handleShardMessage(shard: Shard, message: any): Promise<void> {
     const health = this.shardHealth.get(shard.id);
     if (!health) return;
 
