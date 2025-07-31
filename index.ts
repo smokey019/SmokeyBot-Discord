@@ -341,6 +341,36 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
+   * Update shard ID mapping when Discord.js assigns different ID
+   */
+  private updateShardIdMapping(oldId: number, newId: number): void {
+    if (oldId === newId) return;
+    
+    logger.info(`🔄 Updating shard ID mapping: ${oldId} -> ${newId}`);
+    
+    // Move health data to new ID
+    const healthData = this.shardHealth.get(oldId);
+    if (healthData) {
+      healthData.id = newId;
+      this.shardHealth.set(newId, healthData);
+      this.shardHealth.delete(oldId);
+    }
+    
+    // Update guild distribution mapping
+    if (this.globalStats.guildDistribution) {
+      const guildData = this.globalStats.guildDistribution.get(oldId);
+      if (guildData) {
+        // Update shard ID in all guild entries
+        guildData.forEach(guild => guild.shardId = newId);
+        this.globalStats.guildDistribution.set(newId, guildData);
+        this.globalStats.guildDistribution.delete(oldId);
+      }
+    }
+    
+    logger.info(`✅ Shard ID mapping updated successfully`);
+  }
+
+  /**
    * Setup comprehensive event handlers for individual shards
    */
   private setupShardEventHandlers(shard: Shard): void {
@@ -409,7 +439,9 @@ class EnhancedShardManager extends EventEmitter {
     // message type handling
     switch (message.type) {
       case "stats":
-        this.updateShardHealth(shard.id, {
+        // Handle potential shard ID mismatch
+        const statsShardId = message.data?.actualShardId !== undefined ? message.data.actualShardId : shard.id;
+        this.updateShardHealth(statsShardId, {
           guilds: message.guilds || 0,
           users: message.users || 0,
           channels: message.channels || 0,
@@ -419,6 +451,11 @@ class EnhancedShardManager extends EventEmitter {
           eventLoopLag: message.eventLoopLag || 0,
           lastHeartbeat: Date.now(),
         });
+        
+        // Update shard ID mapping if it changed
+        if (message.data?.actualShardId !== undefined && message.data.actualShardId !== shard.id) {
+          this.updateShardIdMapping(shard.id, message.data.actualShardId);
+        }
         break;
 
       case "heartbeat":
@@ -434,6 +471,30 @@ class EnhancedShardManager extends EventEmitter {
 
       case "guildStatsReceived":
         this.handleGuildStatsReceived(message.data);
+        break;
+
+      case "ready":
+        const readyData = message.data || message;
+        const readyShardId = readyData.actualShardId !== undefined ? readyData.actualShardId : (readyData.shardId !== undefined ? readyData.shardId : shard.id);
+        
+        logger.info(`✅ Shard ${readyShardId} fully ready${readyData.actualShardId !== shard.id ? ` (Discord.js assigned ${readyShardId} instead of ${shard.id})` : ''}`);
+        
+        this.updateShardHealth(readyShardId, {
+          status: "ready",
+          lastHeartbeat: Date.now(),
+          guilds: readyData.guilds || 0,
+          users: readyData.users || 0,
+        });
+        
+        // Update shard ID mapping if it changed
+        if (readyData.actualShardId !== undefined && readyData.actualShardId !== shard.id) {
+          this.updateShardIdMapping(shard.id, readyData.actualShardId);
+        }
+        
+        // Log coordinator status
+        if (readyData.isCoordinator) {
+          logger.info(`👑 Shard ${readyShardId} is the coordinator`);
+        }
         break;
 
       case "guildAdd":
@@ -985,9 +1046,10 @@ class EnhancedShardManager extends EventEmitter {
    * Update guild tracking for add/remove events
    */
   private updateGuildTracking(type: string, data: any): void {
-    logger.debug(`Guild ${type}: ${data.guildName} (${data.guildId}) on shard ${data.shardId}`);
+    const shardId = data.shardId !== undefined ? data.shardId : 0;
+    logger.debug(`Guild ${type}: ${data.guildName} (${data.guildId}) on shard ${shardId}`);
     // Trigger stats refresh for affected shard
-    this.requestGuildStatsFromShard(data.shardId);
+    this.requestGuildStatsFromShard(shardId);
   }
 
   /**

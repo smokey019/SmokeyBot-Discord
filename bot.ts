@@ -35,11 +35,13 @@ const isDev = process.env.DEV === "true" || process.argv.includes("--dev");
 
 // configuration with environment validation
 const config = {
+  // Use temporary shard ID until Discord.js assigns the real one
   shardId: parseInt(
     process.env.SHARD_ID ||
     process.argv.find((arg) => arg.startsWith("--shard="))?.split("=")[1] ||
-    "0"
+    "-1"
   ),
+  actualShardId: -1, // Will be set by Discord.js in ready event
   totalShards: parseInt(process.env.TOTAL_SHARDS || "1"),
   isDev,
   globalCooldown: parseInt(process.env.GLOBAL_COOLDOWN || "2"),
@@ -64,8 +66,8 @@ const config = {
   ),
 };
 
-// Computed values
-const IS_COORDINATOR = config.shardId === 0;
+// Computed values - will be updated when actual shard ID is known
+let IS_COORDINATOR = config.shardId === 0;
 const EXCLUDED_USERS = new Set(["458710213122457600", "758820204133613598"]);
 const TWITTER_USER = "90514165138989056";
 
@@ -634,6 +636,7 @@ function handleGuildStatsResponse(data: any): void {
  */
 async function getGuildShardStats(): Promise<GuildShardInfo[]> {
   const guilds: GuildShardInfo[] = [];
+  const currentShardId = config.actualShardId >= 0 ? config.actualShardId : config.shardId;
 
   for (const [guildId, guild] of discordClient.guilds.cache) {
     try {
@@ -641,7 +644,7 @@ async function getGuildShardStats(): Promise<GuildShardInfo[]> {
         id: guild.id,
         name: guild.name,
         memberCount: guild.memberCount || 0,
-        shardId: config.shardId,
+        shardId: currentShardId,
         joinedAt: guild.joinedTimestamp || Date.now()
       });
     } catch (error) {
@@ -727,7 +730,8 @@ async function getDetailedHealth(): Promise<any> {
   const metrics = await getShardMetrics();
 
   return {
-    shardId: config.shardId,
+    shardId: config.actualShardId >= 0 ? config.actualShardId : config.shardId,
+    actualShardId: config.actualShardId,
     healthy: isHealthy(),
     score: shardState.healthScore,
     lastActivity: shardState.lastActivity,
@@ -1027,10 +1031,12 @@ async function registerGuildCommands(guild: Guild): Promise<void> {
     );
 
     // Report guild addition
+    const currentShardId = config.actualShardId >= 0 ? config.actualShardId : config.shardId;
     sendToManager("guildAdd", {
       guildId: guild.id,
       guildName: guild.name,
       memberCount: guild.memberCount,
+      shardId: currentShardId,
     });
   } catch (error) {
     logger.error(`Command registration failed for ${guild.name}:`, error);
@@ -1154,10 +1160,18 @@ async function shutdown(): Promise<void> {
 
 discordClient.on("ready", async () => {
   try {
-    config.shardId = discordClient.shard.ids[0];
+    // Update with actual shard ID assigned by Discord.js
+    const actualShardId = discordClient.shard?.ids[0] ?? 0;
+    const wasTemporary = config.actualShardId === -1;
+    
+    config.actualShardId = actualShardId;
+    config.shardId = actualShardId; // Update the main config
+    IS_COORDINATOR = actualShardId === 0;
+    
     logger.info(`🎉 Discord client ready as ${discordClient.user?.tag}`);
     logger.info(`📊 Connected to ${discordClient.guilds.cache.size} guilds`);
-    logger.info(`🔧 Shard ${config.shardId}/${config.totalShards}`);
+    logger.info(`🔧 Shard ${config.shardId}/${config.totalShards}${wasTemporary ? ' (ID updated from temporary)' : ''}`);
+    logger.info(`👑 Role: ${IS_COORDINATOR ? 'Coordinator' : 'Worker'}`);
     // Initialize communication manager
     if (communicationManager) {
       try {
@@ -1179,6 +1193,7 @@ discordClient.on("ready", async () => {
 
     // Global slash command registration (coordinator only)
     if (IS_COORDINATOR && loaded_commands == false) {
+      logger.info("👑 Coordinator role confirmed - will handle global command registration");
       setTimeout(async () => {
         try {
           if (loaded_commands == true) return;
@@ -1200,7 +1215,7 @@ discordClient.on("ready", async () => {
         updatePresence();
       }, config.presenceUpdateInterval);
 
-      logger.info("👑 Coordinator role active");
+      logger.info("👑 Coordinator role active - managing presence updates");
     }
 
     // Start periodic reporting
@@ -1221,11 +1236,21 @@ discordClient.on("ready", async () => {
     // Initial stats report
     setTimeout(reportStats, 5000);
 
-    // Notify manager of readiness
+    // Notify manager of readiness with actual shard ID
     sendToManager("ready", {
       shardId: config.shardId,
       guilds: discordClient.guilds.cache.size,
       users: discordClient.users.cache.size,
+      actualShardId: config.actualShardId,
+      isCoordinator: IS_COORDINATOR,
+    });
+    
+    // Send inter-shard ready message with actual shard ID
+    await sendInterShardMessage("ready", {
+      shardId: config.shardId,
+      guilds: discordClient.guilds.cache.size,
+      users: discordClient.users.cache.size,
+      timestamp: Date.now(),
     });
 
     logger.info(`✅ Shard ${config.shardId} fully initialized and ready`);
@@ -1274,9 +1299,11 @@ discordClient.on("guildDelete", async (guild: Guild) => {
     wasActiveGuild: shardState.guildsReady.has(guild.id),
   });
 
+  const currentShardId = config.actualShardId >= 0 ? config.actualShardId : config.shardId;
   sendToManager("guildRemove", {
     guildId: guild.id,
     guildName: guild.name,
+    shardId: currentShardId,
   });
 });
 
@@ -1470,7 +1497,8 @@ setInterval(() => {
  */
 export function getShardStats() {
   return {
-    shardId: config.shardId,
+    shardId: config.actualShardId >= 0 ? config.actualShardId : config.shardId,
+    actualShardId: config.actualShardId,
     totalShards: config.totalShards,
     isCoordinator: IS_COORDINATOR,
     guilds: discordClient.guilds.cache.size,
