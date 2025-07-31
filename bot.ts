@@ -105,6 +105,15 @@ interface ShardMetrics {
   cpu: number;
   eventLoopLag: number;
   errors: number;
+  guildDetails?: GuildShardInfo[];
+}
+
+interface GuildShardInfo {
+  id: string;
+  name: string;
+  memberCount: number;
+  shardId: number;
+  joinedAt: number;
 }
 
 interface GlobalRateLimit {
@@ -503,7 +512,7 @@ async function sendInterShardMessage(
 /**
  * Handle inter-shard messages
  */
-function handleInterShardMessage(message: InterShardMessage): void {
+async function handleInterShardMessage(message: InterShardMessage): Promise<void> {
   logger.debug(`Received inter-shard message: ${message.type}`, message);
 
   switch (message.type) {
@@ -535,8 +544,21 @@ function handleInterShardMessage(message: InterShardMessage): void {
       break;
 
     case "ready":
-
       logger.debug(`Another shard has joined.`);
+      break;
+
+    case "guildStatsRequest":
+      await respondToGuildStatsRequest(message);
+      break;
+
+    case "guildStatsResponse":
+      handleGuildStatsResponse(message.data);
+      break;
+
+    case "guildJoined":
+    case "guildLeft":
+      // Already handled in the existing guildCreate/guildDelete events
+      logger.debug(`Guild ${message.data.shardId ? 'on shard ' + message.data.shardId : ''} ${message.type === 'guildJoined' ? 'joined' : 'left'}: ${message.data.guildName}`);
       break;
 
     default:
@@ -582,6 +604,52 @@ async function handleShardCommand(data: any): Promise<void> {
 async function respondToHealthCheck(message: InterShardMessage): Promise<void> {
   const health = await getDetailedHealth();
   await sendInterShardMessage("healthResponse", health, message.fromShard);
+}
+
+/**
+ * Respond to guild stats requests
+ */
+async function respondToGuildStatsRequest(message: InterShardMessage): Promise<void> {
+  const guildStats = await getGuildShardStats();
+  await sendInterShardMessage("guildStatsResponse", {
+    shardId: config.shardId,
+    guilds: guildStats,
+    requestId: message.data.requestId
+  }, message.fromShard);
+}
+
+/**
+ * Handle guild stats responses from other shards
+ */
+function handleGuildStatsResponse(data: any): void {
+  logger.debug(`Received guild stats from shard ${data.shardId}: ${data.guilds.length} guilds`);
+  // Emit event for external listeners (like web dashboard)
+  if (typeof process !== 'undefined' && process.send) {
+    sendToManager("guildStatsReceived", data);
+  }
+}
+
+/**
+ * Get detailed guild information for this shard
+ */
+async function getGuildShardStats(): Promise<GuildShardInfo[]> {
+  const guilds: GuildShardInfo[] = [];
+  
+  for (const [guildId, guild] of discordClient.guilds.cache) {
+    try {
+      guilds.push({
+        id: guild.id,
+        name: guild.name,
+        memberCount: guild.memberCount || 0,
+        shardId: config.shardId,
+        joinedAt: guild.joinedTimestamp || Date.now()
+      });
+    } catch (error) {
+      logger.warn(`Failed to get stats for guild ${guild.name}:`, error);
+    }
+  }
+  
+  return guilds;
 }
 
 // ============================================================================
@@ -634,6 +702,7 @@ function getAverageEventLoopLag(): number {
  */
 async function getShardMetrics(): Promise<ShardMetrics> {
   const eventLoopLag = await measureEventLoopLag();
+  const guildDetails = await getGuildShardStats();
 
   return {
     guilds: discordClient.guilds.cache.size,
@@ -647,6 +716,7 @@ async function getShardMetrics(): Promise<ShardMetrics> {
     cpu: calculateCpuUsage(),
     eventLoopLag,
     errors: shardState.errors,
+    guildDetails,
   };
 }
 
@@ -1092,7 +1162,11 @@ discordClient.on("ready", async () => {
     if (communicationManager) {
       try {
         await communicationManager.initialize();
-        communicationManager.subscribe(handleInterShardMessage);
+        communicationManager.subscribe((message) => {
+          handleInterShardMessage(message).catch(error => {
+            logger.error('Error handling inter-shard message:', error);
+          });
+        });
         logger.info("✅ Inter-shard communication initialized");
       } catch (error) {
         logger.error("❌ Failed to initialize communication:", error);
@@ -1175,12 +1249,15 @@ discordClient.on("guildCreate", async (guild: Guild) => {
   logger.info(`➕ Guild added: ${guild.name} (${guild.memberCount} members)`);
   await registerGuildCommands(guild);
 
-  // Notify other shards of new guild
+  // Notify other shards of new guild with comprehensive data
   await sendInterShardMessage("guildJoined", {
     guildId: guild.id,
     guildName: guild.name,
     memberCount: guild.memberCount,
     shardId: config.shardId,
+    joinedAt: guild.joinedTimestamp || Date.now(),
+    channelCount: guild.channels.cache.size,
+    roleCount: guild.roles.cache.size,
   });
 });
 
@@ -1188,11 +1265,13 @@ discordClient.on("guildDelete", async (guild: Guild) => {
   logger.info(`➖ Guild removed: ${guild.name}`);
   shardState.guildsReady.delete(guild.id);
 
-  // Notify other shards of guild removal
+  // Notify other shards of guild removal with comprehensive data
   await sendInterShardMessage("guildLeft", {
     guildId: guild.id,
     guildName: guild.name,
     shardId: config.shardId,
+    leftAt: Date.now(),
+    wasActiveGuild: shardState.guildsReady.has(guild.id),
   });
 
   sendToManager("guildRemove", {
@@ -1296,7 +1375,9 @@ process.on("message", async (message: any) => {
         break;
 
       case "inter-shard":
-        handleInterShardMessage(message.data);
+        handleInterShardMessage(message.data).catch(error => {
+          logger.error('Error handling inter-shard message:', error);
+        });
         break;
 
       case "healthCheck":

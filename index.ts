@@ -59,6 +59,17 @@ interface ShardHealthMetrics {
   ping: number;
   cpu: number;
   eventLoopLag: number;
+  guildDetails?: GuildShardInfo[];
+}
+
+interface GuildShardInfo {
+  id: string;
+  name: string;
+  memberCount: number;
+  shardId: number;
+  joinedAt: number;
+  channelCount?: number;
+  roleCount?: number;
 }
 
 interface GlobalStatistics {
@@ -72,6 +83,8 @@ interface GlobalStatistics {
   totalRestarts: number;
   totalMemoryUsage: number;
   lastUpdate: number;
+  guildDistribution?: Map<number, GuildShardInfo[]>;
+  largestGuilds?: GuildShardInfo[];
 }
 
 interface CommunicationManager {
@@ -247,6 +260,8 @@ class EnhancedShardManager extends EventEmitter {
     totalRestarts: 0,
     totalMemoryUsage: 0,
     lastUpdate: Date.now(),
+    guildDistribution: new Map(),
+    largestGuilds: [],
   };
   private healthCheckInterval?: Timer;
   private statsInterval?: Timer;
@@ -417,6 +432,16 @@ class EnhancedShardManager extends EventEmitter {
         });
         break;
 
+      case "guildStatsReceived":
+        this.handleGuildStatsReceived(message.data);
+        break;
+
+      case "guildAdd":
+      case "guildRemove":
+        // Update guild tracking
+        this.updateGuildTracking(message.type, message.data);
+        break;
+
       case "inter-shard":
         // Handle inter-shard communication
         this.handleInterShardMessage(message.data as InterShardMessage);
@@ -432,6 +457,16 @@ class EnhancedShardManager extends EventEmitter {
    */
   private handleInterShardMessage(message: InterShardMessage): void {
     logger.debug(`Inter-shard message: ${message.type}`, message);
+
+    // Handle specific message types
+    switch (message.type) {
+      case "guildJoined":
+        this.updateGuildDistribution(message.data);
+        break;
+      case "guildLeft":
+        this.removeFromGuildDistribution(message.data);
+        break;
+    }
 
     // Route message to specific shard or broadcast
     if (message.toShard === "all") {
@@ -711,6 +746,8 @@ class EnhancedShardManager extends EventEmitter {
     let totalPing = 0;
     let totalMemoryUsage = 0;
     let pingCount = 0;
+    const guildDistribution = new Map<number, GuildShardInfo[]>();
+    const allGuilds: GuildShardInfo[] = [];
 
     for (const health of this.shardHealth.values()) {
       totalGuilds += health.guilds;
@@ -718,6 +755,12 @@ class EnhancedShardManager extends EventEmitter {
       totalChannels += health.channels;
       totalRestarts += health.restarts;
       totalMemoryUsage += health.memory.heapUsed || 0;
+
+      // Collect guild details if available
+      if (health.guildDetails) {
+        guildDistribution.set(health.id, health.guildDetails);
+        allGuilds.push(...health.guildDetails);
+      }
 
       if (health.status === "ready") {
         healthyShards++;
@@ -730,6 +773,11 @@ class EnhancedShardManager extends EventEmitter {
       }
     }
 
+    // Sort guilds by member count to find largest
+    const largestGuilds = allGuilds
+      .sort((a, b) => b.memberCount - a.memberCount)
+      .slice(0, 10);
+
     this.globalStats = {
       totalGuilds,
       totalUsers,
@@ -741,6 +789,8 @@ class EnhancedShardManager extends EventEmitter {
       totalRestarts,
       totalMemoryUsage,
       lastUpdate: Date.now(),
+      guildDistribution,
+      largestGuilds,
     };
 
     this.emit("globalStatsUpdate", this.globalStats);
@@ -750,6 +800,12 @@ class EnhancedShardManager extends EventEmitter {
       logger.info(
         `📈 Global Stats: ${totalGuilds} guilds, ${totalUsers} users, ${totalChannels} channels across ${healthyShards}/${this.shardHealth.size} shards`,
       );
+      
+      // Log guild distribution
+      const guildCounts = Array.from(guildDistribution.entries())
+        .map(([shardId, guilds]) => `Shard ${shardId}: ${guilds.length}`)
+        .join(", ");
+      logger.info(`🏰 Guild Distribution: ${guildCounts}`);
     }
   }
 
@@ -851,6 +907,15 @@ class EnhancedShardManager extends EventEmitter {
         memory: process.memoryUsage(),
         shardId: client.shard?.ids[0],
         readyAt: client.readyAt?.toISOString(),
+        guildDetails: Array.from(client.guilds.cache.values()).map(guild => ({
+          id: guild.id,
+          name: guild.name,
+          memberCount: guild.memberCount || 0,
+          shardId: client.shard?.ids[0] || 0,
+          joinedAt: guild.joinedTimestamp || Date.now(),
+          channelCount: guild.channels.cache.size,
+          roleCount: guild.roles.cache.size
+        }))
       }));
 
       return {
@@ -906,6 +971,85 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
+   * Handle guild stats received from shards
+   */
+  private handleGuildStatsReceived(data: any): void {
+    const health = this.shardHealth.get(data.shardId);
+    if (health) {
+      health.guildDetails = data.guilds;
+      logger.debug(`Updated guild details for shard ${data.shardId}: ${data.guilds.length} guilds`);
+    }
+  }
+
+  /**
+   * Update guild tracking for add/remove events
+   */
+  private updateGuildTracking(type: string, data: any): void {
+    logger.debug(`Guild ${type}: ${data.guildName} (${data.guildId}) on shard ${data.shardId}`);
+    // Trigger stats refresh for affected shard
+    this.requestGuildStatsFromShard(data.shardId);
+  }
+
+  /**
+   * Update guild distribution when a guild joins
+   */
+  private updateGuildDistribution(guildData: any): void {
+    const { shardId, guildId, guildName, memberCount, joinedAt, channelCount, roleCount } = guildData;
+    
+    if (!this.globalStats.guildDistribution) {
+      this.globalStats.guildDistribution = new Map();
+    }
+    
+    let shardGuilds = this.globalStats.guildDistribution.get(shardId) || [];
+    
+    // Add new guild if not already exists
+    if (!shardGuilds.find(g => g.id === guildId)) {
+      shardGuilds.push({
+        id: guildId,
+        name: guildName,
+        memberCount: memberCount || 0,
+        shardId,
+        joinedAt: joinedAt || Date.now(),
+        channelCount,
+        roleCount
+      });
+      
+      this.globalStats.guildDistribution.set(shardId, shardGuilds);
+      logger.debug(`Added guild ${guildName} to shard ${shardId} distribution`);
+    }
+  }
+
+  /**
+   * Remove guild from distribution when it leaves
+   */
+  private removeFromGuildDistribution(guildData: any): void {
+    const { shardId, guildId } = guildData;
+    
+    if (this.globalStats.guildDistribution) {
+      let shardGuilds = this.globalStats.guildDistribution.get(shardId) || [];
+      shardGuilds = shardGuilds.filter(g => g.id !== guildId);
+      this.globalStats.guildDistribution.set(shardId, shardGuilds);
+      logger.debug(`Removed guild ${guildId} from shard ${shardId} distribution`);
+    }
+  }
+
+  /**
+   * Request guild stats from a specific shard
+   */
+  public async requestGuildStatsFromShard(shardId: number): Promise<void> {
+    const requestId = `${Date.now()}-${Math.random().toString(36).substring(2)}`;
+    await this.sendToShard(shardId, "guildStatsRequest", { requestId });
+  }
+
+  /**
+   * Request guild stats from all shards
+   */
+  public async requestGuildStatsFromAllShards(): Promise<void> {
+    const requestId = `${Date.now()}-${Math.random().toString(36).substring(2)}`;
+    await this.broadcastToAllShards("guildStatsRequest", { requestId });
+  }
+
+  /**
    * Start the shard manager
    */
   public async start(): Promise<void> {
@@ -935,7 +1079,14 @@ class EnhancedShardManager extends EventEmitter {
       // Initial stats collection after 30 seconds
       setTimeout(() => {
         this.aggregateGlobalStats();
+        // Request detailed guild stats from all shards
+        this.requestGuildStatsFromAllShards();
       }, 30000);
+
+      // Periodic guild stats refresh every 5 minutes
+      setInterval(() => {
+        this.requestGuildStatsFromAllShards();
+      }, 300000);
 
       this.emit("managerReady", {
         totalShards: shards.size,
