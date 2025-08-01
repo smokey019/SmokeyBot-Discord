@@ -18,182 +18,54 @@ const STATS_RESET_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
 
 const logger = getLogger("Emote Queue");
 
-// stats tracking with detailed metrics
-interface DetailedStats {
-  // Upload Statistics
-  totalAttempts: number;
-  totalSuccesses: number;
-  totalFailures: number;
-  ffzAttempts: number;
-  ffzSuccesses: number;
-  ffzFailures: number;
-  sevenTvAttempts: number;
-  sevenTvSuccesses: number;
-  sevenTvFailures: number;
-
-  // Type-specific statistics
-  staticEmoteUploads: number;
-  animatedEmoteUploads: number;
-  typeFilterUsage: {
-    staticRequests: number;
-    gifRequests: number;
-    allRequests: number;
-  };
-
-  // Performance Metrics
-  averageUploadTime: number;
-  totalUploadTime: number;
-  uploadsProcessed: number;
-  queueProcessingCycles: number;
-  averageQueueTime: number;
-
-  // API Statistics
-  apiCalls: {
-    total: number;
-    successful: number;
-    failed: number;
-    cached: number;
-    responseTimeTotal: number;
-    averageResponseTime: number;
-  };
-
-  // Error Tracking
-  errors: {
-    rateLimited: number;
-    tooLarge: number;
-    maxEmotesReached: number;
-    missingPermissions: number;
-    networkErrors: number;
-    unknownErrors: number;
-  };
-
-  // Cache Statistics
-  cache: {
-    hits: number;
-    misses: number;
-    hitRate: number;
-    entriesCount: number;
-  };
-
-  // Queue Metrics
-  queue: {
-    totalGuildsProcessed: number;
-    averageEmotesPerGuild: number;
-    longestQueueTime: number;
-    currentActiveQueues: number;
-  };
-
-  // System Metrics
-  system: {
-    startTime: Date;
-    uptime: number;
-    memoryUsage?: number;
-    lastResetTime: Date;
-  };
+// Simplified stats tracking
+interface EmoteStats {
+  // Core metrics
+  uploads: { success: number; failed: number; };
+  platforms: { ffz: number; sevenTv: number; };
+  queue: { processed: number; active: number; longestWait: number; };
+  api: { calls: number; cached: number; avgResponseTime: number; };
+  errors: { rateLimited: number; tooLarge: number; permissions: number; network: number; };
+  system: { startTime: Date; lastReset: Date; };
 }
 
-// Initialize comprehensive stats
-const stats: DetailedStats = {
-  totalAttempts: 0,
-  totalSuccesses: 0,
-  totalFailures: 0,
-  ffzAttempts: 0,
-  ffzSuccesses: 0,
-  ffzFailures: 0,
-  sevenTvAttempts: 0,
-  sevenTvSuccesses: 0,
-  sevenTvFailures: 0,
-  staticEmoteUploads: 0,
-  animatedEmoteUploads: 0,
-  typeFilterUsage: {
-    staticRequests: 0,
-    gifRequests: 0,
-    allRequests: 0,
-  },
-  averageUploadTime: 0,
-  totalUploadTime: 0,
-  uploadsProcessed: 0,
-  queueProcessingCycles: 0,
-  averageQueueTime: 0,
-  apiCalls: {
-    total: 0,
-    successful: 0,
-    failed: 0,
-    cached: 0,
-    responseTimeTotal: 0,
-    averageResponseTime: 0,
-  },
-  errors: {
-    rateLimited: 0,
-    tooLarge: 0,
-    maxEmotesReached: 0,
-    missingPermissions: 0,
-    networkErrors: 0,
-    unknownErrors: 0,
-  },
-  cache: {
-    hits: 0,
-    misses: 0,
-    hitRate: 0,
-    entriesCount: 0,
-  },
-  queue: {
-    totalGuildsProcessed: 0,
-    averageEmotesPerGuild: 0,
-    longestQueueTime: 0,
-    currentActiveQueues: 0,
-  },
-  system: {
-    startTime: new Date(),
-    uptime: 0,
-    lastResetTime: new Date(),
-  },
+// Initialize simplified stats
+const stats: EmoteStats = {
+  uploads: { success: 0, failed: 0 },
+  platforms: { ffz: 0, sevenTv: 0 },
+  queue: { processed: 0, active: 0, longestWait: 0 },
+  api: { calls: 0, cached: 0, avgResponseTime: 0 },
+  errors: { rateLimited: 0, tooLarge: 0, permissions: 0, network: 0 },
+  system: { startTime: new Date(), lastReset: new Date() },
 };
 
 // API caching with performance tracking (moved before class)
 const apiCache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-// queue data structure
+// Simplified queue data structure
 interface QueueData {
   emotes: Collection<string, string>;
-  successes: number;
-  failures: number;
-  removed: number;
+  results: { success: number; failed: number; skipped: number; };
   interaction: CommandInteraction;
-  priority: number;
   createdAt: Date;
-  startedProcessing?: Date;
-  estimatedCompletion?: Date;
-  processingTimes: number[];
-  guildName: string;
-  channelName: string;
-  userTag: string;
+  startedAt?: Date;
+  metadata: { guildName: string; channelName: string; userTag: string; };
 }
 
-// Performance monitoring utilities
-class PerformanceMonitor {
+// Simple performance tracking
+class SimpleTimer {
   private static timers = new Map<string, number>();
 
-  static start(label: string): void {
-    this.timers.set(label, Date.now());
+  static start(id: string): void {
+    this.timers.set(id, Date.now());
   }
 
-  static end(label: string): number {
-    const startTime = this.timers.get(label);
-    if (!startTime) return 0;
-
-    const duration = Date.now() - startTime;
-    this.timers.delete(label);
-    return duration;
-  }
-
-  static record(label: string, duration: number): void {
-    if (label === 'upload') {
-      stats.totalUploadTime += duration;
-      stats.uploadsProcessed++;
-      stats.averageUploadTime = stats.totalUploadTime / stats.uploadsProcessed;
-    }
+  static end(id: string): number {
+    const start = this.timers.get(id);
+    if (!start) return 0;
+    this.timers.delete(id);
+    return Date.now() - start;
   }
 }
 
@@ -208,7 +80,6 @@ class EmoteQueueManager {
   constructor() {
     // Auto-reset stats every 24 hours
     this.statsTimer = setInterval(() => this.resetStats(), STATS_RESET_INTERVAL);
-    this.updateSystemStats();
   }
 
   get EmoteQueue() {
@@ -217,10 +88,13 @@ class EmoteQueueManager {
 
   addToQueue(guildId: string, data: QueueData) {
     data.createdAt = new Date();
-    data.guildName = data.interaction.guild?.name || 'Unknown';
-    data.userTag = data.interaction.user.tag;
+    data.metadata = {
+      guildName: data.interaction.guild?.name || 'Unknown',
+      channelName: data.metadata?.channelName || 'unknown',
+      userTag: data.interaction.user.tag
+    };
     this.queue.set(guildId, data);
-    stats.queue.currentActiveQueues = this.queue.size;
+    stats.queue.active = this.queue.size;
     this.startTimer();
   }
 
@@ -228,20 +102,14 @@ class EmoteQueueManager {
     const queueData = this.queue.get(guildId);
     if (queueData) {
       const queueTime = Date.now() - queueData.createdAt.getTime();
-      if (queueTime > stats.queue.longestQueueTime) {
-        stats.queue.longestQueueTime = queueTime;
+      if (queueTime > stats.queue.longestWait) {
+        stats.queue.longestWait = queueTime;
       }
-      stats.queue.totalGuildsProcessed++;
-
-      // Update average emotes per guild
-      const totalEmotes = queueData.successes + queueData.failures + queueData.removed;
-      const totalGuilds = stats.queue.totalGuildsProcessed;
-      stats.queue.averageEmotesPerGuild =
-        ((stats.queue.averageEmotesPerGuild * (totalGuilds - 1)) + totalEmotes) / totalGuilds;
+      stats.queue.processed++;
     }
 
     const removed = this.queue.delete(guildId);
-    stats.queue.currentActiveQueues = this.queue.size;
+    stats.queue.active = this.queue.size;
 
     if (this.queue.size === 0) {
       this.stopTimer();
@@ -281,30 +149,19 @@ class EmoteQueueManager {
     if (this.isProcessing || this.queue.size === 0) return;
 
     this.isProcessing = true;
-    stats.queueProcessingCycles++;
-    PerformanceMonitor.start('queue_cycle');
 
     try {
-      const guildsToProcess = Array.from(this.queue.keys())
+      const guildsToProcess = Array.from(this.queue.entries())
         .slice(0, MAX_CONCURRENT_UPLOADS)
-        .map((guildId) => ({ guildId, data: this.queue.get(guildId)! }))
-        .sort((a, b) => {
-          // Priority queue: higher priority first, then oldest first
-          if (a.data.priority !== b.data.priority) {
-            return b.data.priority - a.data.priority;
-          }
-          return a.data.createdAt.getTime() - b.data.createdAt.getTime();
-        });
+        .sort(([, a], [, b]) => a.createdAt.getTime() - b.createdAt.getTime());
 
-      const processPromises = guildsToProcess.map(({ guildId, data }) =>
+      const processPromises = guildsToProcess.map(([guildId, data]) =>
         this.processGuildQueue(guildId, data)
       );
 
       await Promise.allSettled(processPromises);
     } finally {
       this.isProcessing = false;
-      const cycleDuration = PerformanceMonitor.end('queue_cycle');
-      PerformanceMonitor.record('queue_cycle', cycleDuration);
     }
   }
 
@@ -314,47 +171,30 @@ class EmoteQueueManager {
       return;
     }
 
-    if (!data.startedProcessing) {
-      data.startedProcessing = new Date();
+    if (!data.startedAt) {
+      data.startedAt = new Date();
     }
 
-    // rate limiting with backoff
+    // Rate limiting check
     const lastApiCall = this.rateLimitMap.get(guildId) || 0;
     const now = Date.now();
-    const timeSinceLastCall = now - lastApiCall;
-
-    if (timeSinceLastCall < RATE_LIMIT_DELAY) {
+    if (now - lastApiCall < RATE_LIMIT_DELAY) {
       return;
     }
 
     const emote = data.emotes.firstKey()!;
     const url = data.emotes.first()!;
 
-    PerformanceMonitor.start(`upload_${guildId}_${emote}`);
     const success = await this.createEmojiWithRetry(url, emote, data);
-    const uploadTime = PerformanceMonitor.end(`upload_${guildId}_${emote}`);
-
-    data.processingTimes.push(uploadTime);
-    PerformanceMonitor.record('upload', uploadTime);
-
     data.emotes.delete(emote);
     this.rateLimitMap.set(guildId, now);
 
     if (success) {
-      data.successes++;
-      stats.totalSuccesses++;
+      data.results.success++;
+      stats.uploads.success++;
     } else if (this.queue.has(guildId)) {
-      data.failures++;
-      stats.totalFailures++;
-    }
-
-    stats.totalAttempts++;
-
-    // Update estimated completion time
-    if (data.processingTimes.length > 0) {
-      const avgTime = data.processingTimes.reduce((a, b) => a + b, 0) / data.processingTimes.length;
-      const remainingEmotes = data.emotes.size;
-      data.estimatedCompletion = new Date(Date.now() + (avgTime * remainingEmotes));
+      data.results.failed++;
+      stats.uploads.failed++;
     }
 
     if (data.emotes.size === 0) {
@@ -364,21 +204,21 @@ class EmoteQueueManager {
 
   private async completeGuildQueue(guildId: string, data: QueueData) {
     try {
-      const totalTime = data.startedProcessing
-        ? Date.now() - data.startedProcessing.getTime()
+      const totalTime = data.startedAt
+        ? Math.round((Date.now() - data.startedAt.getTime()) / 1000)
         : 0;
 
-      const timeStr = totalTime > 0 ? `⏱️ Time: ${Math.round(totalTime / 1000)}s\n` : '';
+      const message = [
+        `✅ **Emote sync complete!**`,
+        `📊 **Results:**`,
+        `• ✅ Successful: ${data.results.success}`,
+        `• ❌ Failures: ${data.results.failed}`,
+        `• 🔄 Skipped: ${data.results.skipped}`,
+        totalTime > 0 ? `⏱️ Time: ${totalTime}s` : '',
+        `📈 Use \`/stats-emotes\` for statistics`
+      ].filter(Boolean).join('\n');
 
-      await data.interaction.editReply(
-        `✅ **Emote sync complete!**\n` +
-        `📊 **Results:**\n` +
-        `• ✅ Successful: ${data.successes}\n` +
-        `• ❌ Failures: ${data.failures}\n` +
-        `• 🔄 Skipped (existing): ${data.removed}\n` +
-        timeStr +
-        `📈 Use \`/stats-emotes\` for detailed statistics`
-      );
+      await data.interaction.editReply(message);
     } catch (error) {
       logger.error(`Failed to send completion message for guild ${guildId}:`, error);
     }
@@ -424,14 +264,10 @@ class EmoteQueueManager {
       stats.errors.rateLimited++;
     } else if (message.includes("too large") || message.includes("resize")) {
       stats.errors.tooLarge++;
-    } else if (message.includes("maximum number")) {
-      stats.errors.maxEmotesReached++;
     } else if (message.includes("permission")) {
-      stats.errors.missingPermissions++;
+      stats.errors.permissions++;
     } else if (message.includes("network") || message.includes("timeout")) {
-      stats.errors.networkErrors++;
-    } else {
-      stats.errors.unknownErrors++;
+      stats.errors.network++;
     }
   }
 
@@ -543,89 +379,24 @@ class EmoteQueueManager {
     }
   }
 
-  private updateSystemStats(): void {
-    stats.system.uptime = Date.now() - stats.system.startTime.getTime();
-
-    // Update cache stats
-    stats.cache.entriesCount = apiCache.size;
-    if (stats.cache.hits + stats.cache.misses > 0) {
-      stats.cache.hitRate = (stats.cache.hits / (stats.cache.hits + stats.cache.misses)) * 100;
-    }
-
-    // Update API averages
-    if (stats.apiCalls.total > 0) {
-      stats.apiCalls.averageResponseTime = stats.apiCalls.responseTimeTotal / stats.apiCalls.total;
-    }
-
-    // Schedule next update
-    setTimeout(() => this.updateSystemStats(), 30000); // Update every 30 seconds
-  }
+  // Removed redundant updateSystemStats - stats are updated in real-time
 
   private resetStats(): void {
-    // Reset daily stats but keep system stats
     const systemBackup = { ...stats.system };
-
+    
     Object.assign(stats, {
-      totalAttempts: 0,
-      totalSuccesses: 0,
-      totalFailures: 0,
-      ffzAttempts: 0,
-      ffzSuccesses: 0,
-      ffzFailures: 0,
-      sevenTvAttempts: 0,
-      sevenTvSuccesses: 0,
-      sevenTvFailures: 0,
-      staticEmoteUploads: 0,
-      animatedEmoteUploads: 0,
-      typeFilterUsage: {
-        staticRequests: 0,
-        gifRequests: 0,
-        allRequests: 0,
-      },
-      averageUploadTime: 0,
-      totalUploadTime: 0,
-      uploadsProcessed: 0,
-      queueProcessingCycles: 0,
-      averageQueueTime: 0,
-      apiCalls: {
-        total: 0,
-        successful: 0,
-        failed: 0,
-        cached: 0,
-        responseTimeTotal: 0,
-        averageResponseTime: 0,
-      },
-      errors: {
-        rateLimited: 0,
-        tooLarge: 0,
-        maxEmotesReached: 0,
-        missingPermissions: 0,
-        networkErrors: 0,
-        unknownErrors: 0,
-      },
-      cache: {
-        hits: 0,
-        misses: 0,
-        hitRate: 0,
-        entriesCount: apiCache.size,
-      },
-      queue: {
-        totalGuildsProcessed: 0,
-        averageEmotesPerGuild: 0,
-        longestQueueTime: 0,
-        currentActiveQueues: this.queue.size,
-      },
-      system: {
-        ...systemBackup,
-        lastResetTime: new Date(),
-      },
+      uploads: { success: 0, failed: 0 },
+      platforms: { ffz: 0, sevenTv: 0 },
+      queue: { processed: 0, active: this.queue.size, longestWait: 0 },
+      api: { calls: 0, cached: 0, avgResponseTime: 0 },
+      errors: { rateLimited: 0, tooLarge: 0, permissions: 0, network: 0 },
+      system: { ...systemBackup, lastReset: new Date() },
     });
 
     logger.info("Daily statistics reset completed");
   }
 
   getDetailedStats() {
-    this.updateSystemStats();
     return { ...stats };
   }
 }
@@ -638,171 +409,99 @@ async function cachedFetch<T>(url: string, cacheKey: string): Promise<T | null> 
   const now = Date.now();
 
   if (cached && now - cached.timestamp < CACHE_TTL) {
-    logger.debug(`Using cached data for ${cacheKey}`);
-    stats.cache.hits++;
-    stats.apiCalls.cached++;
+    stats.api.cached++;
     return cached.data;
   }
 
-  stats.cache.misses++;
-  stats.apiCalls.total++;
-
   const startTime = Date.now();
+  stats.api.calls++;
 
   try {
     const data = await jsonFetch(url);
     const responseTime = Date.now() - startTime;
-
-    stats.apiCalls.successful++;
-    stats.apiCalls.responseTimeTotal += responseTime;
+    
+    // Update average response time
+    stats.api.avgResponseTime = 
+      (stats.api.avgResponseTime * (stats.api.calls - 1) + responseTime) / stats.api.calls;
 
     apiCache.set(cacheKey, { data, timestamp: now });
     return data;
   } catch (error) {
-    const responseTime = Date.now() - startTime;
-    stats.apiCalls.failed++;
-    stats.apiCalls.responseTimeTotal += responseTime;
-
     logger.error(`API fetch failed for ${url}:`, error);
     return null;
   }
 }
 
-// Create Discord embed for statistics display
+// Simplified statistics display
 export async function createStatsEmbed(
   interaction: CommandInteraction,
   specificStat?: string
 ): Promise<void> {
-  const detailedStats = queueManager.getDetailedStats();
+  const stats = queueManager.getDetailedStats();
   const embed = new EmbedBuilder()
     .setColor(0x00AE86)
     .setTimestamp()
     .setFooter({ text: 'EmoteBot Statistics' });
 
+  const totalUploads = stats.uploads.success + stats.uploads.failed;
+  const successRate = totalUploads > 0 ? ((stats.uploads.success / totalUploads) * 100).toFixed(1) : '0';
+  const uptime = Math.floor((Date.now() - stats.system.startTime.getTime()) / (1000 * 60 * 60));
+
   if (specificStat) {
-    // Show specific statistic category
     switch (specificStat.toLowerCase()) {
       case 'upload':
       case 'uploads':
         embed.setTitle('📤 Upload Statistics')
           .addFields(
-            { name: '✅ Total Successes', value: detailedStats.totalSuccesses.toLocaleString(), inline: true },
-            { name: '❌ Total Failures', value: detailedStats.totalFailures.toLocaleString(), inline: true },
-            { name: '🎯 Success Rate', value: `${detailedStats.totalAttempts > 0 ? ((detailedStats.totalSuccesses / detailedStats.totalAttempts) * 100).toFixed(1) : 0}%`, inline: true },
-            { name: '⏱️ Avg Upload Time', value: `${detailedStats.averageUploadTime.toFixed(0)}ms`, inline: true },
-            { name: '🖼️ Static Uploads', value: detailedStats.staticEmoteUploads.toLocaleString(), inline: true },
-            { name: '🎬 Animated Uploads', value: detailedStats.animatedEmoteUploads.toLocaleString(), inline: true },
-            { name: '🏷️ 7TV Successes', value: detailedStats.sevenTvSuccesses.toLocaleString(), inline: true },
-            { name: '🐸 FFZ Successes', value: detailedStats.ffzSuccesses.toLocaleString(), inline: true },
-            {
-              name: '🔍 Filter Usage',
-              value: `Static: ${detailedStats.typeFilterUsage.staticRequests}\nGIF: ${detailedStats.typeFilterUsage.gifRequests}\nAll: ${detailedStats.typeFilterUsage.allRequests}`,
-              inline: true
-            }
+            { name: '✅ Successful', value: stats.uploads.success.toLocaleString(), inline: true },
+            { name: '❌ Failed', value: stats.uploads.failed.toLocaleString(), inline: true },
+            { name: '🎯 Success Rate', value: `${successRate}%`, inline: true },
+            { name: '🏷️ 7TV', value: stats.platforms.sevenTv.toLocaleString(), inline: true },
+            { name: '🐸 FFZ', value: stats.platforms.ffz.toLocaleString(), inline: true }
           );
         break;
 
       case 'api':
         embed.setTitle('🔌 API Statistics')
           .addFields(
-            { name: '📡 Total Calls', value: detailedStats.apiCalls.total.toLocaleString(), inline: true },
-            { name: '✅ Successful', value: detailedStats.apiCalls.successful.toLocaleString(), inline: true },
-            { name: '❌ Failed', value: detailedStats.apiCalls.failed.toLocaleString(), inline: true },
-            { name: '💾 Cached', value: detailedStats.apiCalls.cached.toLocaleString(), inline: true },
-            { name: '⏱️ Avg Response', value: `${detailedStats.apiCalls.averageResponseTime.toFixed(0)}ms`, inline: true },
-            { name: '📊 Cache Hit Rate', value: `${detailedStats.cache.hitRate.toFixed(1)}%`, inline: true }
+            { name: '📡 Total Calls', value: stats.api.calls.toLocaleString(), inline: true },
+            { name: '💾 Cached', value: stats.api.cached.toLocaleString(), inline: true },
+            { name: '⏱️ Avg Response', value: `${stats.api.avgResponseTime.toFixed(0)}ms`, inline: true }
           );
         break;
 
       case 'errors':
         embed.setTitle('🚫 Error Statistics')
           .addFields(
-            { name: '⏳ Rate Limited', value: detailedStats.errors.rateLimited.toLocaleString(), inline: true },
-            { name: '📏 Too Large', value: detailedStats.errors.tooLarge.toLocaleString(), inline: true },
-            { name: '🔒 No Permission', value: detailedStats.errors.missingPermissions.toLocaleString(), inline: true },
-            { name: '🌐 Network Errors', value: detailedStats.errors.networkErrors.toLocaleString(), inline: true },
-            { name: '📊 Max Emotes', value: detailedStats.errors.maxEmotesReached.toLocaleString(), inline: true },
-            { name: '❓ Unknown', value: detailedStats.errors.unknownErrors.toLocaleString(), inline: true }
+            { name: '⏳ Rate Limited', value: stats.errors.rateLimited.toLocaleString(), inline: true },
+            { name: '📏 Too Large', value: stats.errors.tooLarge.toLocaleString(), inline: true },
+            { name: '🔒 Permissions', value: stats.errors.permissions.toLocaleString(), inline: true },
+            { name: '🌐 Network', value: stats.errors.network.toLocaleString(), inline: true }
           );
         break;
 
       case 'queue':
-        const activeQueues = Array.from(queueManager.EmoteQueue.values());
         embed.setTitle('⏳ Queue Statistics')
           .addFields(
-            { name: '🔄 Active Queues', value: detailedStats.queue.currentActiveQueues.toLocaleString(), inline: true },
-            { name: '🏁 Total Processed', value: detailedStats.queue.totalGuildsProcessed.toLocaleString(), inline: true },
-            { name: '📊 Avg Emotes/Guild', value: detailedStats.queue.averageEmotesPerGuild.toFixed(1), inline: true },
-            { name: '⏰ Longest Queue', value: `${Math.round(detailedStats.queue.longestQueueTime / 1000)}s`, inline: true },
-            { name: '🔄 Processing Cycles', value: detailedStats.queueProcessingCycles.toLocaleString(), inline: true },
-            {
-              name: '📈 Queue Details', value: activeQueues.length > 0 ?
-                activeQueues.map(q => `${q.guildName}: ${q.emotes.size} pending`).slice(0, 3).join('\n') +
-                (activeQueues.length > 3 ? `\n...and ${activeQueues.length - 3} more` : '') :
-                'No active queues', inline: false
-            }
-          );
-        break;
-
-      case 'system':
-        const uptimeHours = Math.floor(detailedStats.system.uptime / (1000 * 60 * 60));
-        const uptimeMinutes = Math.floor((detailedStats.system.uptime % (1000 * 60 * 60)) / (1000 * 60));
-
-        embed.setTitle('⚙️ System Statistics')
-          .addFields(
-            { name: '🟢 Uptime', value: `${uptimeHours}h ${uptimeMinutes}m`, inline: true },
-            { name: '🔄 Start Time', value: `<t:${Math.floor(detailedStats.system.startTime.getTime() / 1000)}:R>`, inline: true },
-            { name: '🔄 Last Reset', value: `<t:${Math.floor(detailedStats.system.lastResetTime.getTime() / 1000)}:R>`, inline: true },
-            { name: '💾 Cache Entries', value: detailedStats.cache.entriesCount.toLocaleString(), inline: true },
-            { name: '📊 Cache Hit Rate', value: `${detailedStats.cache.hitRate.toFixed(1)}%`, inline: true },
-            { name: '🔥 Processing', value: queueManager['isProcessing'] ? '✅ Active' : '❌ Idle', inline: true }
+            { name: '🔄 Active', value: stats.queue.active.toLocaleString(), inline: true },
+            { name: '🏁 Processed', value: stats.queue.processed.toLocaleString(), inline: true },
+            { name: '⏰ Longest Wait', value: `${Math.round(stats.queue.longestWait / 1000)}s`, inline: true }
           );
         break;
 
       default:
         embed.setTitle('❓ Unknown Statistic')
-          .setDescription('Available categories: `upload`, `api`, `errors`, `queue`, `system`');
+          .setDescription('Available: `upload`, `api`, `errors`, `queue`');
     }
   } else {
-    // Show overview of all statistics (condensed for 2000 char limit)
-    const successRate = detailedStats.totalAttempts > 0 ?
-      ((detailedStats.totalSuccesses / detailedStats.totalAttempts) * 100).toFixed(1) : '0';
-
-    const uptimeHours = Math.floor(detailedStats.system.uptime / (1000 * 60 * 60));
-
-    embed.setTitle('📊 EmoteBot Statistics Overview')
-      .setDescription(`**System Uptime:** ${uptimeHours} hours\n**Success Rate:** ${successRate}%`)
+    embed.setTitle('📊 EmoteBot Statistics')
+      .setDescription(`**Uptime:** ${uptime} hours | **Success Rate:** ${successRate}%`)
       .addFields(
-        {
-          name: '📤 Uploads',
-          value: `✅ ${detailedStats.totalSuccesses.toLocaleString()}\n❌ ${detailedStats.totalFailures.toLocaleString()}\n⏱️ ${detailedStats.averageUploadTime.toFixed(0)}ms avg`,
-          inline: true
-        },
-        {
-          name: '🔌 API',
-          value: `📡 ${detailedStats.apiCalls.total.toLocaleString()} calls\n💾 ${detailedStats.cache.hitRate.toFixed(1)}% cache hit\n⏱️ ${detailedStats.apiCalls.averageResponseTime.toFixed(0)}ms avg`,
-          inline: true
-        },
-        {
-          name: '⏳ Queue',
-          value: `🔄 ${detailedStats.queue.currentActiveQueues} active\n🏁 ${detailedStats.queue.totalGuildsProcessed} completed\n📊 ${detailedStats.queue.averageEmotesPerGuild.toFixed(1)} avg/guild`,
-          inline: true
-        },
-        {
-          name: '🏷️ Platform Stats',
-          value: `7TV: ${detailedStats.sevenTvSuccesses}✅ ${detailedStats.sevenTvFailures}❌\nFFZ: ${detailedStats.ffzSuccesses}✅ ${detailedStats.ffzFailures}❌`,
-          inline: true
-        },
-        {
-          name: '🚫 Top Errors',
-          value: `Rate Limited: ${detailedStats.errors.rateLimited}\nToo Large: ${detailedStats.errors.tooLarge}\nNetwork: ${detailedStats.errors.networkErrors}`,
-          inline: true
-        },
-        {
-          name: '💡 Commands',
-          value: '`/stats-emotes upload` - Upload details\n`/stats-emotes api` - API metrics\n`/stats-emotes errors` - Error breakdown',
-          inline: true
-        }
+        { name: '📤 Uploads', value: `✅ ${stats.uploads.success}\n❌ ${stats.uploads.failed}`, inline: true },
+        { name: '🔌 API', value: `📡 ${stats.api.calls}\n💾 ${stats.api.cached} cached`, inline: true },
+        { name: '⏳ Queue', value: `🔄 ${stats.queue.active} active\n🏁 ${stats.queue.processed} done`, inline: true },
+        { name: '🏷️ Platforms', value: `7TV: ${stats.platforms.sevenTv}\nFFZ: ${stats.platforms.ffz}`, inline: true },
+        { name: '🚫 Errors', value: `Rate: ${stats.errors.rateLimited}\nSize: ${stats.errors.tooLarge}`, inline: true }
       );
   }
 
@@ -811,31 +510,27 @@ export async function createStatsEmbed(
 
 // Export legacy interface for backwards compatibility
 export const EmoteQueue = queueManager.EmoteQueue;
-export const queue_attempts = () => stats.totalAttempts;
-export const queue_add_success = () => stats.totalSuccesses;
-export const FFZ_emoji_queue_count = () => stats.ffzSuccesses;
-export const FFZ_emoji_queue_attempt_count = () => stats.ffzAttempts;
+export const queue_attempts = () => stats.uploads.success + stats.uploads.failed;
+export const queue_add_success = () => stats.uploads.success;
+export const FFZ_emoji_queue_count = () => stats.platforms.ffz;
+export const FFZ_emoji_queue_attempt_count = () => stats.platforms.ffz;
 
 // API functions
 export async function fetch7tvGlobalEmotes(): Promise<SevenTVEmotes[]> {
-  stats.sevenTvAttempts++;
   const data = await cachedFetch<SevenTVEmotes[]>(
     "https://7tv.io/v3/emote-sets/global",
     "7tv_global"
   );
-  if (data) stats.sevenTvSuccesses++;
-  else stats.sevenTvFailures++;
+  if (data) stats.platforms.sevenTv++;
   return data || [];
 }
 
 export async function fetch7tvChannelEmotes(channel: string): Promise<SevenTVChannel[]> {
-  stats.sevenTvAttempts++;
   const data = await cachedFetch<SevenTVChannel[]>(
     `https://7tv.io/v3/users/twitch/${channel}`,
     `7tv_${channel}`
   );
-  if (data) stats.sevenTvSuccesses++;
-  else stats.sevenTvFailures++;
+  if (data) stats.platforms.sevenTv++;
   return data || [];
 }
 
@@ -895,16 +590,10 @@ export async function sync_7tv_emotes(interaction: CommandInteraction): Promise<
 
   queueManager.addToQueue(interaction.guild!.id, {
     emotes: finalEmotes,
-    successes: 0,
-    failures: 0,
-    removed: detectedExisting,
+    results: { success: 0, failed: 0, skipped: detectedExisting },
     interaction: interaction,
-    priority: 1,
     createdAt: new Date(),
-    processingTimes: [],
-    guildName: interaction.guild!.name,
-    channelName: channel!,
-    userTag: interaction.user.tag,
+    metadata: { guildName: interaction.guild!.name, channelName: channel!, userTag: interaction.user.tag },
   });
 
   const estimatedMinutes = Math.ceil(finalEmotes.size / MAX_CONCURRENT_UPLOADS / 2);
@@ -934,7 +623,6 @@ export async function sync_ffz_emotes(interaction: CommandInteraction): Promise<
 
   await interaction.editReply(`🔍 Checking FrankerFaceZ for **${channel}** emotes...`);
 
-  stats.ffzAttempts++;
   const ffzEmotes: FFZRoom = await cachedFetch(
     `https://api.frankerfacez.com/v1/room/${channel}`,
     `ffz_${channel}`
@@ -942,7 +630,6 @@ export async function sync_ffz_emotes(interaction: CommandInteraction): Promise<
 
   if (!ffzEmotes?.room?.set || !ffzEmotes.sets?.[ffzEmotes.room.set]?.emoticons) {
     await interaction.editReply(`❌ No emotes found for **${channel}** on FrankerFaceZ`);
-    stats.ffzFailures++;
     return;
   }
 
@@ -961,19 +648,13 @@ export async function sync_ffz_emotes(interaction: CommandInteraction): Promise<
     return;
   }
 
-  stats.ffzSuccesses++;
+  stats.platforms.ffz++;
   queueManager.addToQueue(interaction.guild!.id, {
     emotes: finalEmotes,
-    successes: 0,
-    failures: 0,
-    removed: detectedExisting,
+    results: { success: 0, failed: 0, skipped: detectedExisting },
     interaction: interaction,
-    priority: 1,
     createdAt: new Date(),
-    processingTimes: [],
-    guildName: interaction.guild!.name,
-    channelName: channel,
-    userTag: interaction.user.tag,
+    metadata: { guildName: interaction.guild!.name, channelName: channel, userTag: interaction.user.tag },
   });
 
   const estimatedMinutes = Math.ceil(finalEmotes.size / MAX_CONCURRENT_UPLOADS / 2);
@@ -1004,15 +685,10 @@ async function processEmotes<T>(
   guild: any,
   mapper: (emote: T) => { name: string; url: string; isAnimated?: boolean },
   typeFilter?: string
-): Promise<{
-  finalEmotes: Collection<string, string>;
-  detectedExisting: number;
-  skippedByType: number;
-}> {
+): Promise<{ finalEmotes: Collection<string, string>; detectedExisting: number; }> {
   const existingEmojis = new Set(guild.emojis.cache.map((e: any) => e.name));
   const finalEmotes: Collection<string, string> = new Collection();
   let detectedExisting = 0;
-  let skippedByType = 0;
 
   for (const emote of emotes) {
     const { name, url, isAnimated } = mapper(emote);
@@ -1021,12 +697,7 @@ async function processEmotes<T>(
 
     // Apply type filter if specified
     if (typeFilter && isAnimated !== undefined) {
-      if (typeFilter === "gif" && !isAnimated) {
-        skippedByType++;
-        continue;
-      }
-      if (typeFilter === "static" && isAnimated) {
-        skippedByType++;
+      if ((typeFilter === "gif" && !isAnimated) || (typeFilter === "static" && isAnimated)) {
         continue;
       }
     }
@@ -1038,7 +709,7 @@ async function processEmotes<T>(
     }
   }
 
-  return { finalEmotes, detectedExisting, skippedByType };
+  return { finalEmotes, detectedExisting };
 }
 
 // utility functions

@@ -14,8 +14,11 @@ const config = {
   isDev: process.env.DEV === "true",
   respawn: process.env.SHARD_RESPAWN !== "false",
   timeout: parseInt(process.env.SHARD_TIMEOUT || "30000"),
-  redisUrl: process.env.REDIS_URL || "redis://localhost:6379",
-  wsPort: parseInt(process.env.WS_PORT || "8080"),
+  // Developer-friendly port configuration to avoid conflicts
+  redisUrl: process.env.REDIS_URL || (process.env.DEV === "true" ? "redis://localhost:6380" : "redis://localhost:6379"),
+  wsPort: parseInt(process.env.WS_PORT || (process.env.DEV === "true" ? "8081" : "8080")),
+  // Fallback ports for development in case primary dev port is also in use
+  devFallbackPorts: [8082, 8083, 8084, 8085],
   useRedis: process.env.USE_REDIS === "true",
   useWebSocket: process.env.USE_WEBSOCKET === "true",
   healthCheckInterval: parseInt(process.env.HEALTH_CHECK_INTERVAL || "30000"),
@@ -151,17 +154,67 @@ class WebSocketCommunicationManager implements CommunicationManager {
   private server?: WebSocketServer;
   private clients = new Map<number, WebSocket>();
   private callbacks: Array<(message: InterShardMessage) => void> = [];
+  private actualPort?: number;
 
   async initialize(): Promise<void> {
+    return this.tryInitializeWithFallback(config.wsPort);
+  }
+
+  private async tryInitializeWithFallback(port: number, attemptedPorts: number[] = []): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
+        attemptedPorts.push(port);
+        
+        // Clean up previous server if exists
+        if (this.server) {
+          this.server.removeAllListeners();
+          this.server.close();
+        }
+        
         this.server = new WebSocketServer({
-          port: config.wsPort,
+          port,
           verifyClient: (info) => {
             // Add authentication logic here if needed
             return true;
           },
         });
+
+        this.server.on("error", (error: any) => {
+          const errorDetails = {
+            message: error.message || 'Unknown error',
+            code: error.code || 'No code',
+            errno: error.errno || 'No errno',
+            port: port,
+            type: error.constructor.name
+          };
+          
+          logger.error(`WebSocket server error details:`, errorDetails);
+          
+          if (error.code === 'EADDRINUSE' && config.isDev) {
+            // Try fallback ports in development (max 5 attempts)
+            const fallbackPorts = config.devFallbackPorts.filter(p => !attemptedPorts.includes(p));
+            if (fallbackPorts.length > 0 && attemptedPorts.length < 5) {
+              const nextPort = fallbackPorts[0];
+              logger.warn(`⚠️ Port ${port} in use, trying fallback port ${nextPort} (attempt ${attemptedPorts.length + 1}/5)`);
+              
+              setTimeout(() => {
+                this.tryInitializeWithFallback(nextPort, attemptedPorts).then(resolve).catch(reject);
+              }, 500); // Small delay between server startup attempts
+              return;
+            } else {
+              logger.error(`❌ All fallback ports exhausted. Attempted ports: ${attemptedPorts.join(', ')}`);
+              logger.info(`💡 For local development, you can disable WebSocket with USE_WEBSOCKET=false in your environment`);
+            }
+          }
+          
+          if (error.code === 'EADDRINUSE') {
+            logger.error(`❌ Port ${port} is already in use. Try setting WS_PORT to a different port or disable WebSocket communication.`);
+            logger.info(`💡 For development, you can set WS_PORT=8082 or disable with USE_WEBSOCKET=false`);
+          }
+          reject(error);
+        });
+
+        this.actualPort = port;
 
         this.server.on("connection", (ws, req) => {
           const shardId = parseInt(
@@ -197,12 +250,15 @@ class WebSocketCommunicationManager implements CommunicationManager {
 
         this.server.on("listening", () => {
           logger.info(
-            `✅ WebSocket communication server listening on port ${config.wsPort}`,
+            `✅ WebSocket communication server listening on port ${this.actualPort}`,
           );
+          if (config.isDev && this.actualPort !== config.wsPort) {
+            logger.info(`👨‍💻 Dev mode: Using fallback port ${this.actualPort} (original ${config.wsPort} was in use)`);
+          } else if (config.isDev) {
+            logger.info(`👨‍💻 Dev mode: Using port ${this.actualPort} (default dev port is 8081)`);
+          }
           resolve();
         });
-
-        this.server.on("error", reject);
       } catch (error) {
         reject(error);
       }
@@ -844,8 +900,13 @@ class EnhancedShardManager extends EventEmitter {
         allGuilds.push(...health.guildDetails);
       }
 
-      if (health.status === "ready") {
+      // Count shards as healthy if they're not dead or disconnected
+      if (health.status !== "dead" && health.status !== "disconnected") {
         healthyShards++;
+      }
+
+      // Only collect detailed stats from ready shards
+      if (health.status === "ready") {
         totalUptime += health.uptime;
 
         if (health.ping > 0) {
@@ -1137,13 +1198,26 @@ class EnhancedShardManager extends EventEmitter {
       logger.info(`Environment: ${config.isDev ? "Development" : "Production"}`);
       logger.info(`Runtime: Bun ${Bun.version}`);
       logger.info(`Respawn: ${config.respawn ? "Enabled" : "Disabled"}`);
-      logger.info(`Communication: ${config.useRedis ? "Redis" : config.useWebSocket ? "WebSocket" : "Direct"}`);
+      logger.info(`Communication: ${config.useRedis ? `Redis (${config.redisUrl})` : config.useWebSocket ? `WebSocket (port ${config.wsPort})` : "Direct"}`);
 
       // Initialize cross-server communication manager if configured
       if (this.communicationManager) {
-        await this.communicationManager.initialize();
-        logger.info("✅ Cross-server communication initialized");
-      } else {
+        try {
+          await this.communicationManager.initialize();
+          logger.info("✅ Cross-server communication initialized");
+        } catch (error) {
+          if (config.isDev && config.useWebSocket) {
+            logger.warn("⚠️ Cross-server communication failed to initialize in development mode, falling back to single-server mode");
+            logger.info("💡 This is normal for local development - the bot will still function with limited inter-shard communication");
+            this.communicationManager = undefined;
+          } else {
+            logger.error("❌ Failed to initialize cross-server communication:", error);
+            throw error;
+          }
+        }
+      }
+      
+      if (!this.communicationManager) {
         logger.info("💻 Single-server mode - no cross-server communication");
       }
 

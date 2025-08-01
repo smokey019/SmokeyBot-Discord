@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { TextChannel } from 'discord.js';
+import { TextChannel, MessageFlags } from 'discord.js';
 import type { runEvent } from '..';
 import { spawnMonster } from '../../pokemon/spawn-monster';
 
@@ -12,9 +12,9 @@ export async function run(e: runEvent) {
     return;
   if (e.interaction.user.id == '90514165138989056') {
     await spawnMonster(e.interaction, e.cache);
-    await e.interaction.reply({ content: '👍', ephemeral: true });
+    await e.interaction.reply({ content: '👍', flags: MessageFlags.Ephemeral });
   } else {
-    await e.interaction.reply({ content: '😠 nt', ephemeral: true });
+    await e.interaction.reply({ content: '😠 nt', flags: MessageFlags.Ephemeral });
   }
 }
 

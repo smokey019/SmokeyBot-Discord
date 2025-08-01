@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder } from "discord.js";
+import { CommandInteraction, EmbedBuilder, MessageFlags } from "discord.js";
 import { discordClient } from "../../bot";
 import { GLOBAL_COOLDOWN, type ICache } from "../../clients/cache";
 import { getUserDBCount } from "../../clients/database";
@@ -358,7 +358,7 @@ export async function checkServerWeather(
     if (!boost) {
       await interaction.reply({
         content: "Unable to determine current weather. Please try again later.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -373,7 +373,7 @@ export async function checkServerWeather(
     logger.error("Error checking server weather:", error);
     await interaction.reply({
       content: "An error occurred while checking the weather.",
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 }
@@ -471,7 +471,7 @@ export async function getBotStats(interaction: CommandInteraction): Promise<void
     logger.error("Error getting bot stats:", error);
     await interaction.reply({
       content: "An error occurred while gathering bot statistics.",
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 }

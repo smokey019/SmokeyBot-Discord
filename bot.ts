@@ -51,9 +51,9 @@ const config = {
   statsReportInterval: parseInt(process.env.STATS_REPORT_INTERVAL || "30000"), // 30 seconds
   heartbeatInterval: parseInt(process.env.HEARTBEAT_INTERVAL || "60000"), // 1 minute
   maxReconnectAttempts: parseInt(process.env.MAX_RECONNECT_ATTEMPTS || "5"),
-  // Communication settings
-  redisUrl: process.env.REDIS_URL || "redis://localhost:6379",
-  wsManagerUrl: process.env.WS_MANAGER_URL || "ws://localhost:8080",
+  // Communication settings - developer ports to avoid conflicts
+  redisUrl: process.env.REDIS_URL || (isDev ? "redis://localhost:6380" : "redis://localhost:6379"),
+  wsManagerUrl: process.env.WS_MANAGER_URL || (isDev ? "ws://localhost:8081" : "ws://localhost:8080"),
   useRedis: process.env.USE_REDIS === "true",
   useWebSocket: process.env.USE_WEBSOCKET === "true",
   // Performance settings
@@ -248,17 +248,34 @@ class WebSocketCommunicationManager implements CommunicationManager {
   private callbacks: Array<(message: InterShardMessage) => void> = [];
   private connected = false;
   private reconnectTimer?: Timer;
+  private currentUrl?: string;
 
   async initialize(): Promise<void> {
+    return this.tryConnectWithFallback(config.wsManagerUrl);
+  }
+
+  private async tryConnectWithFallback(baseUrl: string, attemptedPorts: number[] = []): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        const url = `${config.wsManagerUrl}?shardId=${config.shardId}`;
+        const url = `${baseUrl}?shardId=${config.shardId}`;
+        this.currentUrl = url;
+        
+        // Clean up previous WebSocket if exists
+        if (this.ws) {
+          this.ws.removeAllListeners();
+          if (this.ws.readyState === WebSocket.OPEN) {
+            this.ws.close();
+          }
+        }
+        
         this.ws = new WebSocket(url);
+        const currentPort = parseInt(baseUrl.split(':').pop() || '8081');
+        attemptedPorts.push(currentPort);
 
         this.ws.on("open", () => {
           this.connected = true;
           shardState.communicationConnected = true;
-          logger.info("✅ WebSocket communication connected");
+          logger.info(`✅ WebSocket communication connected to ${baseUrl}`);
           resolve();
         });
 
@@ -271,20 +288,55 @@ class WebSocketCommunicationManager implements CommunicationManager {
           }
         });
 
-        this.ws.on("close", () => {
+        this.ws.on("close", (code, reason) => {
           this.connected = false;
           shardState.communicationConnected = false;
-          logger.warn("WebSocket disconnected, attempting reconnect...");
+          logger.warn(`WebSocket disconnected (code: ${code}, reason: ${reason || 'unknown'}), attempting reconnect...`);
           this.scheduleReconnect();
         });
 
         this.ws.on("error", (error) => {
-          logger.error("WebSocket error:", error);
+          // Extract more useful error information
+          const errorDetails = {
+            message: error.message || 'Unknown error',
+            code: (error as any).code || 'No code',
+            errno: (error as any).errno || 'No errno',
+            port: currentPort,
+            type: error.constructor.name
+          };
+          
+          logger.error(`WebSocket error details:`, errorDetails);
+          
+          if (!this.connected && config.isDev) {
+            // Try fallback ports in development (max 5 attempts)
+            const fallbackPorts = [8082, 8083, 8084, 8085, 8086].filter(p => !attemptedPorts.includes(p));
+            
+            if (fallbackPorts.length > 0 && attemptedPorts.length < 5) {
+              const nextPort = fallbackPorts[0];
+              const fallbackUrl = baseUrl.replace(/:\d+$/, `:${nextPort}`);
+              logger.warn(`⚠️ WebSocket connection failed on port ${currentPort}, trying fallback port ${nextPort} (attempt ${attemptedPorts.length + 1}/5)`);
+              
+              // Clean up current WebSocket before trying next
+              if (this.ws) {
+                this.ws.removeAllListeners();
+              }
+              
+              setTimeout(() => {
+                this.tryConnectWithFallback(fallbackUrl, attemptedPorts).then(resolve).catch(reject);
+              }, 1000); // Add small delay between attempts
+              return;
+            } else {
+              logger.error(`❌ All fallback ports exhausted. Attempted ports: ${attemptedPorts.join(', ')}`);
+              logger.info(`💡 For local development, you can disable WebSocket with USE_WEBSOCKET=false in your environment`);
+            }
+          }
+          
           if (!this.connected) {
             reject(error);
           }
         });
       } catch (error) {
+        logger.error(`Failed to create WebSocket connection:`, error);
         reject(error);
       }
     });
@@ -604,14 +656,7 @@ async function handleShardCommand(data: any): Promise<void> {
  */
 async function respondToHealthCheck(message: InterShardMessage): Promise<void> {
   const health = await getDetailedHealth();
-  
-  // Don't respond to manager requests (fromShard: -1)
-  if (message.fromShard !== undefined && message.fromShard >= 0) {
-    await sendInterShardMessage("healthResponse", health, message.fromShard);
-  } else {
-    // If from manager, send response back through manager
-    sendToManager("healthResponse", health);
-  }
+  await sendInterShardMessage("healthResponse", health, message.fromShard);
 }
 
 /**
@@ -620,19 +665,11 @@ async function respondToHealthCheck(message: InterShardMessage): Promise<void> {
 async function respondToGuildStatsRequest(message: InterShardMessage): Promise<void> {
   const guildStats = await getGuildShardStats();
   const currentShardId = config.actualShardId >= 0 ? config.actualShardId : config.shardId;
-  const responseData = {
+  await sendInterShardMessage("guildStatsResponse", {
     shardId: currentShardId,
     guilds: guildStats,
     requestId: message.data.requestId
-  };
-  
-  // Don't respond to manager requests (fromShard: -1) via inter-shard
-  if (message.fromShard !== undefined && message.fromShard >= 0) {
-    await sendInterShardMessage("guildStatsResponse", responseData, message.fromShard);
-  } else {
-    // If from manager, send response back through manager
-    sendToManager("guildStatsReceived", responseData);
-  }
+  }, message.fromShard);
 }
 
 /**
@@ -843,6 +880,11 @@ function updatePresence(activity?: any): void {
  */
 async function executeCommand(interaction: CommandInteraction): Promise<void> {
   const startTime = Bun.nanoseconds();
+  
+  // Debug logging for development mode
+  if (config.isDev) {
+    logger.debug(`[Shard ${config.actualShardId}] Processing command: ${interaction.commandName} from ${interaction.user.username} in ${interaction.guild?.name}`);
+  }
 
   try {
     if (!interaction.guild) return;
@@ -1178,11 +1220,11 @@ discordClient.on("ready", async () => {
     // Update with actual shard ID assigned by Discord.js
     const actualShardId = discordClient.shard?.ids[0] ?? 0;
     const wasTemporary = config.actualShardId === -1;
-    
+
     config.actualShardId = actualShardId;
     config.shardId = actualShardId; // Update the main config
     IS_COORDINATOR = actualShardId === 0;
-    
+
     logger.info(`🎉 Discord client ready as ${discordClient.user?.tag}`);
     logger.info(`📊 Connected to ${discordClient.guilds.cache.size} guilds`);
     logger.info(`🔧 Shard ${config.shardId}/${config.totalShards}${wasTemporary ? ' (ID updated from temporary)' : ''}`);
@@ -1195,7 +1237,7 @@ discordClient.on("ready", async () => {
         } else if (config.useWebSocket) {
           communicationManager = new WebSocketCommunicationManager();
         }
-        
+
         if (communicationManager) {
           await communicationManager.initialize();
           communicationManager.subscribe((message) => {
@@ -1206,7 +1248,13 @@ discordClient.on("ready", async () => {
           logger.info("✅ Coordinator inter-shard communication initialized");
         }
       } catch (error) {
-        logger.error("❌ Failed to initialize coordinator communication:", error);
+        if (config.isDev && config.useWebSocket) {
+          logger.warn("⚠️ Coordinator communication failed to initialize in development mode, falling back to direct communication");
+          logger.info("💡 This is normal for local development - inter-shard communication will be limited but the bot will still function");
+          communicationManager = undefined;
+        } else {
+          logger.error("❌ Failed to initialize coordinator communication:", error);
+        }
       }
     } else {
       logger.info("🔗 Worker shard - will communicate through manager");
@@ -1269,9 +1317,10 @@ discordClient.on("ready", async () => {
       actualShardId: config.actualShardId,
       isCoordinator: IS_COORDINATOR,
     });
-    
+
     // Send inter-shard ready message with actual shard ID
     await sendInterShardMessage("ready", {
+
       shardId: config.shardId,
       guilds: discordClient.guilds.cache.size,
       users: discordClient.users.cache.size,
@@ -1287,9 +1336,39 @@ discordClient.on("ready", async () => {
   }
 });
 
+// Track processed interactions to prevent duplicates
+const processedInteractions = new Set<string>();
+
 discordClient.on("interactionCreate", async (interaction) => {
   if (interaction.isCommand()) {
-    await executeCommand(interaction);
+    // Create a unique identifier for this interaction
+    const interactionId = `${interaction.id}-${interaction.commandName}-${interaction.user.id}`;
+    
+    // Check if we've already processed this interaction
+    if (processedInteractions.has(interactionId)) {
+      if (config.isDev) {
+        logger.warn(`[Shard ${config.actualShardId}] Duplicate interaction detected and ignored: ${interaction.commandName} from ${interaction.user.username}`);
+      }
+      return;
+    }
+    
+    // Mark this interaction as being processed
+    processedInteractions.add(interactionId);
+    
+    // Clean up old interaction IDs periodically (keep last 1000)
+    if (processedInteractions.size > 1000) {
+      const idsArray = Array.from(processedInteractions);
+      processedInteractions.clear();
+      idsArray.slice(-500).forEach(id => processedInteractions.add(id));
+    }
+    
+    try {
+      await executeCommand(interaction);
+    } catch (error) {
+      logger.error(`Error executing command ${interaction.commandName}:`, error);
+      // Remove from processed set if execution failed
+      processedInteractions.delete(interactionId);
+    }
   }
 });
 
@@ -1603,7 +1682,7 @@ async function startBot(): Promise<void> {
     );
     logger.info(`👑 Role: ${IS_COORDINATOR ? "Coordinator" : "Worker"}`);
     logger.info(
-      `📡 Communication: ${config.useRedis ? "Redis" : config.useWebSocket ? "WebSocket" : "Direct"
+      `📡 Communication: ${config.useRedis ? `Redis (${config.redisUrl})` : config.useWebSocket ? `WebSocket (${config.wsManagerUrl})` : "Direct"
       }`
     );
     logger.info(`💾 Message Cache Limit: ${config.messageMemoryLimit}`);

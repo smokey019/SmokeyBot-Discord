@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder } from "discord.js";
+import { CommandInteraction, EmbedBuilder, MessageFlags } from "discord.js";
 import { databaseClient, getUser } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
 import { MonsterTable, type IMonsterModel } from "../../models/Monster";
@@ -66,7 +66,7 @@ export async function startTrade(
     if (!toUser) {
       await interaction.reply({
         content: "You need to mention someone to trade with!",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -74,7 +74,7 @@ export async function startTrade(
     if (toUser.id === interaction.user.id) {
       await interaction.reply({
         content: "You cannot trade with yourself!",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -82,7 +82,7 @@ export async function startTrade(
     if (!monsterIdOption) {
       await interaction.reply({
         content: "Please specify a monster ID to trade.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -91,7 +91,7 @@ export async function startTrade(
     if (isNaN(tradedMonsterId) || tradedMonsterId <= 0) {
       await interaction.reply({
         content: "Please provide a valid monster ID.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -101,7 +101,7 @@ export async function startTrade(
     if (!recipient) {
       await interaction.reply({
         content: `Could not find user <@${toUser.id}>. They need to catch a Pokémon first!`,
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -116,7 +116,7 @@ export async function startTrade(
     if (!tradeValidation.valid) {
       await interaction.reply({
         content: tradeValidation.error,
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -127,7 +127,7 @@ export async function startTrade(
     if (!tradeResult.success) {
       await interaction.reply({
         content: `Failed to create trade: ${tradeResult.error}`,
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -137,7 +137,7 @@ export async function startTrade(
     if (!monsterDB) {
       await interaction.reply({
         content: "Monster not found.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -146,7 +146,7 @@ export async function startTrade(
     if (!pokemon) {
       await interaction.reply({
         content: "Error retrieving Pokémon data.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -164,7 +164,7 @@ export async function startTrade(
 
     await interaction.reply({
       content: errorMessage,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 }
@@ -200,14 +200,14 @@ export async function parseTrade(
       default:
         await interaction.reply({
           content: "Unknown trade command. Use `start`, `accept`, or `cancel`.",
-          ephemeral: true
+          flags: MessageFlags.Ephemeral
         });
     }
   } catch (error) {
     logger.error("Error in parseTrade:", error);
     await interaction.reply({
       content: "An error occurred while processing the trade command.",
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 }
@@ -336,7 +336,7 @@ export async function confirmTrade(interaction: CommandInteraction): Promise<voi
     if (!trades.length) {
       await interaction.reply({
         content: "You don't have any trades to accept.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -348,7 +348,7 @@ export async function confirmTrade(interaction: CommandInteraction): Promise<voi
     if (!monster) {
       await interaction.reply({
         content: "The traded monster is no longer available.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -366,7 +366,7 @@ export async function confirmTrade(interaction: CommandInteraction): Promise<voi
       logger.error(`Failed to update monster ${trade.monster_id} for trade`);
       await interaction.reply({
         content: "There was an error completing the trade.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -409,7 +409,7 @@ export async function confirmTrade(interaction: CommandInteraction): Promise<voi
 
     await interaction.reply({
       content: errorMessage,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 }
@@ -434,7 +434,7 @@ export async function cancelTrade(interaction: CommandInteraction): Promise<void
     if (!trades.length) {
       await interaction.reply({
         content: "You don't have any active trades to cancel.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -452,7 +452,7 @@ export async function cancelTrade(interaction: CommandInteraction): Promise<void
     } else {
       await interaction.reply({
         content: "Failed to cancel the trade.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
 
@@ -460,7 +460,7 @@ export async function cancelTrade(interaction: CommandInteraction): Promise<void
     logger.error("Error in cancelTrade:", error);
     await interaction.reply({
       content: "An unexpected error occurred while cancelling the trade.",
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 }

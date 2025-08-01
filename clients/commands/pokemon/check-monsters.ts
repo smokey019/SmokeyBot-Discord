@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { TextChannel } from "discord.js";
+import { TextChannel, MessageFlags } from "discord.js";
 import type { runEvent } from "..";
 import { GLOBAL_COOLDOWN } from "../../../clients/cache";
 import { getCurrentTime } from "../../../utils";
@@ -100,7 +100,7 @@ export async function run(e: runEvent) {
           try {
             await e.interaction.followUp({
               content: errorMessage,
-              ephemeral: true,
+              flags: MessageFlags.Ephemeral,
             });
           } catch (followUpError) {
             logger.error(
@@ -129,7 +129,7 @@ export async function run(e: runEvent) {
           try {
             await e.interaction.followUp({
               content: criticalMessage,
-              ephemeral: true,
+              flags: MessageFlags.Ephemeral,
             });
           } catch (followUpError) {
             logger.error(
@@ -142,7 +142,7 @@ export async function run(e: runEvent) {
         try {
           await e.interaction.reply({
             content: criticalMessage,
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
         } catch (replyError) {
           logger.error("Final error notification failed:", replyError);
