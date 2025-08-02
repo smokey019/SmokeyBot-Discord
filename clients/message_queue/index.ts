@@ -718,56 +718,40 @@ export function getMessageQueuePerformance(): PerformanceSample[] {
 }
 
 /**
- * Export comprehensive stats in multiple formats
+ * Get health status and recent errors for reporting
  */
-export function exportQueueStats() {
+export function getQueueHealth(): {
+  status: string;
+  queueBacklog: boolean;
+  successRate: number;
+  recentErrors: Array<[string, number]>;
+} {
   const stats = messageQueue.getStats();
-  const performance = messageQueue.getPerformanceSamples();
-
   return {
-    // Summary stats for dashboards
-    summary: {
-      uptime: stats.uptime,
-      processed: stats.processed,
-      failed: stats.failed,
-      successRate: stats.successRate,
-      throughputPerMinute: stats.throughputPerMinute,
-      currentQueueSize: stats.currentQueueSize,
-      isHealthy: stats.isHealthy,
-    },
-
-    // Detailed stats for analysis
-    detailed: stats,
-
-    // Performance data for graphs
-    performance: performance,
-
-    // Health check
-    health: {
-      status: stats.isHealthy ? "healthy" : "unhealthy",
-      queueBacklog: stats.currentQueueSize >= stats.backlogThreshold,
-      successRate: stats.successRate,
-      recentErrors: Object.entries(stats.errorsByType)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 5),
-    },
-
-    // CSV-ready data for exports
-    csvData: {
-      messageTypes: Object.entries(stats.messagesByType).map(([type, data]) => ({
-        type,
-        ...data,
-      })),
-      priorityLevels: Object.entries(stats.messagesByPriority).map(([priority, data]) => ({
-        priority: parseInt(priority),
-        ...data,
-      })),
-      errors: Object.entries(stats.errorsByType).map(([type, count]) => ({
-        errorType: type,
-        count,
-      })),
-    },
+    status: stats.isHealthy ? "healthy" : "unhealthy",
+    queueBacklog: stats.currentQueueSize >= stats.backlogThreshold,
+    successRate: stats.successRate,
+    recentErrors: Object.entries(stats.errorsByType)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5),
   };
+}
+
+/**
+ * Format duration in milliseconds to human readable format
+ */
+export function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms.toFixed(0)}ms`;
+
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `${days}d ${hours % 24}h ${minutes % 60}m`;
+  if (hours > 0) return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
+  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+  return `${seconds}s`;
 }
 
 /**

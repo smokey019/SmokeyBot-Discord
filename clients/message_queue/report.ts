@@ -1,9 +1,10 @@
 import { EmbedBuilder, type CommandInteraction } from "discord.js";
 import {
-	exportQueueStats,
 	getMessageQueueStats,
+	getQueueHealth,
+	formatDuration,
 	type QueueStatistics
-} from "./index"; // Adjust path to your message queue file
+} from "./index";
 
 /**
  * Creates a Discord embed displaying message queue statistics
@@ -13,42 +14,42 @@ import {
 export async function createQueueStatsEmbed(interaction: CommandInteraction): Promise<EmbedBuilder> {
   const statisticType = interaction.options.getString('statistic')?.toLowerCase();
   const stats = getMessageQueueStats();
-  const exportedStats = exportQueueStats();
+  const health = getQueueHealth();
 
   // Choose embed based on requested statistic type
   switch (statisticType) {
     case 'performance':
     case 'perf':
-      return createPerformanceEmbed(stats, exportedStats);
+      return createPerformanceEmbed(stats);
 
     case 'errors':
     case 'error':
-      return createErrorEmbed(stats, exportedStats);
+      return createErrorEmbed(stats, health);
 
     case 'queue':
     case 'q':
-      return createQueueDetailsEmbed(stats, exportedStats);
+      return createQueueDetailsEmbed(stats);
 
     case 'types':
     case 'type':
-      return createMessageTypesEmbed(stats, exportedStats);
+      return createMessageTypesEmbed(stats);
 
     case 'health':
-      return createHealthEmbed(stats, exportedStats);
+      return createHealthEmbed(stats, health);
 
     case 'full':
     case 'detailed':
-      return createDetailedEmbed(stats, exportedStats);
+      return createDetailedEmbed(stats);
 
     default:
-      return createOverviewEmbed(stats, exportedStats);
+      return createOverviewEmbed(stats, health);
   }
 }
 
 /**
  * Main overview embed - most important stats that fit under 2000 characters
  */
-function createOverviewEmbed(stats: QueueStatistics, exported: any): EmbedBuilder {
+function createOverviewEmbed(stats: QueueStatistics, health: ReturnType<typeof getQueueHealth>): EmbedBuilder {
   const uptime = formatDuration(stats.uptime);
   const healthIcon = stats.isHealthy ? "🟢" : "🔴";
   const queueIcon = stats.currentQueueSize > 0 ? "📬" : "📭";
@@ -62,7 +63,7 @@ function createOverviewEmbed(stats: QueueStatistics, exported: any): EmbedBuilde
   embed.addFields({
     name: `${healthIcon} System Health`,
     value: [
-      `**Status:** ${exported.health.status.toUpperCase()}`,
+      `**Status:** ${health.status.toUpperCase()}`,
       `**Success Rate:** ${stats.successRate.toFixed(1)}%`,
       `**Uptime:** ${uptime}`,
       `**Queue Size:** ${queueIcon} ${stats.currentQueueSize}`,
@@ -110,8 +111,8 @@ function createOverviewEmbed(stats: QueueStatistics, exported: any): EmbedBuilde
   }
 
   // Recent Errors (if any)
-  if (exported.health.recentErrors.length > 0) {
-    const errorText = exported.health.recentErrors
+  if (health.recentErrors.length > 0) {
+    const errorText = health.recentErrors
       .slice(0, 3)
       .map(([type, count]) => `**${type}:** ${count}`)
       .join(', ');
@@ -134,7 +135,7 @@ function createOverviewEmbed(stats: QueueStatistics, exported: any): EmbedBuilde
 /**
  * Performance-focused embed
  */
-function createPerformanceEmbed(stats: QueueStatistics, exported: any): EmbedBuilder {
+function createPerformanceEmbed(stats: QueueStatistics): EmbedBuilder {
   const embed = new EmbedBuilder()
     .setTitle("⚡ Queue Performance Metrics")
     .setColor(0x0099ff)
@@ -194,7 +195,7 @@ function createPerformanceEmbed(stats: QueueStatistics, exported: any): EmbedBui
 /**
  * Error analysis embed
  */
-function createErrorEmbed(stats: QueueStatistics, exported: any): EmbedBuilder {
+function createErrorEmbed(stats: QueueStatistics, health: ReturnType<typeof getQueueHealth>): EmbedBuilder {
   const embed = new EmbedBuilder()
     .setTitle("⚠️ Error Analysis")
     .setColor(stats.failed > 0 ? 0xff9900 : 0x00ff00)
@@ -206,7 +207,7 @@ function createErrorEmbed(stats: QueueStatistics, exported: any): EmbedBuilder {
       `**Total Failed:** ${stats.failed.toLocaleString()}`,
       `**Success Rate:** ${stats.successRate.toFixed(2)}%`,
       `**Total Retries:** ${stats.retries.toLocaleString()}`,
-      `**Health Status:** ${exported.health.status.toUpperCase()}`,
+      `**Health Status:** ${health.status.toUpperCase()}`,
     ].join('\n'),
     inline: true
   });
@@ -260,7 +261,7 @@ function createErrorEmbed(stats: QueueStatistics, exported: any): EmbedBuilder {
 /**
  * Queue details embed
  */
-function createQueueDetailsEmbed(stats: QueueStatistics, exported: any): EmbedBuilder {
+function createQueueDetailsEmbed(stats: QueueStatistics): EmbedBuilder {
   const embed = new EmbedBuilder()
     .setTitle("📬 Queue Details")
     .setColor(0x9932cc)
@@ -308,7 +309,7 @@ function createQueueDetailsEmbed(stats: QueueStatistics, exported: any): EmbedBu
 /**
  * Message types breakdown embed
  */
-function createMessageTypesEmbed(stats: QueueStatistics, exported: any): EmbedBuilder {
+function createMessageTypesEmbed(stats: QueueStatistics): EmbedBuilder {
   const embed = new EmbedBuilder()
     .setTitle("📝 Message Types Analysis")
     .setColor(0xff6b6b)
@@ -340,7 +341,7 @@ function createMessageTypesEmbed(stats: QueueStatistics, exported: any): EmbedBu
 /**
  * Health-focused embed
  */
-function createHealthEmbed(stats: QueueStatistics, exported: any): EmbedBuilder {
+function createHealthEmbed(stats: QueueStatistics, health: ReturnType<typeof getQueueHealth>): EmbedBuilder {
   const healthColor = stats.isHealthy ? 0x00ff00 : 0xff0000;
   const healthIcon = stats.isHealthy ? "🟢" : "🔴";
 
@@ -352,10 +353,10 @@ function createHealthEmbed(stats: QueueStatistics, exported: any): EmbedBuilder 
   embed.addFields({
     name: "🏥 Overall Health",
     value: [
-      `**Status:** ${exported.health.status.toUpperCase()}`,
+      `**Status:** ${health.status.toUpperCase()}`,
       `**Is Healthy:** ${stats.isHealthy ? "Yes" : "No"}`,
       `**Success Rate:** ${stats.successRate.toFixed(2)}%`,
-      `**Queue Backlog:** ${exported.health.queueBacklog ? "Yes" : "No"}`,
+      `**Queue Backlog:** ${health.queueBacklog ? "Yes" : "No"}`,
     ].join('\n'),
     inline: true
   });
@@ -398,7 +399,7 @@ function createHealthEmbed(stats: QueueStatistics, exported: any): EmbedBuilder 
 /**
  * Detailed/full statistics embed
  */
-function createDetailedEmbed(stats: QueueStatistics, exported: any): EmbedBuilder {
+function createDetailedEmbed(stats: QueueStatistics): EmbedBuilder {
   const embed = new EmbedBuilder()
     .setTitle("📊 Detailed Queue Statistics")
     .setColor(0x7289da)
@@ -448,22 +449,7 @@ function createDetailedEmbed(stats: QueueStatistics, exported: any): EmbedBuilde
   return embed;
 }
 
-/**
- * Utility function to format duration in milliseconds to human readable format
- */
-function formatDuration(ms: number): string {
-  if (ms < 1000) return `${ms.toFixed(0)}ms`;
-
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (days > 0) return `${days}d ${hours % 24}h ${minutes % 60}m`;
-  if (hours > 0) return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
-  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
-  return `${seconds}s`;
-}
+// formatDuration is now imported from index.ts
 
 /**
  * Helper function to get available statistic types for help text

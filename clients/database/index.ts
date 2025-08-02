@@ -31,7 +31,36 @@ function validateEnvironmentVariables(): void {
 // Validate environment on module load
 validateEnvironmentVariables();
 
-export const databaseClient: Knex = knex({
+// Database connection state management
+interface DatabaseState {
+  isConnected: boolean;
+  reconnectAttempts: number;
+  lastHealthCheck: number;
+  connectionErrors: number;
+}
+
+const dbState: DatabaseState = {
+  isConnected: false,
+  reconnectAttempts: 0,
+  lastHealthCheck: 0,
+  connectionErrors: 0,
+};
+
+// Reconnection configuration
+const RECONNECT_CONFIG = {
+  maxAttempts: 10,
+  baseDelay: 1000,
+  maxDelay: 30000,
+  healthCheckInterval: 60000,
+  queryTimeout: 15000,
+};
+
+let databaseClient: Knex;
+let reconnectTimer: Timer | null = null;
+let healthCheckTimer: Timer | null = null;
+
+// Enhanced connection configuration with reconnection support
+const createKnexConfig = () => ({
   client: 'mysql2',
   connection: {
     database: process.env.DB_DATABASE!,
@@ -40,17 +69,25 @@ export const databaseClient: Knex = knex({
     password: process.env.DB_PASSWORD!,
     user: process.env.DB_USER!,
     charset: 'utf8mb4',
+    supportBigNumbers: true,
+    bigNumberStrings: true,
   },
   pool: {
-    min: 0,
-    max: 7,
+    min: 2,
+    max: 10,
     acquireTimeoutMillis: 30000,
     createTimeoutMillis: 30000,
     destroyTimeoutMillis: 5000,
-    idleTimeoutMillis: 30000,
+    idleTimeoutMillis: 300000,
     reapIntervalMillis: 1000,
-    createRetryIntervalMillis: 100,
-    propagateCreateError: false
+    createRetryIntervalMillis: 200,
+    propagateCreateError: false,
+    afterCreate: (conn: any, done: Function) => {
+      conn.query('SET sql_mode="TRADITIONAL"', (err: any) => {
+        if (err) logger.warn('Failed to set SQL mode:', err);
+        done(err, conn);
+      });
+    },
   },
   acquireConnectionTimeout: 30000,
   log: {
@@ -59,15 +96,172 @@ export const databaseClient: Knex = knex({
     },
     error(message: string) {
       logger.error(message);
+      dbState.connectionErrors++;
     },
     deprecate(message: string) {
       logger.warn(`DEPRECATED: ${message}`);
     },
     debug(message: string) {
-      logger.debug(message);
+      if (process.env.DB_DEBUG === 'true') logger.debug(message);
     },
   },
 });
+
+// Initialize database connection with retry logic
+async function initializeDatabaseConnection(): Promise<Knex> {
+  try {
+    if (databaseClient) {
+      await databaseClient.destroy();
+    }
+
+    databaseClient = knex(createKnexConfig());
+
+    // Test initial connection
+    await databaseClient.raw('SELECT 1 as test');
+
+    dbState.isConnected = true;
+    dbState.reconnectAttempts = 0;
+    dbState.connectionErrors = 0;
+
+    logger.info('✅ Database connection established');
+    startHealthCheckTimer();
+
+    return databaseClient;
+  } catch (error) {
+    logger.error('❌ Failed to initialize database connection:', error);
+    dbState.isConnected = false;
+    throw error;
+  }
+}
+
+// Exponential backoff calculation
+function calculateBackoffDelay(attempt: number): number {
+  const delay = Math.min(
+    RECONNECT_CONFIG.baseDelay * Math.pow(2, attempt) + Math.random() * 1000,
+    RECONNECT_CONFIG.maxDelay
+  );
+  return Math.floor(delay);
+}
+
+// Automatic reconnection with exponential backoff
+async function attemptReconnection(): Promise<void> {
+  if (dbState.reconnectAttempts >= RECONNECT_CONFIG.maxAttempts) {
+    logger.error(`❌ Maximum reconnection attempts (${RECONNECT_CONFIG.maxAttempts}) exceeded`);
+    return;
+  }
+
+  dbState.reconnectAttempts++;
+  const delay = calculateBackoffDelay(dbState.reconnectAttempts - 1);
+
+  logger.warn(`🔄 Attempting database reconnection (${dbState.reconnectAttempts}/${RECONNECT_CONFIG.maxAttempts}) in ${delay}ms`);
+
+  if (reconnectTimer) clearTimeout(reconnectTimer);
+
+  reconnectTimer = setTimeout(async () => {
+    try {
+      await initializeDatabaseConnection();
+      logger.info('✅ Database reconnection successful');
+    } catch (error) {
+      logger.error(`❌ Reconnection attempt ${dbState.reconnectAttempts} failed:`, error);
+
+      if (dbState.reconnectAttempts < RECONNECT_CONFIG.maxAttempts) {
+        await attemptReconnection();
+      }
+    }
+  }, delay);
+}
+
+// Health check function
+async function performHealthCheck(): Promise<boolean> {
+  try {
+    const startTime = Date.now();
+    await databaseClient.raw('SELECT 1 as health_check');
+    const responseTime = Date.now() - startTime;
+
+    if (responseTime > 5000) {
+      logger.warn(`⚠️ Slow database response: ${responseTime}ms`);
+    }
+
+    if (!dbState.isConnected) {
+      dbState.isConnected = true;
+      logger.info('✅ Database connection restored');
+    }
+
+    dbState.lastHealthCheck = Date.now();
+    return true;
+  } catch (error) {
+    logger.error('❌ Database health check failed:', error);
+
+    if (dbState.isConnected) {
+      dbState.isConnected = false;
+      logger.warn('🔌 Database connection lost, attempting reconnection...');
+      await attemptReconnection();
+    }
+
+    return false;
+  }
+}
+
+// Start periodic health checks
+function startHealthCheckTimer(): void {
+  if (healthCheckTimer) clearInterval(healthCheckTimer);
+
+  healthCheckTimer = setInterval(async () => {
+    await performHealthCheck();
+  }, RECONNECT_CONFIG.healthCheckInterval);
+}
+
+// Enhanced query wrapper with automatic retry
+async function executeQuery<T = any>(
+  operation: () => Promise<T>,
+  retryCount: number = 3
+): Promise<T> {
+  for (let attempt = 1; attempt <= retryCount; attempt++) {
+    try {
+      if (!dbState.isConnected) {
+        throw new Error('Database not connected');
+      }
+
+      const result = await Promise.race([
+        operation(),
+        new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Query timeout')), RECONNECT_CONFIG.queryTimeout);
+        })
+      ]);
+
+      return result;
+    } catch (error: any) {
+      const isConnectionError = error.code === 'PROTOCOL_CONNECTION_LOST' ||
+                               error.code === 'ECONNRESET' ||
+                               error.code === 'ETIMEDOUT' ||
+                               error.message?.includes('Connection lost');
+
+      if (isConnectionError && attempt < retryCount) {
+        logger.warn(`🔄 Connection error, retrying query (attempt ${attempt}/${retryCount})`);
+
+        if (dbState.isConnected) {
+          dbState.isConnected = false;
+          attemptReconnection();
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        continue;
+      }
+
+      throw error;
+    }
+  }
+
+  throw new Error('All query retry attempts failed');
+}
+
+// Initialize database connection immediately
+initializeDatabaseConnection().catch(error => {
+  logger.error('💥 Critical: Failed to initialize database connection:', error);
+  process.exit(1);
+});
+
+export { databaseClient };
 
 // Global settings type for better type safety
 type GlobalSettingKey =
@@ -102,7 +296,9 @@ interface GlobalSettings {
  */
 export async function loadGlobalSetting(which: GlobalSettingKey): Promise<any> {
   try {
-    const settings = await databaseClient<GlobalSettings>('global_smokeybot_settings').first();
+    const settings = await executeQuery(() =>
+      databaseClient<GlobalSettings>('global_smokeybot_settings').first()
+    );
 
     if (!settings) {
       throw new Error('No global settings found in database');
@@ -137,28 +333,34 @@ export interface IGuildSettings {
  */
 export async function getGuildSettings(guild: Guild): Promise<IGuildSettings | undefined> {
   try {
-    let guildSettings = await databaseClient<IGuildSettings>(GuildSettingsTable)
-      .select()
-      .where('guild_id', guild.id)
-      .first();
+    let guildSettings = await executeQuery(() =>
+      databaseClient<IGuildSettings>(GuildSettingsTable)
+        .select()
+        .where('guild_id', guild.id)
+        .first()
+    );
 
     if (!guildSettings) {
       logger.info(`No settings found for guild ${guild.name} (${guild.id}), creating new settings`);
 
-      const insertResult = await databaseClient<IGuildSettings>(GuildSettingsTable).insert({
-        guild_id: guild.id,
-        smokemon_enabled: 0,
-        announcements_enabled: 0,
-      });
+      const insertResult = await executeQuery(() =>
+        databaseClient<IGuildSettings>(GuildSettingsTable).insert({
+          guild_id: guild.id,
+          smokemon_enabled: 0,
+          announcements_enabled: 0,
+        })
+      );
 
       if (insertResult && insertResult.length > 0) {
         logger.info(`Created new guild settings for ${guild.name} (${guild.id})`);
 
         // Fetch the newly created settings
-        guildSettings = await databaseClient<IGuildSettings>(GuildSettingsTable)
-          .select()
-          .where('guild_id', guild.id)
-          .first();
+        guildSettings = await executeQuery(() =>
+          databaseClient<IGuildSettings>(GuildSettingsTable)
+            .select()
+            .where('guild_id', guild.id)
+            .first()
+        );
       } else {
         logger.error(`Failed to create guild settings for ${guild.name} (${guild.id})`);
         return undefined;
@@ -178,9 +380,11 @@ export async function getGuildSettings(guild: Guild): Promise<IGuildSettings | u
  */
 export async function getUserDBCount(): Promise<string> {
   try {
-    const result = await databaseClient<IMonsterUserModel>(MonsterUserTable)
-      .count('* as count')
-      .first();
+    const result = await executeQuery(() =>
+      databaseClient<IMonsterUserModel>(MonsterUserTable)
+        .count('* as count')
+        .first()
+    );
 
     const count = result?.count || 0;
     return count.toString();
@@ -197,10 +401,12 @@ export async function getUserDBCount(): Promise<string> {
  */
 export async function getUser(uid: number | string): Promise<IMonsterUserModel | undefined> {
   try {
-    const userSettings = await databaseClient<IMonsterUserModel>(MonsterUserTable)
-      .select()
-      .where('uid', uid)
-      .first();
+    const userSettings = await executeQuery(() =>
+      databaseClient<IMonsterUserModel>(MonsterUserTable)
+        .select()
+        .where('uid', uid)
+        .first()
+    );
 
     return userSettings;
   } catch (error) {
@@ -221,11 +427,13 @@ export async function putGuildSettings(interaction: CommandInteraction): Promise
   }
 
   try {
-    const insertResult = await databaseClient<IGuildSettings>(GuildSettingsTable).insert({
-      guild_id: interaction.guild.id,
-      smokemon_enabled: 0,
-      announcements_enabled: 0,
-    });
+    const insertResult = await executeQuery(() =>
+      databaseClient<IGuildSettings>(GuildSettingsTable).insert({
+        guild_id: interaction.guild.id,
+        smokemon_enabled: 0,
+        announcements_enabled: 0,
+      })
+    );
 
     if (!insertResult || insertResult.length === 0) {
       throw new Error('Database insertion returned no results');
@@ -246,7 +454,7 @@ export async function putGuildSettings(interaction: CommandInteraction): Promise
  */
 export async function testDatabaseConnection(): Promise<boolean> {
   try {
-    await databaseClient.raw('SELECT 1');
+    await executeQuery(() => databaseClient.raw('SELECT 1'));
     logger.info('Database connection test successful');
     return true;
   } catch (error) {
@@ -261,10 +469,27 @@ export async function testDatabaseConnection(): Promise<boolean> {
  */
 export async function closeDatabaseConnection(): Promise<void> {
   try {
+    if (healthCheckTimer) clearInterval(healthCheckTimer);
+    if (reconnectTimer) clearTimeout(reconnectTimer);
+
     await databaseClient.destroy();
+    dbState.isConnected = false;
     logger.info('Database connection closed successfully');
   } catch (error) {
     logger.error('Error closing database connection:', error);
     throw error;
   }
+}
+
+/**
+ * Get database connection statistics
+ */
+export function getDatabaseStats() {
+  return {
+    isConnected: dbState.isConnected,
+    reconnectAttempts: dbState.reconnectAttempts,
+    lastHealthCheck: dbState.lastHealthCheck,
+    connectionErrors: dbState.connectionErrors,
+    timeSinceLastCheck: Date.now() - dbState.lastHealthCheck,
+  };
 }

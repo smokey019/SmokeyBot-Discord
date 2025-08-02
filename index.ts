@@ -164,13 +164,13 @@ class WebSocketCommunicationManager implements CommunicationManager {
     return new Promise((resolve, reject) => {
       try {
         attemptedPorts.push(port);
-        
+
         // Clean up previous server if exists
         if (this.server) {
           this.server.removeAllListeners();
           this.server.close();
         }
-        
+
         this.server = new WebSocketServer({
           port,
           verifyClient: (info) => {
@@ -187,16 +187,16 @@ class WebSocketCommunicationManager implements CommunicationManager {
             port: port,
             type: error.constructor.name
           };
-          
+
           logger.error(`WebSocket server error details:`, errorDetails);
-          
+
           if (error.code === 'EADDRINUSE' && config.isDev) {
             // Try fallback ports in development (max 5 attempts)
             const fallbackPorts = config.devFallbackPorts.filter(p => !attemptedPorts.includes(p));
             if (fallbackPorts.length > 0 && attemptedPorts.length < 5) {
               const nextPort = fallbackPorts[0];
               logger.warn(`⚠️ Port ${port} in use, trying fallback port ${nextPort} (attempt ${attemptedPorts.length + 1}/5)`);
-              
+
               setTimeout(() => {
                 this.tryInitializeWithFallback(nextPort, attemptedPorts).then(resolve).catch(reject);
               }, 500); // Small delay between server startup attempts
@@ -206,7 +206,7 @@ class WebSocketCommunicationManager implements CommunicationManager {
               logger.info(`💡 For local development, you can disable WebSocket with USE_WEBSOCKET=false in your environment`);
             }
           }
-          
+
           if (error.code === 'EADDRINUSE') {
             logger.error(`❌ Port ${port} is already in use. Try setting WS_PORT to a different port or disable WebSocket communication.`);
             logger.info(`💡 For development, you can set WS_PORT=8082 or disable with USE_WEBSOCKET=false`);
@@ -343,7 +343,7 @@ class EnhancedShardManager extends EventEmitter {
       this.communicationManager = new WebSocketCommunicationManager();
       logger.info("📡 WebSocket communication enabled for cross-server messaging");
     }
-    
+
     logger.info("🔗 Using direct shard messaging for same-server communication");
 
     // Create sharding manager optimized for Bun
@@ -407,9 +407,9 @@ class EnhancedShardManager extends EventEmitter {
    */
   private updateShardIdMapping(oldId: number, newId: number): void {
     if (oldId === newId) return;
-    
+
     logger.info(`🔄 Updating shard ID mapping: ${oldId} -> ${newId}`);
-    
+
     // Move health data to new ID
     const healthData = this.shardHealth.get(oldId);
     if (healthData) {
@@ -417,7 +417,7 @@ class EnhancedShardManager extends EventEmitter {
       this.shardHealth.set(newId, healthData);
       this.shardHealth.delete(oldId);
     }
-    
+
     // Update guild distribution mapping
     if (this.globalStats.guildDistribution) {
       const guildData = this.globalStats.guildDistribution.get(oldId);
@@ -428,7 +428,7 @@ class EnhancedShardManager extends EventEmitter {
         this.globalStats.guildDistribution.delete(oldId);
       }
     }
-    
+
     logger.info(`✅ Shard ID mapping updated successfully`);
   }
 
@@ -511,7 +511,7 @@ class EnhancedShardManager extends EventEmitter {
           eventLoopLag: message.eventLoopLag || 0,
           lastHeartbeat: Date.now(),
         });
-        
+
         // Update shard ID mapping if it changed
         if (message.data?.actualShardId !== undefined && message.data.actualShardId !== shard.id) {
           this.updateShardIdMapping(shard.id, message.data.actualShardId);
@@ -536,21 +536,21 @@ class EnhancedShardManager extends EventEmitter {
       case "ready":
         const readyData = message.data || message;
         const readyShardId = readyData.actualShardId !== undefined ? readyData.actualShardId : (readyData.shardId !== undefined ? readyData.shardId : shard.id);
-        
+
         logger.info(`✅ Shard ${readyShardId} fully ready${readyData.actualShardId !== shard.id ? ` (Discord.js assigned ${readyShardId} instead of ${shard.id})` : ''}`);
-        
+
         this.updateShardHealth(readyShardId, {
           status: "ready",
           lastHeartbeat: Date.now(),
           guilds: readyData.guilds || 0,
           users: readyData.users || 0,
         });
-        
+
         // Update shard ID mapping if it changed
         if (readyData.actualShardId !== undefined && readyData.actualShardId !== shard.id) {
           this.updateShardIdMapping(shard.id, readyData.actualShardId);
         }
-        
+
         // Log coordinator status
         if (readyData.isCoordinator) {
           logger.info(`👑 Shard ${readyShardId} is the coordinator`);
@@ -567,14 +567,14 @@ class EnhancedShardManager extends EventEmitter {
         // Handle inter-shard communication - route the message
         const interShardMessage = message.data as InterShardMessage;
         logger.debug(`Routing inter-shard message from shard ${shard.id}: ${interShardMessage.type}`);
-        
+
         // Route the message to target shard(s)
         if (interShardMessage.toShard === "all") {
           await this.broadcastInterShardMessage(interShardMessage);
         } else if (typeof interShardMessage.toShard === "number") {
           await this.sendInterShardMessage(interShardMessage.toShard, interShardMessage);
         }
-        
+
         // Also handle it locally for manager processing
         this.handleInterShardMessage(interShardMessage);
         break;
@@ -602,7 +602,7 @@ class EnhancedShardManager extends EventEmitter {
         logger.info(`Inter-shard ready notification from shard ${message.fromShard}`);
         break;
       default:
-        logger.debug(`Manager doesn't need to process message type: ${message.type}`);
+        logger.trace(`Manager doesn't need to process message type: ${message.type}`);
     }
 
     // Emit event for external listeners
@@ -642,7 +642,7 @@ class EnhancedShardManager extends EventEmitter {
     message: InterShardMessage,
   ): Promise<void> {
     logger.debug(`Broadcasting inter-shard message: ${message.type} to ${this.manager.shards.size} shards`);
-    
+
     const promises = Array.from(this.manager.shards.values()).map(
       async (shard) => {
         // Don't send the message back to the sender
@@ -943,7 +943,7 @@ class EnhancedShardManager extends EventEmitter {
       logger.info(
         `📈 Global Stats: ${totalGuilds} guilds, ${totalUsers} users, ${totalChannels} channels across ${healthyShards}/${this.shardHealth.size} shards`,
       );
-      
+
       // Log guild distribution
       const guildCounts = Array.from(guildDistribution.entries())
         .map(([shardId, guilds]) => `Shard ${shardId}: ${guilds.length}`)
@@ -1135,13 +1135,13 @@ class EnhancedShardManager extends EventEmitter {
    */
   private updateGuildDistribution(guildData: any): void {
     const { shardId, guildId, guildName, memberCount, joinedAt, channelCount, roleCount } = guildData;
-    
+
     if (!this.globalStats.guildDistribution) {
       this.globalStats.guildDistribution = new Map();
     }
-    
+
     let shardGuilds = this.globalStats.guildDistribution.get(shardId) || [];
-    
+
     // Add new guild if not already exists
     if (!shardGuilds.find(g => g.id === guildId)) {
       shardGuilds.push({
@@ -1153,7 +1153,7 @@ class EnhancedShardManager extends EventEmitter {
         channelCount,
         roleCount
       });
-      
+
       this.globalStats.guildDistribution.set(shardId, shardGuilds);
       logger.debug(`Added guild ${guildName} to shard ${shardId} distribution`);
     }
@@ -1164,7 +1164,7 @@ class EnhancedShardManager extends EventEmitter {
    */
   private removeFromGuildDistribution(guildData: any): void {
     const { shardId, guildId } = guildData;
-    
+
     if (this.globalStats.guildDistribution) {
       let shardGuilds = this.globalStats.guildDistribution.get(shardId) || [];
       shardGuilds = shardGuilds.filter(g => g.id !== guildId);
@@ -1216,7 +1216,7 @@ class EnhancedShardManager extends EventEmitter {
           }
         }
       }
-      
+
       if (!this.communicationManager) {
         logger.info("💻 Single-server mode - no cross-server communication");
       }
@@ -1336,6 +1336,6 @@ startManager();
 // Export types and utilities for external use
 export { ShardManagerError };
 export type {
-    CommunicationManager, GlobalStatistics, InterShardMessage, ShardHealthMetrics
+  CommunicationManager, GlobalStatistics, InterShardMessage, ShardHealthMetrics
 };
 

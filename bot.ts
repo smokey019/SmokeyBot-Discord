@@ -259,7 +259,7 @@ class WebSocketCommunicationManager implements CommunicationManager {
       try {
         const url = `${baseUrl}?shardId=${config.shardId}`;
         this.currentUrl = url;
-        
+
         // Clean up previous WebSocket if exists
         if (this.ws) {
           this.ws.removeAllListeners();
@@ -267,7 +267,7 @@ class WebSocketCommunicationManager implements CommunicationManager {
             this.ws.close();
           }
         }
-        
+
         this.ws = new WebSocket(url);
         const currentPort = parseInt(baseUrl.split(':').pop() || '8081');
         attemptedPorts.push(currentPort);
@@ -304,23 +304,23 @@ class WebSocketCommunicationManager implements CommunicationManager {
             port: currentPort,
             type: error.constructor.name
           };
-          
+
           logger.error(`WebSocket error details:`, errorDetails);
-          
+
           if (!this.connected && config.isDev) {
             // Try fallback ports in development (max 5 attempts)
             const fallbackPorts = [8082, 8083, 8084, 8085, 8086].filter(p => !attemptedPorts.includes(p));
-            
+
             if (fallbackPorts.length > 0 && attemptedPorts.length < 5) {
               const nextPort = fallbackPorts[0];
               const fallbackUrl = baseUrl.replace(/:\d+$/, `:${nextPort}`);
               logger.warn(`⚠️ WebSocket connection failed on port ${currentPort}, trying fallback port ${nextPort} (attempt ${attemptedPorts.length + 1}/5)`);
-              
+
               // Clean up current WebSocket before trying next
               if (this.ws) {
                 this.ws.removeAllListeners();
               }
-              
+
               setTimeout(() => {
                 this.tryConnectWithFallback(fallbackUrl, attemptedPorts).then(resolve).catch(reject);
               }, 1000); // Add small delay between attempts
@@ -330,7 +330,7 @@ class WebSocketCommunicationManager implements CommunicationManager {
               logger.info(`💡 For local development, you can disable WebSocket with USE_WEBSOCKET=false in your environment`);
             }
           }
-          
+
           if (!this.connected) {
             reject(error);
           }
@@ -880,7 +880,7 @@ function updatePresence(activity?: any): void {
  */
 async function executeCommand(interaction: CommandInteraction): Promise<void> {
   const startTime = Bun.nanoseconds();
-  
+
   // Debug logging for development mode
   if (config.isDev) {
     logger.debug(`[Shard ${config.actualShardId}] Processing command: ${interaction.commandName} from ${interaction.user.username} in ${interaction.guild?.name}`);
@@ -1343,7 +1343,7 @@ discordClient.on("interactionCreate", async (interaction) => {
   if (interaction.isCommand()) {
     // Create a unique identifier for this interaction
     const interactionId = `${interaction.id}-${interaction.commandName}-${interaction.user.id}`;
-    
+
     // Check if we've already processed this interaction
     if (processedInteractions.has(interactionId)) {
       if (config.isDev) {
@@ -1351,17 +1351,17 @@ discordClient.on("interactionCreate", async (interaction) => {
       }
       return;
     }
-    
+
     // Mark this interaction as being processed
     processedInteractions.add(interactionId);
-    
+
     // Clean up old interaction IDs periodically (keep last 1000)
     if (processedInteractions.size > 1000) {
       const idsArray = Array.from(processedInteractions);
       processedInteractions.clear();
       idsArray.slice(-500).forEach(id => processedInteractions.add(id));
     }
-    
+
     try {
       await executeCommand(interaction);
     } catch (error) {

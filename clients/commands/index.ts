@@ -64,21 +64,16 @@ interface CommandLoadProgress {
   errors: Array<{ file: string; error: string }>;
 }
 
-// collections with better typing
-export const commands: Collection<string[], (event: runEvent) => any> =
-  new Collection();
+// Command collections for Discord.js compatibility
+export const commands: Collection<string[], (event: runEvent) => any> = new Collection();
 export const slashCommands: SlashCommandBuilder[] = [];
 
-// Command metadata storage for debugging and monitoring
-const commandMetadata = new Map<
-  string,
-  {
-    file: string;
-    loadTime: number;
-    category: string;
-    aliases: string[];
-  }
->();
+// Simple metadata for debugging command loading
+const commandMetadata = new Map<string, {
+  file: string;
+  loadTime: number;
+  category: string;
+}>();
 
 /**
  * Validates if a file should be processed as a command
@@ -164,10 +159,10 @@ function registerCommand(
       );
     }
 
-    // Check for command name conflicts
+    // Check for command name conflicts with existing commands
     for (const existingNames of commands.keys()) {
       for (const newName of validNames) {
-        if (existingNames.includes(newName)) {
+        if (existingNames.some(existing => existing.toLowerCase() === newName.toLowerCase())) {
           logger.warn(
             `Command name conflict detected: ${newName} in ${fileName} already exists`
           );
@@ -182,7 +177,6 @@ function registerCommand(
     // Register slash command if available
     if (module.SlashCommandData) {
       try {
-        // Validate slash command data
         const slashData = module.SlashCommandData.toJSON();
         if (slashData.name && slashData.description) {
           slashCommands.push(module.SlashCommandData);
@@ -199,19 +193,17 @@ function registerCommand(
       }
     }
 
-    // Store metadata
     const loadTime = Date.now() - startTime;
+
+    // Store simple metadata for debugging
     commandMetadata.set(validNames[0], {
       file: fileName,
       loadTime,
       category,
-      aliases: validNames,
     });
 
     logger.trace(
-      `Loaded command with alias(es): ${validNames.join(
-        ", "
-      )} from ${fileName} (${loadTime}ms)`
+      `Loaded command: ${validNames[0]} from ${fileName} (${loadTime}ms)`
     );
     return true;
   } catch (error) {
@@ -392,6 +384,13 @@ export async function loadCommands(): Promise<void> {
         new Set(Array.from(commandMetadata.values()).map((m) => m.category))
       ).join(", ")}`
     );
+    
+    // Log load time statistics
+    if (commandMetadata.size > 0) {
+      const avgLoadTime = Array.from(commandMetadata.values())
+        .reduce((sum, meta) => sum + meta.loadTime, 0) / commandMetadata.size;
+      logger.debug(`Average command load time: ${avgLoadTime.toFixed(2)}ms`);
+    }
   } catch (error) {
     logger.error("Critical error during command loading:", error);
     throw new CommandError("Failed to load commands", "LOAD_COMMANDS_ERROR");
