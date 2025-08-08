@@ -334,17 +334,21 @@ class EnhancedShardManager extends EventEmitter {
       throw new ShardManagerError("Missing Discord token", "MISSING_TOKEN");
     }
 
-    // Initialize communication manager for cross-server communication only
-    // For same-server shards, we use direct shard messaging
-    if (config.useRedis) {
-      this.communicationManager = new RedisCommunicationManager();
-      logger.info("📡 Redis communication enabled for cross-server messaging");
-    } else if (config.useWebSocket) {
-      this.communicationManager = new WebSocketCommunicationManager();
-      logger.info("📡 WebSocket communication enabled for cross-server messaging");
+    // Only initialize cross-server communication if explicitly enabled
+    // Most deployments will use same-server communication through the manager process
+    const enableCrossServer = process.env.FORCE_CROSS_SERVER_COMM === "true";
+    
+    if (enableCrossServer) {
+      if (config.useRedis) {
+        this.communicationManager = new RedisCommunicationManager();
+        logger.info("📡 Redis communication enabled for cross-server messaging");
+      } else if (config.useWebSocket) {
+        this.communicationManager = new WebSocketCommunicationManager();
+        logger.info("📡 WebSocket communication enabled for cross-server messaging");
+      }
     }
 
-    logger.info("🔗 Using direct shard messaging for same-server communication");
+    logger.info("🔗 Using optimized direct shard messaging for same-server communication");
 
     // Create sharding manager optimized for Bun
     this.manager = new ShardingManager("./bot.ts", {
@@ -568,11 +572,13 @@ class EnhancedShardManager extends EventEmitter {
         const interShardMessage = message.data as InterShardMessage;
         logger.debug(`Routing inter-shard message from shard ${shard.id}: ${interShardMessage.type}`);
 
-        // Route the message to target shard(s)
+        // Route the message to target shard(s) with validation
         if (interShardMessage.toShard === "all") {
           await this.broadcastInterShardMessage(interShardMessage);
-        } else if (typeof interShardMessage.toShard === "number") {
+        } else if (typeof interShardMessage.toShard === "number" && interShardMessage.toShard >= 0) {
           await this.sendInterShardMessage(interShardMessage.toShard, interShardMessage);
+        } else {
+          logger.warn(`Invalid toShard value: ${interShardMessage.toShard} from shard ${shard.id}`);
         }
 
         // Also handle it locally for manager processing
@@ -616,6 +622,12 @@ class EnhancedShardManager extends EventEmitter {
     shardId: number,
     message: InterShardMessage,
   ): Promise<void> {
+    // Additional validation to prevent invalid shard IDs
+    if (shardId < 0) {
+      logger.warn(`Rejecting message to invalid shard ID ${shardId}: ${message.type}`);
+      return;
+    }
+
     const shard = this.manager.shards.get(shardId);
     if (shard) {
       try {
@@ -631,7 +643,7 @@ class EnhancedShardManager extends EventEmitter {
         );
       }
     } else {
-      logger.warn(`Cannot send message to shard ${shardId}: shard not found`);
+      logger.warn(`Cannot send message to shard ${shardId}: shard not found (available: ${Array.from(this.manager.shards.keys()).join(', ')})`);
     }
   }
 
@@ -981,9 +993,15 @@ class EnhancedShardManager extends EventEmitter {
     type: string,
     data: any,
   ): Promise<void> {
+    // Validate shard ID to prevent -1 messages
+    if (shardId < 0 || !this.manager.shards.has(shardId)) {
+      logger.warn(`Cannot send message to invalid shard ID ${shardId}`);
+      return;
+    }
+
     const message: InterShardMessage = {
       type,
-      fromShard: -1, // From manager
+      fromShard: -1, // From manager (this is intentional for manager messages)
       toShard: shardId,
       data,
       timestamp: Date.now(),
@@ -998,9 +1016,14 @@ class EnhancedShardManager extends EventEmitter {
    * Broadcast message to all shards
    */
   public async broadcastToAllShards(type: string, data: any): Promise<void> {
+    if (this.manager.shards.size === 0) {
+      logger.warn('No shards available for broadcast');
+      return;
+    }
+
     const message: InterShardMessage = {
       type,
-      fromShard: -1, // From manager
+      fromShard: -1, // From manager (this is intentional for manager messages)
       toShard: "all",
       data,
       timestamp: Date.now(),

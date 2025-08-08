@@ -39,7 +39,7 @@ const config = {
   shardId: parseInt(
     process.env.SHARD_ID ||
     process.argv.find((arg) => arg.startsWith("--shard="))?.split("=")[1] ||
-    "-1"
+    "0"
   ),
   actualShardId: -1, // Will be set by Discord.js in ready event
   totalShards: parseInt(process.env.TOTAL_SHARDS || "1"),
@@ -56,6 +56,8 @@ const config = {
   wsManagerUrl: process.env.WS_MANAGER_URL || (isDev ? "ws://localhost:8081" : "ws://localhost:8080"),
   useRedis: process.env.USE_REDIS === "true",
   useWebSocket: process.env.USE_WEBSOCKET === "true",
+  // Cross-server communication (only needed for multi-server deployments)
+  forceCrossServerComm: process.env.FORCE_CROSS_SERVER_COMM === "true",
   // Performance settings
   messageMemoryLimit: parseInt(
     process.env.MESSAGE_MEMORY_LIMIT || (isDev ? "50" : "20")
@@ -379,11 +381,11 @@ class WebSocketCommunicationManager implements CommunicationManager {
   }
 }
 
-// Communication manager instance - only for coordinator shard
+// Communication manager instance - only for cross-server deployment
 let communicationManager: CommunicationManager | undefined;
 
-// Only initialize communication manager after we know if we're the coordinator
-// This will be set in the ready event
+// Communication manager is only used for cross-server communication
+// Same-server shards always use direct manager routing
 
 // Discord client optimized for Bun
 export const discordClient = new Client({
@@ -516,13 +518,27 @@ export const discordClient = new Client({
 // ============================================================================
 
 /**
+ * Get the current shard ID with proper fallback logic
+ */
+function getCurrentShardId(): number {
+  if (config.actualShardId >= 0) {
+    return config.actualShardId;
+  }
+  // In development with single shard, always use 0
+  if (config.isDev && config.totalShards === 1) {
+    return 0;
+  }
+  return config.shardId >= 0 ? config.shardId : 0;
+}
+
+/**
  * Send message to shard manager (backward compatibility)
  */
 function sendToManager(type: string, data: any): void {
   try {
     process.send?.({
       type,
-      shardId: config.shardId,
+      shardId: getCurrentShardId(),
       data,
       timestamp: Date.now(),
     });
@@ -539,7 +555,9 @@ async function sendInterShardMessage(
   data: any,
   toShard?: number | "all"
 ): Promise<void> {
-  const currentShardId = config.actualShardId >= 0 ? config.actualShardId : config.shardId;
+  // Use centralized shard ID resolution
+  const currentShardId = getCurrentShardId();
+  
   const message: InterShardMessage = {
     type,
     fromShard: currentShardId,
@@ -549,14 +567,16 @@ async function sendInterShardMessage(
     id: `${Date.now()}-${Math.random().toString(36).substring(2)}`,
   };
 
+  // Skip sending if it's a single shard and message is to self
+  if (config.totalShards === 1 && (toShard === currentShardId || toShard === "all")) {
+    logger.debug(`Skipping self-message in single shard mode: ${type}`);
+    return;
+  }
+
   try {
-    if (IS_COORDINATOR && communicationManager) {
-      // Coordinator can send directly through communication manager
-      await communicationManager.send(message);
-    } else {
-      // Worker shards send through manager (index.ts)
-      sendToManager("inter-shard", message);
-    }
+    // Always send through manager for consistent routing
+    // This eliminates the dual communication path complexity
+    sendToManager("inter-shard", message);
   } catch (error) {
     logger.error("Failed to send inter-shard message:", error);
   }
@@ -782,7 +802,7 @@ async function getDetailedHealth(): Promise<any> {
   const metrics = await getShardMetrics();
 
   return {
-    shardId: config.actualShardId >= 0 ? config.actualShardId : config.shardId,
+    shardId: getCurrentShardId(),
     actualShardId: config.actualShardId,
     healthy: isHealthy(),
     score: shardState.healthScore,
@@ -905,20 +925,17 @@ async function executeCommand(interaction: CommandInteraction): Promise<void> {
       return;
     }
 
-    // Parallel settings and cache fetch
-    const [settings, cache] = await Promise.all([
-      getGuildSettings(interaction.guild),
-      getGuildSettings(interaction.guild).then((s) =>
-        getCache(interaction.guild, s)
-      ),
-    ]);
+    // Get guild settings first, then cache
+    const settings = await getGuildSettings(interaction.guild);
+    if (!settings) {
+      await queueMessage("Configuration error. Please try again later.", interaction, false);
+      return;
+    }
+    
+    const cache = await getCache(interaction.guild, settings);
 
-    if (!settings || !cache) {
-      await queueMessage(
-        "Configuration error. Please try again later.",
-        interaction,
-        false
-      );
+    if (!cache) {
+      await queueMessage("Configuration error. Please try again later.", interaction, false);
       return;
     }
 
@@ -1004,19 +1021,18 @@ async function processMessage(message: Message): Promise<void> {
       return;
     }
 
-    // Parallel settings fetch with error handling
-    const [settings, cache] = await Promise.all([
-      getGuildSettings(message.guild).catch((error) => {
-        logger.error("Failed to get guild settings:", error);
-        return null;
-      }),
-      getGuildSettings(message.guild)
-        .then((s) => getCache(message.guild, s))
-        .catch((error) => {
-          logger.error("Failed to get cache:", error);
-          return null;
-        }),
-    ]);
+    // Get guild settings and cache with error handling
+    const settings = await getGuildSettings(message.guild).catch((error) => {
+      logger.error("Failed to get guild settings:", error);
+      return null;
+    });
+    
+    if (!settings) return;
+    
+    const cache = await getCache(message.guild, settings).catch((error) => {
+      logger.error("Failed to get cache:", error);
+      return null;
+    });
 
     if (!cache?.settings?.smokemon_enabled) return;
 
@@ -1229,8 +1245,12 @@ discordClient.on("ready", async () => {
     logger.info(`📊 Connected to ${discordClient.guilds.cache.size} guilds`);
     logger.info(`🔧 Shard ${config.shardId}/${config.totalShards}${wasTemporary ? ' (ID updated from temporary)' : ''}`);
     logger.info(`👑 Role: ${IS_COORDINATOR ? 'Coordinator' : 'Worker'}`);
-    // Initialize communication manager only for coordinator shard
-    if (IS_COORDINATOR) {
+    // For same-server deployment, we don't need Redis/WebSocket communication
+    // All inter-shard communication goes through the manager process
+    // Only initialize cross-server communication if explicitly configured for multi-server deployment
+    const needsCrossServerComm = config.forceCrossServerComm;
+    
+    if (IS_COORDINATOR && needsCrossServerComm) {
       try {
         if (config.useRedis) {
           communicationManager = new RedisCommunicationManager();
@@ -1242,22 +1262,18 @@ discordClient.on("ready", async () => {
           await communicationManager.initialize();
           communicationManager.subscribe((message) => {
             handleInterShardMessage(message).catch(error => {
-              logger.error('Error handling inter-shard message:', error);
+              logger.error('Error handling cross-server message:', error);
             });
           });
-          logger.info("✅ Coordinator inter-shard communication initialized");
+          logger.info("✅ Cross-server communication initialized");
         }
       } catch (error) {
-        if (config.isDev && config.useWebSocket) {
-          logger.warn("⚠️ Coordinator communication failed to initialize in development mode, falling back to direct communication");
-          logger.info("💡 This is normal for local development - inter-shard communication will be limited but the bot will still function");
-          communicationManager = undefined;
-        } else {
-          logger.error("❌ Failed to initialize coordinator communication:", error);
-        }
+        logger.warn("⚠️ Cross-server communication failed to initialize, falling back to single-server mode");
+        logger.info("💡 Bot will function normally with same-server communication only");
+        communicationManager = undefined;
       }
     } else {
-      logger.info("🔗 Worker shard - will communicate through manager");
+      logger.info("🔗 Using same-server communication through manager process");
     }
 
     // Load commands
@@ -1383,7 +1399,7 @@ discordClient.on("guildCreate", async (guild: Guild) => {
     guildId: guild.id,
     guildName: guild.name,
     memberCount: guild.memberCount,
-    shardId: config.shardId,
+    shardId: getCurrentShardId(),
     joinedAt: guild.joinedTimestamp || Date.now(),
     channelCount: guild.channels.cache.size,
     roleCount: guild.roles.cache.size,
@@ -1398,16 +1414,15 @@ discordClient.on("guildDelete", async (guild: Guild) => {
   await sendInterShardMessage("guildLeft", {
     guildId: guild.id,
     guildName: guild.name,
-    shardId: config.shardId,
+    shardId: getCurrentShardId(),
     leftAt: Date.now(),
     wasActiveGuild: shardState.guildsReady.has(guild.id),
   });
 
-  const currentShardId = config.actualShardId >= 0 ? config.actualShardId : config.shardId;
   sendToManager("guildRemove", {
     guildId: guild.id,
     guildName: guild.name,
-    shardId: currentShardId,
+    shardId: getCurrentShardId(),
   });
 });
 
@@ -1601,7 +1616,7 @@ setInterval(() => {
  */
 export function getShardStats() {
   return {
-    shardId: config.actualShardId >= 0 ? config.actualShardId : config.shardId,
+    shardId: getCurrentShardId(),
     actualShardId: config.actualShardId,
     totalShards: config.totalShards,
     isCoordinator: IS_COORDINATOR,
@@ -1682,8 +1697,11 @@ async function startBot(): Promise<void> {
     );
     logger.info(`👑 Role: ${IS_COORDINATOR ? "Coordinator" : "Worker"}`);
     logger.info(
-      `📡 Communication: ${config.useRedis ? `Redis (${config.redisUrl})` : config.useWebSocket ? `WebSocket (${config.wsManagerUrl})` : "Direct"
-      }`
+      `📡 Communication: ${config.forceCrossServerComm 
+        ? (config.useRedis ? `Cross-server Redis (${config.redisUrl})` 
+           : config.useWebSocket ? `Cross-server WebSocket (${config.wsManagerUrl})` 
+           : "Cross-server Direct") 
+        : "Same-server Direct (optimized)"}`
     );
     logger.info(`💾 Message Cache Limit: ${config.messageMemoryLimit}`);
     logger.info(`⏱️  Global Cooldown: ${config.globalCooldown}s`);

@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder, type EmbedField } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder, type EmbedField } from "discord.js";
 import { databaseClient, getUser } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
 import { MonsterTable, type IMonsterModel } from "../../models/Monster";
@@ -309,7 +309,7 @@ function extractBaseStats(pokemon: Pokemon): MonsterStats {
 }
 
 export async function checkUniqueMonsters(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
 ): Promise<void> {
   try {
     const tempdex = await userDex(interaction.user.id);
@@ -330,7 +330,7 @@ export async function checkUniqueMonsters(
 
 export async function monsterEmbed(
   monster_db: IMonsterModel,
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
 ): Promise<void> {
   if (!monster_db) {
     logger.warn("No monster data provided to monsterEmbed");
@@ -522,7 +522,7 @@ export async function monsterEmbed(
  * @param interaction
  */
 export async function monsterInfoLatest(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
 ): Promise<void> {
   try {
     const user = await databaseClient<IMonsterUserModel>(MonsterUserTable)
@@ -577,7 +577,7 @@ export async function monsterInfoLatest(
  * @param monster_id
  */
 export async function monsterInfo(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   monster_id: string,
 ): Promise<void> {
   if (!monster_id || typeof monster_id !== "string") {
@@ -618,7 +618,7 @@ export async function monsterInfo(
  * @param interaction
  */
 export async function currentMonsterInfo(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
 ): Promise<void> {
   try {
     const user: IMonsterUserModel = await getUser(interaction.user.id);
@@ -669,7 +669,7 @@ export async function currentMonsterInfo(
  * @param interaction
  */
 export async function monsterDex(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
 ): Promise<void> {
   try {
     const pokemonOption = interaction.options.get("pokemon")?.value?.toString();

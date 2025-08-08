@@ -3,7 +3,7 @@ import {
     Guild,
     TextChannel,
     User,
-    type CommandInteraction,
+    type ChatInputCommandInteraction,
 } from "discord.js";
 import { xp_cache } from "../../clients/cache";
 import { databaseClient, getUser } from "../../clients/database";
@@ -170,7 +170,7 @@ async function handleEvolution(
   currentPokemon: Pokemon,
   evolution: ProcessedEvolution,
   user: User,
-  interaction?: CommandInteraction
+  interaction?: ChatInputCommandInteraction
 ): Promise<void> {
   try {
     const updateResult = await databaseClient<IMonsterModel>(MonsterTable)
@@ -233,7 +233,7 @@ async function handleEggHatch(
   monster: IMonsterModel,
   currentPokemon: Pokemon,
   user: User,
-  interaction?: CommandInteraction
+  interaction?: ChatInputCommandInteraction
 ): Promise<void> {
   try {
     // Use existing function to get a random valid Pokemon
@@ -328,7 +328,7 @@ async function handleEggHatch(
  */
 async function sendFallbackMessage(
   embed: EmbedBuilder,
-  interaction: CommandInteraction
+  interaction: ChatInputCommandInteraction
 ): Promise<void> {
   try {
     // Try multiple channel name variations
@@ -404,7 +404,7 @@ function calculateLevelUp(
 export async function checkExpGain(
   user: User,
   guild: Guild,
-  interaction?: CommandInteraction
+  interaction?: ChatInputCommandInteraction
 ): Promise<void> {
   const timestamp = getCurrentTime();
   const cacheKey = `${user.id}:${guild.id}`;
@@ -526,7 +526,7 @@ export async function checkExpGain(
 export async function forceEvolution(
   monsterId: number,
   user: User,
-  interaction: CommandInteraction
+  interaction: ChatInputCommandInteraction
 ): Promise<boolean> {
   try {
     const monster = await getUserMonster(monsterId);
@@ -565,7 +565,7 @@ export async function forceEvolution(
 export async function forceHatch(
   monsterId: number,
   user: User,
-  interaction: CommandInteraction
+  interaction: ChatInputCommandInteraction
 ): Promise<boolean> {
   try {
     const monster = await getUserMonster(monsterId);

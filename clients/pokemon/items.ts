@@ -1,4 +1,4 @@
-import { EmbedBuilder, type CommandInteraction } from "discord.js";
+import { EmbedBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { databaseClient, getUser } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
 import { ItemsTable, type IItemsModel } from "../../models/Items";
@@ -152,7 +152,7 @@ async function findEvolutionPokemon(evolutionName: string): Promise<Pokemon | nu
  */
 export async function checkItemEvolution(
   monster: IMonsterModel,
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   isTrade: boolean = false,
 ): Promise<void> {
   try {
@@ -203,7 +203,7 @@ async function executeEvolution(
   monster: IMonsterModel,
   targetPokemon: Pokemon,
   item: Iitem,
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   method: string
 ): Promise<void> {
   try {
@@ -262,10 +262,10 @@ async function executeEvolution(
  * item parsing with better error handling
  */
 export async function parseItems(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   args: string[],
 ): Promise<void> {
-  const command = (interaction as CommandInteraction).commandName;
+  const command = (interaction as ChatInputCommandInteraction).commandName;
 
   try {
     switch (command) {
@@ -315,7 +315,7 @@ export async function parseItems(
  * item shop listing with better pagination
  */
 async function listItems(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   args: string[],
 ): Promise<void> {
   try {
@@ -351,7 +351,7 @@ async function listItems(
  * user items display with improved search and filtering
  */
 async function msgUserItems(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   args: string[],
 ): Promise<void> {
   try {
@@ -487,7 +487,7 @@ function createPaginatedContent(
  * item removal with better feedback
  */
 async function removeMonsterItem(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   args: string[],
 ): Promise<void> {
   try {
@@ -569,7 +569,7 @@ async function removeMonsterItem(
  * item giving with special item handling
  */
 async function giveMonsterItem(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   args: string[],
 ): Promise<void> {
   try {
@@ -655,7 +655,7 @@ async function giveMonsterItem(
 async function handleRareCandy(
   monster: IMonsterModel,
   item: IItemsModel,
-  interaction: CommandInteraction
+  interaction: ChatInputCommandInteraction
 ): Promise<void> {
   if (monster.level >= MAX_POKEMON_LEVEL) {
     await queueMessage(
@@ -694,7 +694,7 @@ async function handleRareCandy(
 async function giveRegularItem(
   monster: IMonsterModel,
   item: IItemsModel,
-  interaction: CommandInteraction
+  interaction: ChatInputCommandInteraction
 ): Promise<void> {
   const [updateMonster, updateItem] = await Promise.all([
     databaseClient<IMonsterModel>(MonsterTable)
@@ -730,7 +730,7 @@ async function giveRegularItem(
  * item purchasing with better validation
  */
 async function buyItem(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   args: string[],
 ): Promise<void> {
   try {
@@ -804,7 +804,7 @@ async function buyItem(
 /**
  * balance display
  */
-export async function msgBalance(interaction: CommandInteraction): Promise<void> {
+export async function msgBalance(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     const user = await getUser(interaction.user.id);
     if (user) {
@@ -829,7 +829,7 @@ export async function msgBalance(interaction: CommandInteraction): Promise<void>
 /**
  * update items function with better feedback
  */
-async function updateItems(interaction: CommandInteraction): Promise<boolean> {
+async function updateItems(interaction: ChatInputCommandInteraction): Promise<boolean> {
   try {
     const user = await getUser(interaction.user.id);
     if (!user?.items) {

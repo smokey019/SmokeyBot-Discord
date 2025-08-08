@@ -20,7 +20,7 @@ SmokeyBot is a sharded Discord bot built with Bun runtime and Discord.js v14. Th
 
 ### Key Architectural Patterns
 
-1. **Sharding Strategy**: 
+1. **Sharding Strategy**:
    - Coordinator shard (ID 0) handles global operations like presence updates and command registration
    - Worker shards handle guild-specific operations
    - Dynamic shard ID assignment with Discord.js compatibility
@@ -77,3 +77,9 @@ The bot supports both development and production modes with separate configurati
 - Development mode enables comprehensive debug logging
 - Shard health monitoring with detailed metrics
 - Performance monitoring for slow commands (>1s) and message processing (>500ms)
+
+## Always consider the following
+
+- Maintain backward compatibility at all times unless otherwise stated.
+- We're using Bun instead of Node.  Always use Bun instead of Node where you can.
+- Make sure you try to exit/kill the Bun.exe process after running tests, you can do this with Ctrl+C (SIGINT or something similar should do it as well)

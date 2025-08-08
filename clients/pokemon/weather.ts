@@ -1,4 +1,4 @@
-import { CommandInteraction, TextChannel } from 'discord.js';
+import { ChatInputCommandInteraction, TextChannel } from 'discord.js';
 import { loadCache, type ICache } from '../../clients/cache';
 import { getLogger } from '../../clients/logger';
 import { getRndInteger } from '../../utils';
@@ -21,7 +21,7 @@ const WEATHER_DURATION_MS = 60 * 1000;
  * @returns Current weather boost
  */
 export async function getBoostedWeatherSpawns(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   cache: ICache,
 ): Promise<IWeather> {
   if (!interaction.guild?.id) {
@@ -52,7 +52,7 @@ export async function getBoostedWeatherSpawns(
  * @returns New weather boost
  */
 async function changeWeather(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   cache: ICache,
 ): Promise<IWeather> {
   const newWeather = getRandomWeather();
@@ -78,7 +78,7 @@ async function changeWeather(
  * @param weather - New weather
  */
 async function announceWeatherChange(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   cache: ICache,
   weather: IWeather,
 ): Promise<void> {
@@ -124,7 +124,7 @@ function getRandomWeather(): IWeather {
  * @returns Boolean indicating if Pokemon is weather boosted
  */
 export async function isPokemonBoostedByWeather(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   pokemonTypes: string[],
 ): Promise<boolean> {
   try {
@@ -173,7 +173,7 @@ export async function getCurrentWeather(guildId: string): Promise<IWeather | nul
  * @returns New weather
  */
 export async function forceWeatherChange(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   cache: ICache,
   weatherType?: string,
 ): Promise<IWeather> {

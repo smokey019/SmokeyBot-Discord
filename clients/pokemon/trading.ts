@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder, MessageFlags } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder, MessageFlags } from "discord.js";
 import { databaseClient, getUser } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
 import { MonsterTable, type IMonsterModel } from "../../models/Monster";
@@ -53,7 +53,7 @@ interface EvolutionResult {
  * @param args - Command arguments (deprecated, use interaction options)
  */
 export async function startTrade(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   args?: string[]
 ): Promise<void> {
   try {
@@ -175,7 +175,7 @@ export async function startTrade(
  * @param args - Command arguments (deprecated)
  */
 export async function parseTrade(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   args?: string[]
 ): Promise<void> {
   try {
@@ -220,7 +220,7 @@ export async function parseTrade(
  */
 export async function checkTradeEvolution(
   monsterId: number,
-  interaction: CommandInteraction
+  interaction: ChatInputCommandInteraction
 ): Promise<EvolutionResult> {
   try {
     const dbMonster = await getUserMonster(monsterId);
@@ -324,7 +324,7 @@ export async function checkTradeEvolution(
  * trade confirmation with evolution checking
  * @param interaction - Discord command interaction
  */
-export async function confirmTrade(interaction: CommandInteraction): Promise<void> {
+export async function confirmTrade(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     const trades = await databaseClient<ITrade>(TradeTable)
       .select()
@@ -418,7 +418,7 @@ export async function confirmTrade(interaction: CommandInteraction): Promise<voi
  * trade cancellation
  * @param interaction - Discord command interaction
  */
-export async function cancelTrade(interaction: CommandInteraction): Promise<void> {
+export async function cancelTrade(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     const trades = await databaseClient<ITrade>(TradeTable)
       .select()
@@ -782,7 +782,7 @@ async function evolveMonster(
  * @param username - Username for title
  */
 async function createEvolutionEmbed(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   monster: IMonsterModel,
   fromPokemon: any,
   evolution: { id: number; name: string },

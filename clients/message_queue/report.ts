@@ -1,4 +1,4 @@
-import { EmbedBuilder, type CommandInteraction } from "discord.js";
+import { EmbedBuilder, type ChatInputCommandInteraction } from "discord.js";
 import {
 	getMessageQueueStats,
 	getQueueHealth,
@@ -11,7 +11,7 @@ import {
  * @param interaction The Discord command interaction
  * @returns Promise<EmbedBuilder> The formatted statistics embed
  */
-export async function createQueueStatsEmbed(interaction: CommandInteraction): Promise<EmbedBuilder> {
+export async function createQueueStatsEmbed(interaction: ChatInputCommandInteraction): Promise<EmbedBuilder> {
   const statisticType = interaction.options.getString('statistic')?.toLowerCase();
   const stats = getMessageQueueStats();
   const health = getQueueHealth();

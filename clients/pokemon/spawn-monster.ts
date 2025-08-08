@@ -1,4 +1,4 @@
-import { EmbedBuilder, TextChannel, type CommandInteraction } from "discord.js";
+import { EmbedBuilder, TextChannel, type ChatInputCommandInteraction } from "discord.js";
 import { initializing, rateLimited } from "../../bot";
 import { loadCache, type ICache } from "../../clients/cache";
 import {
@@ -26,12 +26,12 @@ export const MONSTER_SPAWNS = loadCache("MONSTER_SPAWNS");
 const logger = getLogger("Pokémon-Spawn");
 
 // Constants for spawn configuration
-const SPAWN_TIMER_MIN = 60;
 const SPAWN_TIMER_MAX = 300;
 const SPAWN_TIMER_INNER_MIN = 60;
 const SPAWN_TIMER_INNER_MAX = 120;
 const MAX_BOOST_ATTEMPTS = 10;
 const DEFAULT_SPAWN_COOLDOWN = 30;
+const API_RATE_LIMIT_DELAY = 100; // 100ms delay between API attempts
 
 // Wild encounter phrases from Pokémon games
 const WILD_ENCOUNTER_PHRASES = [
@@ -96,6 +96,15 @@ function generateSpawnTimer(): number {
     getRndInteger(SPAWN_TIMER_INNER_MIN, SPAWN_TIMER_INNER_MAX),
     SPAWN_TIMER_MAX
   );
+}
+
+/**
+ * Sleep utility function to add delays between API calls
+ * @param ms - Milliseconds to sleep
+ * @returns Promise that resolves after the delay
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /**
@@ -191,7 +200,7 @@ async function createSpawnEmbed(monster: Pokemon, isForced: boolean = false): Pr
  * @returns Promise<Pokemon | null>
  */
 async function findSpawnableMonster(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   cache: ICache
 ): Promise<Pokemon | null> {
   let attempts = 0;
@@ -207,6 +216,11 @@ async function findSpawnableMonster(
       (!monster || (!isBoosted && attempts < 5))
     ) {
       try {
+        // Add delay before each API call attempt (except the first one)
+        if (attempts > 0) {
+          await sleep(API_RATE_LIMIT_DELAY);
+        }
+
         // Use the centralized random function
         const randomId = getRandomMonster();
         const candidate = await findMonsterByID(randomId);
@@ -267,7 +281,7 @@ async function findSpawnableMonster(
  * @param cache - Guild cache
  */
 export async function checkSpawn(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   cache: ICache
 ): Promise<void> {
   try {
@@ -317,7 +331,7 @@ export async function checkSpawn(
  * @param cache - Guild cache
  */
 export async function spawnMonster(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   cache: ICache
 ): Promise<SpawnResult> {
   try {
@@ -501,7 +515,7 @@ export async function updateSpawn(
  * @param cache - Guild cache
  */
 export async function forceSpawn(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   cache: ICache
 ): Promise<SpawnResult> {
   try {

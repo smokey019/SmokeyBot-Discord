@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { GLOBAL_COOLDOWN, getGCD } from "../../clients/cache";
 import { databaseClient, getUser } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
@@ -11,8 +11,11 @@ import { getCurrentTime, getRndInteger } from "../../utils";
 import { queueMessage } from "../message_queue";
 import { userDex } from "./info";
 import {
+  calculateIVPercentage,
+  generatePokemonIVs,
   getPokemonDisplayName,
   getPokemonSprites,
+  normalizePokemonNameForCatch,
   type Pokemon
 } from "./monsters";
 import { getRandomNature } from "./natures";
@@ -25,9 +28,6 @@ const logger = getLogger("Pokémon-Catch");
 const CATCH_RESPONSES = ["YOINK", "YOINKERS", "NICE", "NOICE", "Congrats"] as const;
 const WRONG_POKEMON_COOLDOWN = 5; // seconds
 const BASE_EXPERIENCE_MULTIPLIER = 1250;
-const MAX_IV = 31;
-const PERFECT_IV_MIN = 28;
-const MAX_IV_TOTAL = 186; // 31 * 6 stats
 const CATCH_CURRENCY_REWARD = 10;
 const NEW_POKEMON_BONUS = 100;
 const SHINY_BONUS = 1000;
@@ -44,58 +44,10 @@ class CatchError extends Error {
 
 // Type definitions for better type safety
 interface SpawnData {
-  monster: {
-    id: number;
-    name: string;
-    sprites: {
-      other: {
-        "official-artwork": {
-          front_default: string;
-          front_shiny: string;
-        };
-      };
-    };
-  } | null;
+  monster: Pokemon | null;
 }
 
-interface CatchResult {
-  success: boolean;
-  isNew: boolean;
-  isShiny: boolean;
-  response: string;
-  monster?: IMonsterModel;
-  insertedId?: number;
-}
 
-/**
- * Special Pokemon names that can maintain hyphens
- */
-const HYPHENATED_POKEMON_EXCEPTIONS = new Set([
-  // Treasures of Ruin (confirmed to have hyphens in canonical names)
-  "chi-yu",
-  "ting-lu",
-  "chien-pao",
-  "wo-chien",
-
-  // Legendary with hyphen
-  "ho-oh",
-
-  // Kommo-o evolution line (confirmed to have hyphens)
-  "kommo-o",
-  "hakamo-o",
-  "jangmo-o",
-
-  // Other confirmed hyphenated names
-  "porygon-z",
-]);
-
-/**
- * Pokemon names that need space replacement instead of hyphen removal
- */
-const SPACE_REPLACEMENT_POKEMON = new Set([
-  "sandy-shocks",
-  "mr-rime"
-]);
 
 /**
  * Returns true if the input matches any of the currently spawned monster names.
@@ -143,67 +95,8 @@ function monsterMatchesPrevious(
   return false;
 }
 
-/**
- * Normalizes Pokemon names by handling special cases with hyphens and spaces
- * This is specialized for catching mechanics and differs from the general normalization
- *
- * @param pokemonName Original Pokemon name
- * @returns Normalized Pokemon name
- */
-function normalizePokemonNameForCatch(pokemonName: string): string {
-  if (!pokemonName || typeof pokemonName !== 'string') {
-    return '';
-  }
 
-  const lowerName = pokemonName.toLowerCase().trim();
 
-  // Handle hyphenated exceptions
-  if (HYPHENATED_POKEMON_EXCEPTIONS.has(lowerName)) {
-    return lowerName;
-  }
-
-  return lowerName.split("-")[0];
-}
-
-/**
- * Calculates average IV percentage from individual IV values
- *
- * @param ivStats Object containing individual IV values
- * @returns Average IV as a percentage (0-100)
- */
-function calculateAverageIV(ivStats: {
-  hp: number;
-  attack: number;
-  defense: number;
-  sp_attack: number;
-  sp_defense: number;
-  speed: number;
-}): number {
-  const totalIV = ivStats.hp + ivStats.attack + ivStats.defense +
-    ivStats.sp_attack + ivStats.sp_defense + ivStats.speed;
-
-  return parseFloat(((totalIV / MAX_IV_TOTAL) * 100).toFixed(2));
-}
-
-/**
- * Generates random IV stats for a Pokemon
- *
- * @param isPerfect Whether to generate high IV stats
- * @returns Object containing IV values
- */
-function generateIVStats(isPerfect: boolean = false) {
-  const minIV = isPerfect ? PERFECT_IV_MIN : 1;
-  const maxIV = MAX_IV;
-
-  return {
-    hp: getRndInteger(minIV, maxIV),
-    attack: getRndInteger(minIV, maxIV),
-    defense: getRndInteger(minIV, maxIV),
-    sp_attack: getRndInteger(minIV, maxIV),
-    sp_defense: getRndInteger(minIV, maxIV),
-    speed: getRndInteger(minIV, maxIV)
-  };
-}
 
 /**
  * Creates a monster object with all required properties
@@ -212,7 +105,7 @@ function generateIVStats(isPerfect: boolean = false) {
  * @param userId Discord user ID
  * @returns Complete monster object ready for database insertion
  */
-function createMonsterObject(spawnData: SpawnData['monster'], userId: string): IMonsterModel {
+function createMonsterObject(spawnData: Pokemon | null, userId: string): IMonsterModel {
   if (!spawnData) {
     throw new CatchError('Invalid spawn data provided', 'INVALID_SPAWN_DATA', userId);
   }
@@ -223,8 +116,8 @@ function createMonsterObject(spawnData: SpawnData['monster'], userId: string): I
   const isPerfect = rollPerfectIV();
   const isEgg = 0; // Currently disabled based on commented code
 
-  const ivStats = generateIVStats(isPerfect);
-  const averageIV = calculateAverageIV(ivStats);
+  const ivStats = generatePokemonIVs(isPerfect);
+  const averageIV = calculateIVPercentage(ivStats);
 
   const monster: IMonsterModel = {
     monster_id: spawnData.id,
@@ -338,7 +231,7 @@ async function handleCurrencyBonuses(userId: string, isShiny: boolean, isNewPoke
  */
 function generateCatchResponse(
   monster: IMonsterModel,
-  spawnData: SpawnData['monster'],
+  spawnData: Pokemon | null,
   isNewPokemon: boolean,
   insertedId: number
 ): string {
@@ -347,7 +240,7 @@ function generateCatchResponse(
   }
 
   // Use the display name function from monsters.ts for consistent formatting
-  const pokemonName = getPokemonDisplayName({ name: spawnData.name } as Pokemon);
+  const pokemonName = getPokemonDisplayName(spawnData);
   const randomGrats = CATCH_RESPONSES[getRndInteger(0, CATCH_RESPONSES.length - 1)];
   const shinyEmoji = monster.shiny ? " ⭐" : "";
   const legendaryEmoji = ""; // Currently disabled based on commented code
@@ -377,19 +270,19 @@ function generateCatchResponse(
  * @param spawnData Original spawn data
  */
 async function sendCatchResponse(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   response: string,
   monster: IMonsterModel,
-  spawnData: SpawnData['monster']
+  spawnData: Pokemon | null
 ): Promise<void> {
   try {
     if (monster.shiny && spawnData) {
       // Use the sprite function from monsters.ts for better sprite handling
-      const sprites = getPokemonSprites({ sprites: spawnData.sprites } as Pokemon, true);
+      const sprites = getPokemonSprites(spawnData, true);
       const shinySprite = sprites.artwork || sprites.default;
 
       if (shinySprite) {
-        const pokemonName = getPokemonDisplayName({ name: spawnData.name } as Pokemon);
+        const pokemonName = getPokemonDisplayName(spawnData);
 
         const embed = new EmbedBuilder()
           .setTitle("⭐ " + pokemonName + " ⭐")
@@ -434,7 +327,7 @@ function validateSpawnData(spawn: SpawnData): boolean {
  *
  * @param interaction Discord command interaction
  */
-export async function catchMonster(interaction: CommandInteraction): Promise<void> {
+export async function catchMonster(interaction: ChatInputCommandInteraction): Promise<void> {
   // Initial response to prevent interaction timeout
   await interaction.reply(
     "https://cdn.discordapp.com/emojis/753418888376614963.webp?size=96&quality=lossless"
@@ -481,9 +374,6 @@ export async function catchMonster(interaction: CommandInteraction): Promise<voi
     spawn.monster!.name = normalizedSpawnName;
 
     // Check if user's attempt matches the spawned Pokemon
-    logger.error(userAttempt);
-    logger.error(normalizedSpawnName);
-
     if (userAttempt === normalizedSpawnName) {
       logger.trace(`${interaction.guild?.name} - ${interaction.user.username} | Starting catch process`);
 
@@ -512,7 +402,7 @@ export async function catchMonster(interaction: CommandInteraction): Promise<voi
 
         // Log the catch
         const logLevel = monster.shiny ? 'error' : 'info'; // 'error' for shiny to make it stand out
-        const displayName = getPokemonDisplayName({ name: currentSpawn.name } as Pokemon);
+        const displayName = getPokemonDisplayName(currentSpawn);
         logger[logLevel](
           `${interaction.guild?.name} - ${interaction.user.username} caught a ${monster.shiny ? 'SHINY ' : ''}${displayName} (ID: ${insertedId})`
         );
@@ -584,5 +474,5 @@ export function calculateIVAverage(ivs: {
   sp_defense: number;
   speed: number;
 }): number {
-  return calculateAverageIV(ivs);
+  return calculateIVPercentage(ivs);
 }

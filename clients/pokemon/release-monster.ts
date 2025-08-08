@@ -1,4 +1,4 @@
-import { CommandInteraction, type CommandInteractionOption } from 'discord.js';
+import { ChatInputCommandInteraction, type ChatInputCommandInteractionOption } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { MonsterTable, type IMonsterModel } from '../../models/Monster';
@@ -122,7 +122,7 @@ async function recover(monster_id: number | string): Promise<ReleaseResult> {
  * @param option - Command interaction option
  * @returns string | null
  */
-function getOptionValue(option: CommandInteractionOption | null): string | null {
+function getOptionValue(option: ChatInputCommandInteractionOption | null): string | null {
   if (!option || option.value === null || option.value === undefined) return null;
   return option.value.toString();
 }
@@ -301,7 +301,7 @@ async function processBulkRelease(monsterIds: string[], userId: string): Promise
  * single monster release with comprehensive error handling
  * @param interaction - Discord command interaction
  */
-export async function releaseMonster(interaction: CommandInteraction): Promise<void> {
+export async function releaseMonster(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     const pokemonOption = getOptionValue(interaction.options.get('pokemon'));
 
@@ -409,7 +409,7 @@ export async function releaseMonster(interaction: CommandInteraction): Promise<v
  * @param interaction - Discord command interaction
  * @param input - Bulk input string
  */
-async function handleBulkRelease(interaction: CommandInteraction, input: string): Promise<void> {
+async function handleBulkRelease(interaction: ChatInputCommandInteraction, input: string): Promise<void> {
   try {
     const monsterIds = parseBulkInput(input);
 
@@ -491,7 +491,7 @@ async function handleBulkRelease(interaction: CommandInteraction, input: string)
  * monster recovery with comprehensive error handling
  * @param interaction - Discord command interaction
  */
-export async function recoverMonster(interaction: CommandInteraction): Promise<void> {
+export async function recoverMonster(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     const pokemonOption = getOptionValue(interaction.options.get('pokemon'));
 

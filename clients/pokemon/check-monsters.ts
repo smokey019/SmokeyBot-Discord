@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { databaseClient, getUser } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
 import { MonsterTable, type IMonsterModel } from "../../models/Monster";
@@ -453,7 +453,7 @@ function createMonsterEmbed(options: EmbedOptions): EmbedBuilder {
  * Safely sends an embed response with error handling
  */
 async function sendEmbedResponse(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   embed: EmbedBuilder,
   isReply: boolean = false
 ): Promise<void> {
@@ -484,7 +484,7 @@ async function sendEmbedResponse(
  * version of checkMonstersNew with improved Pokemon data fetching
  */
 export async function checkMonstersNew(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   favorites?: 0 | 1
 ): Promise<void> {
   const userId = interaction.user.id;
@@ -570,7 +570,7 @@ export async function checkMonstersNew(
  * version of checkMonsters with improved Pokemon data fetching
  */
 export async function checkMonsters(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   args: string[]
 ): Promise<void> {
   const userId = interaction.user.id;
@@ -668,7 +668,7 @@ export async function checkMonsters(
 /**
  * Pokedex checker with improved Pokemon data fetching
  */
-export async function checkPokedex(interaction: CommandInteraction): Promise<void> {
+export async function checkPokedex(interaction: ChatInputCommandInteraction): Promise<void> {
   const userId = interaction.user.id;
 
   try {
@@ -758,7 +758,7 @@ export async function checkPokedex(interaction: CommandInteraction): Promise<voi
  * favorites checker with improved Pokemon data fetching
  */
 export async function checkFavorites(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   args: string[]
 ): Promise<void> {
   const userId = interaction.user.id;
@@ -850,7 +850,7 @@ export async function checkFavorites(
 /**
  * search function with improved Pokemon data fetching
  */
-export async function searchMonsters(interaction: CommandInteraction): Promise<void> {
+export async function searchMonsters(interaction: ChatInputCommandInteraction): Promise<void> {
   const userId = interaction.user.id;
   const username = interaction.user.username;
   const guildName = interaction.guild?.name;

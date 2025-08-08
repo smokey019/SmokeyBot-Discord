@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder, MessageFlags } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder, MessageFlags } from "discord.js";
 import { discordClient } from "../../bot";
 import { GLOBAL_COOLDOWN, type ICache } from "../../clients/cache";
 import { getUserDBCount } from "../../clients/database";
@@ -349,7 +349,7 @@ export function rollCompleteIVs(isPerfect: boolean = false): {
  * @param cache - Server cache
  */
 export async function checkServerWeather(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   cache: ICache
 ): Promise<void> {
   try {
@@ -382,7 +382,7 @@ export async function checkServerWeather(
  * bot statistics with better formatting and error handling
  * @param interaction - Discord command interaction
  */
-export async function getBotStats(interaction: CommandInteraction): Promise<void> {
+export async function getBotStats(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     if (interaction.guild?.id) {
       GLOBAL_COOLDOWN.set(interaction.guild.id, getCurrentTime());

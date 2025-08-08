@@ -1,4 +1,13 @@
-import { CommandInteraction, EmbedBuilder } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
+import {
+  EvolutionChain,
+  EvolutionClient,
+  GameClient,
+  MoveClient,
+  Pokemon,
+  PokemonClient,
+  PokemonSpecies
+} from "pokenode-ts";
 import { databaseClient } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
 import { MonsterTable, type IMonsterModel } from "../../models/Monster";
@@ -14,454 +23,14 @@ import { capitalizeFirstLetter, rollGender } from "./utils";
 const logger = getLogger("Pokémon");
 
 // Constants for configuration
-const API_BASE_URL = "https://pokeapi.co/api/v2";
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-const API_TIMEOUT = 10000; // 10 seconds
 const MAX_POKEMON_ID = 1025; // Current max Pokemon ID
 const MIN_POKEMON_ID = 1;
 
-// Pokemon interface from PokeAPI
-interface Pokemon {
-  abilities: Array<{
-    ability: {
-      name: string;
-      url: string;
-    };
-    is_hidden: boolean;
-    slot: number;
-  }>;
-  base_experience: number;
-  cries: {
-    latest: string;
-    legacy: string;
-  };
-  forms: Array<{
-    name: string;
-    url: string;
-  }>;
-  game_indices: Array<{
-    game_index: number;
-    version: {
-      name: string;
-      url: string;
-    };
-  }>;
-  height: number;
-  held_items: Array<{
-    item: {
-      name: string;
-      url: string;
-    };
-    version_details: Array<{
-      rarity: number;
-      version: {
-        name: string;
-        url: string;
-      };
-    }>;
-  }>;
-  id: number;
-  is_default: boolean;
-  location_area_encounters: string;
-  moves: Array<{
-    move: {
-      name: string;
-      url: string;
-    };
-    version_group_details: Array<{
-      level_learned_at: number;
-      move_learn_method: {
-        name: string;
-        url: string;
-      };
-      order: number | null;
-      version_group: {
-        name: string;
-        url: string;
-      };
-    }>;
-  }>;
-  name: string;
-  order: number;
-  past_abilities: Array<{
-    abilities: Array<{
-      ability: {
-        name: string;
-        url: string;
-      } | null;
-      is_hidden: boolean;
-      slot: number;
-    }>;
-    generation: {
-      name: string;
-      url: string;
-    };
-  }>;
-  past_types: any[];
-  species: {
-    name: string;
-    url: string;
-  };
-  sprites: {
-    back_default: string | null;
-    back_female: string | null;
-    back_shiny: string | null;
-    back_shiny_female: string | null;
-    front_default: string | null;
-    front_female: string | null;
-    front_shiny: string | null;
-    front_shiny_female: string | null;
-    other: {
-      dream_world: {
-        front_default: string | null;
-        front_female: string | null;
-      };
-      home: {
-        front_default: string | null;
-        front_female: string | null;
-        front_shiny: string | null;
-        front_shiny_female: string | null;
-      };
-      "official-artwork": {
-        front_default: string | null;
-        front_shiny: string | null;
-      };
-      showdown: {
-        back_default: string | null;
-        back_female: string | null;
-        back_shiny: string | null;
-        back_shiny_female: string | null;
-        front_default: string | null;
-        front_female: string | null;
-        front_shiny: string | null;
-        front_shiny_female: string | null;
-      };
-    };
-    versions: {
-      "generation-i": {
-        "red-blue": {
-          back_default: string | null;
-          back_gray: string | null;
-          back_transparent: string | null;
-          front_default: string | null;
-          front_gray: string | null;
-          front_transparent: string | null;
-        };
-        yellow: {
-          back_default: string | null;
-          back_gray: string | null;
-          back_transparent: string | null;
-          front_default: string | null;
-          front_gray: string | null;
-          front_transparent: string | null;
-        };
-      };
-      "generation-ii": {
-        crystal: {
-          back_default: string | null;
-          back_shiny: string | null;
-          back_shiny_transparent: string | null;
-          back_transparent: string | null;
-          front_default: string | null;
-          front_shiny: string | null;
-          front_shiny_transparent: string | null;
-          front_transparent: string | null;
-        };
-        gold: {
-          back_default: string | null;
-          back_shiny: string | null;
-          front_default: string | null;
-          front_shiny: string | null;
-          front_transparent: string | null;
-        };
-        silver: {
-          back_default: string | null;
-          back_shiny: string | null;
-          front_default: string | null;
-          front_shiny: string | null;
-          front_transparent: string | null;
-        };
-      };
-      "generation-iii": {
-        emerald: {
-          front_default: string | null;
-          front_shiny: string | null;
-        };
-        "firered-leafgreen": {
-          back_default: string | null;
-          back_shiny: string | null;
-          front_default: string | null;
-          front_shiny: string | null;
-        };
-        "ruby-sapphire": {
-          back_default: string | null;
-          back_shiny: string | null;
-          front_default: string | null;
-          front_shiny: string | null;
-        };
-      };
-      "generation-iv": {
-        "diamond-pearl": {
-          back_default: string | null;
-          back_female: string | null;
-          back_shiny: string | null;
-          back_shiny_female: string | null;
-          front_default: string | null;
-          front_female: string | null;
-          front_shiny: string | null;
-          front_shiny_female: string | null;
-        };
-        "heartgold-soulsilver": {
-          back_default: string | null;
-          back_female: string | null;
-          back_shiny: string | null;
-          back_shiny_female: string | null;
-          front_default: string | null;
-          front_female: string | null;
-          front_shiny: string | null;
-          front_shiny_female: string | null;
-        };
-        platinum: {
-          back_default: string | null;
-          back_female: string | null;
-          back_shiny: string | null;
-          back_shiny_female: string | null;
-          front_default: string | null;
-          front_female: string | null;
-          front_shiny: string | null;
-          front_shiny_female: string | null;
-        };
-      };
-      "generation-v": {
-        "black-white": {
-          animated: {
-            back_default: string | null;
-            back_female: string | null;
-            back_shiny: string | null;
-            back_shiny_female: string | null;
-            front_default: string | null;
-            front_female: string | null;
-            front_shiny: string | null;
-            front_shiny_female: string | null;
-          };
-          back_default: string | null;
-          back_female: string | null;
-          back_shiny: string | null;
-          back_shiny_female: string | null;
-          front_default: string | null;
-          front_female: string | null;
-          front_shiny: string | null;
-          front_shiny_female: string | null;
-        };
-      };
-      "generation-vi": {
-        "omegaruby-alphasapphire": {
-          front_default: string | null;
-          front_female: string | null;
-          front_shiny: string | null;
-          front_shiny_female: string | null;
-        };
-        "x-y": {
-          front_default: string | null;
-          front_female: string | null;
-          front_shiny: string | null;
-          front_shiny_female: string | null;
-        };
-      };
-      "generation-vii": {
-        icons: {
-          front_default: string | null;
-          front_female: string | null;
-        };
-        "ultra-sun-ultra-moon": {
-          front_default: string | null;
-          front_female: string | null;
-          front_shiny: string | null;
-          front_shiny_female: string | null;
-        };
-      };
-      "generation-viii": {
-        icons: {
-          front_default: string | null;
-          front_female: string | null;
-        };
-      };
-    };
-  };
-  stats: Array<{
-    base_stat: number;
-    effort: number;
-    stat: {
-      name: string;
-      url: string;
-    };
-  }>;
-  types: Array<{
-    slot: number;
-    type: {
-      name: string;
-      url: string;
-    };
-  }>;
-  weight: number;
-}
-
-// Pokemon Species interface for additional data
-interface PokemonSpecies {
-  id: number;
-  name: string;
-  order: number;
-  gender_rate: number;
-  capture_rate: number;
-  base_happiness: number;
-  is_baby: boolean;
-  is_legendary: boolean;
-  is_mythical: boolean;
-  hatch_counter: number;
-  has_gender_differences: boolean;
-  forms_switchable: boolean;
-  growth_rate: {
-    name: string;
-    url: string;
-  };
-  pokedex_numbers: Array<{
-    entry_number: number;
-    pokedex: {
-      name: string;
-      url: string;
-    };
-  }>;
-  egg_groups: Array<{
-    name: string;
-    url: string;
-  }>;
-  color: {
-    name: string;
-    url: string;
-  };
-  shape: {
-    name: string;
-    url: string;
-  };
-  evolves_from_species: {
-    name: string;
-    url: string;
-  } | null;
-  evolution_chain: {
-    url: string;
-  };
-  habitat: {
-    name: string;
-    url: string;
-  } | null;
-  generation: {
-    name: string;
-    url: string;
-  };
-  names: Array<{
-    name: string;
-    language: {
-      name: string;
-      url: string;
-    };
-  }>;
-  flavor_text_entries: Array<{
-    flavor_text: string;
-    language: {
-      name: string;
-      url: string;
-    };
-    version: {
-      name: string;
-      url: string;
-    };
-  }>;
-  form_descriptions: Array<{
-    description: string;
-    language: {
-      name: string;
-      url: string;
-    };
-  }>;
-  genera: Array<{
-    genus: string;
-    language: {
-      name: string;
-      url: string;
-    };
-  }>;
-  varieties: Array<{
-    is_default: boolean;
-    pokemon: {
-      name: string;
-      url: string;
-    };
-  }>;
-}
-
-// Evolution chain interface
-interface EvolutionChain {
-  id: number;
-  baby_trigger_item: {
-    name: string;
-    url: string;
-  } | null;
-  chain: {
-    is_baby: boolean;
-    species: {
-      name: string;
-      url: string;
-    };
-    evolution_details: Array<{
-      item: {
-        name: string;
-        url: string;
-      } | null;
-      trigger: {
-        name: string;
-        url: string;
-      };
-      gender: number | null;
-      held_item: {
-        name: string;
-        url: string;
-      } | null;
-      known_move: {
-        name: string;
-        url: string;
-      } | null;
-      known_move_type: {
-        name: string;
-        url: string;
-      } | null;
-      location: {
-        name: string;
-        url: string;
-      } | null;
-      min_level: number | null;
-      min_happiness: number | null;
-      min_beauty: number | null;
-      min_affection: number | null;
-      needs_overworld_rain: boolean;
-      party_species: {
-        name: string;
-        url: string;
-      } | null;
-      party_type: {
-        name: string;
-        url: string;
-      } | null;
-      relative_physical_stats: number | null;
-      time_of_day: string;
-      trade_species: {
-        name: string;
-        url: string;
-      } | null;
-      turn_upside_down: boolean;
-    }>;
-    evolves_to: any[]; // Recursive structure
-  };
-}
+// Initialize pokenode-ts clients with built-in caching
+const pokemonApi = new PokemonClient();
+const gameApi = new GameClient();
+const moveApi = new MoveClient();
+const evolutionApi = new EvolutionClient();
 
 // Error handling
 class PokemonError extends Error {
@@ -471,91 +40,13 @@ class PokemonError extends Error {
   }
 }
 
-// Cache for API responses
-const apiCache = new Map<string, { data: any; timestamp: number }>();
-
-/**
- * Check if cached data is still valid
- * @param key - Cache key
- * @returns Cached data or null if expired/not found
- */
-function getCachedData(key: string): any | null {
-  const cached = apiCache.get(key);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data;
-  }
-
-  // Remove expired cache entry
-  if (cached) {
-    apiCache.delete(key);
-  }
-
-  return null;
-}
-
-/**
- * Set data in cache
- * @param key - Cache key
- * @param data - Data to cache
- */
-function setCachedData(key: string, data: any): void {
-  apiCache.set(key, { data, timestamp: Date.now() });
-}
-
-/**
- * Make API request with caching and error handling
- * @param url - API endpoint URL
- * @param cacheKey - Cache key for the request
- * @returns Promise resolving to API response data
- */
-async function makeApiRequest(url: string, cacheKey: string): Promise<any> {
-  // Check cache first
-  const cached = getCachedData(cacheKey);
-  if (cached) {
-    return cached;
-  }
-
-  try {
-    // Create request with timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
-
-    const response = await fetch(url, {
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      throw new PokemonError(
-        `API request failed: ${response.status} ${response.statusText}`,
-        "API_ERROR"
-      );
-    }
-
-    const data = await response.json();
-
-    // Cache successful response
-    setCachedData(cacheKey, data);
-
-    return data;
-  } catch (error) {
-    if (error.name === "AbortError") {
-      throw new PokemonError("API request timed out", "TIMEOUT_ERROR");
-    }
-
-    logger.error(`API request failed for ${url}:`, error);
-    throw error;
-  }
-}
-
 /**
  * Validate Pokemon ID
  * @param id - Pokemon ID to validate
  * @returns boolean indicating if ID is valid
  */
 function isValidPokemonId(id: number): boolean {
-  return typeof id === "number" && id >= MIN_POKEMON_ID && id <= MAX_POKEMON_ID && !id.toString().includes(".");
+  return typeof id === "number" && Number.isInteger(id) && id >= MIN_POKEMON_ID && id <= MAX_POKEMON_ID;
 }
 
 /**
@@ -599,7 +90,7 @@ function hasValidSprites(pokemon: Pokemon): boolean {
   if (pokemon.sprites.other?.["official-artwork"]?.front_default) return true;
 
   // Check for showdown sprites
-  if (pokemon.sprites.other?.showdown?.front_default) return true;
+  if (pokemon.sprites.other?.dream_world?.front_default) return true;
 
   // Check for basic sprites
   if (pokemon.sprites.front_default) return true;
@@ -627,12 +118,8 @@ export async function findMonsterByID(id: number): Promise<Pokemon | null> {
   }
 
   try {
-    const cacheKey = `pokemon-${id}`;
-    const pokemon = await makeApiRequest(
-      `${API_BASE_URL}/pokemon/${id}`,
-      cacheKey
-    );
-    return pokemon as Pokemon;
+    const pokemon = await pokemonApi.getPokemonById(id);
+    return pokemon;
   } catch (error) {
     logger.error(`Error fetching Pokemon with ID ${id}:`, error);
     return null;
@@ -652,12 +139,8 @@ export async function findMonsterByName(name: string): Promise<Pokemon | null> {
 
   try {
     const normalizedName = normalizePokemonName(name);
-    const cacheKey = `pokemon-name-${normalizedName}`;
-    const pokemon = await makeApiRequest(
-      `${API_BASE_URL}/pokemon/${normalizedName}`,
-      cacheKey
-    );
-    return pokemon as Pokemon;
+    const pokemon = await pokemonApi.getPokemonByName(normalizedName);
+    return pokemon;
   } catch (error) {
     logger.error(`Error fetching Pokemon with name "${name}":`, error);
     return null;
@@ -678,12 +161,8 @@ export async function getPokemonSpecies(
   }
 
   try {
-    const cacheKey = `species-${id}`;
-    const species = await makeApiRequest(
-      `${API_BASE_URL}/pokemon-species/${id}`,
-      cacheKey
-    );
-    return species as PokemonSpecies;
+    const species = await pokemonApi.getPokemonSpeciesById(id);
+    return species;
   } catch (error) {
     logger.error(`Error fetching Pokemon species with ID ${id}:`, error);
     return null;
@@ -704,12 +183,8 @@ export async function getPokemonEvolutions(
   }
 
   try {
-    const cacheKey = `evolution-${id}`;
-    const evolution = await makeApiRequest(
-      `${API_BASE_URL}/evolution-chain/${id}`,
-      cacheKey
-    );
-    return evolution as EvolutionChain;
+    const evolution = await evolutionApi.getEvolutionChainById(id);
+    return evolution;
   } catch (error) {
     logger.error(`Error fetching evolution chain with ID ${id}:`, error);
     return null;
@@ -783,8 +258,8 @@ export async function getMonsterDBCount(): Promise<string> {
   try {
     const result = await databaseClient<IMonsterModel>(MonsterTable)
       .count("id as count")
-      .first();
-    return result?.count || "0";
+      .first() as any;
+    return String(result?.count || 0);
   } catch (error) {
     logger.error("Error getting monster DB count:", error);
     throw new PokemonError("Failed to get monster count", "DB_ERROR");
@@ -800,8 +275,8 @@ export async function getShinyMonsterDBCount(): Promise<string> {
     const result = await databaseClient<IMonsterModel>(MonsterTable)
       .count("id as count")
       .where("shiny", 1)
-      .first();
-    return result?.count || "0";
+      .first() as any;
+    return String(result?.count || 0);
   } catch (error) {
     logger.error("Error getting shiny monster DB count:", error);
     throw new PokemonError("Failed to get shiny monster count", "DB_ERROR");
@@ -853,8 +328,8 @@ export async function getUsersMonsters(
     const monsters = await databaseClient<IMonsterModel>(MonsterTable)
       .select()
       .where({
-        uid: uid,
-        released: released,
+        uid,
+        released,
       });
     return monsters || [];
   } catch (error) {
@@ -882,8 +357,8 @@ export async function getUsersFavoriteMonsters(
     const monsters = await databaseClient<IMonsterModel>(MonsterTable)
       .select()
       .where({
-        uid: uid,
-        released: released,
+        uid,
+        released,
         favorite: 1,
       });
     return monsters || [];
@@ -899,7 +374,7 @@ export async function getUsersFavoriteMonsters(
  * @returns Promise resolving to success boolean
  */
 export async function selectMonster(
-  interaction: CommandInteraction
+  interaction: ChatInputCommandInteraction
 ): Promise<boolean> {
   if (!interaction?.options?.get("pokemon")) {
     logger.warn("No pokemon option provided in selectMonster");
@@ -972,7 +447,7 @@ export async function selectMonster(
  * @returns Promise resolving to success boolean
  */
 export async function setFavorite(
-  interaction: CommandInteraction
+  interaction: ChatInputCommandInteraction
 ): Promise<boolean> {
   if (!interaction?.options?.get("pokemon")) {
     logger.warn("No pokemon option provided in setFavorite");
@@ -1043,7 +518,7 @@ export async function setFavorite(
  * @returns Promise resolving to success boolean
  */
 export async function unFavorite(
-  interaction: CommandInteraction
+  interaction: ChatInputCommandInteraction
 ): Promise<boolean> {
   if (!interaction?.options?.get("pokemon")) {
     logger.warn("No pokemon option provided in unFavorite");
@@ -1142,12 +617,15 @@ export async function searchPokemonByName(
  * @returns Promise resolving to type data
  */
 export async function getPokemonType(typeId: string | number): Promise<any> {
+  if (!typeId) {
+    logger.warn('Invalid type ID provided to getPokemonType');
+    return null;
+  }
+
   try {
-    const cacheKey = `type-${typeId}`;
-    const typeData = await makeApiRequest(
-      `${API_BASE_URL}/type/${typeId}`,
-      cacheKey
-    );
+    const typeData = typeof typeId === 'string'
+      ? await pokemonApi.getTypeByName(typeId)
+      : await pokemonApi.getTypeById(typeId);
     return typeData;
   } catch (error) {
     logger.error(`Error fetching type data for ${typeId}:`, error);
@@ -1161,12 +639,15 @@ export async function getPokemonType(typeId: string | number): Promise<any> {
  * @returns Promise resolving to move data
  */
 export async function getPokemonMove(moveId: string | number): Promise<any> {
+  if (!moveId) {
+    logger.warn('Invalid move ID provided to getPokemonMove');
+    return null;
+  }
+
   try {
-    const cacheKey = `move-${moveId}`;
-    const moveData = await makeApiRequest(
-      `${API_BASE_URL}/move/${moveId}`,
-      cacheKey
-    );
+    const moveData = typeof moveId === 'string'
+      ? await moveApi.getMoveByName(moveId)
+      : await moveApi.getMoveById(moveId);
     return moveData;
   } catch (error) {
     logger.error(`Error fetching move data for ${moveId}:`, error);
@@ -1182,12 +663,15 @@ export async function getPokemonMove(moveId: string | number): Promise<any> {
 export async function getPokemonAbility(
   abilityId: string | number
 ): Promise<any> {
+  if (!abilityId) {
+    logger.warn('Invalid ability ID provided to getPokemonAbility');
+    return null;
+  }
+
   try {
-    const cacheKey = `ability-${abilityId}`;
-    const abilityData = await makeApiRequest(
-      `${API_BASE_URL}/ability/${abilityId}`,
-      cacheKey
-    );
+    const abilityData = typeof abilityId === 'string'
+      ? await pokemonApi.getAbilityByName(abilityId)
+      : await pokemonApi.getAbilityById(abilityId);
     return abilityData;
   } catch (error) {
     logger.error(`Error fetching ability data for ${abilityId}:`, error);
@@ -1206,11 +690,7 @@ export async function getPokemonLocationAreas(
   try {
     if (!pokemon.location_area_encounters) return [];
 
-    const cacheKey = `locations-${pokemon.id}`;
-    const locationData = await makeApiRequest(
-      pokemon.location_area_encounters,
-      cacheKey
-    );
+    const locationData = await pokemonApi.getPokemonLocationAreaById(pokemon.id);
     return locationData || [];
   } catch (error) {
     logger.error(
@@ -1244,34 +724,6 @@ export async function getRandomValidPokemon(): Promise<Pokemon | null> {
   return null;
 }
 
-/**
- * Clear API cache (useful for memory management)
- */
-export function clearApiCache(): void {
-  apiCache.clear();
-  logger.info("API cache cleared");
-}
-
-/**
- * Get cache statistics
- * @returns Object containing cache statistics
- */
-export function getCacheStats(): {
-  size: number;
-  keys: string[];
-  memoryUsage: string;
-} {
-  const keys = Array.from(apiCache.keys());
-  const memoryUsage = `${Math.round(
-    JSON.stringify([...apiCache.values()]).length / 1024
-  )} KB`;
-
-  return {
-    size: apiCache.size,
-    keys,
-    memoryUsage,
-  };
-}
 
 /**
  * Check if Pokemon API is accessible
@@ -1279,7 +731,7 @@ export function getCacheStats(): {
  */
 export async function isPokeApiAvailable(): Promise<boolean> {
   try {
-    await makeApiRequest(`${API_BASE_URL}/pokemon/1`, "health-check");
+    await pokemonApi.getPokemonById(1);
     return true;
   } catch (error) {
     logger.error("PokeAPI health check failed:", error);
@@ -1295,12 +747,15 @@ export async function isPokeApiAvailable(): Promise<boolean> {
 export async function getPokemonGeneration(
   generationId: string | number
 ): Promise<any> {
+  if (!generationId) {
+    logger.warn('Invalid generation ID provided to getPokemonGeneration');
+    return null;
+  }
+
   try {
-    const cacheKey = `generation-${generationId}`;
-    const generationData = await makeApiRequest(
-      `${API_BASE_URL}/generation/${generationId}`,
-      cacheKey
-    );
+    const generationData = typeof generationId === 'string'
+      ? await gameApi.getGenerationByName(generationId)
+      : await gameApi.getGenerationById(generationId);
     return generationData;
   } catch (error) {
     logger.error(`Error fetching generation data for ${generationId}:`, error);
@@ -1316,12 +771,15 @@ export async function getPokemonGeneration(
 export async function getPokemonRegion(
   regionId: string | number
 ): Promise<any> {
+  if (!regionId) {
+    logger.warn('Invalid region ID provided to getPokemonRegion');
+    return null;
+  }
+
   try {
-    const cacheKey = `region-${regionId}`;
-    const regionData = await makeApiRequest(
-      `${API_BASE_URL}/region/${regionId}`,
-      cacheKey
-    );
+    const regionData = typeof regionId === 'string'
+      ? await gameApi.getVersionByName(regionId)
+      : await gameApi.getVersionById(regionId);
     return regionData;
   } catch (error) {
     logger.error(`Error fetching region data for ${regionId}:`, error);
@@ -1329,24 +787,6 @@ export async function getPokemonRegion(
   }
 }
 
-/**
- * Clean up expired cache entries
- */
-export function cleanupExpiredCache(): void {
-  const now = Date.now();
-  let cleaned = 0;
-
-  for (const [key, value] of apiCache.entries()) {
-    if (now - value.timestamp > CACHE_TTL) {
-      apiCache.delete(key);
-      cleaned++;
-    }
-  }
-
-  if (cleaned > 0) {
-    logger.info(`Cleaned up ${cleaned} expired cache entries`);
-  }
-}
 
 /**
  * Format Pokemon types for display
@@ -1393,16 +833,16 @@ export function getPokemonSprites(
   try {
     if (isShiny) {
       sprites.artwork =
-        pokemon.sprites?.other?.["official-artwork"]?.front_shiny || undefined;
+        pokemon.sprites?.front_shiny || undefined;
       sprites.showdown =
-        pokemon.sprites?.other?.showdown?.front_shiny || undefined;
+        pokemon.sprites?.other?.dream_world?.front_default || undefined;
       sprites.default = pokemon.sprites?.front_shiny || undefined;
     } else {
       sprites.artwork =
         pokemon.sprites?.other?.["official-artwork"]?.front_default ||
         undefined;
       sprites.showdown =
-        pokemon.sprites?.other?.showdown?.front_default || undefined;
+        pokemon.sprites?.other?.dream_world?.front_default || undefined;
       sprites.default = pokemon.sprites?.front_default || undefined;
     }
 
@@ -1783,7 +1223,6 @@ export async function getPokemonRarity(pokemon: Pokemon): Promise<{
   factors: string[];
 }> {
   const factors: string[] = [];
-getPokemonRarityEmoji
   // Early validation
   if (!pokemon || !pokemon.id) {
     logger.warn(`Invalid pokemon data provided to getPokemonRarity: ${pokemon?.id || 'undefined'}`);
@@ -1970,10 +1409,7 @@ export async function getComprehensivePokemonInfo(pokemon: Pokemon): Promise<{
       weight: getPokemonWeight(pokemon),
     },
     stats: getPokemonBaseStats(pokemon),
-    sprites: {
-      normal: getPokemonSprites(pokemon, false),
-      shiny: getPokemonSprites(pokemon, true),
-    },
+    sprites: getPokemonSprites(pokemon, false),
     evolution: evolutionInfo,
     species: {
       isLegendary,
@@ -2348,7 +1784,10 @@ export function isValidPokemonIdRange(
   maxId: number = 1025
 ): boolean {
   return (
-    typeof id === "number" && id >= minId && id <= maxId && Number.isInteger(id) && !id.toString().includes(".")
+    typeof id === "number" && 
+    Number.isInteger(id) && 
+    id >= minId && 
+    id <= maxId
   );
 }
 
@@ -2613,7 +2052,6 @@ export function createPokemonSpawnEmbed(pokemon: Pokemon, options: {
     encounter_phrase
   } = options;
 
-  const displayName = getPokemonDisplayName(pokemon);
   const title = customTitle || encounter_phrase || generateEncounterPhrase(pokemon.name);
 
   // Get sprites and types
@@ -2853,13 +2291,6 @@ export function getPokemonIdBounds(constraint:
   return bounds[constraint] || bounds.all;
 }
 
-/**
- * Set up periodic cache cleanup (call this once during app initialization)
- */
-export function setupCacheCleanup(): void {
-  // Clean up cache every 5 minutes
-  setInterval(cleanupExpiredCache, 5 * 60 * 1000);
-}
 
 // Export types for use in other modules
 export { PokemonError };
