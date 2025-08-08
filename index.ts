@@ -144,8 +144,12 @@ class RedisCommunicationManager implements CommunicationManager {
   }
 
   async close(): Promise<void> {
-    await this.client?.disconnect();
-    await this.subscriber?.disconnect();
+    if (this.client) {
+      await this.client.disconnect();
+    }
+    if (this.subscriber) {
+      await this.subscriber.disconnect();
+    }
   }
 }
 
@@ -173,7 +177,7 @@ class WebSocketCommunicationManager implements CommunicationManager {
 
         this.server = new WebSocketServer({
           port,
-          verifyClient: (info) => {
+          verifyClient: () => {
             // Add authentication logic here if needed
             return true;
           },
@@ -860,7 +864,7 @@ class EnhancedShardManager extends EventEmitter {
         if (shard) {
           shard
             .eval("({ ping: this.ws.ping, uptime: this.uptime })")
-            .then((result) => {
+            .then((result: { ping: number; uptime: number }) => {
               this.updateShardHealth(shardId, {
                 ping: result.ping,
                 uptime: result.uptime,
@@ -954,7 +958,7 @@ class EnhancedShardManager extends EventEmitter {
 
     this.emit("globalStatsUpdate", this.globalStats);
 
-    // Log comprehensive stats every 10 minutes
+    // Log comprehensive stats every 10 minutes (kept for backward compatibility)
     if (Date.now() % 600000 < config.statsInterval) {
       logger.info(
         `📈 Global Stats: ${totalGuilds} guilds, ${totalUsers} users, ${totalChannels} channels across ${healthyShards}/${this.shardHealth.size} shards`,
@@ -966,6 +970,93 @@ class EnhancedShardManager extends EventEmitter {
         .join(", ");
       logger.info(`🏰 Guild Distribution: ${guildCounts}`);
     }
+  }
+
+  /**
+   * Log detailed statistics every 15 minutes
+   */
+  private logDetailedStats(): void {
+    const uptime = Date.now() - this.startTime;
+    const uptimeMinutes = Math.floor(uptime / 60000);
+    
+    logger.info("═══════════════════════════════════════");
+    logger.info("🤖 SMOKEY BOT SHARD MANAGER - 15 MIN STATS");
+    logger.info("═══════════════════════════════════════");
+    
+    // Manager uptime and basic info
+    logger.info(`⏱️  Manager Uptime: ${Math.floor(uptimeMinutes / 60)}h ${uptimeMinutes % 60}m`);
+    logger.info(`🔧 Runtime: Bun ${Bun.version}`);
+    logger.info(`🌍 Environment: ${config.isDev ? "Development" : "Production"}`);
+    
+    // Shard health overview
+    let healthyCount = 0;
+    let readyCount = 0;
+    let reconnectingCount = 0;
+    let deadCount = 0;
+    
+    for (const health of this.shardHealth.values()) {
+      switch (health.status) {
+        case "ready":
+          readyCount++;
+          healthyCount++;
+          break;
+        case "reconnecting":
+          reconnectingCount++;
+          break;
+        case "dead":
+        case "disconnected":
+          deadCount++;
+          break;
+        default:
+          healthyCount++;
+      }
+    }
+    
+    logger.info(`📊 Shard Status: ${readyCount} ready, ${reconnectingCount} reconnecting, ${deadCount} dead`);
+    
+    // Global statistics
+    const stats = this.globalStats;
+    logger.info(`🏰 Total Guilds: ${stats.totalGuilds.toLocaleString()}`);
+    logger.info(`👥 Total Users: ${stats.totalUsers.toLocaleString()}`);
+    logger.info(`💬 Total Channels: ${stats.totalChannels.toLocaleString()}`);
+    logger.info(`🏥 Health: ${stats.healthyShards}/${stats.totalShards} shards healthy`);
+    logger.info(`🏓 Avg Ping: ${Math.round(stats.avgPing)}ms`);
+    logger.info(`🔄 Total Restarts: ${stats.totalRestarts}`);
+    
+    // Memory usage
+    const memoryMB = Math.round(stats.totalMemoryUsage / 1024 / 1024);
+    logger.info(`🧠 Memory Usage: ${memoryMB}MB`);
+    
+    // Top guilds by member count
+    if (stats.largestGuilds && stats.largestGuilds.length > 0) {
+      logger.info("🏆 Top 5 Largest Guilds:");
+      stats.largestGuilds.slice(0, 5).forEach((guild, index) => {
+        logger.info(`  ${index + 1}. ${guild.name} - ${guild.memberCount.toLocaleString()} members (Shard ${guild.shardId})`);
+      });
+    }
+    
+    // Shard distribution
+    if (stats.guildDistribution && stats.guildDistribution.size > 0) {
+      logger.info("🔀 Guild Distribution:");
+      Array.from(stats.guildDistribution.entries())
+        .sort(([a], [b]) => a - b)
+        .forEach(([shardId, guilds]) => {
+          const health = this.shardHealth.get(shardId);
+          const statusIcon = health?.status === "ready" ? "✅" : 
+                            health?.status === "reconnecting" ? "🔄" : "❌";
+          logger.info(`  ${statusIcon} Shard ${shardId}: ${guilds.length} guilds, ${Math.round(health?.ping || 0)}ms ping`);
+        });
+    }
+    
+    // Performance metrics per shard
+    logger.info("⚡ Shard Performance:");
+    for (const [shardId, health] of this.shardHealth.entries()) {
+      const uptimeHours = Math.floor((health.uptime || 0) / 3600000);
+      const memMB = Math.round((health.memory?.heapUsed || 0) / 1024 / 1024);
+      logger.info(`  Shard ${shardId}: ${health.guilds}g, ${health.users}u, ${memMB}MB, ${uptimeHours}h uptime, ${health.errors} errors`);
+    }
+    
+    logger.info("═══════════════════════════════════════");
   }
 
   /**
@@ -1043,16 +1134,15 @@ class EnhancedShardManager extends EventEmitter {
    */
   public async broadcastEval<T>(
     script: (client: any) => T,
-    options: { timeout?: number; shard?: number } = {},
+    options: { shard?: number } = {},
   ): Promise<T[]> {
     try {
       const results = await this.manager.broadcastEval(script, {
-        timeout: options.timeout || config.timeout,
         shard: options.shard,
       });
 
-      logger.debug(`Broadcast eval completed: ${results.length} responses`);
-      return results;
+      logger.debug(`Broadcast eval completed: ${(results as T[]).length} responses`);
+      return results as T[];
     } catch (error) {
       logger.error("Broadcast eval failed:", error);
       throw error;
@@ -1073,7 +1163,7 @@ class EnhancedShardManager extends EventEmitter {
         memory: process.memoryUsage(),
         shardId: client.shard?.ids[0],
         readyAt: client.readyAt?.toISOString(),
-        guildDetails: Array.from(client.guilds.cache.values()).map(guild => ({
+        guildDetails: Array.from(client.guilds.cache.values()).map((guild: any) => ({
           id: guild.id,
           name: guild.name,
           memberCount: guild.memberCount || 0,
@@ -1258,12 +1348,21 @@ class EnhancedShardManager extends EventEmitter {
 
       // Start monitoring after all shards are spawned
       this.startHealthMonitoring();
+      
+      // Start detailed stats logging every 15 minutes
+      setInterval(() => {
+        this.logDetailedStats();
+      }, 900000); // 15 minutes
 
       // Initial stats collection after 30 seconds
       setTimeout(() => {
         this.aggregateGlobalStats();
         // Request detailed guild stats from all shards
         this.requestGuildStatsFromAllShards();
+        // Log first detailed stats after 60 seconds (allow time for data collection)
+        setTimeout(() => {
+          this.logDetailedStats();
+        }, 30000);
       }, 30000);
 
       // Periodic guild stats refresh every 5 minutes

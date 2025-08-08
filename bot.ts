@@ -71,7 +71,6 @@ const config = {
 // Computed values - will be updated when actual shard ID is known
 let IS_COORDINATOR = config.shardId === 0;
 const EXCLUDED_USERS = new Set(["458710213122457600", "758820204133613598"]);
-const TWITTER_USER = "90514165138989056";
 
 // bot activities
 const ACTIVITIES = [
@@ -239,8 +238,12 @@ class RedisCommunicationManager implements CommunicationManager {
   async close(): Promise<void> {
     this.connected = false;
     shardState.communicationConnected = false;
-    await this.client?.disconnect();
-    await this.subscriber?.disconnect();
+    if (this.client) {
+      await this.client.disconnect();
+    }
+    if (this.subscriber) {
+      await this.subscriber.disconnect();
+    }
   }
 }
 
@@ -250,7 +253,6 @@ class WebSocketCommunicationManager implements CommunicationManager {
   private callbacks: Array<(message: InterShardMessage) => void> = [];
   private connected = false;
   private reconnectTimer?: Timer;
-  private currentUrl?: string;
 
   async initialize(): Promise<void> {
     return this.tryConnectWithFallback(config.wsManagerUrl);
@@ -260,7 +262,6 @@ class WebSocketCommunicationManager implements CommunicationManager {
     return new Promise((resolve, reject) => {
       try {
         const url = `${baseUrl}?shardId=${config.shardId}`;
-        this.currentUrl = url;
 
         // Clean up previous WebSocket if exists
         if (this.ws) {
@@ -506,10 +507,6 @@ export const discordClient = new Client({
 
   // WebSocket options for better memory management
   ws: {
-    compress: true, // Enable compression to reduce memory usage
-    properties: {
-      browser: 'Discord.js/Bun', // Identify as Bun runtime
-    },
   },
 });
 
@@ -525,7 +522,7 @@ function getCurrentShardId(): number {
     return config.actualShardId;
   }
   // In development with single shard, always use 0
-  if (config.isDev && config.totalShards === 1) {
+  if (config.isDev && (config.totalShards === 1 || isNaN(config.totalShards))) {
     return 0;
   }
   return config.shardId >= 0 ? config.shardId : 0;
@@ -557,7 +554,7 @@ async function sendInterShardMessage(
 ): Promise<void> {
   // Use centralized shard ID resolution
   const currentShardId = getCurrentShardId();
-  
+
   const message: InterShardMessage = {
     type,
     fromShard: currentShardId,
@@ -568,7 +565,7 @@ async function sendInterShardMessage(
   };
 
   // Skip sending if it's a single shard and message is to self
-  if (config.totalShards === 1 && (toShard === currentShardId || toShard === "all")) {
+  if ((config.totalShards === 1 || isNaN(config.totalShards)) && (toShard === currentShardId || toShard === "all")) {
     logger.debug(`Skipping self-message in single shard mode: ${type}`);
     return;
   }
@@ -685,7 +682,7 @@ async function respondToHealthCheck(message: InterShardMessage): Promise<void> {
 async function respondToGuildStatsRequest(message: InterShardMessage): Promise<void> {
   const guildStats = await getGuildShardStats();
   const currentShardId = config.actualShardId >= 0 ? config.actualShardId : config.shardId;
-  
+
   // Send guild stats to manager via process message
   sendToManager("guildStatsReceived", {
     shardId: currentShardId,
@@ -702,7 +699,7 @@ async function getGuildShardStats(): Promise<GuildShardInfo[]> {
   const guilds: GuildShardInfo[] = [];
   const currentShardId = config.actualShardId >= 0 ? config.actualShardId : config.shardId;
 
-  for (const [guildId, guild] of discordClient.guilds.cache) {
+  for (const [, guild] of discordClient.guilds.cache) {
     try {
       guilds.push({
         id: guild.id,
@@ -862,6 +859,10 @@ function updatePresence(activity?: any): void {
         ? ACTIVITIES[Math.floor(Math.random() * ACTIVITIES.length)]
         : ACTIVITIES[0]);
 
+    if (config.isDev) {
+      logger.debug(`Selected activity: ${selectedActivity?.name}`);
+    }
+
     const status = globalRateLimit.isActive
       ? PresenceUpdateStatus.Idle
       : shardState.healthScore < 50
@@ -923,7 +924,7 @@ async function executeCommand(interaction: CommandInteraction): Promise<void> {
       await queueMessage("Configuration error. Please try again later.", interaction, false);
       return;
     }
-    
+
     const cache = await getCache(interaction.guild, settings);
 
     if (!cache) {
@@ -1018,9 +1019,9 @@ async function processMessage(message: Message): Promise<void> {
       logger.error("Failed to get guild settings:", error);
       return null;
     });
-    
+
     if (!settings) return;
-    
+
     const cache = await getCache(message.guild, settings).catch((error) => {
       logger.error("Failed to get cache:", error);
       return null;
@@ -1033,7 +1034,7 @@ async function processMessage(message: Message): Promise<void> {
       checkExpGain(message.author, message.guild, undefined).catch((error) => {
         logger.error("Exp gain check failed:", error);
       }),
-      checkSpawn(message as unknown as CommandInteraction, cache).catch(
+      checkSpawn(message as any, cache).catch(
         (error) => {
           logger.error("Spawn check failed:", error);
         }
@@ -1233,6 +1234,11 @@ discordClient.on("ready", async () => {
     config.shardId = actualShardId; // Update the main config
     IS_COORDINATOR = actualShardId === 0;
 
+    // Update totalShards with actual value from Discord.js
+    if (discordClient.shard?.count) {
+      config.totalShards = discordClient.shard.count;
+    }
+
     logger.info(`🎉 Discord client ready as ${discordClient.user?.tag}`);
     logger.info(`📊 Connected to ${discordClient.guilds.cache.size} guilds`);
     logger.info(`🔧 Shard ${config.shardId}/${config.totalShards}${wasTemporary ? ' (ID updated from temporary)' : ''}`);
@@ -1241,7 +1247,7 @@ discordClient.on("ready", async () => {
     // All inter-shard communication goes through the manager process
     // Only initialize cross-server communication if explicitly configured for multi-server deployment
     const needsCrossServerComm = config.forceCrossServerComm;
-    
+
     if (IS_COORDINATOR && needsCrossServerComm) {
       try {
         if (config.useRedis) {
@@ -1681,7 +1687,7 @@ async function startBot(): Promise<void> {
 
     // startup logging
     logger.info(
-      `🚀 Starting SmokeyBot Shard ${config.shardId}/${config.totalShards}`
+      `🚀 Starting SmokeyBot Shard ${config.shardId}/${config.totalShards || '?'}`
     );
     logger.info(`🔧 Runtime: Bun ${Bun.version}`);
     logger.info(
@@ -1689,11 +1695,11 @@ async function startBot(): Promise<void> {
     );
     logger.info(`👑 Role: ${IS_COORDINATOR ? "Coordinator" : "Worker"}`);
     logger.info(
-      `📡 Communication: ${config.forceCrossServerComm 
-        ? (config.useRedis ? `Cross-server Redis (${config.redisUrl})` 
-           : config.useWebSocket ? `Cross-server WebSocket (${config.wsManagerUrl})` 
-           : "Cross-server Direct") 
-        : "Same-server Direct (optimized)"}`
+      `📡 Communication: ${config.forceCrossServerComm
+        ? (config.useRedis ? `Cross-server Redis (${config.redisUrl})`
+          : config.useWebSocket ? `Cross-server WebSocket (${config.wsManagerUrl})`
+            : "Cross-server Direct")
+        : "Same-server Direct"}`
     );
     logger.info(`💾 Message Cache Limit: ${config.messageMemoryLimit}`);
     logger.info(`⏱️  Global Cooldown: ${config.globalCooldown}s`);
