@@ -676,7 +676,10 @@ async function handleShardCommand(data: any): Promise<void> {
  */
 async function respondToHealthCheck(message: InterShardMessage): Promise<void> {
   const health = await getDetailedHealth();
-  await sendInterShardMessage("healthResponse", health, message.fromShard);
+  // Only respond if fromShard is valid
+  if (message.fromShard !== undefined && message.fromShard >= 0) {
+    await sendInterShardMessage("healthResponse", health, message.fromShard);
+  }
 }
 
 /**
@@ -685,11 +688,14 @@ async function respondToHealthCheck(message: InterShardMessage): Promise<void> {
 async function respondToGuildStatsRequest(message: InterShardMessage): Promise<void> {
   const guildStats = await getGuildShardStats();
   const currentShardId = config.actualShardId >= 0 ? config.actualShardId : config.shardId;
-  await sendInterShardMessage("guildStatsResponse", {
-    shardId: currentShardId,
-    guilds: guildStats,
-    requestId: message.data.requestId
-  }, message.fromShard);
+  // Only respond if fromShard is valid
+  if (message.fromShard !== undefined && message.fromShard >= 0) {
+    await sendInterShardMessage("guildStatsResponse", {
+      shardId: currentShardId,
+      guilds: guildStats,
+      requestId: message.data.requestId
+    }, message.fromShard);
+  }
 }
 
 /**
