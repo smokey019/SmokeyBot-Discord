@@ -624,9 +624,6 @@ async function handleInterShardMessage(message: InterShardMessage): Promise<void
       await respondToGuildStatsRequest(message);
       break;
 
-    case "guildStatsResponse":
-      handleGuildStatsResponse(message.data);
-      break;
 
     case "guildJoined":
     case "guildLeft":
@@ -688,26 +685,15 @@ async function respondToHealthCheck(message: InterShardMessage): Promise<void> {
 async function respondToGuildStatsRequest(message: InterShardMessage): Promise<void> {
   const guildStats = await getGuildShardStats();
   const currentShardId = config.actualShardId >= 0 ? config.actualShardId : config.shardId;
-  // Only respond if fromShard is valid
-  if (message.fromShard !== undefined && message.fromShard >= 0) {
-    await sendInterShardMessage("guildStatsResponse", {
-      shardId: currentShardId,
-      guilds: guildStats,
-      requestId: message.data.requestId
-    }, message.fromShard);
-  }
+  
+  // Send guild stats to manager via process message
+  sendToManager("guildStatsReceived", {
+    shardId: currentShardId,
+    guilds: guildStats,
+    requestId: message.data.requestId
+  });
 }
 
-/**
- * Handle guild stats responses from other shards
- */
-function handleGuildStatsResponse(data: any): void {
-  logger.debug(`Received guild stats from shard ${data.shardId}: ${data.guilds.length} guilds`);
-  // Emit event for external listeners (like web dashboard)
-  if (typeof process !== 'undefined' && process.send) {
-    sendToManager("guildStatsReceived", data);
-  }
-}
 
 /**
  * Get detailed guild information for this shard

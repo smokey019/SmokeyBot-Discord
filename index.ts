@@ -607,6 +607,10 @@ class EnhancedShardManager extends EventEmitter {
       case "ready":
         logger.info(`Inter-shard ready notification from shard ${message.fromShard}`);
         break;
+      case "guildStatsRequest":
+        // Guild stats requests are handled by individual shards
+        logger.debug(`Guild stats request from shard ${message.fromShard}`);
+        break;
       default:
         logger.trace(`Manager doesn't need to process message type: ${message.type}`);
     }
