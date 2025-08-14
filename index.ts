@@ -341,7 +341,7 @@ class EnhancedShardManager extends EventEmitter {
     // Only initialize cross-server communication if explicitly enabled
     // Most deployments will use same-server communication through the manager process
     const enableCrossServer = process.env.FORCE_CROSS_SERVER_COMM === "true";
-    
+
     if (enableCrossServer) {
       if (config.useRedis) {
         this.communicationManager = new RedisCommunicationManager();
@@ -978,22 +978,22 @@ class EnhancedShardManager extends EventEmitter {
   private logDetailedStats(): void {
     const uptime = Date.now() - this.startTime;
     const uptimeMinutes = Math.floor(uptime / 60000);
-    
+
     logger.info("═══════════════════════════════════════");
-    logger.info("🤖 SMOKEY BOT SHARD MANAGER - 15 MIN STATS");
+    logger.info("🤖 SMOKEY BOT SHARD MANAGER");
     logger.info("═══════════════════════════════════════");
-    
+
     // Manager uptime and basic info
     logger.info(`⏱️  Manager Uptime: ${Math.floor(uptimeMinutes / 60)}h ${uptimeMinutes % 60}m`);
     logger.info(`🔧 Runtime: Bun ${Bun.version}`);
     logger.info(`🌍 Environment: ${config.isDev ? "Development" : "Production"}`);
-    
+
     // Shard health overview
     let healthyCount = 0;
     let readyCount = 0;
     let reconnectingCount = 0;
     let deadCount = 0;
-    
+
     for (const health of this.shardHealth.values()) {
       switch (health.status) {
         case "ready":
@@ -1011,9 +1011,9 @@ class EnhancedShardManager extends EventEmitter {
           healthyCount++;
       }
     }
-    
+
     logger.info(`📊 Shard Status: ${readyCount} ready, ${reconnectingCount} reconnecting, ${deadCount} dead`);
-    
+
     // Global statistics
     const stats = this.globalStats;
     logger.info(`🏰 Total Guilds: ${stats.totalGuilds.toLocaleString()}`);
@@ -1022,11 +1022,11 @@ class EnhancedShardManager extends EventEmitter {
     logger.info(`🏥 Health: ${stats.healthyShards}/${stats.totalShards} shards healthy`);
     logger.info(`🏓 Avg Ping: ${Math.round(stats.avgPing)}ms`);
     logger.info(`🔄 Total Restarts: ${stats.totalRestarts}`);
-    
+
     // Memory usage
     const memoryMB = Math.round(stats.totalMemoryUsage / 1024 / 1024);
     logger.info(`🧠 Memory Usage: ${memoryMB}MB`);
-    
+
     // Top guilds by member count
     if (stats.largestGuilds && stats.largestGuilds.length > 0) {
       logger.info("🏆 Top 5 Largest Guilds:");
@@ -1034,7 +1034,7 @@ class EnhancedShardManager extends EventEmitter {
         logger.info(`  ${index + 1}. ${guild.name} - ${guild.memberCount.toLocaleString()} members (Shard ${guild.shardId})`);
       });
     }
-    
+
     // Shard distribution
     if (stats.guildDistribution && stats.guildDistribution.size > 0) {
       logger.info("🔀 Guild Distribution:");
@@ -1042,12 +1042,12 @@ class EnhancedShardManager extends EventEmitter {
         .sort(([a], [b]) => a - b)
         .forEach(([shardId, guilds]) => {
           const health = this.shardHealth.get(shardId);
-          const statusIcon = health?.status === "ready" ? "✅" : 
+          const statusIcon = health?.status === "ready" ? "✅" :
                             health?.status === "reconnecting" ? "🔄" : "❌";
           logger.info(`  ${statusIcon} Shard ${shardId}: ${guilds.length} guilds, ${Math.round(health?.ping || 0)}ms ping`);
         });
     }
-    
+
     // Performance metrics per shard
     logger.info("⚡ Shard Performance:");
     for (const [shardId, health] of this.shardHealth.entries()) {
@@ -1055,7 +1055,7 @@ class EnhancedShardManager extends EventEmitter {
       const memMB = Math.round((health.memory?.heapUsed || 0) / 1024 / 1024);
       logger.info(`  Shard ${shardId}: ${health.guilds}g, ${health.users}u, ${memMB}MB, ${uptimeHours}h uptime, ${health.errors} errors`);
     }
-    
+
     logger.info("═══════════════════════════════════════");
   }
 
@@ -1348,7 +1348,7 @@ class EnhancedShardManager extends EventEmitter {
 
       // Start monitoring after all shards are spawned
       this.startHealthMonitoring();
-      
+
       // Start detailed stats logging every 15 minutes
       setInterval(() => {
         this.logDetailedStats();
