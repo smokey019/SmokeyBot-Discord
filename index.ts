@@ -7,6 +7,22 @@ import { getLogger } from "./clients/logger";
 
 const logger = getLogger("ShardManager");
 
+// Constants for better maintainability
+const CONSTANTS = {
+  HEARTBEAT_TIMEOUT: 120000, // 2 minutes
+  UNHEALTHY_THRESHOLD: 300000, // 5 minutes
+  ERROR_THRESHOLD: 10,
+  BASE_RESTART_DELAY: 5000,
+  MAX_RESTART_DELAY: 60000,
+  SPAWN_DELAY: 5000,
+  SHUTDOWN_GRACE_PERIOD: 5000,
+  DETAILED_STATS_INTERVAL: 900000, // 15 minutes
+  INITIAL_STATS_DELAY: 30000,
+  GUILD_STATS_REFRESH_INTERVAL: 300000, // 5 minutes
+  HEALTH_ALERT_INTERVAL: 300000, // 5 minutes
+  DETAILED_STATS_LOG_MODULO: 600000, // 10 minutes
+} as const;
+
 // configuration with environment validation
 const config = {
   token: process.env.DISCORD_TOKEN || process.env.DISCORD_TOKEN_DEV,
@@ -36,6 +52,12 @@ class ShardManagerError extends Error {
     super(message);
     this.name = "ShardManagerError";
   }
+}
+
+// Efficient ID generator using counter + timestamp
+let messageIdCounter = 0;
+function generateMessageId(): string {
+  return `${Date.now()}-${(messageIdCounter++).toString(36)}`;
 }
 
 // Communication interfaces
@@ -95,6 +117,7 @@ interface CommunicationManager {
   broadcast(message: InterShardMessage): Promise<void>;
   sendToShard(shardId: number, message: InterShardMessage): Promise<void>;
   subscribe(callback: (message: InterShardMessage) => void): void;
+  unsubscribe(callback: (message: InterShardMessage) => void): void;
   close(): Promise<void>;
 }
 
@@ -143,7 +166,17 @@ class RedisCommunicationManager implements CommunicationManager {
     this.callbacks.push(callback);
   }
 
+  unsubscribe(callback: (message: InterShardMessage) => void): void {
+    const index = this.callbacks.indexOf(callback);
+    if (index > -1) {
+      this.callbacks.splice(index, 1);
+    }
+  }
+
   async close(): Promise<void> {
+    // Clear callbacks to prevent memory leaks
+    this.callbacks = [];
+
     if (this.client) {
       await this.client.disconnect();
     }
@@ -296,11 +329,20 @@ class WebSocketCommunicationManager implements CommunicationManager {
     this.callbacks.push(callback);
   }
 
+  unsubscribe(callback: (message: InterShardMessage) => void): void {
+    const index = this.callbacks.indexOf(callback);
+    if (index > -1) {
+      this.callbacks.splice(index, 1);
+    }
+  }
+
   async close(): Promise<void> {
+    // Clear callbacks to prevent memory leaks
+    this.callbacks = [];
+
     if (this.server) {
-      for (const ws of this.clients.values()) {
-        ws.close();
-      }
+      this.clients.forEach(ws => ws.close());
+      this.clients.clear();
       this.server.close();
     }
   }
@@ -325,10 +367,15 @@ class EnhancedShardManager extends EventEmitter {
   };
   private healthCheckInterval?: Timer;
   private statsInterval?: Timer;
+  private detailedStatsInterval?: Timer;
+  private guildStatsRefreshInterval?: Timer;
+  private healthAlertInterval?: Timer;
   private autoPoster?: any;
   private isShuttingDown = false;
   private communicationManager?: CommunicationManager;
   private startTime = Date.now();
+  // Optimize guild lookups with Map<guildId, shardId>
+  private guildToShardMap = new Map<string, number>();
 
   constructor() {
     super();
@@ -707,8 +754,7 @@ class EnhancedShardManager extends EventEmitter {
     if (health) {
       health.errors++;
 
-      const errorThreshold = 10;
-      if (health.errors > errorThreshold && health.status !== "dead") {
+      if (health.errors > CONSTANTS.ERROR_THRESHOLD && health.status !== "dead") {
         logger.warn(
           `Shard ${shardId} has ${health.errors} errors, considering restart`,
         );
@@ -735,10 +781,9 @@ class EnhancedShardManager extends EventEmitter {
     }
 
     // Exponential backoff with jitter
-    const baseDelay = 5000;
     const backoffTime = Math.min(
-      baseDelay * Math.pow(2, health.restarts - 1) + Math.random() * 1000,
-      60000,
+      CONSTANTS.BASE_RESTART_DELAY * Math.pow(2, health.restarts - 1) + Math.random() * 1000,
+      CONSTANTS.MAX_RESTART_DELAY,
     );
 
     logger.info(
@@ -760,9 +805,8 @@ class EnhancedShardManager extends EventEmitter {
     if (!health || health.restarts > config.maxShardRestarts) return;
 
     const timeSinceLastHeartbeat = Date.now() - health.lastHeartbeat;
-    const unhealthyThreshold = 300000; // 5 minutes
 
-    if (timeSinceLastHeartbeat > unhealthyThreshold) {
+    if (timeSinceLastHeartbeat > CONSTANTS.UNHEALTHY_THRESHOLD) {
       logger.warn(`Restarting unresponsive shard ${shardId}`);
       this.restartShard(shardId);
     }
@@ -778,7 +822,7 @@ class EnhancedShardManager extends EventEmitter {
       const shard = this.manager.shards.get(shardId);
       if (shard) {
         await shard.respawn({
-          delay: 5000,
+          delay: CONSTANTS.SPAWN_DELAY,
           timeout: config.timeout,
         });
 
@@ -847,13 +891,12 @@ class EnhancedShardManager extends EventEmitter {
    */
   private performHealthCheck(): void {
     const now = Date.now();
-    const unhealthyThreshold = 120000; // 2 minutes
     let unhealthyShards = 0;
 
-    for (const [shardId, health] of this.shardHealth.entries()) {
+    this.shardHealth.forEach((health, shardId) => {
       const timeSinceHeartbeat = now - health.lastHeartbeat;
 
-      if (timeSinceHeartbeat > unhealthyThreshold) {
+      if (timeSinceHeartbeat > CONSTANTS.HEARTBEAT_TIMEOUT) {
         unhealthyShards++;
         logger.warn(
           `Shard ${shardId} unhealthy: last heartbeat ${Math.round(timeSinceHeartbeat / 1000)}s ago`,
@@ -876,7 +919,7 @@ class EnhancedShardManager extends EventEmitter {
             });
         }
       }
-    }
+    });
 
     if (unhealthyShards > 0) {
       logger.warn(
@@ -959,7 +1002,7 @@ class EnhancedShardManager extends EventEmitter {
     this.emit("globalStatsUpdate", this.globalStats);
 
     // Log comprehensive stats every 10 minutes (kept for backward compatibility)
-    if (Date.now() % 600000 < config.statsInterval) {
+    if (Date.now() % CONSTANTS.DETAILED_STATS_LOG_MODULO < config.statsInterval) {
       logger.info(
         `📈 Global Stats: ${totalGuilds} guilds, ${totalUsers} users, ${totalChannels} channels across ${healthyShards}/${this.shardHealth.size} shards`,
       );
@@ -1038,23 +1081,27 @@ class EnhancedShardManager extends EventEmitter {
     // Shard distribution
     if (stats.guildDistribution && stats.guildDistribution.size > 0) {
       logger.info("🔀 Guild Distribution:");
-      Array.from(stats.guildDistribution.entries())
-        .sort(([a], [b]) => a - b)
-        .forEach(([shardId, guilds]) => {
-          const health = this.shardHealth.get(shardId);
-          const statusIcon = health?.status === "ready" ? "✅" :
-                            health?.status === "reconnecting" ? "🔄" : "❌";
-          logger.info(`  ${statusIcon} Shard ${shardId}: ${guilds.length} guilds, ${Math.round(health?.ping || 0)}ms ping`);
-        });
+      const sortedDistribution: [number, GuildShardInfo[]][] = [];
+      stats.guildDistribution.forEach((guilds, shardId) => {
+        sortedDistribution.push([shardId, guilds]);
+      });
+      sortedDistribution.sort(([a], [b]) => a - b);
+
+      sortedDistribution.forEach(([shardId, guilds]) => {
+        const health = this.shardHealth.get(shardId);
+        const statusIcon = health?.status === "ready" ? "✅" :
+                          health?.status === "reconnecting" ? "🔄" : "❌";
+        logger.info(`  ${statusIcon} Shard ${shardId}: ${guilds.length} guilds, ${Math.round(health?.ping || 0)}ms ping`);
+      });
     }
 
     // Performance metrics per shard
     logger.info("⚡ Shard Performance:");
-    for (const [shardId, health] of this.shardHealth.entries()) {
+    this.shardHealth.forEach((health, shardId) => {
       const uptimeHours = Math.floor((health.uptime || 0) / 3600000);
       const memMB = Math.round((health.memory?.heapUsed || 0) / 1024 / 1024);
       logger.info(`  Shard ${shardId}: ${health.guilds}g, ${health.users}u, ${memMB}MB, ${uptimeHours}h uptime, ${health.errors} errors`);
-    }
+    });
 
     logger.info("═══════════════════════════════════════");
   }
@@ -1100,7 +1147,7 @@ class EnhancedShardManager extends EventEmitter {
       toShard: shardId,
       data,
       timestamp: Date.now(),
-      id: `${Date.now()}-${Math.random().toString(36).substring(2)}`,
+      id: generateMessageId(),
     };
 
     // Manager always routes directly to shards
@@ -1122,7 +1169,7 @@ class EnhancedShardManager extends EventEmitter {
       toShard: "all",
       data,
       timestamp: Date.now(),
-      id: `${Date.now()}-${Math.random().toString(36).substring(2)}`,
+      id: generateMessageId(),
     };
 
     // Manager always broadcasts directly to shards
@@ -1187,6 +1234,43 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
+   * Dispose of all resources and intervals to prevent memory leaks
+   */
+  public dispose(): void {
+    // Clear all intervals
+    if (this.healthCheckInterval) {
+      clearInterval(this.healthCheckInterval);
+      this.healthCheckInterval = undefined;
+    }
+    if (this.statsInterval) {
+      clearInterval(this.statsInterval);
+      this.statsInterval = undefined;
+    }
+    if (this.detailedStatsInterval) {
+      clearInterval(this.detailedStatsInterval);
+      this.detailedStatsInterval = undefined;
+    }
+    if (this.guildStatsRefreshInterval) {
+      clearInterval(this.guildStatsRefreshInterval);
+      this.guildStatsRefreshInterval = undefined;
+    }
+    if (this.healthAlertInterval) {
+      clearInterval(this.healthAlertInterval);
+      this.healthAlertInterval = undefined;
+    }
+
+    // Clear all maps and collections
+    this.shardHealth.clear();
+    this.guildToShardMap.clear();
+    this.globalStats.guildDistribution?.clear();
+
+    // Remove all event listeners
+    this.removeAllListeners();
+
+    logger.info("✅ EnhancedShardManager resources disposed");
+  }
+
+  /**
    * Graceful shutdown of all components
    */
   public async shutdown(): Promise<void> {
@@ -1194,9 +1278,8 @@ class EnhancedShardManager extends EventEmitter {
     this.isShuttingDown = true;
 
     try {
-      // Clear intervals
-      if (this.healthCheckInterval) clearInterval(this.healthCheckInterval);
-      if (this.statsInterval) clearInterval(this.statsInterval);
+      // Dispose of all resources
+      this.dispose();
 
       // Close communication manager
       if (this.communicationManager) {
@@ -1208,7 +1291,7 @@ class EnhancedShardManager extends EventEmitter {
       await this.broadcastToAllShards("shutdown", { graceful: true });
 
       // Wait for shards to shutdown gracefully
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, CONSTANTS.SHUTDOWN_GRACE_PERIOD));
 
       // Force destroy all shards
       const destroyPromises = Array.from(this.manager.shards.values()).map(
@@ -1259,8 +1342,8 @@ class EnhancedShardManager extends EventEmitter {
 
     let shardGuilds = this.globalStats.guildDistribution.get(shardId) || [];
 
-    // Add new guild if not already exists
-    if (!shardGuilds.find(g => g.id === guildId)) {
+    // Use Map for O(1) lookup instead of array.find
+    if (!this.guildToShardMap.has(guildId)) {
       shardGuilds.push({
         id: guildId,
         name: guildName,
@@ -1272,6 +1355,7 @@ class EnhancedShardManager extends EventEmitter {
       });
 
       this.globalStats.guildDistribution.set(shardId, shardGuilds);
+      this.guildToShardMap.set(guildId, shardId);
       logger.debug(`Added guild ${guildName} to shard ${shardId} distribution`);
     }
   }
@@ -1286,6 +1370,7 @@ class EnhancedShardManager extends EventEmitter {
       let shardGuilds = this.globalStats.guildDistribution.get(shardId) || [];
       shardGuilds = shardGuilds.filter(g => g.id !== guildId);
       this.globalStats.guildDistribution.set(shardId, shardGuilds);
+      this.guildToShardMap.delete(guildId);
       logger.debug(`Removed guild ${guildId} from shard ${shardId} distribution`);
     }
   }
@@ -1294,7 +1379,7 @@ class EnhancedShardManager extends EventEmitter {
    * Request guild stats from a specific shard
    */
   public async requestGuildStatsFromShard(shardId: number): Promise<void> {
-    const requestId = `${Date.now()}-${Math.random().toString(36).substring(2)}`;
+    const requestId = generateMessageId();
     await this.sendToShard(shardId, "guildStatsRequest", { requestId });
   }
 
@@ -1302,7 +1387,7 @@ class EnhancedShardManager extends EventEmitter {
    * Request guild stats from all shards
    */
   public async requestGuildStatsFromAllShards(): Promise<void> {
-    const requestId = `${Date.now()}-${Math.random().toString(36).substring(2)}`;
+    const requestId = generateMessageId();
     await this.broadcastToAllShards("guildStatsRequest", { requestId });
   }
 
@@ -1340,7 +1425,7 @@ class EnhancedShardManager extends EventEmitter {
 
       const shards = await this.manager.spawn({
         amount: config.isDev ? 1 : "auto",
-        delay: 5000, // 5 second delay between spawns
+        delay: CONSTANTS.SPAWN_DELAY,
         timeout: config.timeout,
       });
 
@@ -1350,9 +1435,9 @@ class EnhancedShardManager extends EventEmitter {
       this.startHealthMonitoring();
 
       // Start detailed stats logging every 15 minutes
-      setInterval(() => {
+      this.detailedStatsInterval = setInterval(() => {
         this.logDetailedStats();
-      }, 900000); // 15 minutes
+      }, CONSTANTS.DETAILED_STATS_INTERVAL);
 
       // Initial stats collection after 30 seconds
       setTimeout(() => {
@@ -1362,13 +1447,13 @@ class EnhancedShardManager extends EventEmitter {
         // Log first detailed stats after 60 seconds (allow time for data collection)
         setTimeout(() => {
           this.logDetailedStats();
-        }, 30000);
-      }, 30000);
+        }, CONSTANTS.INITIAL_STATS_DELAY);
+      }, CONSTANTS.INITIAL_STATS_DELAY);
 
       // Periodic guild stats refresh every 5 minutes
-      setInterval(() => {
+      this.guildStatsRefreshInterval = setInterval(() => {
         this.requestGuildStatsFromAllShards();
-      }, 300000);
+      }, CONSTANTS.GUILD_STATS_REFRESH_INTERVAL);
 
       this.emit("managerReady", {
         totalShards: shards.size,
@@ -1432,15 +1517,15 @@ const startManager = async () => {
     // Log startup success
     logger.info("🎉 SmokeyBot Shard Manager started successfully!");
 
-    // Set up periodic health reporting
-    setInterval(() => {
+    // Set up periodic health reporting - Note: This is in the global scope and should be cleaned up separately if needed
+    const healthAlertInterval = setInterval(() => {
       const stats = enhancedManager.getGlobalStats();
       if (stats.healthyShards < stats.totalShards) {
         logger.warn(
           `⚠️  Health Alert: ${stats.healthyShards}/${stats.totalShards} shards healthy`,
         );
       }
-    }, 300000); // Every 5 minutes
+    }, CONSTANTS.HEALTH_ALERT_INTERVAL);
 
   } catch (error) {
     logger.error("💥 Fatal startup error:", error);

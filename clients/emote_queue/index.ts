@@ -39,21 +39,35 @@ const stats: EmoteStats = {
   system: { startTime: new Date(), lastReset: new Date() },
 };
 
+// API response type
+interface ApiCacheEntry<T = any> {
+  data: T;
+  timestamp: number;
+}
+
 // API caching with automatic cleanup
-const apiCache = new Map<string, { data: any; timestamp: number }>();
+const apiCache = new Map<string, ApiCacheEntry>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const CACHE_CLEANUP_INTERVAL = 10 * 60 * 1000; // 10 minutes
 
+// Store interval references for cleanup
+let cacheCleanupInterval: Timer | undefined;
+
 // Periodic cache cleanup to prevent memory leaks
-setInterval(() => {
+cacheCleanupInterval = setInterval(() => {
   const now = Date.now();
   let cleaned = 0;
-  for (const [key, value] of apiCache.entries()) {
+  const keysToDelete: string[] = [];
+
+  apiCache.forEach((value, key) => {
     if (now - value.timestamp > CACHE_TTL) {
-      apiCache.delete(key);
-      cleaned++;
+      keysToDelete.push(key);
     }
-  }
+  });
+
+  keysToDelete.forEach(key => apiCache.delete(key));
+  cleaned = keysToDelete.length;
+
   if (cleaned > 0) {
     getLogger("Emote Queue").debug(`Cleaned ${cleaned} expired cache entries`);
   }
@@ -69,6 +83,7 @@ interface QueueData {
   lastProgressUpdate?: Date;
   totalEmotes: number;
   metadata: { guildName: string; channelName: string; userTag: string; };
+  existingEmojis?: Set<string>; // Cache of existing emoji names at queue creation
 }
 
 
@@ -79,6 +94,7 @@ class EmoteQueueManager {
   private isProcessing = false;
   private rateLimitMap = new Map<string, number>();
   private statsTimer?: Timer;
+  private rateLimitCleanupTimer?: Timer;
   private failedGuilds = new Map<string, { count: number; lastFail: number }>();
   private readonly MAX_GUILD_FAILURES = 5;
   private readonly GUILD_COOLDOWN = 30 * 60 * 1000; // 30 minutes
@@ -86,22 +102,57 @@ class EmoteQueueManager {
   constructor() {
     // Auto-reset stats every 24 hours
     this.statsTimer = setInterval(() => this.resetStats(), STATS_RESET_INTERVAL);
-    
+
     // Cleanup rate limit map periodically to prevent memory leaks
-    setInterval(() => {
+    this.rateLimitCleanupTimer = setInterval(() => {
       const now = Date.now();
-      let cleaned = 0;
-      for (const [guildId, lastCall] of this.rateLimitMap.entries()) {
+      const keysToDelete: string[] = [];
+
+      this.rateLimitMap.forEach((lastCall, guildId) => {
         // Clean entries older than 1 hour
         if (now - lastCall > 60 * 60 * 1000) {
-          this.rateLimitMap.delete(guildId);
-          cleaned++;
+          keysToDelete.push(guildId);
         }
-      }
-      if (cleaned > 0) {
-        logger.debug(`Cleaned ${cleaned} old rate limit entries`);
+      });
+
+      keysToDelete.forEach(key => this.rateLimitMap.delete(key));
+
+      if (keysToDelete.length > 0) {
+        logger.debug(`Cleaned ${keysToDelete.length} old rate limit entries`);
       }
     }, 30 * 60 * 1000); // Every 30 minutes
+  }
+
+  /**
+   * Cleanup method to dispose of all intervals and prevent memory leaks
+   * Call this when shutting down the bot or reloading the module
+   */
+  dispose(): void {
+    // Clear all timers
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = undefined;
+    }
+    if (this.statsTimer) {
+      clearInterval(this.statsTimer);
+      this.statsTimer = undefined;
+    }
+    if (this.rateLimitCleanupTimer) {
+      clearInterval(this.rateLimitCleanupTimer);
+      this.rateLimitCleanupTimer = undefined;
+    }
+    if (cacheCleanupInterval) {
+      clearInterval(cacheCleanupInterval);
+      cacheCleanupInterval = undefined;
+    }
+
+    // Clear all maps and collections
+    this.queue.clear();
+    this.rateLimitMap.clear();
+    this.failedGuilds.clear();
+    apiCache.clear();
+
+    logger.info("EmoteQueueManager disposed successfully");
   }
 
   get EmoteQueue() {
@@ -115,6 +166,8 @@ class EmoteQueueManager {
       channelName: data.metadata?.channelName || 'unknown',
       userTag: data.interaction.user.tag
     };
+    // Cache existing emojis at queue creation to avoid repeated Set creation
+    data.existingEmojis = new Set(data.interaction.guild?.emojis.cache.map((e: any) => e.name) || []);
     this.queue.set(guildId, data);
     stats.queue.active = this.queue.size;
     this.startTimer();
@@ -173,9 +226,14 @@ class EmoteQueueManager {
     this.isProcessing = true;
 
     try {
-      const guildsToProcess = Array.from(this.queue.entries())
-        .slice(0, MAX_CONCURRENT_UPLOADS)
-        .sort(([, a], [, b]) => a.createdAt.getTime() - b.createdAt.getTime());
+      // Optimize: Process first N items without sorting - queue is already FIFO ordered
+      const guildsToProcess: [string, QueueData][] = [];
+
+      this.queue.forEach((data, guildId) => {
+        if (guildsToProcess.length < MAX_CONCURRENT_UPLOADS) {
+          guildsToProcess.push([guildId, data]);
+        }
+      });
 
       const processPromises = guildsToProcess.map(([guildId, data]) =>
         this.processGuildQueue(guildId, data)
@@ -307,24 +365,42 @@ class EmoteQueueManager {
 
   private isRetryableError(error: any): boolean {
     const message = error.message?.toLowerCase() || "";
+    const code = error.code;
+
+    // Check HTTP-like error codes
+    if (code === 429 || code === 'ECONNRESET' || code === 'ETIMEDOUT' || code === 'ENOTFOUND') {
+      return true;
+    }
+
     return (
       message.includes("network") ||
       message.includes("timeout") ||
       message.includes("rate limit") ||
-      message.includes("socket")
+      message.includes("socket") ||
+      message.includes("econnreset") ||
+      message.includes("etimedout")
     );
   }
 
   private recordError(error: any): void {
     const message = error.message?.toLowerCase() || "";
+    const code = error.code;
 
-    if (message.includes("rate limit")) {
+    // Categorize by error code first, then by message
+    if (code === 429 || message.includes("rate limit")) {
       stats.errors.rateLimited++;
-    } else if (message.includes("too large") || message.includes("resize")) {
+    } else if (message.includes("too large") || message.includes("resize") || message.includes("asset")) {
       stats.errors.tooLarge++;
-    } else if (message.includes("permission")) {
+    } else if (code === 50013 || message.includes("permission") || message.includes("missing access")) {
       stats.errors.permissions++;
-    } else if (message.includes("network") || message.includes("timeout")) {
+    } else if (
+      code === 'ECONNRESET' ||
+      code === 'ETIMEDOUT' ||
+      code === 'ENOTFOUND' ||
+      message.includes("network") ||
+      message.includes("timeout") ||
+      message.includes("socket")
+    ) {
       stats.errors.network++;
     }
   }
@@ -340,7 +416,8 @@ class EmoteQueueManager {
       return false;
     }
 
-    const existingEmojis = new Set(data.interaction.guild.emojis.cache.map((e: any) => e.name));
+    // Use cached existingEmojis set to avoid repeated map operations
+    const existingEmojis = data.existingEmojis || new Set<string>();
 
     if (existingEmojis.has(name)) {
       return false;
@@ -356,17 +433,20 @@ class EmoteQueueManager {
 
       logger.debug(`Created emoji ${emoji.name} in ${emoji.guild.name}`);
 
+      // Add newly created emoji to cached set to prevent duplicates
+      existingEmojis.add(emoji.name);
+
       // Update interaction with better progress tracking
       const shouldUpdate = this.shouldUpdateProgress(data);
       if (shouldUpdate) {
         const progressInfo = this.calculateProgress(data);
-        
+
         logger.debug(`${progressInfo.percent}% (${data.results.success}/${data.totalEmotes} completed, ETA: ${progressInfo.etaText})`);
 
         await data.interaction
           .editReply(`🚀 **Uploading emotes...** ${progressInfo.percent}% (${data.results.success}/${data.totalEmotes}) - ETA: ${progressInfo.etaText}`)
           .catch(() => { });
-          
+
         data.lastProgressUpdate = new Date();
       }
 
@@ -506,6 +586,61 @@ class EmoteQueueManager {
 // Global queue manager instance
 const queueManager = new EmoteQueueManager();
 
+// Track response times more efficiently using a running total
+let totalResponseTime = 0;
+
+// Circuit breaker for API endpoints
+interface CircuitBreakerState {
+  failures: number;
+  lastFailure: number;
+  state: 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+}
+
+const circuitBreakers = new Map<string, CircuitBreakerState>();
+const CIRCUIT_BREAKER_THRESHOLD = 5; // Open after 5 failures
+const CIRCUIT_BREAKER_TIMEOUT = 60000; // Try again after 1 minute
+
+function getCircuitBreaker(url: string): CircuitBreakerState {
+  if (!circuitBreakers.has(url)) {
+    circuitBreakers.set(url, { failures: 0, lastFailure: 0, state: 'CLOSED' });
+  }
+  return circuitBreakers.get(url)!;
+}
+
+function checkCircuitBreaker(url: string): boolean {
+  const breaker = getCircuitBreaker(url);
+  const now = Date.now();
+
+  if (breaker.state === 'OPEN') {
+    if (now - breaker.lastFailure > CIRCUIT_BREAKER_TIMEOUT) {
+      breaker.state = 'HALF_OPEN';
+      logger.debug(`Circuit breaker for ${url} entering HALF_OPEN state`);
+      return true;
+    }
+    logger.debug(`Circuit breaker OPEN for ${url}, skipping request`);
+    return false;
+  }
+
+  return true;
+}
+
+function recordCircuitBreakerSuccess(url: string): void {
+  const breaker = getCircuitBreaker(url);
+  breaker.failures = 0;
+  breaker.state = 'CLOSED';
+}
+
+function recordCircuitBreakerFailure(url: string): void {
+  const breaker = getCircuitBreaker(url);
+  breaker.failures++;
+  breaker.lastFailure = Date.now();
+
+  if (breaker.failures >= CIRCUIT_BREAKER_THRESHOLD) {
+    breaker.state = 'OPEN';
+    logger.warn(`Circuit breaker OPEN for ${url} after ${breaker.failures} failures`);
+  }
+}
+
 async function cachedFetch<T>(url: string, cacheKey: string, retries = 2): Promise<T | null> {
   const cached = apiCache.get(cacheKey);
   const now = Date.now();
@@ -515,6 +650,11 @@ async function cachedFetch<T>(url: string, cacheKey: string, retries = 2): Promi
     return cached.data;
   }
 
+  // Check circuit breaker
+  if (!checkCircuitBreaker(url)) {
+    return null;
+  }
+
   const startTime = Date.now();
   stats.api.calls++;
 
@@ -522,25 +662,27 @@ async function cachedFetch<T>(url: string, cacheKey: string, retries = 2): Promi
     try {
       const data = await jsonFetch(url);
       const responseTime = Date.now() - startTime;
-      
-      // Update average response time
-      stats.api.avgResponseTime = 
-        (stats.api.avgResponseTime * (stats.api.calls - 1) + responseTime) / stats.api.calls;
+
+      // Optimize: Use running total instead of recalculating average each time
+      totalResponseTime += responseTime;
+      stats.api.avgResponseTime = Math.round(totalResponseTime / stats.api.calls);
 
       apiCache.set(cacheKey, { data, timestamp: now });
+      recordCircuitBreakerSuccess(url);
       return data;
     } catch (error) {
       if (attempt === retries) {
         logger.error(`API fetch failed for ${url} after ${retries + 1} attempts:`, error);
+        recordCircuitBreakerFailure(url);
         return null;
       }
-      
+
       const delay = Math.min(1000 * Math.pow(2, attempt), 5000); // Exponential backoff, max 5s
       logger.debug(`API fetch attempt ${attempt + 1} failed for ${url}, retrying in ${delay}ms`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
-  
+
   return null;
 }
 
@@ -824,20 +966,52 @@ function getBestFFZUrl(urls: Record<string, string>): string {
   );
 }
 
+// Types for better type safety
+interface EmoteData {
+  name: string;
+  url: string;
+  isAnimated?: boolean;
+}
+
+interface ProcessedEmotes {
+  finalEmotes: Collection<string, string>;
+  detectedExisting: number;
+}
+
+interface GuildEmojis {
+  emojis: {
+    cache: Collection<string, { name: string }>;
+  };
+}
+
+// Helper function to validate emote URL
+function isValidEmoteUrl(url: string): boolean {
+  return !!url && !url.includes("undefined") && (url.startsWith("http://") || url.startsWith("https://"));
+}
+
+// Helper function to apply type filter
+function passesTypeFilter(isAnimated: boolean | undefined, typeFilter?: string): boolean {
+  if (!typeFilter || isAnimated === undefined) return true;
+  if (typeFilter === "gif") return isAnimated;
+  if (typeFilter === "static") return !isAnimated;
+  return true;
+}
+
 async function processEmotes<T>(
   emotes: T[],
-  guild: any,
-  mapper: (emote: T) => { name: string; url: string; isAnimated?: boolean },
+  guild: GuildEmojis,
+  mapper: (emote: T) => EmoteData,
   typeFilter?: string
-): Promise<{ finalEmotes: Collection<string, string>; detectedExisting: number; }> {
-  const existingEmojis = new Set(guild.emojis.cache.map((e: any) => e.name));
+): Promise<ProcessedEmotes> {
+  const existingEmojis = new Set(Array.from(guild.emojis.cache.values()).map((e) => e.name));
   const finalEmotes: Collection<string, string> = new Collection();
   let detectedExisting = 0;
 
   for (const emote of emotes) {
     const { name, url, isAnimated } = mapper(emote);
 
-    if (!url || url.includes("undefined")) continue;
+    // Validate URL
+    if (!isValidEmoteUrl(url)) continue;
 
     // Sanitize and validate emoji name
     const sanitizedName = sanitizeEmojiName(name);
@@ -846,11 +1020,9 @@ async function processEmotes<T>(
       continue;
     }
 
-    // Apply type filter if specified
-    if (typeFilter && isAnimated !== undefined) {
-      if ((typeFilter === "gif" && !isAnimated) || (typeFilter === "static" && isAnimated)) {
-        continue;
-      }
+    // Apply type filter
+    if (!passesTypeFilter(isAnimated, typeFilter)) {
+      continue;
     }
 
     if (existingEmojis.has(sanitizedName)) {
@@ -943,4 +1115,12 @@ export async function displayQueueStats(interaction: ChatInputCommandInteraction
 
 // Export queue manager for advanced operations
 export { queueManager };
+
+/**
+ * Cleanup function to dispose of all intervals and resources
+ * Call this when shutting down the bot to prevent memory leaks
+ */
+export function disposeEmoteQueue(): void {
+  queueManager.dispose();
+}
 

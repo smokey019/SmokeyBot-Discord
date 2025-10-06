@@ -83,3 +83,4 @@ The bot supports both development and production modes with separate configurati
 - Maintain backward compatibility at all times unless otherwise stated.
 - We're using Bun instead of Node.  Always use Bun instead of Node where you can.
 - Make sure you try to exit/kill the Bun.exe process after running tests, you can do this with Ctrl+C (SIGINT or something similar should do it as well)
+- Make sure you test run the bot and fix any errors.  Timeout time should be 30s.

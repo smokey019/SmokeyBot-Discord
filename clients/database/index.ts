@@ -53,11 +53,23 @@ const RECONNECT_CONFIG = {
   maxDelay: 30000,
   healthCheckInterval: 60000,
   queryTimeout: 15000,
+  slowQueryThreshold: 5000, // 5 seconds
+  retryDelayMultiplier: 1000, // 1 second per attempt
+  globalSettingsCacheTTL: 300000, // 5 minutes
+  poolWarningThreshold: 0.8, // Warn at 80% pool usage
 };
 
 let databaseClient: Knex;
 let reconnectTimer: Timer | null = null;
 let healthCheckTimer: Timer | null = null;
+let isReconnecting = false; // Guard to prevent concurrent reconnections
+
+// Global settings cache
+interface CachedSetting {
+  value: any;
+  timestamp: number;
+}
+const globalSettingsCache = new Map<GlobalSettingKey, CachedSetting>();
 
 // Enhanced connection configuration with reconnection support
 const createKnexConfig = () => ({
@@ -145,11 +157,19 @@ function calculateBackoffDelay(attempt: number): number {
 
 // Automatic reconnection with exponential backoff
 async function attemptReconnection(): Promise<void> {
-  if (dbState.reconnectAttempts >= RECONNECT_CONFIG.maxAttempts) {
-    logger.error(`❌ Maximum reconnection attempts (${RECONNECT_CONFIG.maxAttempts}) exceeded`);
+  // Prevent concurrent reconnection attempts
+  if (isReconnecting) {
+    logger.debug('Reconnection already in progress, skipping duplicate attempt');
     return;
   }
 
+  if (dbState.reconnectAttempts >= RECONNECT_CONFIG.maxAttempts) {
+    logger.error(`❌ Maximum reconnection attempts (${RECONNECT_CONFIG.maxAttempts}) exceeded`);
+    isReconnecting = false;
+    return;
+  }
+
+  isReconnecting = true;
   dbState.reconnectAttempts++;
   const delay = calculateBackoffDelay(dbState.reconnectAttempts - 1);
 
@@ -161,11 +181,15 @@ async function attemptReconnection(): Promise<void> {
     try {
       await initializeDatabaseConnection();
       logger.info('✅ Database reconnection successful');
+      isReconnecting = false;
     } catch (error) {
       logger.error(`❌ Reconnection attempt ${dbState.reconnectAttempts} failed:`, error);
 
       if (dbState.reconnectAttempts < RECONNECT_CONFIG.maxAttempts) {
+        isReconnecting = false;
         await attemptReconnection();
+      } else {
+        isReconnecting = false;
       }
     }
   }, delay);
@@ -175,10 +199,10 @@ async function attemptReconnection(): Promise<void> {
 async function performHealthCheck(): Promise<boolean> {
   try {
     const startTime = Date.now();
-    await databaseClient.raw('SELECT 1 as health_check');
+    await executeQuery(() => databaseClient.raw('SELECT 1 as health_check'));
     const responseTime = Date.now() - startTime;
 
-    if (responseTime > 5000) {
+    if (responseTime > RECONNECT_CONFIG.slowQueryThreshold) {
       logger.warn(`⚠️ Slow database response: ${responseTime}ms`);
     }
 
@@ -188,6 +212,10 @@ async function performHealthCheck(): Promise<boolean> {
     }
 
     dbState.lastHealthCheck = Date.now();
+
+    // Check connection pool health
+    checkPoolHealth();
+
     return true;
   } catch (error) {
     logger.error('❌ Database health check failed:', error);
@@ -199,6 +227,36 @@ async function performHealthCheck(): Promise<boolean> {
     }
 
     return false;
+  }
+}
+
+// Check connection pool health
+function checkPoolHealth(): void {
+  try {
+    const pool = (databaseClient.client as any).pool;
+    if (pool) {
+      const numUsed = pool.numUsed?.() || 0;
+      const numFree = pool.numFree?.() || 0;
+      const numPendingAcquires = pool.numPendingAcquires?.() || 0;
+      const numPendingCreates = pool.numPendingCreates?.() || 0;
+
+      const total = numUsed + numFree;
+      const usagePercent = total > 0 ? numUsed / total : 0;
+
+      if (usagePercent > RECONNECT_CONFIG.poolWarningThreshold) {
+        logger.warn(
+          `⚠️ High connection pool usage: ${(usagePercent * 100).toFixed(1)}% ` +
+          `(${numUsed}/${total} in use, ${numPendingAcquires} pending)`
+        );
+      }
+
+      if (numPendingAcquires > 5) {
+        logger.warn(`⚠️ ${numPendingAcquires} connections waiting for pool`);
+      }
+    }
+  } catch (error) {
+    // Pool introspection might not be available in all versions, fail silently
+    logger.debug('Could not check pool health:', error);
   }
 }
 
@@ -244,7 +302,7 @@ async function executeQuery<T = any>(
           attemptReconnection();
         }
 
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        await new Promise(resolve => setTimeout(resolve, RECONNECT_CONFIG.retryDelayMultiplier * attempt));
         continue;
       }
 
@@ -289,13 +347,24 @@ interface GlobalSettings {
 }
 
 /**
- * Load setting from database with error handling and validation
+ * Load setting from database with error handling, validation, and caching
  * @param which - The setting key to retrieve
+ * @param bypassCache - If true, skip cache and fetch fresh from database
  * @returns Promise resolving to the setting value
  * @throws Error if setting key is invalid or database query fails
  */
-export async function loadGlobalSetting(which: GlobalSettingKey): Promise<any> {
+export async function loadGlobalSetting(which: GlobalSettingKey, bypassCache = false): Promise<any> {
   try {
+    // Check cache first (unless bypassed)
+    if (!bypassCache) {
+      const cached = globalSettingsCache.get(which);
+      if (cached && (Date.now() - cached.timestamp) < RECONNECT_CONFIG.globalSettingsCacheTTL) {
+        logger.debug(`Using cached global setting: ${which}`);
+        return cached.value;
+      }
+    }
+
+    // Fetch from database
     const settings = await executeQuery(() =>
       databaseClient<GlobalSettings>('global_smokeybot_settings').first()
     );
@@ -308,11 +377,27 @@ export async function loadGlobalSetting(which: GlobalSettingKey): Promise<any> {
       throw new Error(`Setting key '${which}' not found in global settings`);
     }
 
-    return settings[which];
+    const value = settings[which];
+
+    // Cache the result
+    globalSettingsCache.set(which, {
+      value,
+      timestamp: Date.now(),
+    });
+
+    return value;
   } catch (error) {
     logger.error(`Failed to load global setting '${which}':`, error);
     throw error;
   }
+}
+
+/**
+ * Clear the global settings cache (useful after updating settings)
+ */
+export function clearGlobalSettingsCache(): void {
+  globalSettingsCache.clear();
+  logger.debug('Global settings cache cleared');
 }
 
 export const GuildSettingsTable = 'guild_settings';
@@ -324,6 +409,54 @@ export interface IGuildSettings {
   specific_channel?: string;
   announcements_enabled: number;
   prefixes?: string;
+}
+
+/**
+ * Shared function to create guild settings
+ * @param guildId - Guild ID
+ * @param guildName - Guild name for logging
+ * @returns Promise resolving to the created guild settings
+ */
+async function createGuildSettings(guildId: string, guildName: string): Promise<IGuildSettings | undefined> {
+  try {
+    if (!guildId) {
+      throw new Error('Guild ID cannot be empty');
+    }
+
+    logger.info(`Creating new settings for guild ${guildName} (${guildId})`);
+
+    // Use returning() to get the created row in one query (MySQL 8.0.1+)
+    // For older MySQL, falls back to insert + select
+    const [createdSettings] = await executeQuery(async () => {
+      const insertResult = await databaseClient<IGuildSettings>(GuildSettingsTable)
+        .insert({
+          guild_id: guildId,
+          smokemon_enabled: 0,
+          announcements_enabled: 0,
+        });
+
+      // Fetch the newly created settings using the insert ID
+      if (insertResult && insertResult.length > 0) {
+        return databaseClient<IGuildSettings>(GuildSettingsTable)
+          .select()
+          .where('id', insertResult[0])
+          .first()
+          .then(result => [result]);
+      }
+      return [undefined];
+    });
+
+    if (createdSettings) {
+      logger.info(`Created new guild settings for ${guildName} (${guildId})`);
+      return createdSettings;
+    } else {
+      logger.error(`Failed to create guild settings for ${guildName} (${guildId})`);
+      return undefined;
+    }
+  } catch (error) {
+    logger.error(`Error creating guild settings for ${guildName} (${guildId}):`, error);
+    throw error;
+  }
 }
 
 /**
@@ -341,30 +474,7 @@ export async function getGuildSettings(guild: Guild): Promise<IGuildSettings | u
     );
 
     if (!guildSettings) {
-      logger.info(`No settings found for guild ${guild.name} (${guild.id}), creating new settings`);
-
-      const insertResult = await executeQuery(() =>
-        databaseClient<IGuildSettings>(GuildSettingsTable).insert({
-          guild_id: guild.id,
-          smokemon_enabled: 0,
-          announcements_enabled: 0,
-        })
-      );
-
-      if (insertResult && insertResult.length > 0) {
-        logger.info(`Created new guild settings for ${guild.name} (${guild.id})`);
-
-        // Fetch the newly created settings
-        guildSettings = await executeQuery(() =>
-          databaseClient<IGuildSettings>(GuildSettingsTable)
-            .select()
-            .where('guild_id', guild.id)
-            .first()
-        );
-      } else {
-        logger.error(`Failed to create guild settings for ${guild.name} (${guild.id})`);
-        return undefined;
-      }
+      guildSettings = await createGuildSettings(guild.id, guild.name);
     }
 
     return guildSettings;
@@ -427,21 +537,13 @@ export async function putGuildSettings(interaction: CommandInteraction): Promise
   }
 
   try {
-    const insertResult = await executeQuery(() =>
-      databaseClient<IGuildSettings>(GuildSettingsTable).insert({
-        guild_id: interaction.guild.id,
-        smokemon_enabled: 0,
-        announcements_enabled: 0,
-      })
-    );
+    const createdSettings = await createGuildSettings(interaction.guild.id, interaction.guild.name);
 
-    if (!insertResult || insertResult.length === 0) {
+    if (!createdSettings || !createdSettings.id) {
       throw new Error('Database insertion returned no results');
     }
 
-    logger.info(`Created new guild settings for ${interaction.guild.name} (${interaction.guild.id})`);
-
-    return insertResult[0];
+    return createdSettings.id;
   } catch (error) {
     logger.error(`Failed to create guild settings for ${interaction.guild.name} (${interaction.guild.id}):`, error);
     throw error;
@@ -491,5 +593,54 @@ export function getDatabaseStats() {
     lastHealthCheck: dbState.lastHealthCheck,
     connectionErrors: dbState.connectionErrors,
     timeSinceLastCheck: Date.now() - dbState.lastHealthCheck,
+    isReconnecting,
+    cacheSize: globalSettingsCache.size,
   };
+}
+
+/**
+ * Get connection pool statistics
+ */
+export function getPoolStats() {
+  try {
+    const pool = (databaseClient.client as any).pool;
+    if (pool) {
+      return {
+        numUsed: pool.numUsed?.() || 0,
+        numFree: pool.numFree?.() || 0,
+        numPendingAcquires: pool.numPendingAcquires?.() || 0,
+        numPendingCreates: pool.numPendingCreates?.() || 0,
+        min: pool.min || 0,
+        max: pool.max || 0,
+      };
+    }
+    return null;
+  } catch (error) {
+    logger.debug('Could not get pool stats:', error);
+    return null;
+  }
+}
+
+/**
+ * Dispose of all resources and timers to prevent memory leaks
+ * Call this when shutting down the database module
+ */
+export function disposeDatabase(): void {
+  // Clear timers
+  if (healthCheckTimer) {
+    clearInterval(healthCheckTimer);
+    healthCheckTimer = null;
+  }
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+
+  // Clear cache
+  globalSettingsCache.clear();
+
+  // Reset state
+  isReconnecting = false;
+
+  logger.info('✅ Database module disposed');
 }

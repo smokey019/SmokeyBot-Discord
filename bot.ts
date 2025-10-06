@@ -33,6 +33,31 @@ let loaded_commands = false;
 // Extract isDev before config to avoid temporal dead zone issues
 const isDev = process.env.DEV === "true" || process.argv.includes("--dev");
 
+// Constants for better maintainability
+const CONSTANTS = {
+  COMMAND_TIMEOUT: 30000, // 30 seconds
+  ACTIVITY_TIMEOUT: 300000, // 5 minutes
+  GLOBAL_COMMAND_DELAY: 15000, // 15 seconds
+  SHUTDOWN_GRACE_PERIOD: 2000, // 2 seconds
+  STATS_INITIAL_DELAY: 5000, // 5 seconds
+  SLOW_COMMAND_THRESHOLD: 1000, // 1 second
+  SLOW_MESSAGE_THRESHOLD: 500, // 500ms
+  HIGH_MEMORY_WARNING: 500, // 500MB
+  CRITICAL_MEMORY_SHUTDOWN: 1000, // 1000MB (1GB)
+  MEMORY_CHECK_INTERVAL: 60000, // 1 minute
+  GC_INTERVAL: 600000, // 10 minutes
+  EVENT_LOOP_CHECK_INTERVAL: 10000, // 10 seconds
+  WEBSOCKET_RECONNECT_DELAY: 5000, // 5 seconds
+  WEBSOCKET_RETRY_DELAY: 1000, // 1 second between port attempts
+  PROCESSED_INTERACTIONS_LIMIT: 1000,
+  PROCESSED_INTERACTIONS_KEEP: 500,
+  PROCESSED_INTERACTIONS_EXPIRY: 300000, // 5 minutes
+  MAX_ERRORS_THRESHOLD: 50,
+  MIN_HEALTH_SCORE: 20,
+  MIN_HEALTHY_CONDITIONS: 5,
+  EVENT_LOOP_LAG_HISTORY_SIZE: 10,
+} as const;
+
 // configuration with environment validation
 const config = {
   // Use temporary shard ID until Discord.js assigns the real one
@@ -139,6 +164,7 @@ interface CommunicationManager {
   initialize(): Promise<void>;
   send(message: InterShardMessage): Promise<void>;
   subscribe(callback: (message: InterShardMessage) => void): void;
+  unsubscribe(callback: (message: InterShardMessage) => void): void;
   close(): Promise<void>;
   isConnected(): boolean;
 }
@@ -171,6 +197,25 @@ let eventLoopLagHistory: number[] = [];
 // Backward compatibility exports
 export let rateLimited = false;
 export let initializing = true;
+
+// Efficient message ID generator
+let messageIdCounter = 0;
+function generateMessageId(): string {
+  return `${Date.now()}-${(messageIdCounter++).toString(36)}`;
+}
+
+// Cached shard ID to avoid repeated function calls
+let cachedShardId: number | null = null;
+
+// Interval tracking for cleanup
+const intervals = {
+  presenceUpdate: undefined as Timer | undefined,
+  statsReport: undefined as Timer | undefined,
+  heartbeat: undefined as Timer | undefined,
+  eventLoopMonitor: undefined as Timer | undefined,
+  memoryMonitor: undefined as Timer | undefined,
+  gcMonitor: undefined as Timer | undefined,
+};
 
 // Redis Communication Manager
 class RedisCommunicationManager implements CommunicationManager {
@@ -231,6 +276,13 @@ class RedisCommunicationManager implements CommunicationManager {
     this.callbacks.push(callback);
   }
 
+  unsubscribe(callback: (message: InterShardMessage) => void): void {
+    const index = this.callbacks.indexOf(callback);
+    if (index > -1) {
+      this.callbacks.splice(index, 1);
+    }
+  }
+
   isConnected(): boolean {
     return this.connected;
   }
@@ -238,6 +290,8 @@ class RedisCommunicationManager implements CommunicationManager {
   async close(): Promise<void> {
     this.connected = false;
     shardState.communicationConnected = false;
+    // Clear callbacks to prevent memory leaks
+    this.callbacks = [];
     if (this.client) {
       await this.client.disconnect();
     }
@@ -326,7 +380,7 @@ class WebSocketCommunicationManager implements CommunicationManager {
 
               setTimeout(() => {
                 this.tryConnectWithFallback(fallbackUrl, attemptedPorts).then(resolve).catch(reject);
-              }, 1000); // Add small delay between attempts
+              }, CONSTANTS.WEBSOCKET_RETRY_DELAY);
               return;
             } else {
               logger.error(`❌ All fallback ports exhausted. Attempted ports: ${attemptedPorts.join(', ')}`);
@@ -355,7 +409,7 @@ class WebSocketCommunicationManager implements CommunicationManager {
         logger.error("WebSocket reconnect failed:", error);
         this.scheduleReconnect();
       }
-    }, 5000);
+    }, CONSTANTS.WEBSOCKET_RECONNECT_DELAY);
   }
 
   async send(message: InterShardMessage): Promise<void> {
@@ -370,6 +424,13 @@ class WebSocketCommunicationManager implements CommunicationManager {
     this.callbacks.push(callback);
   }
 
+  unsubscribe(callback: (message: InterShardMessage) => void): void {
+    const index = this.callbacks.indexOf(callback);
+    if (index > -1) {
+      this.callbacks.splice(index, 1);
+    }
+  }
+
   isConnected(): boolean {
     return this.connected;
   }
@@ -377,6 +438,8 @@ class WebSocketCommunicationManager implements CommunicationManager {
   async close(): Promise<void> {
     this.connected = false;
     shardState.communicationConnected = false;
+    // Clear callbacks to prevent memory leaks
+    this.callbacks = [];
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
     this.ws?.close();
   }
@@ -515,17 +578,33 @@ export const discordClient = new Client({
 // ============================================================================
 
 /**
- * Get the current shard ID with proper fallback logic
+ * Get the current shard ID with proper fallback logic and caching
  */
 function getCurrentShardId(): number {
+  // Return cached value if available
+  if (cachedShardId !== null) {
+    return cachedShardId;
+  }
+
+  // Calculate and cache the shard ID
+  let shardId: number;
   if (config.actualShardId >= 0) {
-    return config.actualShardId;
+    shardId = config.actualShardId;
+  } else if (config.isDev && (config.totalShards === 1 || isNaN(config.totalShards))) {
+    shardId = 0;
+  } else {
+    shardId = config.shardId >= 0 ? config.shardId : 0;
   }
-  // In development with single shard, always use 0
-  if (config.isDev && (config.totalShards === 1 || isNaN(config.totalShards))) {
-    return 0;
-  }
-  return config.shardId >= 0 ? config.shardId : 0;
+
+  cachedShardId = shardId;
+  return shardId;
+}
+
+/**
+ * Update the cached shard ID (called when actualShardId changes)
+ */
+function updateCachedShardId(newShardId: number): void {
+  cachedShardId = newShardId;
 }
 
 /**
@@ -561,7 +640,7 @@ async function sendInterShardMessage(
     toShard: toShard || "all",
     data,
     timestamp: Date.now(),
-    id: `${Date.now()}-${Math.random().toString(36).substring(2)}`,
+    id: generateMessageId(),
   };
 
   // Skip sending if it's a single shard and message is to self
@@ -734,7 +813,7 @@ function calculateCpuUsage(): number {
 }
 
 /**
- * Measure event loop lag
+ * Measure event loop lag (simplified)
  */
 async function measureEventLoopLag(): Promise<number> {
   const start = Bun.nanoseconds();
@@ -742,12 +821,12 @@ async function measureEventLoopLag(): Promise<number> {
     setImmediate(() => {
       const lag = Number(Bun.nanoseconds() - start) / 1_000_000; // Convert to ms
       eventLoopLagHistory.push(lag);
-      if (eventLoopLagHistory.length > 10) {
+      if (eventLoopLagHistory.length > CONSTANTS.EVENT_LOOP_LAG_HISTORY_SIZE) {
         eventLoopLagHistory.shift();
       }
       resolve(lag);
     });
-  }).then((lag) => lag);
+  });
 }
 
 /**
@@ -954,7 +1033,7 @@ async function executeCommand(interaction: CommandInteraction): Promise<void> {
 
     // Add timeout for command execution
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Command timeout")), 30000)
+      setTimeout(() => reject(new Error("Command timeout")), CONSTANTS.COMMAND_TIMEOUT)
     );
 
     await Promise.race([commandPromise, timeoutPromise]);
@@ -967,7 +1046,7 @@ async function executeCommand(interaction: CommandInteraction): Promise<void> {
     // Performance monitoring
     if (config.isDev) {
       const duration = Number(Bun.nanoseconds() - startTime) / 1_000_000;
-      if (duration > 1000) {
+      if (duration > CONSTANTS.SLOW_COMMAND_THRESHOLD) {
         logger.warn(
           `Slow command: ${interaction.commandName} took ${duration.toFixed(
             2
@@ -1053,7 +1132,7 @@ async function processMessage(message: Message): Promise<void> {
     // Performance monitoring
     if (config.isDev) {
       const duration = Number(Bun.nanoseconds() - startTime) / 1_000_000;
-      if (duration > 500) {
+      if (duration > CONSTANTS.SLOW_MESSAGE_THRESHOLD) {
         logger.warn(`Slow message processing: ${duration.toFixed(2)}ms`);
       }
     }
@@ -1171,11 +1250,11 @@ function isHealthy(): boolean {
   const conditions = [
     !shardState.initializing,
     !shardState.rateLimited,
-    now - shardState.lastActivity < 300000, // 5 minutes
+    now - shardState.lastActivity < CONSTANTS.ACTIVITY_TIMEOUT,
     discordClient.isReady(),
     shardState.reconnectAttempts < config.maxReconnectAttempts,
-    shardState.healthScore > 20,
-    shardState.errors < 50,
+    shardState.healthScore > CONSTANTS.MIN_HEALTH_SCORE,
+    shardState.errors < CONSTANTS.MAX_ERRORS_THRESHOLD,
   ];
 
   const healthyConditions = conditions.filter(Boolean).length;
@@ -1184,7 +1263,46 @@ function isHealthy(): boolean {
   // Update health score based on conditions
   shardState.healthScore = Math.max(0, Math.min(100, healthPercentage));
 
-  return healthyConditions >= 5; // At least 5/7 conditions must be met
+  return healthyConditions >= CONSTANTS.MIN_HEALTHY_CONDITIONS;
+}
+
+/**
+ * Dispose of all resources and intervals to prevent memory leaks
+ */
+function dispose(): void {
+  // Clear all intervals
+  if (intervals.presenceUpdate) {
+    clearInterval(intervals.presenceUpdate);
+    intervals.presenceUpdate = undefined;
+  }
+  if (intervals.statsReport) {
+    clearInterval(intervals.statsReport);
+    intervals.statsReport = undefined;
+  }
+  if (intervals.heartbeat) {
+    clearInterval(intervals.heartbeat);
+    intervals.heartbeat = undefined;
+  }
+  if (intervals.eventLoopMonitor) {
+    clearInterval(intervals.eventLoopMonitor);
+    intervals.eventLoopMonitor = undefined;
+  }
+  if (intervals.memoryMonitor) {
+    clearInterval(intervals.memoryMonitor);
+    intervals.memoryMonitor = undefined;
+  }
+  if (intervals.gcMonitor) {
+    clearInterval(intervals.gcMonitor);
+    intervals.gcMonitor = undefined;
+  }
+
+  // Clear processed interactions
+  processedInteractions.clear();
+
+  // Clear event loop lag history
+  eventLoopLagHistory = [];
+
+  logger.info("✅ Bot resources disposed");
 }
 
 /**
@@ -1194,6 +1312,9 @@ async function shutdown(): Promise<void> {
   logger.info(`🛑 Shard ${config.shardId}: Initiating shutdown...`);
 
   try {
+    // Dispose of all resources
+    dispose();
+
     // Notify other shards of shutdown
     await sendInterShardMessage("shardShutdown", {
       shardId: config.shardId,
@@ -1207,7 +1328,7 @@ async function shutdown(): Promise<void> {
     }
 
     // Wait for any pending operations
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, CONSTANTS.SHUTDOWN_GRACE_PERIOD));
 
     // Destroy Discord client
     await discordClient.destroy();
@@ -1233,6 +1354,8 @@ discordClient.on("ready", async () => {
     config.actualShardId = actualShardId;
     config.shardId = actualShardId; // Update the main config
     IS_COORDINATOR = actualShardId === 0;
+    // Update cached shard ID
+    updateCachedShardId(actualShardId);
 
     // Update totalShards with actual value from Discord.js
     if (discordClient.shard?.count) {
@@ -1295,10 +1418,10 @@ discordClient.on("ready", async () => {
         } catch (error) {
           logger.error("❌ Global command registration failed:", error);
         }
-      }, 15000);
+      }, CONSTANTS.GLOBAL_COMMAND_DELAY);
 
       // Coordinator-specific presence updates
-      setInterval(() => {
+      intervals.presenceUpdate = setInterval(() => {
         updatePresence();
       }, config.presenceUpdateInterval);
 
@@ -1306,13 +1429,13 @@ discordClient.on("ready", async () => {
     }
 
     // Start periodic reporting
-    setInterval(reportStats, config.statsReportInterval);
-    setInterval(sendHeartbeat, config.heartbeatInterval);
+    intervals.statsReport = setInterval(reportStats, config.statsReportInterval);
+    intervals.heartbeat = setInterval(sendHeartbeat, config.heartbeatInterval);
 
     // Performance monitoring interval
-    setInterval(async () => {
+    intervals.eventLoopMonitor = setInterval(async () => {
       await measureEventLoopLag();
-    }, 10000); // Every 10 seconds
+    }, CONSTANTS.EVENT_LOOP_CHECK_INTERVAL);
 
     // Update state
     shardState.initializing = false;
@@ -1321,7 +1444,7 @@ discordClient.on("ready", async () => {
     shardState.lastActivity = Date.now();
 
     // Initial stats report
-    setTimeout(reportStats, 5000);
+    setTimeout(reportStats, CONSTANTS.STATS_INITIAL_DELAY);
 
     // Notify manager of readiness with actual shard ID
     sendToManager("ready", {
@@ -1350,37 +1473,52 @@ discordClient.on("ready", async () => {
   }
 });
 
-// Track processed interactions to prevent duplicates
-const processedInteractions = new Set<string>();
+// Track processed interactions with time-based expiry to prevent duplicates
+const processedInteractions = new Map<string, number>();
 
 discordClient.on("interactionCreate", async (interaction) => {
   if (interaction.isCommand()) {
     // Create a unique identifier for this interaction
     const interactionId = `${interaction.id}-${interaction.commandName}-${interaction.user.id}`;
+    const now = Date.now();
 
-    // Check if we've already processed this interaction
-    if (processedInteractions.has(interactionId)) {
+    // Check if we've already processed this interaction recently
+    const lastProcessed = processedInteractions.get(interactionId);
+    if (lastProcessed && (now - lastProcessed) < CONSTANTS.PROCESSED_INTERACTIONS_EXPIRY) {
       if (config.isDev) {
         logger.warn(`[Shard ${config.actualShardId}] Duplicate interaction detected and ignored: ${interaction.commandName} from ${interaction.user.username}`);
       }
       return;
     }
 
-    // Mark this interaction as being processed
-    processedInteractions.add(interactionId);
+    // Mark this interaction as being processed with timestamp
+    processedInteractions.set(interactionId, now);
 
-    // Clean up old interaction IDs periodically (keep last 1000)
-    if (processedInteractions.size > 1000) {
-      const idsArray = Array.from(processedInteractions);
-      processedInteractions.clear();
-      idsArray.slice(-500).forEach(id => processedInteractions.add(id));
+    // Clean up expired entries periodically
+    if (processedInteractions.size > CONSTANTS.PROCESSED_INTERACTIONS_LIMIT) {
+      const expiredIds: string[] = [];
+      processedInteractions.forEach((timestamp, id) => {
+        if (now - timestamp > CONSTANTS.PROCESSED_INTERACTIONS_EXPIRY) {
+          expiredIds.push(id);
+        }
+      });
+      expiredIds.forEach(id => processedInteractions.delete(id));
+
+      // If still too large, keep only the most recent ones
+      if (processedInteractions.size > CONSTANTS.PROCESSED_INTERACTIONS_LIMIT) {
+        const entries = Array.from(processedInteractions.entries())
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, CONSTANTS.PROCESSED_INTERACTIONS_KEEP);
+        processedInteractions.clear();
+        entries.forEach(([id, timestamp]) => processedInteractions.set(id, timestamp));
+      }
     }
 
     try {
       await executeCommand(interaction);
     } catch (error) {
       logger.error(`Error executing command ${interaction.commandName}:`, error);
-      // Remove from processed set if execution failed
+      // Remove from processed map if execution failed
       processedInteractions.delete(interactionId);
     }
   }
@@ -1584,17 +1722,17 @@ process.on("uncaughtException", (error) => {
 });
 
 // Memory usage monitoring
-setInterval(() => {
+intervals.memoryMonitor = setInterval(() => {
   const usage = process.memoryUsage();
   const heapUsedMB = Math.round(usage.heapUsed / 1024 / 1024);
 
   // Log if memory usage is high
-  if (heapUsedMB > 500) {
+  if (heapUsedMB > CONSTANTS.HIGH_MEMORY_WARNING) {
     logger.warn(`🧠 High memory usage: ${heapUsedMB}MB`);
   }
 
   // Emergency shutdown if memory usage is critical
-  if (heapUsedMB > 1000) {
+  if (heapUsedMB > CONSTANTS.CRITICAL_MEMORY_SHUTDOWN) {
     logger.error(`🚨 Critical memory usage: ${heapUsedMB}MB, restarting...`);
     sendToManager("emergency", {
       reason: "high_memory_usage",
@@ -1603,7 +1741,7 @@ setInterval(() => {
     });
     process.exit(1);
   }
-}, 60000); // Check every minute
+}, CONSTANTS.MEMORY_CHECK_INTERVAL);
 
 // ============================================================================
 // EXPORTS AND UTILITIES
@@ -1722,7 +1860,7 @@ async function startBot(): Promise<void> {
 // Additional memory optimization: Periodic manual cleanup
 if (typeof process !== 'undefined') {
   logger.debug('Setting Garbage Collector timer..')
-  setInterval(() => {
+  intervals.gcMonitor = setInterval(() => {
     // Force garbage collection if available (Bun supports this)
     if (Bun.gc) {
       logger.trace('Forcing a garbage collection.');
@@ -1732,10 +1870,10 @@ if (typeof process !== 'undefined') {
     }
     // Log memory usage for monitoring
     const memUsage = heapStats();
-    if (memUsage.heapSize > 500 * 1024 * 1024) { // 500MB threshold
+    if (memUsage.heapSize > CONSTANTS.HIGH_MEMORY_WARNING * 1024 * 1024) {
       logger.warn(`High memory usage detected: ${Math.round(memUsage.heapSize / 1024 / 1024)}MB`);
     }
-  }, 600000); // Every 10 minutes
+  }, CONSTANTS.GC_INTERVAL);
 }
 
 // Start the bot
