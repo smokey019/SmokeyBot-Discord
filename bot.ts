@@ -11,8 +11,6 @@ import {
   Options,
   PresenceUpdateStatus,
 } from "discord.js";
-import { createClient } from "redis";
-import { WebSocket } from "ws";
 import { getCache, getGCD } from "./clients/cache";
 import {
   commands,
@@ -20,6 +18,12 @@ import {
   registerSlashCommands,
   slashCommands,
 } from "./clients/commands";
+import {
+  createRedisManager,
+  createWebSocketClientManager,
+  type CommunicationManager,
+  type InterShardMessage,
+} from "./clients/communication";
 import { getGuildSettings } from "./clients/database";
 import { getLogger } from "./clients/logger";
 import { queueMessage } from "./clients/message_queue";
@@ -151,23 +155,8 @@ interface GlobalRateLimit {
   retryAfter?: number;
 }
 
-interface InterShardMessage {
-  type: string;
-  fromShard?: number;
-  toShard?: number | "all";
-  data: any;
-  timestamp: number;
-  id: string;
-}
-
-interface CommunicationManager {
-  initialize(): Promise<void>;
-  send(message: InterShardMessage): Promise<void>;
-  subscribe(callback: (message: InterShardMessage) => void): void;
-  unsubscribe(callback: (message: InterShardMessage) => void): void;
-  close(): Promise<void>;
-  isConnected(): boolean;
-}
+// Communication manager classes and interfaces are now imported from shared module
+// See: clients/communication/index.ts
 
 // state management
 const shardState: ShardState = {
@@ -216,234 +205,6 @@ const intervals = {
   memoryMonitor: undefined as Timer | undefined,
   gcMonitor: undefined as Timer | undefined,
 };
-
-// Redis Communication Manager
-class RedisCommunicationManager implements CommunicationManager {
-  private client?: ReturnType<typeof createClient>;
-  private subscriber?: ReturnType<typeof createClient>;
-  private callbacks: Array<(message: InterShardMessage) => void> = [];
-  private connected = false;
-
-  async initialize(): Promise<void> {
-    try {
-      this.client = createClient({ url: config.redisUrl });
-      this.subscriber = createClient({ url: config.redisUrl });
-
-      await this.client.connect();
-      await this.subscriber.connect();
-
-      // Subscribe to shard-specific and broadcast channels
-      await this.subscriber.subscribe(`shard-${config.shardId}`, (message) => {
-        this.handleMessage(message);
-      });
-
-      await this.subscriber.subscribe("shard-broadcast", (message) => {
-        this.handleMessage(message);
-      });
-
-      this.connected = true;
-      shardState.communicationConnected = true;
-      logger.info("✅ Redis communication connected");
-    } catch (error) {
-      logger.error("❌ Redis connection failed:", error);
-      this.connected = false;
-      throw error;
-    }
-  }
-
-  private handleMessage(message: string): void {
-    try {
-      const parsedMessage: InterShardMessage = JSON.parse(message);
-      this.callbacks.forEach((callback) => callback(parsedMessage));
-    } catch (error) {
-      logger.error("Failed to parse Redis message:", error);
-    }
-  }
-
-  async send(message: InterShardMessage): Promise<void> {
-    if (!this.client || !this.connected) {
-      throw new Error("Redis client not connected");
-    }
-
-    const channel =
-      message.toShard === "all"
-        ? "shard-broadcast"
-        : `shard-${message.toShard}`;
-    await this.client.publish(channel, JSON.stringify(message));
-  }
-
-  subscribe(callback: (message: InterShardMessage) => void): void {
-    this.callbacks.push(callback);
-  }
-
-  unsubscribe(callback: (message: InterShardMessage) => void): void {
-    const index = this.callbacks.indexOf(callback);
-    if (index > -1) {
-      this.callbacks.splice(index, 1);
-    }
-  }
-
-  isConnected(): boolean {
-    return this.connected;
-  }
-
-  async close(): Promise<void> {
-    this.connected = false;
-    shardState.communicationConnected = false;
-    // Clear callbacks to prevent memory leaks
-    this.callbacks = [];
-    if (this.client) {
-      await this.client.disconnect();
-    }
-    if (this.subscriber) {
-      await this.subscriber.disconnect();
-    }
-  }
-}
-
-// WebSocket Communication Manager
-class WebSocketCommunicationManager implements CommunicationManager {
-  private ws?: WebSocket;
-  private callbacks: Array<(message: InterShardMessage) => void> = [];
-  private connected = false;
-  private reconnectTimer?: Timer;
-
-  async initialize(): Promise<void> {
-    return this.tryConnectWithFallback(config.wsManagerUrl);
-  }
-
-  private async tryConnectWithFallback(baseUrl: string, attemptedPorts: number[] = []): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        const url = `${baseUrl}?shardId=${config.shardId}`;
-
-        // Clean up previous WebSocket if exists
-        if (this.ws) {
-          this.ws.removeAllListeners();
-          if (this.ws.readyState === WebSocket.OPEN) {
-            this.ws.close();
-          }
-        }
-
-        this.ws = new WebSocket(url);
-        const currentPort = parseInt(baseUrl.split(':').pop() || '8081');
-        attemptedPorts.push(currentPort);
-
-        this.ws.on("open", () => {
-          this.connected = true;
-          shardState.communicationConnected = true;
-          logger.info(`✅ WebSocket communication connected to ${baseUrl}`);
-          resolve();
-        });
-
-        this.ws.on("message", (data) => {
-          try {
-            const message: InterShardMessage = JSON.parse(data.toString());
-            this.callbacks.forEach((callback) => callback(message));
-          } catch (error) {
-            logger.error("Failed to parse WebSocket message:", error);
-          }
-        });
-
-        this.ws.on("close", (code, reason) => {
-          this.connected = false;
-          shardState.communicationConnected = false;
-          logger.warn(`WebSocket disconnected (code: ${code}, reason: ${reason || 'unknown'}), attempting reconnect...`);
-          this.scheduleReconnect();
-        });
-
-        this.ws.on("error", (error) => {
-          // Extract more useful error information
-          const errorDetails = {
-            message: error.message || 'Unknown error',
-            code: (error as any).code || 'No code',
-            errno: (error as any).errno || 'No errno',
-            port: currentPort,
-            type: error.constructor.name
-          };
-
-          logger.error(`WebSocket error details:`, errorDetails);
-
-          if (!this.connected && config.isDev) {
-            // Try fallback ports in development (max 5 attempts)
-            const fallbackPorts = [8082, 8083, 8084, 8085, 8086].filter(p => !attemptedPorts.includes(p));
-
-            if (fallbackPorts.length > 0 && attemptedPorts.length < 5) {
-              const nextPort = fallbackPorts[0];
-              const fallbackUrl = baseUrl.replace(/:\d+$/, `:${nextPort}`);
-              logger.warn(`⚠️ WebSocket connection failed on port ${currentPort}, trying fallback port ${nextPort} (attempt ${attemptedPorts.length + 1}/5)`);
-
-              // Clean up current WebSocket before trying next
-              if (this.ws) {
-                this.ws.removeAllListeners();
-              }
-
-              setTimeout(() => {
-                this.tryConnectWithFallback(fallbackUrl, attemptedPorts).then(resolve).catch(reject);
-              }, CONSTANTS.WEBSOCKET_RETRY_DELAY);
-              return;
-            } else {
-              logger.error(`❌ All fallback ports exhausted. Attempted ports: ${attemptedPorts.join(', ')}`);
-              logger.info(`💡 For local development, you can disable WebSocket with USE_WEBSOCKET=false in your environment`);
-            }
-          }
-
-          if (!this.connected) {
-            reject(error);
-          }
-        });
-      } catch (error) {
-        logger.error(`Failed to create WebSocket connection:`, error);
-        reject(error);
-      }
-    });
-  }
-
-  private scheduleReconnect(): void {
-    if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
-
-    this.reconnectTimer = setTimeout(async () => {
-      try {
-        await this.initialize();
-      } catch (error) {
-        logger.error("WebSocket reconnect failed:", error);
-        this.scheduleReconnect();
-      }
-    }, CONSTANTS.WEBSOCKET_RECONNECT_DELAY);
-  }
-
-  async send(message: InterShardMessage): Promise<void> {
-    if (!this.ws || !this.connected) {
-      throw new Error("WebSocket not connected");
-    }
-
-    this.ws.send(JSON.stringify(message));
-  }
-
-  subscribe(callback: (message: InterShardMessage) => void): void {
-    this.callbacks.push(callback);
-  }
-
-  unsubscribe(callback: (message: InterShardMessage) => void): void {
-    const index = this.callbacks.indexOf(callback);
-    if (index > -1) {
-      this.callbacks.splice(index, 1);
-    }
-  }
-
-  isConnected(): boolean {
-    return this.connected;
-  }
-
-  async close(): Promise<void> {
-    this.connected = false;
-    shardState.communicationConnected = false;
-    // Clear callbacks to prevent memory leaks
-    this.callbacks = [];
-    if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
-    this.ws?.close();
-  }
-}
 
 // Communication manager instance - only for cross-server deployment
 let communicationManager: CommunicationManager | undefined;
@@ -1374,9 +1135,9 @@ discordClient.on("ready", async () => {
     if (IS_COORDINATOR && needsCrossServerComm) {
       try {
         if (config.useRedis) {
-          communicationManager = new RedisCommunicationManager();
+          communicationManager = createRedisManager(config.redisUrl);
         } else if (config.useWebSocket) {
-          communicationManager = new WebSocketCommunicationManager();
+          communicationManager = createWebSocketClientManager(config.wsManagerUrl, config.shardId);
         }
 
         if (communicationManager) {
