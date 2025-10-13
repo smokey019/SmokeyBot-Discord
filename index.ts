@@ -383,7 +383,7 @@ class EnhancedShardManager extends EventEmitter {
         this.handleInterShardMessage(interShardMessage);
         break;
 
-      case "shardReady":
+      case "clientReady":
       case "shardReconnecting":
       case "shardDisconnect":
       case "shardResume":

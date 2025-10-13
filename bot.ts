@@ -1341,12 +1341,12 @@ discordClient.on("shardError", (error, shardId) => {
   });
 });
 
-discordClient.on("shardReady", (shardId: number) => {
+discordClient.on("clientReady", (shardId: number) => {
   logger.info(`✅ Shard ${shardId}: Connected and ready`);
   shardState.reconnectAttempts = 0;
   shardState.healthScore = Math.min(100, shardState.healthScore + 20);
 
-  sendToManager("shardReady", { shardId });
+  sendToManager("clientReady", { shardId });
 });
 
 discordClient.on("shardReconnecting", (shardId: number) => {
