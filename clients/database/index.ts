@@ -64,12 +64,37 @@ let reconnectTimer: Timer | null = null;
 let healthCheckTimer: Timer | null = null;
 let isReconnecting = false; // Guard to prevent concurrent reconnections
 
-// Global settings cache
+// Global settings cache with LRU eviction
 interface CachedSetting {
   value: any;
   timestamp: number;
 }
 const globalSettingsCache = new Map<GlobalSettingKey, CachedSetting>();
+
+// Guild settings cache with LRU to prevent unbounded growth
+const MAX_GUILD_SETTINGS_CACHE = 200; // Limit to 200 most recent guilds
+const guildSettingsCache = new Map<string, { settings: IGuildSettings, timestamp: number }>();
+
+// LRU helper for guild settings cache
+function evictOldestGuildSetting(): void {
+  if (guildSettingsCache.size >= MAX_GUILD_SETTINGS_CACHE) {
+    // Find oldest entry
+    let oldestKey: string | null = null;
+    let oldestTime = Infinity;
+
+    for (const [key, value] of guildSettingsCache.entries()) {
+      if (value.timestamp < oldestTime) {
+        oldestTime = value.timestamp;
+        oldestKey = key;
+      }
+    }
+
+    if (oldestKey) {
+      guildSettingsCache.delete(oldestKey);
+      logger.debug(`Evicted oldest guild settings from cache: ${oldestKey}`);
+    }
+  }
+}
 
 // Enhanced connection configuration with reconnection support
 const createKnexConfig = () => ({
@@ -461,11 +486,18 @@ async function createGuildSettings(guildId: string, guildName: string): Promise<
 
 /**
  * Retrieves guild settings from database, creating new settings if they don't exist
+ * Now with LRU caching to prevent unbounded memory growth with 1000+ guilds
  * @param guild - Discord Guild object
  * @returns Promise resolving to guild settings or undefined if creation fails
  */
 export async function getGuildSettings(guild: Guild): Promise<IGuildSettings | undefined> {
   try {
+    // Check cache first
+    const cached = guildSettingsCache.get(guild.id);
+    if (cached && (Date.now() - cached.timestamp) < RECONNECT_CONFIG.globalSettingsCacheTTL) {
+      return cached.settings;
+    }
+
     let guildSettings = await executeQuery(() =>
       databaseClient<IGuildSettings>(GuildSettingsTable)
         .select()
@@ -475,6 +507,15 @@ export async function getGuildSettings(guild: Guild): Promise<IGuildSettings | u
 
     if (!guildSettings) {
       guildSettings = await createGuildSettings(guild.id, guild.name);
+    }
+
+    // Cache the result with LRU eviction
+    if (guildSettings) {
+      evictOldestGuildSetting(); // Evict before adding new entry
+      guildSettingsCache.set(guild.id, {
+        settings: guildSettings,
+        timestamp: Date.now(),
+      });
     }
 
     return guildSettings;
@@ -636,8 +677,9 @@ export function disposeDatabase(): void {
     reconnectTimer = null;
   }
 
-  // Clear cache
+  // Clear caches
   globalSettingsCache.clear();
+  guildSettingsCache.clear();
 
   // Reset state
   isReconnecting = false;

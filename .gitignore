@@ -178,3 +178,5 @@ dist
 #smokey
 
 bun.lockb
+/.claude
+CLAUDE.md

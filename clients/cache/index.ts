@@ -435,7 +435,8 @@ export async function clearCache(category: string = DEFAULT_CACHE): Promise<bool
  * cache interface with better type safety
  */
 export interface ICache {
-  tweet: any[];
+  // Removed tweet array - was unused and growing unbounded per guild
+  // With 1000 guilds, this was a significant memory leak
   settings: {
     id: number;
     guild_id: string | number;
@@ -486,7 +487,6 @@ export async function getCache(
 
     if (!existingCache) {
       const newCache: ICache = {
-        tweet: [],
         settings: {
           id: settings.id,
           guild_id: settings.guild_id,
@@ -495,7 +495,7 @@ export async function getCache(
         },
         metadata: {
           lastUpdated: Date.now(),
-          version: '2.0',
+          version: '2.1', // Bumped version for tweet array removal
         },
       };
 
@@ -507,7 +507,7 @@ export async function getCache(
     if (!existingCache.metadata) {
       existingCache.metadata = {
         lastUpdated: Date.now(),
-        version: '2.0',
+        version: '2.1',
       };
       cacheClient.set(guild.id, existingCache);
     }
@@ -518,7 +518,6 @@ export async function getCache(
 
     // Return minimal safe cache on error
     return {
-      tweet: [],
       settings: {
         id: settings.id,
         guild_id: settings.guild_id,
@@ -527,7 +526,7 @@ export async function getCache(
       },
       metadata: {
         lastUpdated: Date.now(),
-        version: '2.0',
+        version: '2.1',
       },
     };
   }

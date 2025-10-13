@@ -244,9 +244,10 @@ export const discordClient = new Client({
     GuildInviteManager: 0, // Disable unless tracking invites
     GuildScheduledEventManager: 0,
 
-    // Member & User caches - critical for memory usage
+    // Member & User caches - CRITICAL for memory with 1000+ guilds
+    // Each guild caches members, so 25 × 1000 guilds = 25,000 cached members!
     GuildMemberManager: {
-      maxSize: 25, // Reduced from 25
+      maxSize: 10, // Reduced from 25 - saves ~7.5MB per shard with 1000 guilds
       keepOverLimit: (member) => {
         // Keep bot itself and any privileged users
         return member.id === member.client.user.id ||
@@ -255,12 +256,12 @@ export const discordClient = new Client({
       },
     },
     UserManager: {
-      maxSize: 25, // Reduced from 25
+      maxSize: 10, // Reduced from 25 - prevents user object accumulation
       keepOverLimit: (user) => user.id === user.client.user.id,
     },
 
-    // Message caching - biggest memory consumer
-    MessageManager: Math.min(config.messageMemoryLimit || 10, 10), // Cap at 10
+    // Message caching - biggest memory consumer per guild
+    MessageManager: Math.min(config.messageMemoryLimit || 5, 5), // Reduced cap to 5
 
     // Presence & Voice - disable unless needed
     PresenceManager: 0,

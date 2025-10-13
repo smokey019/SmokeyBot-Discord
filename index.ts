@@ -104,8 +104,8 @@ interface GlobalStatistics {
   totalRestarts: number;
   totalMemoryUsage: number;
   lastUpdate: number;
-  guildDistribution?: Map<number, GuildShardInfo[]>;
-  largestGuilds?: GuildShardInfo[];
+  // Removed guildDistribution and largestGuilds to reduce memory usage
+  // These can be fetched on-demand via broadcastEval when needed for stats display
 }
 
 // Communication manager classes are now imported from shared module
@@ -125,8 +125,6 @@ class EnhancedShardManager extends EventEmitter {
     totalRestarts: 0,
     totalMemoryUsage: 0,
     lastUpdate: Date.now(),
-    guildDistribution: new Map(),
-    largestGuilds: [],
   };
   private healthCheckInterval?: Timer;
   private statsInterval?: Timer;
@@ -137,8 +135,7 @@ class EnhancedShardManager extends EventEmitter {
   private isShuttingDown = false;
   private communicationManager?: CommunicationManager;
   private startTime = Date.now();
-  // Optimize guild lookups with Map<guildId, shardId>
-  private guildToShardMap = new Map<string, number>();
+  // Removed guildToShardMap - Discord.js already tracks guild.shardId
 
   constructor() {
     super();
@@ -234,17 +231,6 @@ class EnhancedShardManager extends EventEmitter {
       healthData.id = newId;
       this.shardHealth.set(newId, healthData);
       this.shardHealth.delete(oldId);
-    }
-
-    // Update guild distribution mapping
-    if (this.globalStats.guildDistribution) {
-      const guildData = this.globalStats.guildDistribution.get(oldId);
-      if (guildData) {
-        // Update shard ID in all guild entries
-        guildData.forEach(guild => guild.shardId = newId);
-        this.globalStats.guildDistribution.set(newId, guildData);
-        this.globalStats.guildDistribution.delete(oldId);
-      }
     }
 
     logger.info(`✅ Shard ID mapping updated successfully`);
@@ -413,10 +399,9 @@ class EnhancedShardManager extends EventEmitter {
     // Handle specific message types that the manager needs to process
     switch (message.type) {
       case "guildJoined":
-        this.updateGuildDistribution(message.data);
-        break;
       case "guildLeft":
-        this.removeFromGuildDistribution(message.data);
+        // Guild tracking removed - use on-demand queries when needed
+        logger.debug(`Guild ${message.type === "guildJoined" ? "joined" : "left"}: ${message.data.guildName}`);
         break;
       case "ready":
         logger.info(`Inter-shard ready notification from shard ${message.fromShard}`);
@@ -698,7 +683,7 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
-   * Aggregate global statistics with comprehensive metrics
+   * Aggregate global statistics with comprehensive metrics (memory-optimized)
    */
   private aggregateGlobalStats(): void {
     let totalGuilds = 0;
@@ -710,8 +695,6 @@ class EnhancedShardManager extends EventEmitter {
     let totalPing = 0;
     let totalMemoryUsage = 0;
     let pingCount = 0;
-    const guildDistribution = new Map<number, GuildShardInfo[]>();
-    const allGuilds: GuildShardInfo[] = [];
 
     for (const health of this.shardHealth.values()) {
       totalGuilds += health.guilds;
@@ -719,12 +702,6 @@ class EnhancedShardManager extends EventEmitter {
       totalChannels += health.channels;
       totalRestarts += health.restarts;
       totalMemoryUsage += health.memory.heapUsed || 0;
-
-      // Collect guild details if available
-      if (health.guildDetails) {
-        guildDistribution.set(health.id, health.guildDetails);
-        allGuilds.push(...health.guildDetails);
-      }
 
       // Count shards as healthy if they're not dead or disconnected
       if (health.status !== "dead" && health.status !== "disconnected") {
@@ -742,11 +719,6 @@ class EnhancedShardManager extends EventEmitter {
       }
     }
 
-    // Sort guilds by member count to find largest
-    const largestGuilds = allGuilds
-      .sort((a, b) => b.memberCount - a.memberCount)
-      .slice(0, 10);
-
     this.globalStats = {
       totalGuilds,
       totalUsers,
@@ -758,8 +730,6 @@ class EnhancedShardManager extends EventEmitter {
       totalRestarts,
       totalMemoryUsage,
       lastUpdate: Date.now(),
-      guildDistribution,
-      largestGuilds,
     };
 
     this.emit("globalStatsUpdate", this.globalStats);
@@ -769,19 +739,13 @@ class EnhancedShardManager extends EventEmitter {
       logger.info(
         `📈 Global Stats: ${totalGuilds} guilds, ${totalUsers} users, ${totalChannels} channels across ${healthyShards}/${this.shardHealth.size} shards`,
       );
-
-      // Log guild distribution
-      const guildCounts = Array.from(guildDistribution.entries())
-        .map(([shardId, guilds]) => `Shard ${shardId}: ${guilds.length}`)
-        .join(", ");
-      logger.info(`🏰 Guild Distribution: ${guildCounts}`);
     }
   }
 
   /**
-   * Log detailed statistics every 15 minutes
+   * Log detailed statistics every 15 minutes (memory-optimized)
    */
-  private logDetailedStats(): void {
+  private async logDetailedStats(): Promise<void> {
     const uptime = Date.now() - this.startTime;
     const uptimeMinutes = Math.floor(uptime / 60000);
 
@@ -833,29 +797,26 @@ class EnhancedShardManager extends EventEmitter {
     const memoryMB = Math.round(stats.totalMemoryUsage / 1024 / 1024);
     logger.info(`🧠 Memory Usage: ${memoryMB}MB`);
 
-    // Top guilds by member count
-    if (stats.largestGuilds && stats.largestGuilds.length > 0) {
-      logger.info("🏆 Top 5 Largest Guilds:");
-      stats.largestGuilds.slice(0, 5).forEach((guild, index) => {
-        logger.info(`  ${index + 1}. ${guild.name} - ${guild.memberCount.toLocaleString()} members (Shard ${guild.shardId})`);
-      });
-    }
+    // Fetch top guilds on-demand (lazy loading)
+    try {
+      const allGuilds = await this.broadcastEval((client) =>
+        Array.from(client.guilds.cache.values()).map((guild: any) => ({
+          name: guild.name,
+          memberCount: guild.memberCount || 0,
+          shardId: client.shard?.ids[0] || 0,
+        }))
+      );
 
-    // Shard distribution
-    if (stats.guildDistribution && stats.guildDistribution.size > 0) {
-      logger.info("🔀 Guild Distribution:");
-      const sortedDistribution: [number, GuildShardInfo[]][] = [];
-      stats.guildDistribution.forEach((guilds, shardId) => {
-        sortedDistribution.push([shardId, guilds]);
-      });
-      sortedDistribution.sort(([a], [b]) => a - b);
+      const flatGuilds = allGuilds.flat().sort((a, b) => b.memberCount - a.memberCount).slice(0, 5);
 
-      sortedDistribution.forEach(([shardId, guilds]) => {
-        const health = this.shardHealth.get(shardId);
-        const statusIcon = health?.status === "ready" ? "✅" :
-                          health?.status === "reconnecting" ? "🔄" : "❌";
-        logger.info(`  ${statusIcon} Shard ${shardId}: ${guilds.length} guilds, ${Math.round(health?.ping || 0)}ms ping`);
-      });
+      if (flatGuilds.length > 0) {
+        logger.info("🏆 Top 5 Largest Guilds:");
+        flatGuilds.forEach((guild, index) => {
+          logger.info(`  ${index + 1}. ${guild.name} - ${guild.memberCount.toLocaleString()} members (Shard ${guild.shardId})`);
+        });
+      }
+    } catch (error) {
+      logger.debug("Could not fetch largest guilds:", error);
     }
 
     // Performance metrics per shard
@@ -1024,8 +985,6 @@ class EnhancedShardManager extends EventEmitter {
 
     // Clear all maps and collections
     this.shardHealth.clear();
-    this.guildToShardMap.clear();
-    this.globalStats.guildDistribution?.clear();
 
     // Remove all event listeners
     this.removeAllListeners();
@@ -1084,58 +1043,13 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
-   * Update guild tracking for add/remove events
+   * Update guild tracking for add/remove events (lightweight)
    */
   private updateGuildTracking(type: string, data: any): void {
     const shardId = data.shardId !== undefined ? data.shardId : 0;
     logger.debug(`Guild ${type}: ${data.guildName} (${data.guildId}) on shard ${shardId}`);
-    // Trigger stats refresh for affected shard
-    this.requestGuildStatsFromShard(shardId);
-  }
-
-  /**
-   * Update guild distribution when a guild joins
-   */
-  private updateGuildDistribution(guildData: any): void {
-    const { shardId, guildId, guildName, memberCount, joinedAt, channelCount, roleCount } = guildData;
-
-    if (!this.globalStats.guildDistribution) {
-      this.globalStats.guildDistribution = new Map();
-    }
-
-    let shardGuilds = this.globalStats.guildDistribution.get(shardId) || [];
-
-    // Use Map for O(1) lookup instead of array.find
-    if (!this.guildToShardMap.has(guildId)) {
-      shardGuilds.push({
-        id: guildId,
-        name: guildName,
-        memberCount: memberCount || 0,
-        shardId,
-        joinedAt: joinedAt || Date.now(),
-        channelCount,
-        roleCount
-      });
-
-      this.globalStats.guildDistribution.set(shardId, shardGuilds);
-      this.guildToShardMap.set(guildId, shardId);
-      logger.debug(`Added guild ${guildName} to shard ${shardId} distribution`);
-    }
-  }
-
-  /**
-   * Remove guild from distribution when it leaves
-   */
-  private removeFromGuildDistribution(guildData: any): void {
-    const { shardId, guildId } = guildData;
-
-    if (this.globalStats.guildDistribution) {
-      let shardGuilds = this.globalStats.guildDistribution.get(shardId) || [];
-      shardGuilds = shardGuilds.filter(g => g.id !== guildId);
-      this.globalStats.guildDistribution.set(shardId, shardGuilds);
-      this.guildToShardMap.delete(guildId);
-      logger.debug(`Removed guild ${guildId} from shard ${shardId} distribution`);
-    }
+    // Just log the event - no need to store in memory
+    // Stats will be updated on next aggregation cycle
   }
 
   /**

@@ -7,7 +7,9 @@
       "WebFetch(domain:www.serebii.net)",
       "WebFetch(domain:pokemondb.net)",
       "mcp__ide__getDiagnostics",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(pkill:*)",
+      "Bash(taskkill:*)"
     ],
     "deny": []
   }
