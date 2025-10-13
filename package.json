@@ -30,7 +30,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch index.ts",
     "start": "bun run index.ts",
-    "build": "bun build index.ts --outdir ./dist --target bun --minify",
-    "build:watch": "bun build index.ts --outdir ./dist --target bun --minify --watch"
+    "build": "bun build index.ts --outdir ./dist --target bun --minify --packages external",
+    "build:watch": "bun build index.ts --outdir ./dist --target bun --minify --watch --packages external",
+    "build:bundle": "bun build index.ts --outdir ./dist --target bun --minify --external discord-rose --external eris"
   }
 }
