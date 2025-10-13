@@ -1434,7 +1434,10 @@ process.on("message", async (message: any) => {
         break;
 
       default:
-        logger.debug(`Unknown message from manager: ${message.type}`);
+        // Only log if message has a type to avoid noise from Discord.js internal messages
+        if (message.type) {
+          logger.debug(`Unknown message from manager: ${message.type}`);
+        }
     }
   } catch (error) {
     logger.error("Message handling error:", error);

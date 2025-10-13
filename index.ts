@@ -294,9 +294,7 @@ class EnhancedShardManager extends EventEmitter {
 
     // Handle evaluation results
     if (message._eval) {
-      logger.debug(
-        `Shard[${shard.id}]: ${message._eval} -> ${message._result}`,
-      );
+      // Skip logging eval results to reduce console noise
       return;
     }
 
@@ -385,8 +383,19 @@ class EnhancedShardManager extends EventEmitter {
         this.handleInterShardMessage(interShardMessage);
         break;
 
+      case "shardReady":
+      case "shardReconnecting":
+      case "shardDisconnect":
+      case "shardResume":
+      case "shardError":
+        // Discord.js shard events - already logged by event handlers
+        break;
+
       default:
-        logger.debug(`Unknown message type from shard ${shard.id}:`, message);
+        // Only log if message has a type to avoid noise from Discord.js internal messages
+        if (message.type) {
+          logger.debug(`Unknown message type from shard ${shard.id}: ${message.type}`);
+        }
     }
   }
 
