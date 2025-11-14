@@ -183,13 +183,15 @@ let messagesProcessed = 0;
 let lastCpuUsage = process.cpuUsage();
 let eventLoopLagHistory: number[] = [];
 
-// Backward compatibility exports
+// Backward compatibility exports - these will be updated when state changes
 export let rateLimited = false;
 export let initializing = true;
 
-// Efficient message ID generator
+// Efficient message ID generator with counter reset to prevent overflow
 let messageIdCounter = 0;
 function generateMessageId(): string {
+  // Reset counter if it gets too large to prevent memory issues
+  if (messageIdCounter >= 100000) messageIdCounter = 0;
   return `${Date.now()}-${(messageIdCounter++).toString(36)}`;
 }
 
@@ -245,23 +247,22 @@ export const discordClient = new Client({
     GuildScheduledEventManager: 0,
 
     // Member & User caches - CRITICAL for memory with 1000+ guilds
-    // Each guild caches members, so 25 × 1000 guilds = 25,000 cached members!
+    // Each guild caches members, so 5 × 1000 guilds = 5,000 cached members
     GuildMemberManager: {
-      maxSize: 10, // Reduced from 25 - saves ~7.5MB per shard with 1000 guilds
+      maxSize: 5, // Further reduced from 10 - saves more memory
       keepOverLimit: (member) => {
-        // Keep bot itself and any privileged users
+        // Keep only bot itself and administrators
         return member.id === member.client.user.id ||
-          member.permissions?.has('Administrator') ||
-          member.permissions?.has('ManageGuild');
+          member.permissions?.has('Administrator');
       },
     },
     UserManager: {
-      maxSize: 10, // Reduced from 25 - prevents user object accumulation
+      maxSize: 5, // Further reduced from 10
       keepOverLimit: (user) => user.id === user.client.user.id,
     },
 
     // Message caching - biggest memory consumer per guild
-    MessageManager: Math.min(config.messageMemoryLimit || 5, 5), // Reduced cap to 5
+    MessageManager: Math.min(config.messageMemoryLimit || 3, 3), // Further reduced to 3
 
     // Presence & Voice - disable unless needed
     PresenceManager: 0,
@@ -424,7 +425,7 @@ async function sendInterShardMessage(
  * Handle inter-shard messages
  */
 async function handleInterShardMessage(message: InterShardMessage): Promise<void> {
-  logger.debug(`Received inter-shard message: ${message.type}`);
+  logger.trace(`Received inter-shard message: ${message.type}`);
 
   switch (message.type) {
     case "presenceUpdate":
@@ -1062,7 +1063,13 @@ function dispose(): void {
   processedInteractions.clear();
 
   // Clear event loop lag history
-  eventLoopLagHistory = [];
+  eventLoopLagHistory.length = 0;
+  
+  // Reset message ID counter
+  messageIdCounter = 0;
+  
+  // Clear cached shard ID to force recalculation
+  cachedShardId = null;
 
   logger.info("✅ Bot resources disposed");
 }
@@ -1630,9 +1637,22 @@ if (typeof process !== 'undefined') {
     if (Bun.gc) {
       logger.trace('Forcing a garbage collection.');
       Bun.gc();
-    } else {
-      logger.trace('No garbage collection available.');
     }
+    
+    // Clean up processed interactions map periodically
+    const now = Date.now();
+    let cleanedCount = 0;
+    for (const [id, timestamp] of processedInteractions) {
+      if (now - timestamp > CONSTANTS.PROCESSED_INTERACTIONS_EXPIRY) {
+        processedInteractions.delete(id);
+        cleanedCount++;
+      }
+    }
+    
+    if (cleanedCount > 0) {
+      logger.trace(`Cleaned ${cleanedCount} expired interaction records`);
+    }
+    
     // Log memory usage for monitoring
     const memUsage = heapStats();
     if (memUsage.heapSize > CONSTANTS.HIGH_MEMORY_WARNING * 1024 * 1024) {

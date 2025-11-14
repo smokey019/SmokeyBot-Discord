@@ -58,9 +58,11 @@ class ShardManagerError extends Error {
   }
 }
 
-// Efficient ID generator using counter + timestamp
+// Efficient ID generator using counter + timestamp with overflow protection
 let messageIdCounter = 0;
 function generateMessageId(): string {
+  // Reset counter to prevent memory overflow
+  if (messageIdCounter >= 100000) messageIdCounter = 0;
   return `${Date.now()}-${(messageIdCounter++).toString(36)}`;
 }
 
@@ -114,6 +116,7 @@ interface GlobalStatistics {
 class EnhancedShardManager extends EventEmitter {
   public manager: ShardingManager;
   private shardHealth = new Map<number, ShardHealthMetrics>();
+  private maxShardHistory = 50; // Limit shard history to prevent memory leaks
   private globalStats: GlobalStatistics = {
     totalGuilds: 0,
     totalUsers: 0,
@@ -200,6 +203,15 @@ class EnhancedShardManager extends EventEmitter {
    * Initialize health tracking for a shard
    */
   private initializeShardHealth(shard: Shard): void {
+    // Clean up old shard entries if we exceed the limit
+    if (this.shardHealth.size >= this.maxShardHistory) {
+      const oldestEntry = [...this.shardHealth.entries()]
+        .sort(([, a], [, b]) => a.lastHeartbeat - b.lastHeartbeat)[0];
+      if (oldestEntry) {
+        this.shardHealth.delete(oldestEntry[0]);
+      }
+    }
+    
     this.shardHealth.set(shard.id, {
       id: shard.id,
       status: "spawning",
@@ -467,26 +479,23 @@ class EnhancedShardManager extends EventEmitter {
   ): Promise<void> {
     logger.debug(`Broadcasting inter-shard message: ${message.type} to ${this.manager.shards.size} shards`);
 
-    const promises = Array.from(this.manager.shards.values()).map(
-      async (shard) => {
-        // Don't send the message back to the sender
-        if (shard.id !== message.fromShard) {
-          try {
-            await shard.send({
-              type: "inter-shard",
-              data: message,
-            });
-          } catch (error) {
-            logger.error(
-              `Failed to broadcast inter-shard message to shard ${shard.id}:`,
-              error,
-            );
-          }
+    // Use for...of instead of Promise.all to reduce memory pressure
+    for (const shard of this.manager.shards.values()) {
+      // Don't send the message back to the sender
+      if (shard.id !== message.fromShard) {
+        try {
+          await shard.send({
+            type: "inter-shard",
+            data: message,
+          });
+        } catch (error) {
+          logger.error(
+            `Failed to broadcast inter-shard message to shard ${shard.id}:`,
+            error,
+          );
         }
-      },
-    );
-
-    await Promise.allSettled(promises);
+      }
+    }
   }
 
   /**
@@ -809,14 +818,19 @@ class EnhancedShardManager extends EventEmitter {
     // Fetch top guilds on-demand (lazy loading)
     try {
       const allGuilds = await this.broadcastEval((client) =>
-        Array.from(client.guilds.cache.values()).map((guild: any) => ({
-          name: guild.name,
-          memberCount: guild.memberCount || 0,
-          shardId: client.shard?.ids[0] || 0,
-        }))
+        Array.from(client.guilds.cache.values())
+          .map((guild: any) => ({
+            name: guild.name,
+            memberCount: guild.memberCount || 0,
+            shardId: client.shard?.ids[0] || 0,
+          }))
+          .sort((a, b) => b.memberCount - a.memberCount)
+          .slice(0, 10) // Pre-filter to reduce data transfer
       );
 
-      const flatGuilds = allGuilds.flat().sort((a, b) => b.memberCount - a.memberCount).slice(0, 5);
+      const flatGuilds = allGuilds.flat()
+        .sort((a, b) => b.memberCount - a.memberCount)
+        .slice(0, 5);
 
       if (flatGuilds.length > 0) {
         logger.info("🏆 Top 5 Largest Guilds:");
@@ -943,15 +957,17 @@ class EnhancedShardManager extends EventEmitter {
         memory: process.memoryUsage(),
         shardId: client.shard?.ids[0],
         readyAt: client.readyAt?.toISOString(),
-        guildDetails: Array.from(client.guilds.cache.values()).map((guild: any) => ({
-          id: guild.id,
-          name: guild.name,
-          memberCount: guild.memberCount || 0,
-          shardId: client.shard?.ids[0] || 0,
-          joinedAt: guild.joinedTimestamp || Date.now(),
-          channelCount: guild.channels.cache.size,
-          roleCount: guild.roles.cache.size
-        }))
+        guildDetails: Array.from(client.guilds.cache.values())
+          .slice(0, 100) // Limit guild details to prevent memory issues
+          .map((guild: any) => ({
+            id: guild.id,
+            name: guild.name,
+            memberCount: guild.memberCount || 0,
+            shardId: client.shard?.ids[0] || 0,
+            joinedAt: guild.joinedTimestamp || Date.now(),
+            channelCount: guild.channels.cache.size,
+            roleCount: guild.roles.cache.size
+          }))
       }));
 
       return {
@@ -994,6 +1010,9 @@ class EnhancedShardManager extends EventEmitter {
 
     // Clear all maps and collections
     this.shardHealth.clear();
+    
+    // Reset message ID counter
+    messageIdCounter = 0;
 
     // Remove all event listeners
     this.removeAllListeners();
@@ -1047,7 +1066,7 @@ class EnhancedShardManager extends EventEmitter {
     const health = this.shardHealth.get(data.shardId);
     if (health) {
       health.guildDetails = data.guilds;
-      logger.debug(`Updated guild details for shard ${data.shardId}: ${data.guilds.length} guilds`);
+      logger.trace(`Updated guild details for shard ${data.shardId}: ${data.guilds.length} guilds`);
     }
   }
 
@@ -1141,6 +1160,16 @@ class EnhancedShardManager extends EventEmitter {
         this.requestGuildStatsFromAllShards();
       }, CONSTANTS.GUILD_STATS_REFRESH_INTERVAL);
 
+      // Set up periodic health reporting
+      this.healthAlertInterval = setInterval(() => {
+        const stats = this.getGlobalStats();
+        if (stats.healthyShards < stats.totalShards) {
+          logger.warn(
+            `⚠️  Health Alert: ${stats.healthyShards}/${stats.totalShards} shards healthy`,
+          );
+        }
+      }, CONSTANTS.HEALTH_ALERT_INTERVAL);
+
       this.emit("managerReady", {
         totalShards: shards.size,
         environment: config.isDev ? "development" : "production",
@@ -1202,16 +1231,6 @@ const startManager = async () => {
 
     // Log startup success
     logger.info("🎉 SmokeyBot Shard Manager started successfully!");
-
-    // Set up periodic health reporting - Note: This is in the global scope and should be cleaned up separately if needed
-    const healthAlertInterval = setInterval(() => {
-      const stats = enhancedManager.getGlobalStats();
-      if (stats.healthyShards < stats.totalShards) {
-        logger.warn(
-          `⚠️  Health Alert: ${stats.healthyShards}/${stats.totalShards} shards healthy`,
-        );
-      }
-    }, CONSTANTS.HEALTH_ALERT_INTERVAL);
 
   } catch (error) {
     logger.error("💥 Fatal startup error:", error);
