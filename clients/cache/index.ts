@@ -209,18 +209,20 @@ class CustomLRUCache<K, V> {
     this.cache.delete(lruKey);
   }
 
-  // Simple memory estimation for basic types
+  // Fast memory estimation using shallow property counting
+  // Avoids expensive JSON.stringify which creates GC pressure
   private estimateSize(value: any): number {
     if (value === null || value === undefined) return 8;
     if (typeof value === 'string') return value.length * 2 + 24;
     if (typeof value === 'number') return 8;
     if (typeof value === 'boolean') return 4;
     if (typeof value === 'object') {
-      try {
-        return JSON.stringify(value).length * 2 + 24;
-      } catch {
-        return 100; // Fallback estimate
+      // Fast shallow estimate: 56 bytes base + 32 per property
+      if (Array.isArray(value)) {
+        return 56 + value.length * 32;
       }
+      const keys = Object.keys(value);
+      return 56 + keys.length * 32;
     }
     return 50; // Default estimate
   }
@@ -255,9 +257,10 @@ const DEFAULT_CACHE_CONFIG: CacheConfig = {
 
 const CACHE_CONFIGS: Record<string, CacheConfig> = {
   cacheClient: { maxSize: 50, ttlSeconds: 3600 }, // 1 hour TTL
-  xp_cache: { maxSize: 500, ttlSeconds: 900 }, // 15 minutes TTL
+  xp_cache: { maxSize: 2000, ttlSeconds: 900 }, // 15 minutes TTL - increased from 500 for better hit rate
   GLOBAL_COOLDOWN: { maxSize: 1000, ttlSeconds: 300 }, // 5 minutes TTL
   GLOBAL_SETTINGS_CACHE: { maxSize: 100, ttlSeconds: 1800 }, // 30 minutes TTL
+  MONSTER_SPAWNS: { maxSize: 200, ttlSeconds: 600 }, // 10 minutes TTL - prevents stale spawn data
 };
 
 // Batch operations interface
@@ -567,3 +570,30 @@ export function cleanupExpiredEntries(): void {
     cache.getStats();
   }
 }
+
+// Periodic cache cleanup interval
+let cacheCleanupInterval: Timer | undefined;
+
+/**
+ * Start automatic periodic cache cleanup
+ * @param intervalMs - Cleanup interval in milliseconds (default: 60 seconds)
+ */
+export function startCacheCleanup(intervalMs: number = 60000): void {
+  if (cacheCleanupInterval) return;
+  cacheCleanupInterval = setInterval(() => {
+    cleanupExpiredEntries();
+  }, intervalMs);
+}
+
+/**
+ * Stop automatic periodic cache cleanup
+ */
+export function stopCacheCleanup(): void {
+  if (cacheCleanupInterval) {
+    clearInterval(cacheCleanupInterval);
+    cacheCleanupInterval = undefined;
+  }
+}
+
+// Auto-start cache cleanup on module load
+startCacheCleanup();

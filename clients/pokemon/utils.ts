@@ -388,7 +388,7 @@ export async function getBotStats(interaction: ChatInputCommandInteraction): Pro
       GLOBAL_COOLDOWN.set(interaction.guild.id, getCurrentTime());
     }
 
-    const ping = Date.now() - interaction.createdTimestamp;
+    const ping = Math.max(0, Date.now() - interaction.createdTimestamp);
     const wsPing = discordClient.ws.ping;
 
     // Gather all stats with proper error handling

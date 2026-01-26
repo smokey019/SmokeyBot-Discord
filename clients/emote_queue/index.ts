@@ -48,7 +48,7 @@ interface ApiCacheEntry<T = any> {
 // API caching with automatic cleanup
 const apiCache = new Map<string, ApiCacheEntry>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-const CACHE_CLEANUP_INTERVAL = 10 * 60 * 1000; // 10 minutes
+const CACHE_CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes - matched to TTL for timely cleanup
 
 // Store interval references for cleanup
 let cacheCleanupInterval: Timer | undefined;
@@ -56,7 +56,6 @@ let cacheCleanupInterval: Timer | undefined;
 // Periodic cache cleanup to prevent memory leaks
 cacheCleanupInterval = setInterval(() => {
   const now = Date.now();
-  let cleaned = 0;
   const keysToDelete: string[] = [];
 
   apiCache.forEach((value, key) => {
@@ -66,10 +65,9 @@ cacheCleanupInterval = setInterval(() => {
   });
 
   keysToDelete.forEach(key => apiCache.delete(key));
-  cleaned = keysToDelete.length;
 
-  if (cleaned > 0) {
-    getLogger("Emote Queue").debug(`Cleaned ${cleaned} expired cache entries`);
+  if (keysToDelete.length > 0) {
+    logger.debug(`Cleaned ${keysToDelete.length} expired cache entries`);
   }
 }, CACHE_CLEANUP_INTERVAL);
 
@@ -95,6 +93,7 @@ class EmoteQueueManager {
   private rateLimitMap = new Map<string, number>();
   private statsTimer?: Timer;
   private rateLimitCleanupTimer?: Timer;
+  private failedGuildsCleanupTimer?: Timer;
   private failedGuilds = new Map<string, { count: number; lastFail: number }>();
   private readonly MAX_GUILD_FAILURES = 5;
   private readonly GUILD_COOLDOWN = 30 * 60 * 1000; // 30 minutes
@@ -109,8 +108,8 @@ class EmoteQueueManager {
       const keysToDelete: string[] = [];
 
       this.rateLimitMap.forEach((lastCall, guildId) => {
-        // Clean entries older than 1 hour
-        if (now - lastCall > 60 * 60 * 1000) {
+        // Clean entries older than 10 minutes (reduced from 1 hour)
+        if (now - lastCall > 10 * 60 * 1000) {
           keysToDelete.push(guildId);
         }
       });
@@ -120,7 +119,26 @@ class EmoteQueueManager {
       if (keysToDelete.length > 0) {
         logger.debug(`Cleaned ${keysToDelete.length} old rate limit entries`);
       }
-    }, 30 * 60 * 1000); // Every 30 minutes
+    }, 10 * 60 * 1000); // Every 10 minutes (reduced from 30)
+
+    // Cleanup failed guilds periodically
+    this.failedGuildsCleanupTimer = setInterval(() => {
+      const now = Date.now();
+      const keysToDelete: string[] = [];
+
+      this.failedGuilds.forEach((data, guildId) => {
+        // Clean entries older than 2x cooldown period
+        if (now - data.lastFail > this.GUILD_COOLDOWN * 2) {
+          keysToDelete.push(guildId);
+        }
+      });
+
+      keysToDelete.forEach(key => this.failedGuilds.delete(key));
+
+      if (keysToDelete.length > 0) {
+        logger.debug(`Cleaned ${keysToDelete.length} old failed guild entries`);
+      }
+    }, this.GUILD_COOLDOWN);
   }
 
   /**
@@ -141,6 +159,10 @@ class EmoteQueueManager {
       clearInterval(this.rateLimitCleanupTimer);
       this.rateLimitCleanupTimer = undefined;
     }
+    if (this.failedGuildsCleanupTimer) {
+      clearInterval(this.failedGuildsCleanupTimer);
+      this.failedGuildsCleanupTimer = undefined;
+    }
     if (cacheCleanupInterval) {
       clearInterval(cacheCleanupInterval);
       cacheCleanupInterval = undefined;
@@ -151,6 +173,7 @@ class EmoteQueueManager {
     this.rateLimitMap.clear();
     this.failedGuilds.clear();
     apiCache.clear();
+    circuitBreakers.clear();
 
     logger.info("EmoteQueueManager disposed successfully");
   }
@@ -599,6 +622,28 @@ interface CircuitBreakerState {
 const circuitBreakers = new Map<string, CircuitBreakerState>();
 const CIRCUIT_BREAKER_THRESHOLD = 5; // Open after 5 failures
 const CIRCUIT_BREAKER_TIMEOUT = 60000; // Try again after 1 minute
+const CIRCUIT_BREAKER_CLEANUP_INTERVAL = 10 * 60 * 1000; // Cleanup every 10 minutes
+const CIRCUIT_BREAKER_MAX_AGE = 30 * 60 * 1000; // Remove closed breakers after 30 minutes of inactivity
+
+// Periodic cleanup for circuit breakers to prevent unbounded growth
+let circuitBreakerCleanupInterval: Timer | undefined = setInterval(() => {
+  const now = Date.now();
+  const keysToDelete: string[] = [];
+
+  circuitBreakers.forEach((breaker, url) => {
+    // Remove closed breakers that haven't had failures recently
+    if (breaker.state === 'CLOSED' && breaker.failures === 0 &&
+        now - breaker.lastFailure > CIRCUIT_BREAKER_MAX_AGE) {
+      keysToDelete.push(url);
+    }
+  });
+
+  keysToDelete.forEach(key => circuitBreakers.delete(key));
+
+  if (keysToDelete.length > 0) {
+    getLogger("Emote Queue").debug(`Cleaned ${keysToDelete.length} old circuit breaker entries`);
+  }
+}, CIRCUIT_BREAKER_CLEANUP_INTERVAL);
 
 function getCircuitBreaker(url: string): CircuitBreakerState {
   if (!circuitBreakers.has(url)) {
@@ -770,8 +815,8 @@ export const queue_add_success = () => stats.uploads.success;
 export const FFZ_emoji_queue_count = () => stats.platforms.ffz;
 export const FFZ_emoji_queue_attempt_count = () => stats.platforms.ffz;
 
-// API functions
-export async function fetch7tvGlobalEmotes(): Promise<SevenTVEmotes[]> {
+// API functions (internal)
+async function fetch7tvGlobalEmotes(): Promise<SevenTVEmotes[]> {
   const data = await cachedFetch<SevenTVEmotes[]>(
     "https://7tv.io/v3/emote-sets/global",
     "7tv_global"
@@ -780,7 +825,7 @@ export async function fetch7tvGlobalEmotes(): Promise<SevenTVEmotes[]> {
   return data || [];
 }
 
-export async function fetch7tvChannelEmotes(channel: string): Promise<SevenTVChannel[]> {
+async function fetch7tvChannelEmotes(channel: string): Promise<SevenTVChannel[]> {
   const data = await cachedFetch<SevenTVChannel[]>(
     `https://7tv.io/v3/users/twitch/${channel}`,
     `7tv_${channel}`
@@ -1103,18 +1148,11 @@ export async function StartEmoteTimer(interaction: ChatInputCommandInteraction):
   await queueManager.startTimerAdmin(interaction);
 }
 
-// Export stats functions
-export function getQueueStats() {
-  return queueManager.getDetailedStats();
-}
-
 export async function displayQueueStats(interaction: ChatInputCommandInteraction): Promise<void> {
   const specificStat = interaction.options.getString('statistic');
   await createStatsEmbed(interaction, specificStat || undefined);
 }
 
-// Export queue manager for advanced operations
-export { queueManager };
 
 /**
  * Cleanup function to dispose of all intervals and resources
@@ -1122,5 +1160,9 @@ export { queueManager };
  */
 export function disposeEmoteQueue(): void {
   queueManager.dispose();
+  if (circuitBreakerCleanupInterval) {
+    clearInterval(circuitBreakerCleanupInterval);
+    circuitBreakerCleanupInterval = undefined;
+  }
 }
 

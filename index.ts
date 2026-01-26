@@ -314,21 +314,22 @@ class EnhancedShardManager extends EventEmitter {
     switch (message.type) {
       case "stats":
         // Handle potential shard ID mismatch
-        const statsShardId = message.data?.actualShardId !== undefined ? message.data.actualShardId : shard.id;
+        const statsData = message.data || {};
+        const statsShardId = statsData.actualShardId !== undefined ? statsData.actualShardId : shard.id;
         this.updateShardHealth(statsShardId, {
-          guilds: message.guilds || 0,
-          users: message.users || 0,
-          channels: message.channels || 0,
-          memory: message.memory || process.memoryUsage(),
-          ping: message.ping || 0,
-          cpu: message.cpu || 0,
-          eventLoopLag: message.eventLoopLag || 0,
+          guilds: statsData.guilds || 0,
+          users: statsData.users || 0,
+          channels: statsData.channels || 0,
+          memory: statsData.memory || process.memoryUsage(),
+          ping: statsData.ping || 0,
+          cpu: statsData.cpu || 0,
+          eventLoopLag: statsData.eventLoopLag || 0,
           lastHeartbeat: Date.now(),
         });
 
         // Update shard ID mapping if it changed
-        if (message.data?.actualShardId !== undefined && message.data.actualShardId !== shard.id) {
-          this.updateShardIdMapping(shard.id, message.data.actualShardId);
+        if (statsData.actualShardId !== undefined && statsData.actualShardId !== shard.id) {
+          this.updateShardIdMapping(shard.id, statsData.actualShardId);
         }
         break;
 

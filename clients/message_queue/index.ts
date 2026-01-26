@@ -137,8 +137,10 @@ class MessageQueueManager {
     isHealthy: true,
   };
 
-  // Performance tracking
-  private performanceSamples: PerformanceSample[] = [];
+  // Performance tracking - using circular buffer to avoid array allocations
+  private performanceSamples: (PerformanceSample | undefined)[] = new Array(1000);
+  private sampleIndex = 0;
+  private sampleCount = 0;
   private maxSamples = 1000; // Keep last 1000 samples for moving averages
   private lastThroughputUpdate = Date.now();
   private throughputCounter = 0;
@@ -252,9 +254,7 @@ class MessageQueueManager {
     this.stats.isHealthy = this.queue.length < this.stats.backlogThreshold &&
                           this.stats.successRate > 95;
 
-    // Clean old performance samples
-    const cutoff = new Date(now - 300000); // Keep last 5 minutes
-    this.performanceSamples = this.performanceSamples.filter(s => s.timestamp > cutoff);
+    // Note: Circular buffer automatically limits samples, no cleanup needed
   }
 
   // processing with timing
@@ -451,13 +451,12 @@ class MessageQueueManager {
     this.stats.errorsByType[errorType]++;
   }
 
-  // Add performance sample
+  // Add performance sample using circular buffer (O(1), no allocations)
   private addPerformanceSample(sample: PerformanceSample) {
-    this.performanceSamples.push(sample);
-
-    // Keep only recent samples
-    if (this.performanceSamples.length > this.maxSamples) {
-      this.performanceSamples = this.performanceSamples.slice(-this.maxSamples);
+    this.performanceSamples[this.sampleIndex] = sample;
+    this.sampleIndex = (this.sampleIndex + 1) % this.maxSamples;
+    if (this.sampleCount < this.maxSamples) {
+      this.sampleCount++;
     }
   }
 
@@ -572,9 +571,28 @@ class MessageQueueManager {
     return { ...this.stats };
   }
 
-  // Get performance samples for detailed analysis
+  // Get performance samples for detailed analysis (returns samples in chronological order)
   getPerformanceSamples(): PerformanceSample[] {
-    return [...this.performanceSamples];
+    if (this.sampleCount === 0) return [];
+
+    const samples: PerformanceSample[] = [];
+
+    if (this.sampleCount < this.maxSamples) {
+      // Buffer not full yet, samples are in order from index 0
+      for (let i = 0; i < this.sampleCount; i++) {
+        const sample = this.performanceSamples[i];
+        if (sample) samples.push(sample);
+      }
+    } else {
+      // Buffer is full, oldest sample is at sampleIndex
+      for (let i = 0; i < this.maxSamples; i++) {
+        const idx = (this.sampleIndex + i) % this.maxSamples;
+        const sample = this.performanceSamples[idx];
+        if (sample) samples.push(sample);
+      }
+    }
+
+    return samples;
   }
 
   // Reset statistics (useful for testing)
@@ -611,7 +629,10 @@ class MessageQueueManager {
       isHealthy: true,
     };
     this.startTime = now;
-    this.performanceSamples = [];
+    // Reset circular buffer
+    this.performanceSamples = new Array(this.maxSamples);
+    this.sampleIndex = 0;
+    this.sampleCount = 0;
     this.throughputCounter = 0;
     this.lastThroughputUpdate = Date.now();
   }

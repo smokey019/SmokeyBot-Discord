@@ -36,6 +36,11 @@ async function uploadEmote(interaction: ChatInputCommandInteraction): Promise<vo
 
   const emote = await jsonFetch(`https://7tv.io/v3/emotes/${emoteCode[2]}`);
 
+  if (!emote || !emote.host?.url) {
+    await interaction.editReply("Could not find that emote. Please check that the 7TV URL is valid.");
+    return;
+  }
+
   if (emote.animated) {
     await create_emoji(
       "https:" + emote.host.url + "/2x.gif",

@@ -9,7 +9,8 @@
       "mcp__ide__getDiagnostics",
       "Bash(timeout:*)",
       "Bash(pkill:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(dir:*)"
     ],
     "deny": []
   }

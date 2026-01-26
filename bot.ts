@@ -27,6 +27,7 @@ import {
 import { getGuildSettings } from "./clients/database";
 import { getLogger } from "./clients/logger";
 import { queueMessage } from "./clients/message_queue";
+import { disposeEmoteQueue } from "./clients/emote_queue";
 import { checkExpGain } from "./clients/pokemon/exp-gain";
 import { checkSpawn } from "./clients/pokemon/spawn-monster";
 import { getCurrentTime } from "./utils";
@@ -1070,6 +1071,9 @@ function dispose(): void {
   
   // Clear cached shard ID to force recalculation
   cachedShardId = null;
+
+  // Dispose emote queue intervals and resources
+  disposeEmoteQueue();
 
   logger.info("✅ Bot resources disposed");
 }
