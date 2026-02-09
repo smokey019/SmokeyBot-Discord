@@ -61,6 +61,15 @@ Inter-shard communication flows through the manager process via `process.send()`
 | `twitch/` | Twitch API integration via Twurple for channel lookups |
 | `utilities/` | Shared utilities (time formatting) |
 
+### Models ([models/](models/))
+
+Database table definitions: `Monster`, `MonsterUser`, `Items`, `Trades`, `7tv-Emotes`, `FFZ-Emotes`. These export table name constants (e.g., `MonsterUserTable = 'users'`) used by the Knex query builder.
+
+### Top-level Utilities
+
+- [colors.ts](colors.ts) - Color constants for Discord embeds
+- [utils.ts](utils.ts) - Shared helpers (`getCurrentTime`, `format_number`, etc.)
+
 ### Command Structure
 
 Commands export: `names` (string[]), `run` (handler function), and optionally `SlashCommandData` (SlashCommandBuilder).
@@ -71,6 +80,10 @@ interface CommandModule {
   names: string[];
   run: (event: runEvent) => any;
   SlashCommandData?: SlashCommandBuilder;
+  description?: string;
+  category?: string;
+  permissions?: string[];
+  cooldown?: number;
 }
 ```
 
@@ -78,10 +91,10 @@ interface CommandModule {
 
 MySQL2 with Knex query builder. Key tables:
 - `guild_settings` - Per-guild configuration
-- `monster_users` - User Pokémon data
+- `users` - User Pokémon data (model: `MonsterUser`)
 - `global_smokeybot_settings` - Global bot settings
 
-Guild settings are LRU-cached (max 200 entries, 5-minute TTL).
+Guild settings are LRU-cached (max 50 entries, 1-hour TTL).
 
 ### Caching
 
@@ -90,7 +103,7 @@ Custom LRU cache implementation in [clients/cache/index.ts](clients/cache/index.
 - Hit/miss statistics
 - Memory usage estimation
 
-Predefined caches: `cacheClient` (guild data), `xp_cache`, `GLOBAL_COOLDOWN`.
+Predefined caches: `cacheClient` (guild data, 50 max, 1h TTL), `xp_cache` (2000 max, 15m TTL), `GLOBAL_COOLDOWN` (1000 max, 5m TTL), `SMOKEYBOT_GLOBAL_SETTINGS_CACHE`, `MONSTER_SPAWNS`.
 
 ## Environment
 

@@ -397,6 +397,7 @@ class EnhancedShardManager extends EventEmitter {
         break;
 
       case "clientReady":
+      case "shardReady":
       case "shardReconnecting":
       case "shardDisconnect":
       case "shardResume":

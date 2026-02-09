@@ -292,6 +292,7 @@ export const discordClient = new Client({
       interval: config.sweepInterval || 300,
       filter: () => (user) => {
         if (user.id === user.client.user.id) return false;
+        return true;
       },
     },
 
@@ -796,11 +797,16 @@ async function executeCommand(interaction: CommandInteraction): Promise<void> {
     });
 
     // Add timeout for command execution
+    let commandTimeoutHandle: Timer;
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Command timeout")), CONSTANTS.COMMAND_TIMEOUT)
+      commandTimeoutHandle = setTimeout(() => reject(new Error("Command timeout")), CONSTANTS.COMMAND_TIMEOUT)
     );
 
-    await Promise.race([commandPromise, timeoutPromise]);
+    try {
+      await Promise.race([commandPromise, timeoutPromise]);
+    } finally {
+      clearTimeout(commandTimeoutHandle!);
+    }
 
     // Update metrics and state
     commandsExecuted++;
@@ -1118,7 +1124,7 @@ async function shutdown(): Promise<void> {
 // EVENT HANDLERS
 // ============================================================================
 
-discordClient.on("ready", async () => {
+discordClient.on("clientReady", async () => {
   try {
     // Update with actual shard ID assigned by Discord.js
     const actualShardId = discordClient.shard?.ids[0] ?? 0;
@@ -1352,12 +1358,12 @@ discordClient.on("shardError", (error, shardId) => {
   });
 });
 
-discordClient.on("clientReady", (shardId: number) => {
+discordClient.on("shardReady", (shardId: number) => {
   logger.info(`✅ Shard ${shardId}: Connected and ready`);
   shardState.reconnectAttempts = 0;
   shardState.healthScore = Math.min(100, shardState.healthScore + 20);
 
-  sendToManager("clientReady", { shardId });
+  sendToManager("shardReady", { shardId });
 });
 
 discordClient.on("shardReconnecting", (shardId: number) => {

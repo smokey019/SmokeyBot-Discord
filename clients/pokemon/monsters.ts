@@ -1427,6 +1427,21 @@ export async function getComprehensivePokemonInfo(pokemon: Pokemon): Promise<{
   };
 }
 
+// Pre-allocated Sets for normalizePokemonNameForCatch (avoid per-call allocation)
+const HYPHENATED_EXCEPTIONS = new Set([
+  "chi-yu",
+  "ting-lu",
+  "chien-pao",
+  "wo-chien",
+  "ho-oh",
+  "kommo-o",
+  "hakamo-o",
+  "type-null",
+  "tapu-lele",
+]);
+
+const SPACE_REPLACEMENT = new Set(["sandy-shocks", "mr-rime"]);
+
 /**
  * Specialized Pokemon name normalization for catching mechanics
  * Handles special cases with hyphens and spaces differently than general normalization
@@ -1437,22 +1452,6 @@ export function normalizePokemonNameForCatch(pokemonName: string): string {
   if (!pokemonName || typeof pokemonName !== "string") {
     return "";
   }
-
-  // Special Pokemon names that should maintain hyphens
-  const HYPHENATED_EXCEPTIONS = new Set([
-    "chi-yu",
-    "ting-lu",
-    "chien-pao",
-    "wo-chien",
-    "ho-oh",
-    "kommo-o",
-    "hakamo-o",
-    "type-null",
-    "tapu-lele",
-  ]);
-
-  // Pokemon names that need space replacement instead of hyphen removal
-  const SPACE_REPLACEMENT = new Set(["sandy-shocks", "mr-rime"]);
 
   const lowerName = pokemonName.toLowerCase().trim();
 

@@ -305,12 +305,14 @@ async function executeQuery<T = any>(
         throw new Error('Database not connected');
       }
 
+      let timeoutHandle: Timer;
       const result = await Promise.race([
         operation(),
         new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Query timeout')), RECONNECT_CONFIG.queryTimeout);
+          timeoutHandle = setTimeout(() => reject(new Error('Query timeout')), RECONNECT_CONFIG.queryTimeout);
         })
       ]);
+      clearTimeout(timeoutHandle!);
 
       return result;
     } catch (error: any) {

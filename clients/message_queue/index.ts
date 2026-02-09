@@ -103,6 +103,7 @@ class MessageQueueManager {
   private queue: QueuedMessage[] = [];
   private processing = false;
   private timer?: Timer;
+  private statsTimer?: Timer;
   private startTime = new Date();
 
   // statistics tracking
@@ -225,7 +226,7 @@ class MessageQueueManager {
 
   // Start periodic stats updates
   private startStatsUpdater() {
-    setInterval(() => {
+    this.statsTimer = setInterval(() => {
       this.updateDerivedStats();
     }, 1000); // Update every second
   }
@@ -642,6 +643,10 @@ class MessageQueueManager {
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = undefined;
+    }
+    if (this.statsTimer) {
+      clearInterval(this.statsTimer);
+      this.statsTimer = undefined;
     }
     this.queue.length = 0;
   }
