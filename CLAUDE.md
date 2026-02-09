@@ -144,3 +144,5 @@ Tests are not currently configured. The `bun run test` command is a placeholder.
 - Maintain backward compatibility at all times unless otherwise stated.
 - We're using Bun instead of Node.  Always use Bun instead of Node where you can.
 - Make sure you test run the bot and fix any errors.  Timeout time should be 30s.
+
+Update
