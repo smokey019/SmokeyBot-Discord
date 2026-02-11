@@ -4,12 +4,13 @@ import type { runEvent } from '..';
 import { GLOBAL_COOLDOWN } from '../../../clients/cache';
 import { getCurrentTime } from '../../../utils';
 import { msgBalance } from '../../pokemon/items';
+import { isSpawnChannel } from '../../pokemon/utils';
 
 export async function run(e: runEvent) {
-  const channel_name = (e.interaction.channel as TextChannel).name;
+  const channel = e.interaction.channel as TextChannel;
   if (
     !e.cache.settings.smokemon_enabled ||
-    channel_name != e.cache.settings.specific_channel
+    !isSpawnChannel(channel.id, channel.name, e.cache.settings.specific_channel)
   )
     return;
   GLOBAL_COOLDOWN.set(e.interaction.guild.id, getCurrentTime());

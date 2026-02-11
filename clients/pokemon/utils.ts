@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, EmbedBuilder, MessageFlags } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder, type Guild, MessageFlags, type TextChannel } from "discord.js";
 import { discordClient } from "../../bot";
 import { GLOBAL_COOLDOWN, type ICache } from "../../clients/cache";
 import { getUserDBCount } from "../../clients/database";
@@ -583,6 +583,46 @@ export const POKEMON_UTILS_CONSTANTS = {
   PERFECT_IV_ODDS,
   GENDERS
 } as const;
+
+/**
+ * Resolve the configured spawn channel from the stored specific_channel value.
+ * Handles both channel IDs (from /settings channel) and legacy channel names.
+ */
+export function resolveSpawnChannel(
+  guild: Guild,
+  specificChannel: string | undefined
+): TextChannel | null {
+  if (!specificChannel || !guild) return null;
+
+  // Try ID-based lookup first (modern path: setSpawnChannel stores channel.id)
+  const byId = guild.channels.cache.get(specificChannel);
+  if (byId?.isTextBased() && 'send' in byId) {
+    return byId as TextChannel;
+  }
+
+  // Fallback: name-based lookup (legacy data where a channel name was stored)
+  const byName = guild.channels.cache.find(
+    (ch) => ch.name === specificChannel && ch.isTextBased() && 'send' in ch
+  );
+  if (byName) {
+    return byName as TextChannel;
+  }
+
+  return null;
+}
+
+/**
+ * Check if the current channel matches the configured spawn channel.
+ * Works whether specific_channel stores an ID or a legacy name.
+ */
+export function isSpawnChannel(
+  channelId: string,
+  channelName: string,
+  specificChannel: string | undefined
+): boolean {
+  if (!specificChannel) return false;
+  return channelId === specificChannel || channelName === specificChannel;
+}
 
 // Export the image URL constant (keeping original)
 export const img_monster_ball = `https://cdn.discordapp.com/attachments/550103813587992586/721256683665621092/pokeball2.png`;

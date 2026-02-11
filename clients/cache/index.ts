@@ -261,6 +261,8 @@ const CACHE_CONFIGS: Record<string, CacheConfig> = {
   GLOBAL_COOLDOWN: { maxSize: 1000, ttlSeconds: 300 }, // 5 minutes TTL
   GLOBAL_SETTINGS_CACHE: { maxSize: 100, ttlSeconds: 1800 }, // 30 minutes TTL
   MONSTER_SPAWNS: { maxSize: 200, ttlSeconds: 600 }, // 10 minutes TTL - prevents stale spawn data
+  MOVE_CACHE: { maxSize: 500, ttlSeconds: 3600 }, // 1 hour TTL - PokeAPI move data (stable, rarely changes)
+  BATTLE_COOLDOWN: { maxSize: 1000, ttlSeconds: 300 }, // 5 minutes TTL - per-user-pair battle cooldowns
 };
 
 // Batch operations interface
@@ -287,6 +289,8 @@ export const cacheClient = loadCache('cacheClient');
 export const xp_cache = loadCache('xp_cache');
 export const GLOBAL_COOLDOWN = loadCache('GLOBAL_COOLDOWN');
 export const SMOKEYBOT_GLOBAL_SETTINGS_CACHE = loadCache('GLOBAL_SETTINGS_CACHE');
+export const MOVE_CACHE = loadCache('MOVE_CACHE');
+export const BATTLE_COOLDOWN = loadCache('BATTLE_COOLDOWN');
 
 /**
  * Create or retrieve a cache instance with optimized configuration

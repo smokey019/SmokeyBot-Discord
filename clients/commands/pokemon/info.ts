@@ -10,6 +10,7 @@ import {
     monsterInfo,
     monsterInfoLatest
 } from '../../pokemon/info';
+import { isSpawnChannel } from '../../pokemon/utils';
 
 const logger = getLogger('Pokemon-Info-Command');
 
@@ -65,11 +66,11 @@ function validateCommandExecution({ settings, channel, interaction }: ChannelVal
     }
 
     // Check if specific channel is required and matches
-    if (settings.specific_channel && channel.name !== settings.specific_channel) {
+    if (settings.specific_channel && !isSpawnChannel(channel.id, channel.name, settings.specific_channel)) {
       logger.debug(`Command used in wrong channel: ${channel.name}, expected: ${settings.specific_channel}`);
       return {
         isValid: false,
-        errorMessage: `This command can only be used in #${settings.specific_channel}.`,
+        errorMessage: `This command can only be used in the configured spawn channel.`,
         canProceed: false
       };
     }

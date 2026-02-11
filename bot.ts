@@ -28,6 +28,7 @@ import { getGuildSettings } from "./clients/database";
 import { getLogger } from "./clients/logger";
 import { queueMessage } from "./clients/message_queue";
 import { disposeEmoteQueue } from "./clients/emote_queue";
+import { handleBattleButton } from "./clients/pokemon/battle";
 import { checkExpGain } from "./clients/pokemon/exp-gain";
 import { checkSpawn } from "./clients/pokemon/spawn-monster";
 import { getCurrentTime } from "./utils";
@@ -883,7 +884,7 @@ async function processMessage(message: Message): Promise<void> {
       checkExpGain(message.author, message.guild, undefined).catch((error) => {
         logger.error("Exp gain check failed:", error);
       }),
-      checkSpawn(message as any, cache).catch(
+      checkSpawn(message, cache).catch(
         (error) => {
           logger.error("Spawn check failed:", error);
         }
@@ -1299,6 +1300,18 @@ discordClient.on("interactionCreate", async (interaction) => {
       logger.error(`Error executing command ${interaction.commandName}:`, error);
       // Remove from processed map if execution failed
       processedInteractions.delete(interactionId);
+    }
+  }
+
+  // Handle button interactions (battle system)
+  if (interaction.isButton()) {
+    const customId = interaction.customId;
+    if (customId.startsWith("battle_")) {
+      try {
+        await handleBattleButton(interaction);
+      } catch (error) {
+        logger.error(`Error handling battle button ${customId}:`, error);
+      }
     }
   }
 });

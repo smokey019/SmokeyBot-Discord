@@ -8,6 +8,7 @@ import {
 } from 'discord.js';
 import type { runEvent } from '..';
 import { forceSpawn } from '../../pokemon/spawn-monster';
+import { isSpawnChannel } from '../../pokemon/utils';
 
 /**
  * Configuration for admin users and permissions
@@ -50,9 +51,9 @@ export async function run(e: runEvent): Promise<void> {
     }
 
     // Validate channel restriction
-    if (channelName !== e.cache.settings.specific_channel) {
+    if (!isSpawnChannel(channel.id, channelName, e.cache.settings.specific_channel)) {
       await e.interaction.reply({
-        content: `❌ This command can only be used in #${e.cache.settings.specific_channel}.`,
+        content: `❌ This command can only be used in the configured spawn channel.`,
         flags: [MessageFlags.Ephemeral]
       });
       return;

@@ -5,6 +5,7 @@ import { GLOBAL_COOLDOWN } from "../../../clients/cache";
 import { getCurrentTime } from "../../../utils";
 import { getLogger } from "../../logger";
 import { checkMonstersNew } from "../../pokemon/check-monsters";
+import { isSpawnChannel } from "../../pokemon/utils";
 const logger = getLogger("Commands");
 
 export async function run(e: runEvent) {
@@ -16,7 +17,6 @@ export async function run(e: runEvent) {
       return;
     }
 
-    const channelName = channel.name;
     const guildId = e.interaction.guild?.id;
     const userId = e.interaction.user?.id;
 
@@ -35,10 +35,10 @@ export async function run(e: runEvent) {
     // channel restriction check with better logging
     if (
       e.cache.settings.specific_channel &&
-      channelName !== e.cache.settings.specific_channel
+      !isSpawnChannel(channel.id, channel.name, e.cache.settings.specific_channel)
     ) {
       logger.debug(
-        `Command used in wrong channel: ${channelName}, expected: ${e.cache.settings.specific_channel}`
+        `Command used in wrong channel: ${channel.name}, expected: ${e.cache.settings.specific_channel}`
       );
       return;
     }

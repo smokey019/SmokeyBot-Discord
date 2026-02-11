@@ -506,7 +506,7 @@ class MessageQueueManager {
     return await interaction.editReply(message);
   }
 
-  // Handle channel message
+  // Handle channel message (supports both channel ID and name lookup)
   private async handleChannelMessage(payload: {
     guild: Guild;
     channelName: string;
@@ -514,10 +514,14 @@ class MessageQueueManager {
   }) {
     const { guild, channelName, content } = payload;
 
-    const channel = guild.channels.cache.find(
-      (ch): ch is TextChannel =>
-        ch.name === channelName && ch.isTextBased() && "send" in ch
-    ) as TextChannel;
+    // Try ID-based lookup first, then fall back to name-based
+    let channel = guild.channels.cache.get(channelName) as TextChannel | undefined;
+    if (!channel || !channel.isTextBased?.() || !('send' in channel)) {
+      channel = guild.channels.cache.find(
+        (ch): ch is TextChannel =>
+          ch.name === channelName && ch.isTextBased() && "send" in ch
+      ) as TextChannel;
+    }
 
     if (!channel) {
       throw new Error(
@@ -694,15 +698,17 @@ export async function queueMessage(
 }
 
 /**
- * Send message to pokémon-spawns channel only (no fallbacks)
+ * Send message to a spawn channel (supports channel ID or name)
  * @param embed Embed to send
  * @param interaction Discord interaction for context
  * @param priority Message priority
+ * @param channelNameOrId Channel ID or name (defaults to "pokémon-spawns")
  */
 export async function spawnChannelMessage(
   embed: EmbedBuilder,
   interaction: CommandInteraction,
-  priority = 1
+  priority = 1,
+  channelNameOrId = "pokémon-spawns"
 ): Promise<void> {
   if (!interaction.guild) {
     throw new Error("No guild context available");
@@ -710,7 +716,7 @@ export async function spawnChannelMessage(
 
   await messageQueue.queueChannelMessage(
     interaction.guild,
-    "pokémon-spawns",
+    channelNameOrId,
     { embeds: [embed] },
     priority
   );

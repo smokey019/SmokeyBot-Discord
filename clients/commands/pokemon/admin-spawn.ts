@@ -2,12 +2,13 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import { TextChannel, MessageFlags } from 'discord.js';
 import type { runEvent } from '..';
 import { spawnMonster } from '../../pokemon/spawn-monster';
+import { isSpawnChannel } from '../../pokemon/utils';
 
 export async function run(e: runEvent) {
-  const channel_name = (e.interaction.channel as TextChannel).name;
+  const channel = e.interaction.channel as TextChannel;
   if (
     !e.cache.settings.smokemon_enabled ||
-    channel_name != e.cache.settings.specific_channel
+    !isSpawnChannel(channel.id, channel.name, e.cache.settings.specific_channel)
   )
     return;
   if (e.interaction.user.id == '90514165138989056') {

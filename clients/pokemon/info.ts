@@ -35,7 +35,7 @@ const STAT_FORMULA_BASE = 2;
 const STAT_FORMULA_LEVEL_OFFSET = 10;
 const HP_STAT_FORMULA_OFFSET = 10;
 
-interface MonsterStats {
+export interface MonsterStats {
   hp: number;
   attack: number;
   defense: number;
@@ -47,7 +47,7 @@ interface MonsterStats {
 /**
  * Calculates Pokemon stats using the standard formula
  */
-function calculateStat(
+export function calculateStat(
   baseStat: number,
   iv: number,
   level: number,
@@ -73,7 +73,7 @@ function calculateStat(
 /**
  * Calculates all Pokemon stats from API data and IV values
  */
-function calculateAllStats(
+export function calculateAllStats(
   apiStats: Pokemon["stats"],
   monsterData: IMonsterModel,
 ): MonsterStats {
@@ -113,7 +113,7 @@ function calculateAllStats(
 /**
  * Formats Pokemon types for display from API format
  */
-function formatPokemonTypes(types: Pokemon["types"]): string[] {
+export function formatPokemonTypes(types: Pokemon["types"]): string[] {
   if (!Array.isArray(types)) {
     return [];
   }
@@ -127,7 +127,7 @@ function formatPokemonTypes(types: Pokemon["types"]): string[] {
 /**
  * Gets appropriate Pokemon images based on shiny status
  */
-function getPokemonImages(
+export function getPokemonImages(
   monster: Pokemon,
   isShiny: boolean,
 ): { normal?: string; thumbnail?: string } {
@@ -279,7 +279,7 @@ async function getPokemonEvolutionInfo(pokemonId: number): Promise<{
 /**
  * Get base stats from Pokemon API response
  */
-function extractBaseStats(pokemon: Pokemon): MonsterStats {
+export function extractBaseStats(pokemon: Pokemon): MonsterStats {
   const stats: MonsterStats = {
     hp: 0,
     attack: 0,

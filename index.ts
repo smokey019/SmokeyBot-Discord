@@ -13,7 +13,7 @@ const logger = getLogger("ShardManager");
 
 // Constants for better maintainability
 const CONSTANTS = {
-  HEARTBEAT_TIMEOUT: 120000, // 2 minutes
+  HEARTBEAT_TIMEOUT: 300000, // 5 minutes
   UNHEALTHY_THRESHOLD: 300000, // 5 minutes
   ERROR_THRESHOLD: 10,
   BASE_RESTART_DELAY: 5000,
@@ -666,9 +666,18 @@ class EnhancedShardManager extends EventEmitter {
 
       if (timeSinceHeartbeat > CONSTANTS.HEARTBEAT_TIMEOUT) {
         unhealthyShards++;
-        logger.warn(
-          `Shard ${shardId} unhealthy: last heartbeat ${Math.round(timeSinceHeartbeat / 1000)}s ago`,
-        );
+
+        // Graduated logging - only log at meaningful thresholds
+        const secondsAgo = Math.round(timeSinceHeartbeat / 1000);
+        if (timeSinceHeartbeat > CONSTANTS.UNHEALTHY_THRESHOLD * 1.5) {
+          logger.error(
+            `Shard ${shardId} critically unresponsive: last heartbeat ${secondsAgo}s ago`,
+          );
+        } else {
+          logger.warn(
+            `Shard ${shardId} unhealthy: last heartbeat ${secondsAgo}s ago`,
+          );
+        }
 
         // Try to ping shard
         const shard = this.manager.shards.get(shardId);
