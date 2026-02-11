@@ -1,5 +1,6 @@
 import { Shard, ShardingManager } from "discord.js";
 import { EventEmitter } from "events";
+import path from "path";
 import AutoPoster from "topgg-autoposter";
 import {
   createRedisManager,
@@ -164,8 +165,13 @@ class EnhancedShardManager extends EventEmitter {
 
     logger.info("🔗 Using optimized direct shard messaging for same-server communication");
 
-    // Create sharding manager optimized for Bun
-    this.manager = new ShardingManager("./bot.ts", {
+    // Resolve bot file path relative to this script's location
+    // When running from source: spawns bot.ts; when running from dist/: spawns bot.js
+    const scriptDir = path.dirname(process.argv[1] || "./index.ts");
+    const isBuilt = (process.argv[1] || "").endsWith(".js");
+    const botFile = path.resolve(scriptDir, isBuilt ? "bot.js" : "bot.ts");
+
+    this.manager = new ShardingManager(botFile, {
       token: config.token,
       totalShards: config.isDev ? 1 : "auto",
       respawn: config.respawn,

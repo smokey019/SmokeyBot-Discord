@@ -783,7 +783,13 @@ async function executeCommand(interaction: CommandInteraction): Promise<void> {
     );
 
     if (!commandFile) {
-      await queueMessage("Command not found.", interaction, false);
+      if (commands.size === 0) {
+        logger.error("No commands are loaded! Command loading may have failed.");
+        await queueMessage("Bot is still starting up. Please try again in a moment.", interaction, false);
+      } else {
+        logger.warn(`Unknown command: ${interaction.commandName} (${commands.size} commands loaded)`);
+        await queueMessage("Command not found.", interaction, false);
+      }
       return;
     }
 

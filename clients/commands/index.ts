@@ -2,18 +2,64 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import { Client, Collection, CommandInteraction, Message } from "discord.js";
-import { readdir, stat } from "fs/promises";
-import path from "path";
 import type { IGuildSettings } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
 import { msToDetailed } from "../../utils";
 import type { ICache } from "../cache";
 
+// Static command imports - Pokemon
+import * as adminForceSpawn from "./pokemon/admin-force-spawn";
+import * as adminSpawn from "./pokemon/admin-spawn";
+import * as battle from "./pokemon/battle";
+import * as catchCmd from "./pokemon/catch";
+import * as checkFavorites from "./pokemon/check-favorites";
+import * as checkMonsters from "./pokemon/check-monsters";
+import * as checkVote from "./pokemon/check-vote";
+import * as currencyBalance from "./pokemon/currency-balance";
+import * as gym from "./pokemon/gym";
+import * as info from "./pokemon/info";
+import * as item from "./pokemon/item";
+import * as leaderboard from "./pokemon/leaderboard";
+import * as nickname from "./pokemon/nickname";
+import * as pokedex from "./pokemon/pokedex";
+import * as pokedexReference from "./pokemon/pokedex-reference";
+import * as recover from "./pokemon/recover";
+import * as release from "./pokemon/release";
+import * as search from "./pokemon/search";
+import * as select from "./pokemon/select";
+import * as setFavorite from "./pokemon/set-favorite";
+import * as team from "./pokemon/team";
+import * as trade from "./pokemon/trade";
+import * as trainer from "./pokemon/trainer";
+import * as unfavorite from "./pokemon/unfavorite";
+import * as unique from "./pokemon/unique";
+import * as vote from "./pokemon/vote";
+import * as weather from "./pokemon/weather";
+import * as web from "./pokemon/web";
+
+// Static command imports - SmokeyBot
+import * as adminCacheReport from "./smokeybot/admin-cache-report";
+import * as adminClearCache from "./smokeybot/admin-clear-cache";
+import * as adminResetEmoteTimer from "./smokeybot/admin-reset-emote-timer";
+import * as cancelSync from "./smokeybot/cancel-sync";
+import * as enableSmokemon from "./smokeybot/enable-smokemon";
+import * as funGtfo from "./smokeybot/fun-gtfo";
+import * as funSmash from "./smokeybot/fun-smash";
+import * as funVase from "./smokeybot/fun-vase";
+import * as help from "./smokeybot/help";
+import * as inviteLink from "./smokeybot/invite-link";
+import * as ping from "./smokeybot/ping";
+import * as qremoveEmote from "./smokeybot/qremove-emote";
+import * as reportStats from "./smokeybot/report-stats";
+import * as statsEmotes from "./smokeybot/stats-emotes";
+import * as statsMessages from "./smokeybot/stats-messages";
+import * as sync7tv from "./smokeybot/sync-7tv";
+import * as syncFfz from "./smokeybot/sync-ffz";
+import * as uploadEmote from "./smokeybot/upload-emote";
+
 const logger = getLogger("Commander");
 
 // Constants for better maintainability
-const COMMAND_FILE_EXTENSIONS = /\.(ts|js)$/i;
-const MAX_COMMAND_LOAD_TIME = 30000; // 30 seconds timeout
 const SLASH_COMMAND_RATE_LIMIT_DELAY = 100; // ms between registrations
 const DEV_GUILD_ID = "690857004171919370";
 
@@ -50,19 +96,57 @@ interface CommandModule {
   cooldown?: number;
 }
 
-interface LoadCommandsResult {
-  loadedCount: number;
-  failedCount: number;
-  totalFiles: number;
-  errors: Array<{ file: string; error: string }>;
-}
-
-interface CommandLoadProgress {
-  totalFiles: number;
-  processedFiles: number;
-  successfulLoads: number;
-  errors: Array<{ file: string; error: string }>;
-}
+// All command modules with their category
+const commandModules: Array<{ module: CommandModule; category: string }> = [
+  // Pokemon commands
+  { module: adminForceSpawn, category: "pokemon" },
+  { module: adminSpawn, category: "pokemon" },
+  { module: battle, category: "pokemon" },
+  { module: catchCmd, category: "pokemon" },
+  { module: checkFavorites, category: "pokemon" },
+  { module: checkMonsters, category: "pokemon" },
+  { module: checkVote, category: "pokemon" },
+  { module: currencyBalance, category: "pokemon" },
+  { module: gym, category: "pokemon" },
+  { module: info, category: "pokemon" },
+  { module: item, category: "pokemon" },
+  { module: leaderboard, category: "pokemon" },
+  { module: nickname, category: "pokemon" },
+  { module: pokedex, category: "pokemon" },
+  { module: pokedexReference, category: "pokemon" },
+  { module: recover, category: "pokemon" },
+  { module: release, category: "pokemon" },
+  { module: search, category: "pokemon" },
+  { module: select, category: "pokemon" },
+  { module: setFavorite, category: "pokemon" },
+  { module: team, category: "pokemon" },
+  { module: trade, category: "pokemon" },
+  { module: trainer, category: "pokemon" },
+  { module: unfavorite, category: "pokemon" },
+  { module: unique, category: "pokemon" },
+  { module: vote, category: "pokemon" },
+  { module: weather, category: "pokemon" },
+  { module: web, category: "pokemon" },
+  // SmokeyBot commands
+  { module: adminCacheReport, category: "smokeybot" },
+  { module: adminClearCache, category: "smokeybot" },
+  { module: adminResetEmoteTimer, category: "smokeybot" },
+  { module: cancelSync, category: "smokeybot" },
+  { module: enableSmokemon, category: "smokeybot" },
+  { module: funGtfo, category: "smokeybot" },
+  { module: funSmash, category: "smokeybot" },
+  { module: funVase, category: "smokeybot" },
+  { module: help, category: "smokeybot" },
+  { module: inviteLink, category: "smokeybot" },
+  { module: ping, category: "smokeybot" },
+  { module: qremoveEmote, category: "smokeybot" },
+  { module: reportStats, category: "smokeybot" },
+  { module: statsEmotes, category: "smokeybot" },
+  { module: statsMessages, category: "smokeybot" },
+  { module: sync7tv, category: "smokeybot" },
+  { module: syncFfz, category: "smokeybot" },
+  { module: uploadEmote, category: "smokeybot" },
+];
 
 // Command collections for Discord.js compatibility
 export const commands: Collection<string[], (event: runEvent) => any> = new Collection();
@@ -74,62 +158,6 @@ const commandMetadata = new Map<string, {
   loadTime: number;
   category: string;
 }>();
-
-/**
- * Validates if a file should be processed as a command
- */
-function isValidCommandFile(fileName: string): boolean {
-  return COMMAND_FILE_EXTENSIONS.test(fileName) && !fileName.startsWith(".");
-}
-
-/**
- * Safely imports a command module with timeout and error handling
- */
-async function safeImportCommand(
-  filePath: string,
-  fileName: string
-): Promise<CommandModule | null> {
-  try {
-    const importPromise = import(filePath);
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(
-        () => reject(new Error("Import timeout")),
-        MAX_COMMAND_LOAD_TIME
-      );
-    });
-
-    const module = (await Promise.race([
-      importPromise,
-      timeoutPromise,
-    ])) as CommandModule;
-
-    // Validate required properties
-    if (
-      !module.names ||
-      !Array.isArray(module.names) ||
-      module.names.length === 0
-    ) {
-      throw new CommandError(
-        "Command module missing valid names array",
-        "INVALID_NAMES",
-        fileName
-      );
-    }
-
-    if (!module.run || typeof module.run !== "function") {
-      throw new CommandError(
-        "Command module missing run function",
-        "INVALID_RUN",
-        fileName
-      );
-    }
-
-    return module;
-  } catch (error) {
-    logger.error(`Failed to import command from ${fileName}:`, error);
-    return null;
-  }
-}
 
 /**
  * Registers a single command with comprehensive validation
@@ -213,94 +241,7 @@ function registerCommand(
 }
 
 /**
- * Loads commands from a specific directory with error handling
- */
-async function loadCommandsFromDirectory(
-  dirPath: string,
-  category: string,
-  progress: CommandLoadProgress
-): Promise<LoadCommandsResult> {
-  const result: LoadCommandsResult = {
-    loadedCount: 0,
-    failedCount: 0,
-    totalFiles: 0,
-    errors: [],
-  };
-
-  try {
-    // Check if directory exists
-    try {
-      const dirStat = await stat(dirPath);
-      if (!dirStat.isDirectory()) {
-        throw new Error(`${dirPath} is not a directory`);
-      }
-    } catch (statError) {
-      logger.warn(
-        `Directory ${dirPath} does not exist or is not accessible: ${statError.message}`
-      );
-      return result;
-    }
-
-    // Read directory contents
-    const allFiles = await readdir(dirPath);
-    const commandFiles = allFiles.filter(isValidCommandFile);
-
-    result.totalFiles = commandFiles.length;
-    progress.totalFiles += commandFiles.length;
-
-    if (commandFiles.length === 0) {
-      logger.debug(`No command files found in ${dirPath}`);
-      return result;
-    }
-
-    logger.debug(`Found ${commandFiles.length} command files in ${dirPath}`);
-
-    // Process each command file
-    for (const file of commandFiles) {
-      try {
-        progress.processedFiles++;
-
-        const filePath = path.join(dirPath, file);
-        const module = await safeImportCommand(filePath, file);
-
-        if (module) {
-          const success = registerCommand(module, file, category);
-          if (success) {
-            result.loadedCount++;
-            progress.successfulLoads++;
-          } else {
-            result.failedCount++;
-            const error = `Failed to register command from ${file}`;
-            result.errors.push({ file, error });
-            progress.errors.push({ file, error });
-          }
-        } else {
-          result.failedCount++;
-          const error = `Failed to import command module from ${file}`;
-          result.errors.push({ file, error });
-          progress.errors.push({ file, error });
-        }
-      } catch (fileError) {
-        result.failedCount++;
-        const error = `Error processing ${file}: ${fileError.message}`;
-        result.errors.push({ file, error });
-        progress.errors.push({ file, error });
-        logger.error(`Error loading command from ${file}:`, fileError);
-      }
-    }
-
-    return result;
-  } catch (dirError) {
-    logger.error(`Error reading directory ${dirPath}:`, dirError);
-    throw new CommandError(
-      `Failed to read command directory: ${dirError.message}`,
-      "DIR_READ_ERROR"
-    );
-  }
-}
-
-/**
- * command loading with comprehensive error handling and progress tracking
+ * Load all commands via static imports (bundle-safe, no filesystem access needed)
  */
 export async function loadCommands(): Promise<void> {
   const startTime = Date.now();
@@ -313,51 +254,34 @@ export async function loadCommands(): Promise<void> {
     slashCommands.length = 0;
     commandMetadata.clear();
 
-    const progress: CommandLoadProgress = {
-      totalFiles: 0,
-      processedFiles: 0,
-      successfulLoads: 0,
-      errors: [],
-    };
-
-    const loadPromises: Promise<LoadCommandsResult>[] = [];
-
-    // Load Pokemon commands
-    const pokemonDirPath = path.join(__dirname, "pokemon");
-    loadPromises.push(
-      loadCommandsFromDirectory(pokemonDirPath, "pokemon", progress)
-    );
-
-    // Load SmokeyBot commands
-    const smokeybotDirPath = path.join(__dirname, "smokeybot");
-    loadPromises.push(
-      loadCommandsFromDirectory(smokeybotDirPath, "smokeybot", progress)
-    );
-
-    // Wait for all directories to be processed
-    const results = await Promise.allSettled(loadPromises);
-
-    // Process results
     let totalLoaded = 0;
     let totalFailed = 0;
     const allErrors: Array<{ file: string; error: string }> = [];
 
-    results.forEach((result, index) => {
-      const category = index === 0 ? "pokemon" : "smokeybot";
+    for (const { module, category } of commandModules) {
+      const fileName = module.names[0] || "unknown";
 
-      if (result.status === "fulfilled") {
-        totalLoaded += result.value.loadedCount;
-        totalFailed += result.value.failedCount;
-        allErrors.push(...result.value.errors);
-
-        logger.debug(
-          `${category} commands: ${result.value.loadedCount} loaded, ${result.value.failedCount} failed`
-        );
-      } else {
-        logger.error(`Failed to load ${category} commands:`, result.reason);
+      // Validate required properties
+      if (!module.names || !Array.isArray(module.names) || module.names.length === 0) {
         totalFailed++;
+        allErrors.push({ file: fileName, error: "Missing valid names array" });
+        continue;
       }
-    });
+
+      if (!module.run || typeof module.run !== "function") {
+        totalFailed++;
+        allErrors.push({ file: fileName, error: "Missing run function" });
+        continue;
+      }
+
+      const success = registerCommand(module, fileName, category);
+      if (success) {
+        totalLoaded++;
+      } else {
+        totalFailed++;
+        allErrors.push({ file: fileName, error: "Failed to register command" });
+      }
+    }
 
     const loadTime = Date.now() - startTime;
 
@@ -384,13 +308,6 @@ export async function loadCommands(): Promise<void> {
         new Set(Array.from(commandMetadata.values()).map((m) => m.category))
       ).join(", ")}`
     );
-    
-    // Log load time statistics
-    if (commandMetadata.size > 0) {
-      const avgLoadTime = Array.from(commandMetadata.values())
-        .reduce((sum, meta) => sum + meta.loadTime, 0) / commandMetadata.size;
-      logger.debug(`Average command load time: ${avgLoadTime.toFixed(2)}ms`);
-    }
   } catch (error) {
     logger.error("Critical error during command loading:", error);
     throw new CommandError("Failed to load commands", "LOAD_COMMANDS_ERROR");
@@ -533,7 +450,6 @@ export function getCommandStats(): {
   averageLoadTime: number;
   commandList: Array<{
     name: string;
-    aliases: string[];
     category: string;
     loadTime: number;
   }>;
@@ -542,7 +458,6 @@ export function getCommandStats(): {
   let totalLoadTime = 0;
   const commandList: Array<{
     name: string;
-    aliases: string[];
     category: string;
     loadTime: number;
   }> = [];
@@ -552,7 +467,6 @@ export function getCommandStats(): {
     totalLoadTime += metadata.loadTime;
     commandList.push({
       name,
-      aliases: metadata.aliases,
       category: metadata.category,
       loadTime: metadata.loadTime,
     });
@@ -621,12 +535,8 @@ export function validateCommandHealth(): {
   }
 
   // Check for slash command coverage
-  const commandsWithSlash = Array.from(commandMetadata.values()).filter((m) =>
-    slashCommands.some((sc) => sc.name === m.aliases[0])
-  ).length;
-
   const slashCoverage =
-    commands.size > 0 ? (commandsWithSlash / commands.size) * 100 : 0;
+    commands.size > 0 ? (slashCommands.length / commands.size) * 100 : 0;
 
   if (slashCoverage < 80) {
     issues.push(`Low slash command coverage: ${slashCoverage.toFixed(1)}%`);
