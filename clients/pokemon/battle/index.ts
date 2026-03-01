@@ -27,6 +27,8 @@ export {
   hasAliveSwitch,
   getAliveSwitchIndices,
   syncPlayerAction,
+  addTurnLog,
+  disposeBattleState,
 } from "./battle-state";
 
 // Type effectiveness
@@ -96,6 +98,7 @@ export {
   startNpcBattle,
   startGymBattle,
   handleBattleButton,
+  disposePendingChallenges,
 } from "./battle-handler";
 
 // Wild battles

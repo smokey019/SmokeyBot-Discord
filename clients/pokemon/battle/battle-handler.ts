@@ -85,9 +85,33 @@ const logger = getLogger("BattleHandler");
 
 const CHALLENGE_TIMEOUT_MS = 60_000; // 60 seconds to accept
 const TURN_TIMEOUT_MS = 30_000; // 30 seconds per turn
+const MAX_PENDING_CHALLENGES = 100;
 
 /** Pending challenges: `${challengerId}_${targetId}` -> timeout timer */
 const pendingChallenges = new Map<string, Timer>();
+
+/**
+ * Evict oldest pending challenges when over the cap.
+ */
+function enforcePendingChallengesCap(): void {
+  while (pendingChallenges.size > MAX_PENDING_CHALLENGES) {
+    const oldestKey = pendingChallenges.keys().next().value;
+    if (!oldestKey) break;
+    const timer = pendingChallenges.get(oldestKey);
+    if (timer) clearTimeout(timer);
+    pendingChallenges.delete(oldestKey);
+  }
+}
+
+/**
+ * Clean up all pending challenges (call on shutdown).
+ */
+export function disposePendingChallenges(): void {
+  for (const [key, timer] of pendingChallenges) {
+    clearTimeout(timer);
+  }
+  pendingChallenges.clear();
+}
 
 /**
  * Entry point: /battle @opponent
@@ -200,6 +224,7 @@ export async function startBattleChallenge(
   }, CHALLENGE_TIMEOUT_MS);
 
   pendingChallenges.set(challengeKey, timeout);
+  enforcePendingChallengesCap();
 }
 
 /**

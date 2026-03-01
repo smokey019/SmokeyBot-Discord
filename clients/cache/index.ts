@@ -263,6 +263,7 @@ const CACHE_CONFIGS: Record<string, CacheConfig> = {
   MONSTER_SPAWNS: { maxSize: 200, ttlSeconds: 600 }, // 10 minutes TTL - prevents stale spawn data
   MOVE_CACHE: { maxSize: 500, ttlSeconds: 3600 }, // 1 hour TTL - PokeAPI move data (stable, rarely changes)
   BATTLE_COOLDOWN: { maxSize: 1000, ttlSeconds: 300 }, // 5 minutes TTL - per-user-pair battle cooldowns
+  topgg_cache: { maxSize: 10, ttlSeconds: 60 }, // 1 minute TTL - weekend status and vote checks
 };
 
 // Batch operations interface

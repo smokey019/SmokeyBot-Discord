@@ -108,8 +108,8 @@ class EmoteQueueManager {
       const keysToDelete: string[] = [];
 
       this.rateLimitMap.forEach((lastCall, guildId) => {
-        // Clean entries older than 10 minutes (reduced from 1 hour)
-        if (now - lastCall > 10 * 60 * 1000) {
+        // Clean entries older than 5 minutes
+        if (now - lastCall > 5 * 60 * 1000) {
           keysToDelete.push(guildId);
         }
       });
@@ -119,7 +119,7 @@ class EmoteQueueManager {
       if (keysToDelete.length > 0) {
         logger.debug(`Cleaned ${keysToDelete.length} old rate limit entries`);
       }
-    }, 10 * 60 * 1000); // Every 10 minutes (reduced from 30)
+    }, 5 * 60 * 1000); // Every 5 minutes
 
     // Cleanup failed guilds periodically
     this.failedGuildsCleanupTimer = setInterval(() => {
@@ -622,8 +622,8 @@ interface CircuitBreakerState {
 const circuitBreakers = new Map<string, CircuitBreakerState>();
 const CIRCUIT_BREAKER_THRESHOLD = 5; // Open after 5 failures
 const CIRCUIT_BREAKER_TIMEOUT = 60000; // Try again after 1 minute
-const CIRCUIT_BREAKER_CLEANUP_INTERVAL = 10 * 60 * 1000; // Cleanup every 10 minutes
-const CIRCUIT_BREAKER_MAX_AGE = 30 * 60 * 1000; // Remove closed breakers after 30 minutes of inactivity
+const CIRCUIT_BREAKER_CLEANUP_INTERVAL = 5 * 60 * 1000; // Cleanup every 5 minutes
+const CIRCUIT_BREAKER_MAX_AGE = 15 * 60 * 1000; // Remove closed breakers after 15 minutes of inactivity
 
 // Periodic cleanup for circuit breakers to prevent unbounded growth
 let circuitBreakerCleanupInterval: Timer | undefined = setInterval(() => {

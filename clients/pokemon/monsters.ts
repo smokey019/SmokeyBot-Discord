@@ -26,11 +26,13 @@ const logger = getLogger("Pokémon");
 const MAX_POKEMON_ID = 1025; // Current max Pokemon ID
 const MIN_POKEMON_ID = 1;
 
-// Initialize pokenode-ts clients with built-in caching
-const pokemonApi = new PokemonClient();
-const gameApi = new GameClient();
-const moveApi = new MoveClient();
-const evolutionApi = new EvolutionClient();
+// Initialize pokenode-ts clients with TTL-limited caching
+// Default axios-cache-interceptor stores responses forever; set 1hr TTL to prevent unbounded growth
+const apiCacheConfig = { cacheOptions: { ttl: 1000 * 60 * 60 } }; // 1 hour
+const pokemonApi = new PokemonClient(apiCacheConfig);
+const gameApi = new GameClient(apiCacheConfig);
+const moveApi = new MoveClient(apiCacheConfig);
+const evolutionApi = new EvolutionClient(apiCacheConfig);
 
 // Error handling
 class PokemonError extends Error {

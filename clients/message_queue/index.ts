@@ -146,6 +146,9 @@ class MessageQueueManager {
   private lastThroughputUpdate = Date.now();
   private throughputCounter = 0;
 
+  // Track retry timeouts so they can be cleared on destroy
+  private retryTimers: Timer[] = [];
+
   constructor() {
     this.startProcessing();
     this.startStatsUpdater();
@@ -409,8 +412,11 @@ class MessageQueueManager {
         message.priority = Math.max(0, message.priority - 1);
         message.queuedAt = new Date(); // Reset queue time for accurate wait time calculation
         this.queue.unshift(message);
-        clearTimeout(timer);
+        // Remove from tracked timers
+        const idx = this.retryTimers.indexOf(timer);
+        if (idx !== -1) this.retryTimers.splice(idx, 1);
       }, delay);
+      this.retryTimers.push(timer);
     } else {
       logger.error(
         `Failed to process message ${message.id} after ${message.retries} retries:`,
@@ -634,8 +640,10 @@ class MessageQueueManager {
       isHealthy: true,
     };
     this.startTime = now;
-    // Reset circular buffer
-    this.performanceSamples = new Array(this.maxSamples);
+    // Reset circular buffer in-place (avoid orphaning old array)
+    for (let i = 0; i < this.performanceSamples.length; i++) {
+      this.performanceSamples[i] = undefined;
+    }
     this.sampleIndex = 0;
     this.sampleCount = 0;
     this.throughputCounter = 0;
@@ -652,6 +660,11 @@ class MessageQueueManager {
       clearInterval(this.statsTimer);
       this.statsTimer = undefined;
     }
+    // Clear all pending retry timers
+    for (const timer of this.retryTimers) {
+      clearTimeout(timer);
+    }
+    this.retryTimers.length = 0;
     this.queue.length = 0;
   }
 }

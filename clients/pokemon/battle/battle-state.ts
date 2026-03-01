@@ -105,11 +105,59 @@ export interface BattleState {
   npcTrainer?: any;
 }
 
+/** Maximum turn log entries per battle to prevent unbounded growth */
+const MAX_TURN_LOG_SIZE = 50;
+
+/** Stale battle threshold: 10 minutes without action */
+const STALE_BATTLE_MS = 10 * 60 * 1000;
+
+/** Reaper interval: check for stale battles every 2 minutes */
+const REAPER_INTERVAL_MS = 2 * 60 * 1000;
+
 /** Active battles indexed by battle ID */
 export const activeBattles = new Map<string, BattleState>();
 
 /** Quick lookup: userId -> battleId (prevents users from being in multiple battles) */
 export const userBattleMap = new Map<string, string>();
+
+/**
+ * Append to a battle's turn log, capping at MAX_TURN_LOG_SIZE.
+ */
+export function addTurnLog(battle: BattleState, entry: string): void {
+  battle.turnLog.push(entry);
+  if (battle.turnLog.length > MAX_TURN_LOG_SIZE) {
+    battle.turnLog.splice(0, battle.turnLog.length - MAX_TURN_LOG_SIZE);
+  }
+}
+
+/**
+ * Reap stale battles that haven't had activity in STALE_BATTLE_MS.
+ */
+function reapStaleBattles(): void {
+  const now = Date.now();
+  for (const [battleId, battle] of activeBattles) {
+    if (now - battle.lastActionAt > STALE_BATTLE_MS) {
+      cleanupBattle(battleId);
+    }
+  }
+}
+
+/** Battle reaper interval handle */
+let battleReaperInterval: Timer | undefined = setInterval(reapStaleBattles, REAPER_INTERVAL_MS);
+
+/**
+ * Stop the battle reaper (call on shutdown).
+ */
+export function disposeBattleState(): void {
+  if (battleReaperInterval) {
+    clearInterval(battleReaperInterval);
+    battleReaperInterval = undefined;
+  }
+  // Clean up all active battles
+  for (const [battleId] of activeBattles) {
+    cleanupBattle(battleId);
+  }
+}
 
 /**
  * Generate a unique battle ID.

@@ -28,7 +28,9 @@ import { getGuildSettings } from "./clients/database";
 import { getLogger } from "./clients/logger";
 import { queueMessage } from "./clients/message_queue";
 import { disposeEmoteQueue } from "./clients/emote_queue";
-import { handleBattleButton } from "./clients/pokemon/battle";
+import { stopCacheCleanup } from "./clients/cache";
+import { disposeDatabase } from "./clients/database";
+import { handleBattleButton, disposeBattleState, disposePendingChallenges } from "./clients/pokemon/battle";
 import { checkExpGain } from "./clients/pokemon/exp-gain";
 import { checkSpawn } from "./clients/pokemon/spawn-monster";
 import { getCurrentTime } from "./utils";
@@ -183,7 +185,17 @@ const globalRateLimit: GlobalRateLimit = {
 let commandsExecuted = 0;
 let messagesProcessed = 0;
 let lastCpuUsage = process.cpuUsage();
-let eventLoopLagHistory: number[] = [];
+
+// Circular buffer for event loop lag history (avoids O(n) shift)
+const eventLoopLagBuffer = new Float64Array(CONSTANTS.EVENT_LOOP_LAG_HISTORY_SIZE);
+let eventLoopLagIndex = 0;
+let eventLoopLagCount = 0;
+
+// Rate limit timeout handle for cleanup
+let rateLimitResetTimeout: Timer | undefined;
+
+// Periodic cleanup interval for processedInteractions
+let interactionCleanupInterval: Timer | undefined;
 
 // Backward compatibility exports - these will be updated when state changes
 export let rateLimited = false;
@@ -285,12 +297,13 @@ export const discordClient = new Client({
     // Message sweeping - most important for memory
     messages: {
       interval: Math.min(config.sweepInterval || 300, 300), // Max 5 minutes
-      lifetime: Math.min(config.messageLifetime || 3600, 1800), // Max 30 minutes
+      lifetime: Math.min(config.messageLifetime || 600, 600), // Max 10 minutes
     },
 
     // User sweeping - remove cached users aggressively
     users: {
       interval: config.sweepInterval || 300,
+      lifetime: 600, // 10 minutes
       filter: () => (user) => {
         if (user.id === user.client.user.id) return false;
         return true;
@@ -299,7 +312,7 @@ export const discordClient = new Client({
 
     // Guild member sweeping
     guildMembers: {
-      interval: 600, // 10 minutes
+      interval: 300, // 5 minutes
       filter: () => (member) => {
         // Keep privileged members and the bot itself
         if (member.id === member.client.user.id) return false;
@@ -586,9 +599,10 @@ async function measureEventLoopLag(): Promise<number> {
   return new Promise<number>((resolve) => {
     setImmediate(() => {
       const lag = Number(Bun.nanoseconds() - start) / 1_000_000; // Convert to ms
-      eventLoopLagHistory.push(lag);
-      if (eventLoopLagHistory.length > CONSTANTS.EVENT_LOOP_LAG_HISTORY_SIZE) {
-        eventLoopLagHistory.shift();
+      eventLoopLagBuffer[eventLoopLagIndex] = lag;
+      eventLoopLagIndex = (eventLoopLagIndex + 1) % CONSTANTS.EVENT_LOOP_LAG_HISTORY_SIZE;
+      if (eventLoopLagCount < CONSTANTS.EVENT_LOOP_LAG_HISTORY_SIZE) {
+        eventLoopLagCount++;
       }
       resolve(lag);
     });
@@ -599,19 +613,19 @@ async function measureEventLoopLag(): Promise<number> {
  * Get average event loop lag
  */
 function getAverageEventLoopLag(): number {
-  if (eventLoopLagHistory.length === 0) return 0;
-  return (
-    eventLoopLagHistory.reduce((sum, lag) => sum + lag, 0) /
-    eventLoopLagHistory.length
-  );
+  if (eventLoopLagCount === 0) return 0;
+  let sum = 0;
+  for (let i = 0; i < eventLoopLagCount; i++) {
+    sum += eventLoopLagBuffer[i];
+  }
+  return sum / eventLoopLagCount;
 }
 
 /**
  * Get comprehensive shard metrics
  */
-async function getShardMetrics(): Promise<ShardMetrics> {
+async function getShardMetrics(includeGuildDetails = false): Promise<ShardMetrics> {
   const eventLoopLag = await measureEventLoopLag();
-  const guildDetails = await getGuildShardStats();
 
   return {
     guilds: discordClient.guilds.cache.size,
@@ -625,7 +639,7 @@ async function getShardMetrics(): Promise<ShardMetrics> {
     cpu: calculateCpuUsage(),
     eventLoopLag,
     errors: shardState.errors,
-    guildDetails,
+    guildDetails: includeGuildDetails ? await getGuildShardStats() : undefined,
   };
 }
 
@@ -748,10 +762,8 @@ async function executeCommand(interaction: CommandInteraction): Promise<void> {
     if (!interaction.guild) return;
 
     // cooldown and rate limit checks
-    const [gcd, currentTime] = await Promise.all([
-      getGCD(interaction.guild.id),
-      Promise.resolve(getCurrentTime()),
-    ]);
+    const currentTime = getCurrentTime();
+    const gcd = await getGCD(interaction.guild.id);
 
     if (currentTime - (gcd || 0) < config.globalCooldown) return;
     if (globalRateLimit.isActive && Date.now() < globalRateLimit.endTime) {
@@ -996,8 +1008,8 @@ function handleRateLimit(rateLimitData: any): void {
 
   updatePresence(); // Show idle status
 
-  // Schedule reset
-  setTimeout(() => {
+  // Schedule reset (store handle so it can be cleared on shutdown)
+  rateLimitResetTimeout = setTimeout(() => {
     globalRateLimit.isActive = false;
     globalRateLimit.endTime = 0;
     globalRateLimit.route = undefined;
@@ -1011,6 +1023,7 @@ function handleRateLimit(rateLimitData: any): void {
     sendInterShardMessage("rateLimitSync", globalRateLimit);
     updatePresence(); // Reset status
 
+    rateLimitResetTimeout = undefined;
     logger.info("✅ Rate limit ended");
   }, rateLimitData.timeToReset);
 }
@@ -1073,17 +1086,42 @@ function dispose(): void {
     intervals.gcMonitor = undefined;
   }
 
-  // Clear processed interactions
+  // Clear processed interactions and its cleanup interval
   processedInteractions.clear();
+  if (interactionCleanupInterval) {
+    clearInterval(interactionCleanupInterval);
+    interactionCleanupInterval = undefined;
+  }
+
+  // Clear rate limit reset timeout
+  if (rateLimitResetTimeout) {
+    clearTimeout(rateLimitResetTimeout);
+    rateLimitResetTimeout = undefined;
+  }
 
   // Clear event loop lag history
-  eventLoopLagHistory.length = 0;
-  
+  eventLoopLagBuffer.fill(0);
+  eventLoopLagIndex = 0;
+  eventLoopLagCount = 0;
+
   // Reset message ID counter
   messageIdCounter = 0;
-  
+
   // Clear cached shard ID to force recalculation
   cachedShardId = null;
+
+  // Clear guildsReady set
+  shardState.guildsReady.clear();
+
+  // Dispose battle state (reaper interval + active battles)
+  disposeBattleState();
+  disposePendingChallenges();
+
+  // Stop cache cleanup interval
+  stopCacheCleanup();
+
+  // Dispose database timers and connections
+  disposeDatabase();
 
   // Dispose emote queue intervals and resources
   disposeEmoteQueue();
@@ -1223,6 +1261,16 @@ discordClient.on("clientReady", async () => {
       await measureEventLoopLag();
     }, CONSTANTS.EVENT_LOOP_CHECK_INTERVAL);
 
+    // Periodic cleanup of expired processedInteractions (every 2 minutes)
+    interactionCleanupInterval = setInterval(() => {
+      const now = Date.now();
+      for (const [id, timestamp] of processedInteractions) {
+        if (now - timestamp > CONSTANTS.PROCESSED_INTERACTIONS_EXPIRY) {
+          processedInteractions.delete(id);
+        }
+      }
+    }, 120_000);
+
     // Update state
     shardState.initializing = false;
     initializing = false;
@@ -1280,23 +1328,20 @@ discordClient.on("interactionCreate", async (interaction) => {
     // Mark this interaction as being processed with timestamp
     processedInteractions.set(interactionId, now);
 
-    // Clean up expired entries periodically
+    // Inline safety cap: if map is somehow huge, sweep expired then evict oldest
     if (processedInteractions.size > CONSTANTS.PROCESSED_INTERACTIONS_LIMIT) {
-      const expiredIds: string[] = [];
-      processedInteractions.forEach((timestamp, id) => {
+      for (const [id, timestamp] of processedInteractions) {
         if (now - timestamp > CONSTANTS.PROCESSED_INTERACTIONS_EXPIRY) {
-          expiredIds.push(id);
+          processedInteractions.delete(id);
         }
-      });
-      expiredIds.forEach(id => processedInteractions.delete(id));
-
-      // If still too large, keep only the most recent ones
-      if (processedInteractions.size > CONSTANTS.PROCESSED_INTERACTIONS_LIMIT) {
-        const entries = Array.from(processedInteractions.entries())
-          .sort(([, a], [, b]) => b - a)
-          .slice(0, CONSTANTS.PROCESSED_INTERACTIONS_KEEP);
-        processedInteractions.clear();
-        entries.forEach(([id, timestamp]) => processedInteractions.set(id, timestamp));
+      }
+      // Hard evict oldest entries if still over keep threshold
+      if (processedInteractions.size > CONSTANTS.PROCESSED_INTERACTIONS_KEEP) {
+        const entries = [...processedInteractions.entries()].sort((a, b) => a[1] - b[1]);
+        const toRemove = entries.slice(0, entries.length - CONSTANTS.PROCESSED_INTERACTIONS_KEEP);
+        for (const [id] of toRemove) {
+          processedInteractions.delete(id);
+        }
       }
     }
 
@@ -1527,9 +1572,10 @@ intervals.memoryMonitor = setInterval(() => {
   const usage = process.memoryUsage();
   const heapUsedMB = Math.round(usage.heapUsed / 1024 / 1024);
 
-  // Log if memory usage is high
+  // Trigger GC and log if memory usage is high
   if (heapUsedMB > CONSTANTS.HIGH_MEMORY_WARNING) {
-    logger.warn(`🧠 High memory usage: ${heapUsedMB}MB`);
+    logger.warn(`🧠 High memory usage: ${heapUsedMB}MB, triggering GC`);
+    Bun.gc(true);
   }
 
   // Emergency shutdown if memory usage is critical
