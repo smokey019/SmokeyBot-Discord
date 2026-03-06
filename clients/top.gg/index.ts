@@ -4,8 +4,8 @@ import en from "javascript-time-ago/locale/en.json";
 import { URLSearchParams } from "node:url";
 import { getLogger } from "../../clients/logger";
 import {
-  MonsterUserTable,
-  type IMonsterUserModel,
+    MonsterUserTable,
+    type IMonsterUserModel,
 } from "../../models/MonsterUser";
 import { loadCache } from "../cache";
 import { databaseClient } from "../database";
@@ -64,62 +64,11 @@ interface VoteResult {
   error?: string;
 }
 
-/**
- * Enhanced cache implementation with TTL support
- */
-class EnhancedCache<T = any> {
-  private data = new Map<string, T>();
-  private timers = new Map<string, NodeJS.Timeout>();
-
-  set(key: string, value: T, ttl: number): void {
-    // Clear existing timer if present
-    if (this.timers.has(key)) {
-      clearTimeout(this.timers.get(key)!);
-    }
-
-    // Set new timer for expiration
-    const timer = setTimeout(() => this.delete(key), ttl);
-    this.timers.set(key, timer);
-    this.data.set(key, value);
-  }
-
-  get(key: string): T | undefined {
-    return this.data.get(key);
-  }
-
-  has(key: string): boolean {
-    return this.data.has(key);
-  }
-
-  delete(key: string): boolean {
-    const timer = this.timers.get(key);
-    if (timer) {
-      clearTimeout(timer);
-      this.timers.delete(key);
-    }
-    return this.data.delete(key);
-  }
-
-  clear(): void {
-    // Clear all timers
-    for (const timer of this.timers.values()) {
-      clearTimeout(timer);
-    }
-
-    this.data.clear();
-    this.timers.clear();
-  }
-
-  size(): number {
-    return this.data.size;
-  }
-}
-
-// Enhanced cache instance
-const enhancedCache = new EnhancedCache<any>();
+// Use the project's LRU cache (TTL-based, no per-entry setTimeout timers)
+const topggCache = loadCache("topgg_cache");
 
 /**
- * Enhanced API request function with better error handling and timeouts
+ * API request function with better error handling and timeouts
  * @param method - HTTP method
  * @param path - API endpoint path
  * @param body - Request body for GET parameters
@@ -229,7 +178,7 @@ async function isWeekend(): Promise<boolean> {
  */
 async function checkWeekendWithCache(): Promise<boolean> {
   const cacheKey = "weekend_status";
-  const cached = enhancedCache.get(cacheKey) as WeekendData | undefined;
+  const cached = topggCache.get(cacheKey) as WeekendData | undefined;
 
   // Return cached result if still valid
   if (cached && Date.now() - cached.time < WEEKEND_CACHE_TTL) {
@@ -240,14 +189,10 @@ async function checkWeekendWithCache(): Promise<boolean> {
     const isWeekendNow = await isWeekend();
 
     // Cache the result
-    enhancedCache.set(
-      cacheKey,
-      {
-        weekend: isWeekendNow,
-        time: Date.now(),
-      },
-      WEEKEND_CACHE_TTL
-    );
+    topggCache.set(cacheKey, {
+      weekend: isWeekendNow,
+      time: Date.now(),
+    });
 
     return isWeekendNow;
   } catch (error) {
@@ -352,7 +297,7 @@ function createVoteReminderEmbed(nextVoteTime: number): EmbedBuilder {
 }
 
 /**
- * Enhanced vote checking with comprehensive error handling
+ * vote checking with comprehensive error handling
  * @param interaction - Discord command interaction
  * @returns Promise<VoteResult>
  */
@@ -533,7 +478,7 @@ export async function checkVote(
  */
 export function getVotingStats() {
   return {
-    cacheSize: enhancedCache.size(),
+    cacheSize: topggCache.size,
     dblCacheEntries: "N/A", // Would need to expose size from loadCache
     apiCacheEntries: "N/A", // Would need to expose size from loadCache
     rewardsConfig: VOTING_REWARDS,
@@ -544,7 +489,7 @@ export function getVotingStats() {
  * Clear voting caches (for admin use)
  */
 export function clearVotingCaches(): void {
-  enhancedCache.clear();
+  topggCache.clear();
   logger.info("Voting caches cleared");
 }
 
@@ -559,12 +504,12 @@ async function checkWeekend(): Promise<boolean> {
 
 // Export utility functions for testing
 export {
-  awardVotingRewards,
-  checkWeekendWithCache,
-  EnhancedCache,
-  hasVoted,
-  isWeekend,
-  makeTopGGRequest,
-  VOTE_COOLDOWN_MS,
-  VOTING_REWARDS
+    awardVotingRewards,
+    checkWeekendWithCache,
+    hasVoted,
+    isWeekend,
+    makeTopGGRequest,
+    VOTE_COOLDOWN_MS,
+    VOTING_REWARDS
 };
+

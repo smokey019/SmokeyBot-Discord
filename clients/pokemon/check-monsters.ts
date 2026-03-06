@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { databaseClient, getUser } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
 import { MonsterTable, type IMonsterModel } from "../../models/Monster";
@@ -7,15 +7,15 @@ import { chunk, format_number } from "../../utils";
 import { queueMessage } from "../message_queue";
 import { userDex } from "./info";
 import {
-  calculateIVPercentage,
-  findMonsterByID,
-  getPokemonDisplayName,
-  getPokemonSpecies,
-  getPokemonWithEnglishName,
-  getUsersFavoriteMonsters,
-  getUsersMonsters,
-  isPokemonLegendary,
-  type Pokemon
+    calculateIVPercentage,
+    findMonsterByID,
+    getPokemonDisplayName,
+    getPokemonSpecies,
+    getPokemonWithEnglishName,
+    getUsersFavoriteMonsters,
+    getUsersMonsters,
+    isPokemonLegendary,
+    type Pokemon
 } from "./monsters";
 
 const logger = getLogger("Pokémon");
@@ -58,7 +58,7 @@ enum FilterType {
   MEGA = "mega",
 }
 
-// Enhanced interfaces for better type safety
+// interfaces for better type safety
 interface ProcessedMonster {
   id: number;
   name: string;
@@ -204,7 +204,7 @@ function formatMonsterEntry(
 }
 
 /**
- * Enhanced sorting function with proper type handling
+ * sorting function with proper type handling
  */
 function sortMonsters(
   monsters: ProcessedMonster[],
@@ -453,7 +453,7 @@ function createMonsterEmbed(options: EmbedOptions): EmbedBuilder {
  * Safely sends an embed response with error handling
  */
 async function sendEmbedResponse(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   embed: EmbedBuilder,
   isReply: boolean = false
 ): Promise<void> {
@@ -481,10 +481,10 @@ async function sendEmbedResponse(
 }
 
 /**
- * Enhanced version of checkMonstersNew with improved Pokemon data fetching
+ * version of checkMonstersNew with improved Pokemon data fetching
  */
 export async function checkMonstersNew(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   favorites?: 0 | 1
 ): Promise<void> {
   const userId = interaction.user.id;
@@ -567,10 +567,10 @@ export async function checkMonstersNew(
 }
 
 /**
- * Enhanced version of checkMonsters with improved Pokemon data fetching
+ * version of checkMonsters with improved Pokemon data fetching
  */
 export async function checkMonsters(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   args: string[]
 ): Promise<void> {
   const userId = interaction.user.id;
@@ -666,9 +666,9 @@ export async function checkMonsters(
 }
 
 /**
- * Enhanced Pokedex checker with improved Pokemon data fetching
+ * Pokedex checker with improved Pokemon data fetching
  */
-export async function checkPokedex(interaction: CommandInteraction): Promise<void> {
+export async function checkPokedex(interaction: ChatInputCommandInteraction): Promise<void> {
   const userId = interaction.user.id;
 
   try {
@@ -755,10 +755,10 @@ export async function checkPokedex(interaction: CommandInteraction): Promise<voi
 }
 
 /**
- * Enhanced favorites checker with improved Pokemon data fetching
+ * favorites checker with improved Pokemon data fetching
  */
 export async function checkFavorites(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   args: string[]
 ): Promise<void> {
   const userId = interaction.user.id;
@@ -848,9 +848,9 @@ export async function checkFavorites(
 }
 
 /**
- * Enhanced search function with improved Pokemon data fetching
+ * search function with improved Pokemon data fetching
  */
-export async function searchMonsters(interaction: CommandInteraction): Promise<void> {
+export async function searchMonsters(interaction: ChatInputCommandInteraction): Promise<void> {
   const userId = interaction.user.id;
   const username = interaction.user.username;
   const guildName = interaction.guild?.name;

@@ -17,7 +17,7 @@ const PROCESSING_INTERVAL = 100; // Process every 100ms
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second base delay
 
-// Enhanced statistics interface
+// statistics interface
 interface QueueStatistics {
   // Basic counters
   processed: number;
@@ -76,7 +76,7 @@ interface QueueStatistics {
   isHealthy: boolean;
 }
 
-// Enhanced message interface with timing data
+// message interface with timing data
 interface QueuedMessage {
   id: string;
   type: "interaction_reply" | "interaction_edit" | "channel_message";
@@ -103,9 +103,10 @@ class MessageQueueManager {
   private queue: QueuedMessage[] = [];
   private processing = false;
   private timer?: Timer;
+  private statsTimer?: Timer;
   private startTime = new Date();
 
-  // Enhanced statistics tracking
+  // statistics tracking
   private stats: QueueStatistics = {
     processed: 0,
     failed: 0,
@@ -137,18 +138,23 @@ class MessageQueueManager {
     isHealthy: true,
   };
 
-  // Performance tracking
-  private performanceSamples: PerformanceSample[] = [];
+  // Performance tracking - using circular buffer to avoid array allocations
+  private performanceSamples: (PerformanceSample | undefined)[] = new Array(1000);
+  private sampleIndex = 0;
+  private sampleCount = 0;
   private maxSamples = 1000; // Keep last 1000 samples for moving averages
   private lastThroughputUpdate = Date.now();
   private throughputCounter = 0;
+
+  // Track retry timeouts so they can be cleared on destroy
+  private retryTimers: Timer[] = [];
 
   constructor() {
     this.startProcessing();
     this.startStatsUpdater();
   }
 
-  // Enhanced queue addition with better timing tracking
+  // queue addition with better timing tracking
   private addToQueue<T>(
     type: QueuedMessage["type"],
     payload: any,
@@ -223,7 +229,7 @@ class MessageQueueManager {
 
   // Start periodic stats updates
   private startStatsUpdater() {
-    setInterval(() => {
+    this.statsTimer = setInterval(() => {
       this.updateDerivedStats();
     }, 1000); // Update every second
   }
@@ -252,12 +258,10 @@ class MessageQueueManager {
     this.stats.isHealthy = this.queue.length < this.stats.backlogThreshold &&
                           this.stats.successRate > 95;
 
-    // Clean old performance samples
-    const cutoff = new Date(now - 300000); // Keep last 5 minutes
-    this.performanceSamples = this.performanceSamples.filter(s => s.timestamp > cutoff);
+    // Note: Circular buffer automatically limits samples, no cleanup needed
   }
 
-  // Enhanced processing with timing
+  // processing with timing
   private async processQueue() {
     if (this.processing || this.queue.length === 0) return;
 
@@ -296,7 +300,7 @@ class MessageQueueManager {
     }
   }
 
-  // Enhanced message processing with detailed timing
+  // message processing with detailed timing
   private async processMessage(message: QueuedMessage) {
     const processStart = performance.now();
     const waitTime = processStart - message.queuedAt.getTime();
@@ -385,7 +389,7 @@ class MessageQueueManager {
     });
   }
 
-  // Enhanced error handling with categorization
+  // error handling with categorization
   private async handleMessageError(message: QueuedMessage, error: any) {
     message.retries++;
     this.stats.retries++;
@@ -408,8 +412,11 @@ class MessageQueueManager {
         message.priority = Math.max(0, message.priority - 1);
         message.queuedAt = new Date(); // Reset queue time for accurate wait time calculation
         this.queue.unshift(message);
-        clearTimeout(timer);
+        // Remove from tracked timers
+        const idx = this.retryTimers.indexOf(timer);
+        if (idx !== -1) this.retryTimers.splice(idx, 1);
       }, delay);
+      this.retryTimers.push(timer);
     } else {
       logger.error(
         `Failed to process message ${message.id} after ${message.retries} retries:`,
@@ -451,13 +458,12 @@ class MessageQueueManager {
     this.stats.errorsByType[errorType]++;
   }
 
-  // Add performance sample
+  // Add performance sample using circular buffer (O(1), no allocations)
   private addPerformanceSample(sample: PerformanceSample) {
-    this.performanceSamples.push(sample);
-
-    // Keep only recent samples
-    if (this.performanceSamples.length > this.maxSamples) {
-      this.performanceSamples = this.performanceSamples.slice(-this.maxSamples);
+    this.performanceSamples[this.sampleIndex] = sample;
+    this.sampleIndex = (this.sampleIndex + 1) % this.maxSamples;
+    if (this.sampleCount < this.maxSamples) {
+      this.sampleCount++;
     }
   }
 
@@ -506,7 +512,7 @@ class MessageQueueManager {
     return await interaction.editReply(message);
   }
 
-  // Handle channel message
+  // Handle channel message (supports both channel ID and name lookup)
   private async handleChannelMessage(payload: {
     guild: Guild;
     channelName: string;
@@ -514,10 +520,14 @@ class MessageQueueManager {
   }) {
     const { guild, channelName, content } = payload;
 
-    const channel = guild.channels.cache.find(
-      (ch): ch is TextChannel =>
-        ch.name === channelName && ch.isTextBased() && "send" in ch
-    ) as TextChannel;
+    // Try ID-based lookup first, then fall back to name-based
+    let channel = guild.channels.cache.get(channelName) as TextChannel | undefined;
+    if (!channel || !channel.isTextBased?.() || !('send' in channel)) {
+      channel = guild.channels.cache.find(
+        (ch): ch is TextChannel =>
+          ch.name === channelName && ch.isTextBased() && "send" in ch
+      ) as TextChannel;
+    }
 
     if (!channel) {
       throw new Error(
@@ -572,9 +582,28 @@ class MessageQueueManager {
     return { ...this.stats };
   }
 
-  // Get performance samples for detailed analysis
+  // Get performance samples for detailed analysis (returns samples in chronological order)
   getPerformanceSamples(): PerformanceSample[] {
-    return [...this.performanceSamples];
+    if (this.sampleCount === 0) return [];
+
+    const samples: PerformanceSample[] = [];
+
+    if (this.sampleCount < this.maxSamples) {
+      // Buffer not full yet, samples are in order from index 0
+      for (let i = 0; i < this.sampleCount; i++) {
+        const sample = this.performanceSamples[i];
+        if (sample) samples.push(sample);
+      }
+    } else {
+      // Buffer is full, oldest sample is at sampleIndex
+      for (let i = 0; i < this.maxSamples; i++) {
+        const idx = (this.sampleIndex + i) % this.maxSamples;
+        const sample = this.performanceSamples[idx];
+        if (sample) samples.push(sample);
+      }
+    }
+
+    return samples;
   }
 
   // Reset statistics (useful for testing)
@@ -611,7 +640,12 @@ class MessageQueueManager {
       isHealthy: true,
     };
     this.startTime = now;
-    this.performanceSamples = [];
+    // Reset circular buffer in-place (avoid orphaning old array)
+    for (let i = 0; i < this.performanceSamples.length; i++) {
+      this.performanceSamples[i] = undefined;
+    }
+    this.sampleIndex = 0;
+    this.sampleCount = 0;
     this.throughputCounter = 0;
     this.lastThroughputUpdate = Date.now();
   }
@@ -622,6 +656,15 @@ class MessageQueueManager {
       clearInterval(this.timer);
       this.timer = undefined;
     }
+    if (this.statsTimer) {
+      clearInterval(this.statsTimer);
+      this.statsTimer = undefined;
+    }
+    // Clear all pending retry timers
+    for (const timer of this.retryTimers) {
+      clearTimeout(timer);
+    }
+    this.retryTimers.length = 0;
     this.queue.length = 0;
   }
 }
@@ -632,7 +675,7 @@ const messageQueue = new MessageQueueManager();
 // ==================== PUBLIC API (Backwards Compatible) ====================
 
 /**
- * Enhanced message sending with proper queue management
+ * message sending with proper queue management
  * @param message Message content
  * @param interaction Discord interaction
  * @param edit Whether to edit existing reply or send new one
@@ -668,15 +711,17 @@ export async function queueMessage(
 }
 
 /**
- * Send message to pokémon-spawns channel only (no fallbacks)
+ * Send message to a spawn channel (supports channel ID or name)
  * @param embed Embed to send
  * @param interaction Discord interaction for context
  * @param priority Message priority
+ * @param channelNameOrId Channel ID or name (defaults to "pokémon-spawns")
  */
 export async function spawnChannelMessage(
   embed: EmbedBuilder,
   interaction: CommandInteraction,
-  priority = 1
+  priority = 1,
+  channelNameOrId = "pokémon-spawns"
 ): Promise<void> {
   if (!interaction.guild) {
     throw new Error("No guild context available");
@@ -684,7 +729,7 @@ export async function spawnChannelMessage(
 
   await messageQueue.queueChannelMessage(
     interaction.guild,
-    "pokémon-spawns",
+    channelNameOrId,
     { embeds: [embed] },
     priority
   );
@@ -718,56 +763,40 @@ export function getMessageQueuePerformance(): PerformanceSample[] {
 }
 
 /**
- * Export comprehensive stats in multiple formats
+ * Get health status and recent errors for reporting
  */
-export function exportQueueStats() {
+export function getQueueHealth(): {
+  status: string;
+  queueBacklog: boolean;
+  successRate: number;
+  recentErrors: Array<[string, number]>;
+} {
   const stats = messageQueue.getStats();
-  const performance = messageQueue.getPerformanceSamples();
-
   return {
-    // Summary stats for dashboards
-    summary: {
-      uptime: stats.uptime,
-      processed: stats.processed,
-      failed: stats.failed,
-      successRate: stats.successRate,
-      throughputPerMinute: stats.throughputPerMinute,
-      currentQueueSize: stats.currentQueueSize,
-      isHealthy: stats.isHealthy,
-    },
-
-    // Detailed stats for analysis
-    detailed: stats,
-
-    // Performance data for graphs
-    performance: performance,
-
-    // Health check
-    health: {
-      status: stats.isHealthy ? "healthy" : "unhealthy",
-      queueBacklog: stats.currentQueueSize >= stats.backlogThreshold,
-      successRate: stats.successRate,
-      recentErrors: Object.entries(stats.errorsByType)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 5),
-    },
-
-    // CSV-ready data for exports
-    csvData: {
-      messageTypes: Object.entries(stats.messagesByType).map(([type, data]) => ({
-        type,
-        ...data,
-      })),
-      priorityLevels: Object.entries(stats.messagesByPriority).map(([priority, data]) => ({
-        priority: parseInt(priority),
-        ...data,
-      })),
-      errors: Object.entries(stats.errorsByType).map(([type, count]) => ({
-        errorType: type,
-        count,
-      })),
-    },
+    status: stats.isHealthy ? "healthy" : "unhealthy",
+    queueBacklog: stats.currentQueueSize >= stats.backlogThreshold,
+    successRate: stats.successRate,
+    recentErrors: Object.entries(stats.errorsByType)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5),
   };
+}
+
+/**
+ * Format duration in milliseconds to human readable format
+ */
+export function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms.toFixed(0)}ms`;
+
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `${days}d ${hours % 24}h ${minutes % 60}m`;
+  if (hours > 0) return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
+  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+  return `${seconds}s`;
 }
 
 /**
@@ -786,3 +815,4 @@ export function shutdownMessageQueue(): void {
 
 // Export the queue manager for advanced usage
 export { messageQueue, type PerformanceSample, type QueueStatistics };
+

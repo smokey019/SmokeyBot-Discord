@@ -1,16 +1,16 @@
-import { CommandInteraction, type CommandInteractionOption } from 'discord.js';
+import { ChatInputCommandInteraction, type ChatInputCommandInteractionOption } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { MonsterTable, type IMonsterModel } from '../../models/Monster';
 import { queueMessage, sendUrgentMessage } from '../message_queue';
 import {
-  findMonsterByID,
-  formatPokemonLevel,
-  getPokemonDisplayName,
-  getPokemonRarityEmoji,
-  getPokemonWithEnglishName,
-  getUserMonster,
-  PokemonError
+    findMonsterByID,
+    formatPokemonLevel,
+    getPokemonDisplayName,
+    getPokemonRarityEmoji,
+    getPokemonWithEnglishName,
+    getUserMonster,
+    PokemonError
 } from './monsters';
 
 const logger = getLogger('Pokémon Release');
@@ -39,7 +39,7 @@ interface BulkReleaseResult {
 }
 
 /**
- * Enhanced release function with better error handling
+ * release function with better error handling
  * @param monster_id - The ID of the monster to release
  * @returns Promise<ReleaseResult>
  */
@@ -80,7 +80,7 @@ async function release(monster_id: number | string): Promise<ReleaseResult> {
 }
 
 /**
- * Enhanced recover function with better error handling
+ * recover function with better error handling
  * @param monster_id - The ID of the monster to recover
  * @returns Promise<ReleaseResult>
  */
@@ -122,7 +122,7 @@ async function recover(monster_id: number | string): Promise<ReleaseResult> {
  * @param option - Command interaction option
  * @returns string | null
  */
-function getOptionValue(option: CommandInteractionOption | null): string | null {
+function getOptionValue(option: ChatInputCommandInteractionOption | null): string | null {
   if (!option || option.value === null || option.value === undefined) return null;
   return option.value.toString();
 }
@@ -146,7 +146,7 @@ function validateMonsterOwnership(
 }
 
 /**
- * Get enhanced monster display info using monsters.ts utilities
+ * Get monster display info using monsters.ts utilities
  * @param monster - Monster model
  * @returns Promise with formatted monster info
  */
@@ -220,7 +220,7 @@ function parseBulkInput(input: string): string[] {
 }
 
 /**
- * Process bulk monster release with enhanced tracking
+ * Process bulk monster release with tracking
  * @param monsterIds - Array of monster IDs
  * @param userId - User ID
  * @returns Promise<BulkReleaseResult>
@@ -298,10 +298,10 @@ async function processBulkRelease(monsterIds: string[], userId: string): Promise
 }
 
 /**
- * Enhanced single monster release with comprehensive error handling
+ * single monster release with comprehensive error handling
  * @param interaction - Discord command interaction
  */
-export async function releaseMonster(interaction: CommandInteraction): Promise<void> {
+export async function releaseMonster(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     const pokemonOption = getOptionValue(interaction.options.get('pokemon'));
 
@@ -363,7 +363,7 @@ export async function releaseMonster(interaction: CommandInteraction): Promise<v
       return;
     }
 
-    // Get enhanced monster display info
+    // Get monster display info
     const displayInfo = await getMonsterDisplayInfo(targetMonster);
 
     // Attempt release
@@ -405,11 +405,11 @@ export async function releaseMonster(interaction: CommandInteraction): Promise<v
 }
 
 /**
- * Handle bulk monster release with enhanced feedback
+ * Handle bulk monster release with feedback
  * @param interaction - Discord command interaction
  * @param input - Bulk input string
  */
-async function handleBulkRelease(interaction: CommandInteraction, input: string): Promise<void> {
+async function handleBulkRelease(interaction: ChatInputCommandInteraction, input: string): Promise<void> {
   try {
     const monsterIds = parseBulkInput(input);
 
@@ -434,7 +434,7 @@ async function handleBulkRelease(interaction: CommandInteraction, input: string)
     // Process bulk release
     const result = await processBulkRelease(monsterIds, interaction.user.id);
 
-    // Create enhanced summary message
+    // Create summary message
     let message = `**Bulk Release Summary**\n`;
     message += `📊 **Requested:** ${result.totalRequested}\n`;
     message += `✅ **Released:** ${result.successCount}\n`;
@@ -488,10 +488,10 @@ async function handleBulkRelease(interaction: CommandInteraction, input: string)
 }
 
 /**
- * Enhanced monster recovery with comprehensive error handling
+ * monster recovery with comprehensive error handling
  * @param interaction - Discord command interaction
  */
-export async function recoverMonster(interaction: CommandInteraction): Promise<void> {
+export async function recoverMonster(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     const pokemonOption = getOptionValue(interaction.options.get('pokemon'));
 
@@ -534,7 +534,7 @@ export async function recoverMonster(interaction: CommandInteraction): Promise<v
       return;
     }
 
-    // Get enhanced monster display info
+    // Get monster display info
     const displayInfo = await getMonsterDisplayInfo(targetMonster);
 
     // Attempt recovery
@@ -577,11 +577,11 @@ export async function recoverMonster(interaction: CommandInteraction): Promise<v
 
 // Export utility functions for testing and backwards compatibility
 export {
-  getMonsterDisplayInfo,
-  parseBulkInput,
-  processBulkRelease,
-  recover,
-  release,
-  validateMonsterOwnership
+    getMonsterDisplayInfo,
+    parseBulkInput,
+    processBulkRelease,
+    recover,
+    release,
+    validateMonsterOwnership
 };
 

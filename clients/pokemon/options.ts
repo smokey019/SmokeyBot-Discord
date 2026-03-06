@@ -1,16 +1,16 @@
 import {
-  ChannelType,
-  CommandInteraction,
-  EmbedBuilder,
-  PermissionFlagsBits,
-  type GuildChannel,
-  type TextChannel
+    ChannelType,
+    ChatInputCommandInteraction,
+    EmbedBuilder,
+    PermissionFlagsBits,
+    type GuildChannel,
+    type TextChannel
 } from 'discord.js';
 import { cacheClient, type ICache } from '../../clients/cache';
 import {
-  databaseClient,
-  GuildSettingsTable,
-  type IGuildSettings
+    databaseClient,
+    GuildSettingsTable,
+    type IGuildSettings
 } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { format_number } from '../../utils';
@@ -18,7 +18,7 @@ import { queueMessage } from '../message_queue';
 
 const logger = getLogger('Pokémon-Settings');
 
-// Enhanced error handling
+// error handling
 class SettingsError extends Error {
   constructor(message: string, public code: string) {
     super(message);
@@ -86,7 +86,7 @@ const SETTINGS_CONFIG: Record<string, SettingConfig> = {
  * Main settings command handler
  * @param interaction - Discord command interaction
  */
-export async function handleSettings(interaction: CommandInteraction): Promise<void> {
+export async function handleSettings(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     const subcommand = interaction.options.getSubcommand();
 
@@ -117,12 +117,12 @@ export async function handleSettings(interaction: CommandInteraction): Promise<v
 }
 
 /**
- * Enhanced SmokeMon toggle with comprehensive validation
+ * SmokeMon toggle with comprehensive validation
  * @param interaction - Discord command interaction
  * @param cache - Guild cache
  */
 export async function toggleSmokeMon(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   cache: ICache,
 ): Promise<boolean> {
   try {
@@ -197,7 +197,7 @@ export async function toggleSmokeMon(
  * View all current guild settings
  * @param interaction - Discord command interaction
  */
-async function viewSettings(interaction: CommandInteraction): Promise<void> {
+async function viewSettings(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     const cache = await getGuildCache(interaction.guild!.id);
     if (!cache) {
@@ -261,7 +261,7 @@ async function viewSettings(interaction: CommandInteraction): Promise<void> {
  * Set a specific setting value
  * @param interaction - Discord command interaction
  */
-async function setSetting(interaction: CommandInteraction): Promise<void> {
+async function setSetting(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     if (!hasAdminPermissions(interaction)) {
       await queueMessage(
@@ -331,7 +331,7 @@ async function setSetting(interaction: CommandInteraction): Promise<void> {
  * Reset a setting to its default value
  * @param interaction - Discord command interaction
  */
-async function resetSetting(interaction: CommandInteraction): Promise<void> {
+async function resetSetting(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     if (!hasAdminPermissions(interaction)) {
       await queueMessage(
@@ -388,7 +388,7 @@ async function resetSetting(interaction: CommandInteraction): Promise<void> {
  * Set or change the spawn channel
  * @param interaction - Discord command interaction
  */
-async function setSpawnChannel(interaction: CommandInteraction): Promise<void> {
+async function setSpawnChannel(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     if (!hasAdminPermissions(interaction)) {
       await queueMessage(
@@ -464,7 +464,7 @@ async function setSpawnChannel(interaction: CommandInteraction): Promise<void> {
  * @returns Validation result
  */
 async function validateSpawnChannel(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   cache: ICache
 ): Promise<{ valid: boolean; message: string }> {
   const channelId = cache.settings.specific_channel;
@@ -594,7 +594,7 @@ function validateSettingValue(
  * @param interaction - Discord command interaction
  * @returns Whether user has admin permissions
  */
-function hasAdminPermissions(interaction: CommandInteraction): boolean {
+function hasAdminPermissions(interaction: ChatInputCommandInteraction): boolean {
   if (!interaction.guild || !interaction.member) return false;
 
   const member = interaction.member;
@@ -640,6 +640,6 @@ export function getSettingsHelp(): string {
 
 // Export utility functions and types for testing
 export {
-  ALTERNATIVE_SPAWN_CHANNELS, DEFAULT_SPAWN_CHANNEL, getGuildCache, hasAdminPermissions, SETTINGS_CONFIG, validateSettingValue, validateSpawnChannel, type SettingConfig
+    ALTERNATIVE_SPAWN_CHANNELS, DEFAULT_SPAWN_CHANNEL, getGuildCache, hasAdminPermissions, SETTINGS_CONFIG, validateSettingValue, validateSpawnChannel, type SettingConfig
 };
 

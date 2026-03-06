@@ -6,10 +6,11 @@ import { getLogger } from '../../../clients/logger';
 import { getCurrentTime } from '../../../utils';
 import { queueMessage } from '../../message_queue';
 import {
-  currentMonsterInfo,
-  monsterInfo,
-  monsterInfoLatest
+    currentMonsterInfo,
+    monsterInfo,
+    monsterInfoLatest
 } from '../../pokemon/info';
+import { isSpawnChannel } from '../../pokemon/utils';
 
 const logger = getLogger('Pokemon-Info-Command');
 
@@ -18,7 +19,7 @@ const COMMAND_COOLDOWN = 3; // seconds
 const LATEST_ALIASES = ['latest', 'l', 'last', 'recent'];
 const CURRENT_ALIASES = ['current', 'selected', 'active'];
 
-// Enhanced error handling
+// error handling
 class InfoCommandError extends Error {
   constructor(message: string, public code: string, public userId?: string) {
     super(message);
@@ -26,7 +27,7 @@ class InfoCommandError extends Error {
   }
 }
 
-// Enhanced interfaces for better type safety
+// interfaces for better type safety
 interface CommandValidationResult {
   isValid: boolean;
   errorMessage?: string;
@@ -65,11 +66,11 @@ function validateCommandExecution({ settings, channel, interaction }: ChannelVal
     }
 
     // Check if specific channel is required and matches
-    if (settings.specific_channel && channel.name !== settings.specific_channel) {
+    if (settings.specific_channel && !isSpawnChannel(channel.id, channel.name, settings.specific_channel)) {
       logger.debug(`Command used in wrong channel: ${channel.name}, expected: ${settings.specific_channel}`);
       return {
         isValid: false,
-        errorMessage: `This command can only be used in #${settings.specific_channel}.`,
+        errorMessage: `This command can only be used in the configured spawn channel.`,
         canProceed: false
       };
     }
@@ -239,7 +240,7 @@ async function executeInfoCommand(
 }
 
 /**
- * Enhanced main run function with comprehensive error handling and validation
+ * main run function with comprehensive error handling and validation
  */
 export async function run(e: runEvent): Promise<void> {
   const startTime = Date.now();
@@ -315,7 +316,7 @@ export async function run(e: runEvent): Promise<void> {
 // Maintain backward compatibility - export original names
 export const names = ['info', 'i'];
 
-// Enhanced slash command data with better descriptions and validation
+// slash command data with better descriptions and validation
 export const SlashCommandData = new SlashCommandBuilder()
   .setName('info')
   .setDescription("Display detailed information about a Pokemon.")
@@ -375,6 +376,6 @@ export function getCommandInfo(): {
  * This ensures backward compatibility with any existing integrations
  */
 export async function runLegacy(e: runEvent): Promise<void> {
-  logger.debug('Legacy command format detected, redirecting to enhanced run function');
+  logger.debug('Legacy command format detected, redirecting to run function');
   await run(e);
 }

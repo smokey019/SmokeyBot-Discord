@@ -2,12 +2,13 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import { TextChannel } from 'discord.js';
 import type { runEvent } from '..';
 import { catchMonster } from '../../pokemon/catch-monster';
+import { isSpawnChannel } from '../../pokemon/utils';
 
 export async function run(e: runEvent) {
-  const channel_name = (e.interaction.channel as TextChannel).name;
+  const channel = e.interaction.channel as TextChannel;
   if (
     !e.cache.settings.smokemon_enabled ||
-    channel_name != e.cache.settings.specific_channel
+    !isSpawnChannel(channel.id, channel.name, e.cache.settings.specific_channel)
   )
     return;
   await catchMonster(e.interaction);

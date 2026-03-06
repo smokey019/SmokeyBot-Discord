@@ -1,14 +1,14 @@
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { ChatInputChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
 import { databaseClient, getUser } from '../../clients/database';
 import { getLogger } from '../../clients/logger';
 import { MonsterTable, type IMonsterModel } from '../../models/Monster';
 import { queueMessage } from '../message_queue';
 import {
-  findMonsterByID,
-  getPokemonDisplayName,
-  getPokemonSprites,
-  getUserMonster,
-  type Pokemon,
+    findMonsterByID,
+    getPokemonDisplayName,
+    getPokemonSprites,
+    getUserMonster,
+    type Pokemon,
 } from './monsters';
 
 const logger = getLogger('Nickname');
@@ -18,7 +18,7 @@ const MAX_NICKNAME_LENGTH = 32;
 const MIN_NICKNAME_LENGTH = 1;
 const NICKNAME_COOLDOWN = 5 * 60 * 1000; // 5 minutes
 
-// Enhanced error handling
+// error handling
 class NicknameError extends Error {
   constructor(message: string, public code: string) {
     super(message);
@@ -131,10 +131,10 @@ async function isNicknameUniqueForUser(
 }
 
 /**
- * Enhanced set nickname function with comprehensive validation
+ * set nickname function with comprehensive validation
  * @param interaction - Discord command interaction
  */
-export async function setNickname(interaction: CommandInteraction): Promise<void> {
+export async function setNickname(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     // Get and validate input
     const rawNickname = interaction.options.get('pokemon')?.value?.toString();
@@ -210,7 +210,7 @@ export async function setNickname(interaction: CommandInteraction): Promise<void
     }
     */
 
-    // Get Pokémon data for enhanced messaging
+    // Get Pokémon data for messaging
     const pokemonData = await findMonsterByID(monster.monster_id);
     if (!pokemonData) {
       logger.warn(`Pokemon data not found for monster ${monster.id}`);
@@ -251,7 +251,7 @@ export async function setNickname(interaction: CommandInteraction): Promise<void
  * Remove nickname from current Pokémon
  * @param interaction - Discord command interaction
  */
-export async function removeNickname(interaction: CommandInteraction): Promise<void> {
+export async function removeNickname(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     const user = await getUser(interaction.user.id);
     if (!user?.current_monster) {
@@ -320,7 +320,7 @@ export async function removeNickname(interaction: CommandInteraction): Promise<v
  * View current Pokémon's nickname and information
  * @param interaction - Discord command interaction
  */
-export async function viewNickname(interaction: CommandInteraction): Promise<void> {
+export async function viewNickname(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     const user = await getUser(interaction.user.id);
     if (!user?.current_monster) {
@@ -367,7 +367,7 @@ export async function viewNickname(interaction: CommandInteraction): Promise<voi
  * Set nickname for a specific Pokémon by ID
  * @param interaction - Discord command interaction
  */
-export async function setNicknameById(interaction: CommandInteraction): Promise<void> {
+export async function setNicknameById(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     const monsterId = interaction.options.get('id')?.value?.toString();
     const rawNickname = interaction.options.get('nickname')?.value?.toString();
@@ -447,14 +447,14 @@ export async function setNicknameById(interaction: CommandInteraction): Promise<
 }
 
 /**
- * Send enhanced success message with Pokémon information
+ * Send success message with Pokémon information
  * @param interaction - Discord interaction
  * @param monster - Monster model
  * @param pokemonData - Pokemon API data
  * @param nickname - New nickname
  */
 async function sendNicknameSuccessMessage(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   monster: IMonsterModel,
   pokemonData: Pokemon | null,
   nickname: string
@@ -496,7 +496,7 @@ async function sendNicknameSuccessMessage(
  * @param pokemonData - Pokemon API data
  */
 async function sendPokemonInfoMessage(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   monster: IMonsterModel,
   pokemonData: Pokemon
 ): Promise<void> {
@@ -578,9 +578,9 @@ export async function batchUpdateNicknames(
 
 // Export utility functions and constants for testing
 export {
-  INAPPROPRIATE_PATTERNS, isNicknameUniqueForUser,
-  MAX_NICKNAME_LENGTH,
-  MIN_NICKNAME_LENGTH,
-  PROFANITY_LIST, sanitizeNickname
+    INAPPROPRIATE_PATTERNS, isNicknameUniqueForUser,
+    MAX_NICKNAME_LENGTH,
+    MIN_NICKNAME_LENGTH,
+    PROFANITY_LIST, sanitizeNickname
 };
 

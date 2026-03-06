@@ -1,24 +1,22 @@
-import { EmbedBuilder, TextChannel, type CommandInteraction } from "discord.js";
+import { EmbedBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { initializing, rateLimited } from "../../bot";
 import { loadCache, type ICache } from "../../clients/cache";
 import {
-  GuildSettingsTable,
   databaseClient,
-  type IGuildSettings,
 } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
 import { getCurrentTime, getRndInteger } from "../../utils";
-import { spawnChannelMessage } from "../message_queue";
 import {
   findMonsterByID,
   formatPokemonTypes,
   getPokemonDisplayName,
-  getPokemonSpawnRarity,
   getPokemonSprites,
   getPokemonTypeColor,
   getRandomMonster,
   type Pokemon
 } from "./monsters";
+import type { GuildContext } from "./types";
+import { replaceLettersSimple, resolveSpawnChannel } from "./utils";
 import { getBoostedWeatherSpawns } from "./weather";
 
 export const MONSTER_SPAWNS = loadCache("MONSTER_SPAWNS");
@@ -26,12 +24,12 @@ export const MONSTER_SPAWNS = loadCache("MONSTER_SPAWNS");
 const logger = getLogger("Pokémon-Spawn");
 
 // Constants for spawn configuration
-const SPAWN_TIMER_MIN = 60;
 const SPAWN_TIMER_MAX = 300;
 const SPAWN_TIMER_INNER_MIN = 60;
 const SPAWN_TIMER_INNER_MAX = 120;
 const MAX_BOOST_ATTEMPTS = 10;
 const DEFAULT_SPAWN_COOLDOWN = 30;
+const API_RATE_LIMIT_DELAY = 100; // 100ms delay between API attempts
 
 // Wild encounter phrases from Pokémon games
 const WILD_ENCOUNTER_PHRASES = [
@@ -80,12 +78,11 @@ interface SpawnResult {
  * @param pokemonName - Name of the Pokémon
  * @returns Random encounter phrase
  */
-async function getRandomEncounterPhrase(pokemonName: string): Promise<string> {
+function getRandomEncounterPhrase(pokemonName: string): string {
   const randomIndex = Math.floor(Math.random() * WILD_ENCOUNTER_PHRASES.length);
   const phrase = WILD_ENCOUNTER_PHRASES[randomIndex];
 
-  const rarity = await getPokemonSpawnRarity({ name: pokemonName } as Pokemon);
-  return phrase.replace("{pokemon}", rarity.rarity + ' monster');
+  return phrase.replace("{pokemon}", pokemonName);
 }
 
 /**
@@ -97,6 +94,15 @@ function generateSpawnTimer(): number {
     getRndInteger(SPAWN_TIMER_INNER_MIN, SPAWN_TIMER_INNER_MAX),
     SPAWN_TIMER_MAX
   );
+}
+
+/**
+ * Sleep utility function to add delays between API calls
+ * @param ms - Milliseconds to sleep
+ * @returns Promise that resolves after the delay
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /**
@@ -139,8 +145,7 @@ function isMonsterBoosted(monster: Pokemon, boostedTypes: string[]): boolean {
  * @returns EmbedBuilder
  */
 async function createSpawnEmbed(monster: Pokemon, isForced: boolean = false): Promise<EmbedBuilder> {
-  const displayName = getPokemonDisplayName(monster);
-  const encounterPhrase = await getRandomEncounterPhrase(monster.name);
+  const displayName = getPokemonDisplayName(monster).split(" ")[0];
 
   // Get sprites using the centralized function
   const sprites = getPokemonSprites(monster, false);
@@ -150,8 +155,10 @@ async function createSpawnEmbed(monster: Pokemon, isForced: boolean = false): Pr
   const primaryType = monster.types?.[0]?.type?.name || 'normal';
   const embedColor = isForced ? 0xff6b6b : getPokemonTypeColor(primaryType);
 
+  const phrase = getRandomEncounterPhrase(replaceLettersSimple(displayName, 0.5));
+
   const embed = new EmbedBuilder()
-    .setTitle(encounterPhrase)
+    .setTitle(phrase)
     .setDescription("Guess by using `/catch PokémonName` to try and catch it!")
     .setColor(embedColor)
     .setTimestamp();
@@ -191,7 +198,7 @@ async function createSpawnEmbed(monster: Pokemon, isForced: boolean = false): Pr
  * @returns Promise<Pokemon | null>
  */
 async function findSpawnableMonster(
-  interaction: CommandInteraction,
+  interaction: GuildContext,
   cache: ICache
 ): Promise<Pokemon | null> {
   let attempts = 0;
@@ -207,6 +214,11 @@ async function findSpawnableMonster(
       (!monster || (!isBoosted && attempts < 5))
     ) {
       try {
+        // Add delay before each API call attempt (except the first one)
+        if (attempts > 0) {
+          await sleep(API_RATE_LIMIT_DELAY);
+        }
+
         // Use the centralized random function
         const randomId = getRandomMonster();
         const candidate = await findMonsterByID(randomId);
@@ -246,11 +258,11 @@ async function findSpawnableMonster(
     if (monster) {
       const displayName = getPokemonDisplayName(monster);
       if (isBoosted) {
-        logger.debug(
+        logger.trace(
           `Found weather-boosted ${displayName} after ${attempts} attempts`
         );
       } else {
-        logger.debug(`Found regular ${displayName} after ${attempts} attempts`);
+        logger.trace(`Found regular ${displayName} after ${attempts} attempts`);
       }
     }
 
@@ -267,7 +279,7 @@ async function findSpawnableMonster(
  * @param cache - Guild cache
  */
 export async function checkSpawn(
-  interaction: CommandInteraction,
+  interaction: GuildContext,
   cache: ICache
 ): Promise<void> {
   try {
@@ -317,7 +329,7 @@ export async function checkSpawn(
  * @param cache - Guild cache
  */
 export async function spawnMonster(
-  interaction: CommandInteraction,
+  interaction: GuildContext,
   cache: ICache
 ): Promise<SpawnResult> {
   try {
@@ -326,33 +338,21 @@ export async function spawnMonster(
       return { success: false, error: "No guild ID available" };
     }
 
-    // Find the spawn channel
-    const channelName = cache.settings?.specific_channel;
-    if (!channelName) {
+    // Find the spawn channel (supports both channel ID and legacy channel name)
+    const specificChannel = cache.settings?.specific_channel;
+    if (!specificChannel) {
       logger.error(
         `No spawn channel configured for guild ${interaction.guild?.name}`
       );
       return { success: false, error: "No spawn channel configured" };
     }
 
-    const spawnChannel = interaction.guild?.channels.cache.find(
-      (ch) => ch.name === channelName
-    ) as TextChannel;
+    const spawnChannel = resolveSpawnChannel(interaction.guild!, specificChannel);
 
     if (!spawnChannel) {
-      // Disable spawns if channel doesn't exist
-      try {
-        await databaseClient<IGuildSettings>(GuildSettingsTable)
-          .where({ guild_id: guildId })
-          .update({ smokemon_enabled: 0 });
-
-        logger.error(
-          `Disabled smokeMon for server '${interaction.guild?.name}' - spawn channel '${channelName}' not found`
-        );
-      } catch (dbError) {
-        logger.error("Error disabling smokeMon:", dbError);
-      }
-
+      logger.warn(
+        `Spawn channel '${specificChannel}' not found in guild '${interaction.guild?.name}' - skipping spawn`
+      );
       return { success: false, error: "Spawn channel not found" };
     }
 
@@ -380,7 +380,7 @@ export async function spawnMonster(
     const embed = await createSpawnEmbed(monster, false);
 
     try {
-      await spawnChannelMessage(embed, interaction, 3); // High priority for spawns
+      await spawnChannel.send({ embeds: [embed] });
 
       const displayName = getPokemonDisplayName(monster);
       logger.info(
@@ -390,17 +390,7 @@ export async function spawnMonster(
       return { success: true, monster };
     } catch (messageError) {
       logger.error("Error sending spawn message:", messageError);
-
-      // Fallback: try direct channel send
-      try {
-        await spawnChannel.send({ embeds: [embed] });
-        const displayName = getPokemonDisplayName(monster);
-        logger.info(`Spawn message sent via fallback for ${displayName}`);
-        return { success: true, monster };
-      } catch (fallbackError) {
-        logger.error("Fallback spawn message also failed:", fallbackError);
-        return { success: false, error: "Message sending failed" };
-      }
+      return { success: false, error: "Message sending failed" };
     }
   } catch (error) {
     logger.error("Error in spawnMonster:", error);
@@ -501,7 +491,7 @@ export async function updateSpawn(
  * @param cache - Guild cache
  */
 export async function forceSpawn(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   cache: ICache
 ): Promise<SpawnResult> {
   try {
@@ -523,15 +513,13 @@ export async function forceSpawn(
       return { success: false, error: "Invalid Pokémon ID (must be 1-1025)" };
     }
 
-    // Find the spawn channel
-    const channelName = cache.settings?.specific_channel;
-    if (!channelName) {
+    // Find the spawn channel (supports both channel ID and legacy channel name)
+    const specificChannel = cache.settings?.specific_channel;
+    if (!specificChannel) {
       return { success: false, error: "No spawn channel configured" };
     }
 
-    const spawnChannel = interaction.guild?.channels.cache.find(
-      (ch) => ch.name === channelName
-    ) as TextChannel;
+    const spawnChannel = resolveSpawnChannel(interaction.guild!, specificChannel);
 
     if (!spawnChannel) {
       return { success: false, error: "Spawn channel not found" };
@@ -565,7 +553,7 @@ export async function forceSpawn(
     const embed = await createSpawnEmbed(monster, true);
 
     try {
-      await spawnChannelMessage(embed, interaction, 3);
+      await spawnChannel.send({ embeds: [embed] });
 
       const displayName = getPokemonDisplayName(monster);
       logger.info(
@@ -575,22 +563,7 @@ export async function forceSpawn(
       return { success: true, monster };
     } catch (messageError) {
       logger.error("Error sending forced spawn message:", messageError);
-
-      // Fallback: try direct channel send
-      try {
-        await spawnChannel.send({ embeds: [embed] });
-        const displayName = getPokemonDisplayName(monster);
-        logger.info(
-          `Forced spawn message sent via fallback for ${displayName}`
-        );
-        return { success: true, monster };
-      } catch (fallbackError) {
-        logger.error(
-          "Fallback forced spawn message also failed:",
-          fallbackError
-        );
-        return { success: false, error: "Message sending failed" };
-      }
+      return { success: false, error: "Message sending failed" };
     }
   } catch (error) {
     logger.error("Error in forceSpawn:", error);

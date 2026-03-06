@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { CommandInteraction, PermissionFlagsBits } from "discord.js";
+import { ChatInputCommandInteraction, PermissionFlagsBits } from "discord.js";
 import type { runEvent } from "..";
 import { GLOBAL_COOLDOWN } from "../../../clients/cache";
 import { explode, getCurrentTime, jsonFetch } from "../../../utils";
@@ -27,7 +27,7 @@ export const SlashCommandData = new SlashCommandBuilder()
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuildExpressions);
 
-async function uploadEmote(interaction: CommandInteraction): Promise<void> {
+async function uploadEmote(interaction: ChatInputCommandInteraction): Promise<void> {
   const url = interaction.options.getString("url");
 
   if (!url.match("https://")) return;
@@ -35,6 +35,11 @@ async function uploadEmote(interaction: CommandInteraction): Promise<void> {
   const emoteCode = explode(url.replace("https://"), "/", 3);
 
   const emote = await jsonFetch(`https://7tv.io/v3/emotes/${emoteCode[2]}`);
+
+  if (!emote || !emote.host?.url) {
+    await interaction.editReply("Could not find that emote. Please check that the 7TV URL is valid.");
+    return;
+  }
 
   if (emote.animated) {
     await create_emoji(
@@ -61,7 +66,7 @@ async function uploadEmote(interaction: CommandInteraction): Promise<void> {
  */
 async function create_emoji(
   emote_url: string,
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   name: string,
   smallGIF?: string
 ): Promise<boolean> {

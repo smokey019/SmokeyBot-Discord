@@ -1,21 +1,45 @@
 import { Shard, ShardingManager } from "discord.js";
 import { EventEmitter } from "events";
-import { createClient } from "redis";
+import path from "path";
 import AutoPoster from "topgg-autoposter";
-import { WebSocket, WebSocketServer } from "ws";
+import {
+  createRedisManager,
+  createWebSocketServerManager,
+  type CommunicationManager,
+  type InterShardMessage,
+} from "./clients/communication";
 import { getLogger } from "./clients/logger";
 
 const logger = getLogger("ShardManager");
 
-// Enhanced configuration with environment validation
+// Constants for better maintainability
+const CONSTANTS = {
+  HEARTBEAT_TIMEOUT: 300000, // 5 minutes
+  UNHEALTHY_THRESHOLD: 300000, // 5 minutes
+  ERROR_THRESHOLD: 10,
+  BASE_RESTART_DELAY: 5000,
+  MAX_RESTART_DELAY: 60000,
+  SPAWN_DELAY: 5000,
+  SHUTDOWN_GRACE_PERIOD: 5000,
+  DETAILED_STATS_INTERVAL: 900000, // 15 minutes
+  INITIAL_STATS_DELAY: 30000,
+  GUILD_STATS_REFRESH_INTERVAL: 300000, // 5 minutes
+  HEALTH_ALERT_INTERVAL: 300000, // 5 minutes
+  DETAILED_STATS_LOG_MODULO: 600000, // 10 minutes
+} as const;
+
+// configuration with environment validation
 const config = {
   token: process.env.DISCORD_TOKEN || process.env.DISCORD_TOKEN_DEV,
   topggKey: process.env.TOPGG_KEY,
   isDev: process.env.DEV === "true",
   respawn: process.env.SHARD_RESPAWN !== "false",
   timeout: parseInt(process.env.SHARD_TIMEOUT || "30000"),
-  redisUrl: process.env.REDIS_URL || "redis://localhost:6379",
-  wsPort: parseInt(process.env.WS_PORT || "8080"),
+  // Developer-friendly port configuration to avoid conflicts
+  redisUrl: process.env.REDIS_URL || (process.env.DEV === "true" ? "redis://localhost:6380" : "redis://localhost:6379"),
+  wsPort: parseInt(process.env.WS_PORT || (process.env.DEV === "true" ? "8081" : "8080")),
+  // Fallback ports for development in case primary dev port is also in use
+  devFallbackPorts: [8082, 8083, 8084, 8085],
   useRedis: process.env.USE_REDIS === "true",
   useWebSocket: process.env.USE_WEBSOCKET === "true",
   healthCheckInterval: parseInt(process.env.HEALTH_CHECK_INTERVAL || "30000"),
@@ -23,7 +47,7 @@ const config = {
   maxShardRestarts: parseInt(process.env.MAX_SHARD_RESTARTS || "5"),
 };
 
-// Enhanced error handling
+// error handling
 class ShardManagerError extends Error {
   constructor(
     message: string,
@@ -35,15 +59,15 @@ class ShardManagerError extends Error {
   }
 }
 
-// Communication interfaces
-interface InterShardMessage {
-  type: string;
-  fromShard?: number;
-  toShard?: number | "all";
-  data: any;
-  timestamp: number;
-  id: string;
+// Efficient ID generator using counter + timestamp with overflow protection
+let messageIdCounter = 0;
+function generateMessageId(): string {
+  // Reset counter to prevent memory overflow
+  if (messageIdCounter >= 100000) messageIdCounter = 0;
+  return `${Date.now()}-${(messageIdCounter++).toString(36)}`;
 }
+
+// Communication interface types are now imported from shared module
 
 interface ShardHealthMetrics {
   id: number;
@@ -59,6 +83,17 @@ interface ShardHealthMetrics {
   ping: number;
   cpu: number;
   eventLoopLag: number;
+  guildDetails?: GuildShardInfo[];
+}
+
+interface GuildShardInfo {
+  id: string;
+  name: string;
+  memberCount: number;
+  shardId: number;
+  joinedAt: number;
+  channelCount?: number;
+  roleCount?: number;
 }
 
 interface GlobalStatistics {
@@ -72,170 +107,17 @@ interface GlobalStatistics {
   totalRestarts: number;
   totalMemoryUsage: number;
   lastUpdate: number;
+  // Removed guildDistribution and largestGuilds to reduce memory usage
+  // These can be fetched on-demand via broadcastEval when needed for stats display
 }
 
-interface CommunicationManager {
-  initialize(): Promise<void>;
-  broadcast(message: InterShardMessage): Promise<void>;
-  sendToShard(shardId: number, message: InterShardMessage): Promise<void>;
-  subscribe(callback: (message: InterShardMessage) => void): void;
-  close(): Promise<void>;
-}
-
-// Redis Communication Manager
-class RedisCommunicationManager implements CommunicationManager {
-  private client?: ReturnType<typeof createClient>;
-  private subscriber?: ReturnType<typeof createClient>;
-  private callbacks: Array<(message: InterShardMessage) => void> = [];
-
-  async initialize(): Promise<void> {
-    try {
-      this.client = createClient({ url: config.redisUrl });
-      this.subscriber = createClient({ url: config.redisUrl });
-
-      await this.client.connect();
-      await this.subscriber.connect();
-
-      await this.subscriber.subscribe("shard-manager", (message) => {
-        try {
-          const parsedMessage: InterShardMessage = JSON.parse(message);
-          this.callbacks.forEach((callback) => callback(parsedMessage));
-        } catch (error) {
-          logger.error("Failed to parse Redis message:", error);
-        }
-      });
-
-      logger.info("✅ Redis communication manager initialized");
-    } catch (error) {
-      logger.error("❌ Failed to initialize Redis:", error);
-      throw error;
-    }
-  }
-
-  async broadcast(message: InterShardMessage): Promise<void> {
-    if (!this.client) throw new Error("Redis client not initialized");
-    await this.client.publish("shard-manager", JSON.stringify(message));
-  }
-
-  async sendToShard(shardId: number, message: InterShardMessage): Promise<void> {
-    if (!this.client) throw new Error("Redis client not initialized");
-    message.toShard = shardId;
-    await this.client.publish(`shard-${shardId}`, JSON.stringify(message));
-  }
-
-  subscribe(callback: (message: InterShardMessage) => void): void {
-    this.callbacks.push(callback);
-  }
-
-  async close(): Promise<void> {
-    await this.client?.disconnect();
-    await this.subscriber?.disconnect();
-  }
-}
-
-// WebSocket Communication Manager
-class WebSocketCommunicationManager implements CommunicationManager {
-  private server?: WebSocketServer;
-  private clients = new Map<number, WebSocket>();
-  private callbacks: Array<(message: InterShardMessage) => void> = [];
-
-  async initialize(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        this.server = new WebSocketServer({
-          port: config.wsPort,
-          verifyClient: (info) => {
-            // Add authentication logic here if needed
-            return true;
-          },
-        });
-
-        this.server.on("connection", (ws, req) => {
-          const shardId = parseInt(
-            new URL(req.url!, `http://${req.headers.host}`).searchParams.get(
-              "shardId",
-            ) || "-1",
-          );
-
-          if (shardId >= 0) {
-            this.clients.set(shardId, ws);
-            logger.debug(`Shard ${shardId} connected via WebSocket`);
-
-            ws.on("message", (data) => {
-              try {
-                const message: InterShardMessage = JSON.parse(data.toString());
-                this.callbacks.forEach((callback) => callback(message));
-              } catch (error) {
-                logger.error("Failed to parse WebSocket message:", error);
-              }
-            });
-
-            ws.on("close", () => {
-              this.clients.delete(shardId);
-              logger.debug(`Shard ${shardId} disconnected from WebSocket`);
-            });
-
-            ws.on("error", (error) => {
-              logger.error(`WebSocket error for shard ${shardId}:`, error);
-              this.clients.delete(shardId);
-            });
-          }
-        });
-
-        this.server.on("listening", () => {
-          logger.info(
-            `✅ WebSocket communication server listening on port ${config.wsPort}`,
-          );
-          resolve();
-        });
-
-        this.server.on("error", reject);
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
-  async broadcast(message: InterShardMessage): Promise<void> {
-    const messageStr = JSON.stringify(message);
-    for (const [shardId, ws] of this.clients) {
-      if (ws.readyState === WebSocket.OPEN) {
-        try {
-          ws.send(messageStr);
-        } catch (error) {
-          logger.error(`Failed to send message to shard ${shardId}:`, error);
-        }
-      }
-    }
-  }
-
-  async sendToShard(shardId: number, message: InterShardMessage): Promise<void> {
-    const ws = this.clients.get(shardId);
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      message.toShard = shardId;
-      ws.send(JSON.stringify(message));
-    } else {
-      throw new Error(`Shard ${shardId} not connected via WebSocket`);
-    }
-  }
-
-  subscribe(callback: (message: InterShardMessage) => void): void {
-    this.callbacks.push(callback);
-  }
-
-  async close(): Promise<void> {
-    if (this.server) {
-      for (const ws of this.clients.values()) {
-        ws.close();
-      }
-      this.server.close();
-    }
-  }
-}
+// Communication manager classes are now imported from shared module
+// See: clients/communication/index.ts
 
 class EnhancedShardManager extends EventEmitter {
   public manager: ShardingManager;
   private shardHealth = new Map<number, ShardHealthMetrics>();
+  private maxShardHistory = 50; // Limit shard history to prevent memory leaks
   private globalStats: GlobalStatistics = {
     totalGuilds: 0,
     totalUsers: 0,
@@ -250,10 +132,14 @@ class EnhancedShardManager extends EventEmitter {
   };
   private healthCheckInterval?: Timer;
   private statsInterval?: Timer;
+  private detailedStatsInterval?: Timer;
+  private guildStatsRefreshInterval?: Timer;
+  private healthAlertInterval?: Timer;
   private autoPoster?: any;
   private isShuttingDown = false;
   private communicationManager?: CommunicationManager;
   private startTime = Date.now();
+  // Removed guildToShardMap - Discord.js already tracks guild.shardId
 
   constructor() {
     super();
@@ -263,15 +149,29 @@ class EnhancedShardManager extends EventEmitter {
       throw new ShardManagerError("Missing Discord token", "MISSING_TOKEN");
     }
 
-    // Initialize communication manager
-    if (config.useRedis) {
-      this.communicationManager = new RedisCommunicationManager();
-    } else if (config.useWebSocket) {
-      this.communicationManager = new WebSocketCommunicationManager();
+    // Only initialize cross-server communication if explicitly enabled
+    // Most deployments will use same-server communication through the manager process
+    const enableCrossServer = process.env.FORCE_CROSS_SERVER_COMM === "true";
+
+    if (enableCrossServer) {
+      if (config.useRedis) {
+        this.communicationManager = createRedisManager(config.redisUrl);
+        logger.info("📡 Redis communication enabled for cross-server messaging");
+      } else if (config.useWebSocket) {
+        this.communicationManager = createWebSocketServerManager(config.wsPort, config.devFallbackPorts);
+        logger.info("📡 WebSocket communication enabled for cross-server messaging");
+      }
     }
 
-    // Create enhanced sharding manager optimized for Bun
-    this.manager = new ShardingManager("./bot.ts", {
+    logger.info("🔗 Using optimized direct shard messaging for same-server communication");
+
+    // Resolve bot file path relative to this script's location
+    // When running from source: spawns bot.ts; when running from dist/: spawns bot.js
+    const scriptDir = path.dirname(process.argv[1] || "./index.ts");
+    const isBuilt = (process.argv[1] || "").endsWith(".js");
+    const botFile = path.resolve(scriptDir, isBuilt ? "bot.js" : "bot.ts");
+
+    this.manager = new ShardingManager(botFile, {
       token: config.token,
       totalShards: config.isDev ? 1 : "auto",
       respawn: config.respawn,
@@ -285,7 +185,7 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
-   * Setup enhanced event handlers for shards
+   * Setup event handlers for shards
    */
   private setupEventHandlers(): void {
     this.manager.on("shardCreate", (shard) => {
@@ -296,9 +196,10 @@ class EnhancedShardManager extends EventEmitter {
       this.setupShardEventHandlers(shard);
     });
 
-    // Setup communication message handling
+    // Setup communication message handling for cross-server messages
     if (this.communicationManager) {
       this.communicationManager.subscribe((message) => {
+        logger.debug(`Received cross-server message: ${message.type}`);
         this.handleInterShardMessage(message);
       });
     }
@@ -308,6 +209,15 @@ class EnhancedShardManager extends EventEmitter {
    * Initialize health tracking for a shard
    */
   private initializeShardHealth(shard: Shard): void {
+    // Clean up old shard entries if we exceed the limit
+    if (this.shardHealth.size >= this.maxShardHistory) {
+      const oldestEntry = [...this.shardHealth.entries()]
+        .sort(([, a], [, b]) => a.lastHeartbeat - b.lastHeartbeat)[0];
+      if (oldestEntry) {
+        this.shardHealth.delete(oldestEntry[0]);
+      }
+    }
+    
     this.shardHealth.set(shard.id, {
       id: shard.id,
       status: "spawning",
@@ -323,6 +233,25 @@ class EnhancedShardManager extends EventEmitter {
       cpu: 0,
       eventLoopLag: 0,
     });
+  }
+
+  /**
+   * Update shard ID mapping when Discord.js assigns different ID
+   */
+  private updateShardIdMapping(oldId: number, newId: number): void {
+    if (oldId === newId) return;
+
+    logger.info(`🔄 Updating shard ID mapping: ${oldId} -> ${newId}`);
+
+    // Move health data to new ID
+    const healthData = this.shardHealth.get(oldId);
+    if (healthData) {
+      healthData.id = newId;
+      this.shardHealth.set(newId, healthData);
+      this.shardHealth.delete(oldId);
+    }
+
+    logger.info(`✅ Shard ID mapping updated successfully`);
   }
 
   /**
@@ -355,14 +284,12 @@ class EnhancedShardManager extends EventEmitter {
         this.updateShardHealth(shard.id, { status: "spawning" });
       },
       message: (message: any) => {
-        try {
-          this.handleShardMessage(shard, message);
-        } catch (error) {
+        this.handleShardMessage(shard, message).catch(error => {
           logger.error(
             `Error handling message from shard ${shard.id}:`,
             error,
           );
-        }
+        });
       },
       error: (error: Error) => {
         logger.error(`Shard ${shard.id} error:`, error);
@@ -377,33 +304,39 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
-   * Handle messages from shards with enhanced processing
+   * Handle messages from shards with processing
    */
-  private handleShardMessage(shard: Shard, message: any): void {
+  private async handleShardMessage(shard: Shard, message: any): Promise<void> {
     const health = this.shardHealth.get(shard.id);
     if (!health) return;
 
     // Handle evaluation results
     if (message._eval) {
-      logger.debug(
-        `Shard[${shard.id}]: ${message._eval} -> ${message._result}`,
-      );
+      // Skip logging eval results to reduce console noise
       return;
     }
 
-    // Enhanced message type handling
+    // message type handling
     switch (message.type) {
       case "stats":
-        this.updateShardHealth(shard.id, {
-          guilds: message.guilds || 0,
-          users: message.users || 0,
-          channels: message.channels || 0,
-          memory: message.memory || process.memoryUsage(),
-          ping: message.ping || 0,
-          cpu: message.cpu || 0,
-          eventLoopLag: message.eventLoopLag || 0,
+        // Handle potential shard ID mismatch
+        const statsData = message.data || {};
+        const statsShardId = statsData.actualShardId !== undefined ? statsData.actualShardId : shard.id;
+        this.updateShardHealth(statsShardId, {
+          guilds: statsData.guilds || 0,
+          users: statsData.users || 0,
+          channels: statsData.channels || 0,
+          memory: statsData.memory || process.memoryUsage(),
+          ping: statsData.ping || 0,
+          cpu: statsData.cpu || 0,
+          eventLoopLag: statsData.eventLoopLag || 0,
           lastHeartbeat: Date.now(),
         });
+
+        // Update shard ID mapping if it changed
+        if (statsData.actualShardId !== undefined && statsData.actualShardId !== shard.id) {
+          this.updateShardIdMapping(shard.id, statsData.actualShardId);
+        }
         break;
 
       case "heartbeat":
@@ -417,27 +350,97 @@ class EnhancedShardManager extends EventEmitter {
         });
         break;
 
+      case "guildStatsReceived":
+        this.handleGuildStatsReceived(message.data);
+        break;
+
+      case "ready":
+        const readyData = message.data || message;
+        const readyShardId = readyData.actualShardId !== undefined ? readyData.actualShardId : (readyData.shardId !== undefined ? readyData.shardId : shard.id);
+
+        logger.info(`✅ Shard ${readyShardId} fully ready${readyData.actualShardId !== shard.id ? ` (Discord.js assigned ${readyShardId} instead of ${shard.id})` : ''}`);
+
+        this.updateShardHealth(readyShardId, {
+          status: "ready",
+          lastHeartbeat: Date.now(),
+          guilds: readyData.guilds || 0,
+          users: readyData.users || 0,
+        });
+
+        // Update shard ID mapping if it changed
+        if (readyData.actualShardId !== undefined && readyData.actualShardId !== shard.id) {
+          this.updateShardIdMapping(shard.id, readyData.actualShardId);
+        }
+
+        // Log coordinator status
+        if (readyData.isCoordinator) {
+          logger.info(`👑 Shard ${readyShardId} is the coordinator`);
+        }
+        break;
+
+      case "guildAdd":
+      case "guildRemove":
+        // Update guild tracking
+        this.updateGuildTracking(message.type, message.data);
+        break;
+
       case "inter-shard":
-        // Handle inter-shard communication
-        this.handleInterShardMessage(message.data as InterShardMessage);
+        // Handle inter-shard communication - route the message
+        const interShardMessage = message.data as InterShardMessage;
+        logger.debug(`Routing inter-shard message from shard ${shard.id}: ${interShardMessage.type}`);
+
+        // Route the message to target shard(s) with validation
+        if (interShardMessage.toShard === "all") {
+          await this.broadcastInterShardMessage(interShardMessage);
+        } else if (typeof interShardMessage.toShard === "number" && interShardMessage.toShard >= 0) {
+          await this.sendInterShardMessage(interShardMessage.toShard, interShardMessage);
+        } else {
+          logger.warn(`Invalid toShard value: ${interShardMessage.toShard} from shard ${shard.id}`);
+        }
+
+        // Also handle it locally for manager processing
+        this.handleInterShardMessage(interShardMessage);
+        break;
+
+      case "clientReady":
+      case "shardReady":
+      case "shardReconnecting":
+      case "shardDisconnect":
+      case "shardResume":
+      case "shardError":
+        // Discord.js shard events - already logged by event handlers
         break;
 
       default:
-        logger.debug(`Unknown message type from shard ${shard.id}:`, message);
+        // Only log if message has a type to avoid noise from Discord.js internal messages
+        if (message.type) {
+          logger.debug(`Unknown message type from shard ${shard.id}: ${message.type}`);
+        }
     }
   }
 
   /**
-   * Handle inter-shard communication messages
+   * Handle inter-shard communication messages (manager processing)
    */
   private handleInterShardMessage(message: InterShardMessage): void {
-    logger.debug(`Inter-shard message: ${message.type}`, message);
+    logger.debug(`Processing inter-shard message: ${message.type}`);
 
-    // Route message to specific shard or broadcast
-    if (message.toShard === "all") {
-      this.broadcastInterShardMessage(message);
-    } else if (typeof message.toShard === "number") {
-      this.sendInterShardMessage(message.toShard, message);
+    // Handle specific message types that the manager needs to process
+    switch (message.type) {
+      case "guildJoined":
+      case "guildLeft":
+        // Guild tracking removed - use on-demand queries when needed
+        logger.debug(`Guild ${message.type === "guildJoined" ? "joined" : "left"}: ${message.data.guildName}`);
+        break;
+      case "ready":
+        logger.info(`Inter-shard ready notification from shard ${message.fromShard}`);
+        break;
+      case "guildStatsRequest":
+        // Guild stats requests are handled by individual shards
+        logger.debug(`Guild stats request from shard ${message.fromShard}`);
+        break;
+      default:
+        logger.trace(`Manager doesn't need to process message type: ${message.type}`);
     }
 
     // Emit event for external listeners
@@ -451,9 +454,16 @@ class EnhancedShardManager extends EventEmitter {
     shardId: number,
     message: InterShardMessage,
   ): Promise<void> {
+    // Additional validation to prevent invalid shard IDs
+    if (shardId < 0) {
+      logger.warn(`Rejecting message to invalid shard ID ${shardId}: ${message.type}`);
+      return;
+    }
+
     const shard = this.manager.shards.get(shardId);
     if (shard) {
       try {
+        logger.debug(`Sending inter-shard message to shard ${shardId}: ${message.type}`);
         await shard.send({
           type: "inter-shard",
           data: message,
@@ -464,6 +474,8 @@ class EnhancedShardManager extends EventEmitter {
           error,
         );
       }
+    } else {
+      logger.warn(`Cannot send message to shard ${shardId}: shard not found (available: ${Array.from(this.manager.shards.keys()).join(', ')})`);
     }
   }
 
@@ -473,8 +485,12 @@ class EnhancedShardManager extends EventEmitter {
   private async broadcastInterShardMessage(
     message: InterShardMessage,
   ): Promise<void> {
-    const promises = Array.from(this.manager.shards.values()).map(
-      async (shard) => {
+    logger.debug(`Broadcasting inter-shard message: ${message.type} to ${this.manager.shards.size} shards`);
+
+    // Use for...of instead of Promise.all to reduce memory pressure
+    for (const shard of this.manager.shards.values()) {
+      // Don't send the message back to the sender
+      if (shard.id !== message.fromShard) {
         try {
           await shard.send({
             type: "inter-shard",
@@ -486,10 +502,8 @@ class EnhancedShardManager extends EventEmitter {
             error,
           );
         }
-      },
-    );
-
-    await Promise.allSettled(promises);
+      }
+    }
   }
 
   /**
@@ -514,8 +528,7 @@ class EnhancedShardManager extends EventEmitter {
     if (health) {
       health.errors++;
 
-      const errorThreshold = 10;
-      if (health.errors > errorThreshold && health.status !== "dead") {
+      if (health.errors > CONSTANTS.ERROR_THRESHOLD && health.status !== "dead") {
         logger.warn(
           `Shard ${shardId} has ${health.errors} errors, considering restart`,
         );
@@ -542,10 +555,9 @@ class EnhancedShardManager extends EventEmitter {
     }
 
     // Exponential backoff with jitter
-    const baseDelay = 5000;
     const backoffTime = Math.min(
-      baseDelay * Math.pow(2, health.restarts - 1) + Math.random() * 1000,
-      60000,
+      CONSTANTS.BASE_RESTART_DELAY * Math.pow(2, health.restarts - 1) + Math.random() * 1000,
+      CONSTANTS.MAX_RESTART_DELAY,
     );
 
     logger.info(
@@ -567,9 +579,8 @@ class EnhancedShardManager extends EventEmitter {
     if (!health || health.restarts > config.maxShardRestarts) return;
 
     const timeSinceLastHeartbeat = Date.now() - health.lastHeartbeat;
-    const unhealthyThreshold = 300000; // 5 minutes
 
-    if (timeSinceLastHeartbeat > unhealthyThreshold) {
+    if (timeSinceLastHeartbeat > CONSTANTS.UNHEALTHY_THRESHOLD) {
       logger.warn(`Restarting unresponsive shard ${shardId}`);
       this.restartShard(shardId);
     }
@@ -585,7 +596,7 @@ class EnhancedShardManager extends EventEmitter {
       const shard = this.manager.shards.get(shardId);
       if (shard) {
         await shard.respawn({
-          delay: 5000,
+          delay: CONSTANTS.SPAWN_DELAY,
           timeout: config.timeout,
         });
 
@@ -605,7 +616,7 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
-   * Setup Top.gg integration with enhanced error handling
+   * Setup Top.gg integration with error handling
    */
   private setupTopGG(): void {
     if (!config.topggKey) {
@@ -654,24 +665,32 @@ class EnhancedShardManager extends EventEmitter {
    */
   private performHealthCheck(): void {
     const now = Date.now();
-    const unhealthyThreshold = 120000; // 2 minutes
     let unhealthyShards = 0;
 
-    for (const [shardId, health] of this.shardHealth.entries()) {
+    this.shardHealth.forEach((health, shardId) => {
       const timeSinceHeartbeat = now - health.lastHeartbeat;
 
-      if (timeSinceHeartbeat > unhealthyThreshold) {
+      if (timeSinceHeartbeat > CONSTANTS.HEARTBEAT_TIMEOUT) {
         unhealthyShards++;
-        logger.warn(
-          `Shard ${shardId} unhealthy: last heartbeat ${Math.round(timeSinceHeartbeat / 1000)}s ago`,
-        );
+
+        // Graduated logging - only log at meaningful thresholds
+        const secondsAgo = Math.round(timeSinceHeartbeat / 1000);
+        if (timeSinceHeartbeat > CONSTANTS.UNHEALTHY_THRESHOLD * 1.5) {
+          logger.error(
+            `Shard ${shardId} critically unresponsive: last heartbeat ${secondsAgo}s ago`,
+          );
+        } else {
+          logger.warn(
+            `Shard ${shardId} unhealthy: last heartbeat ${secondsAgo}s ago`,
+          );
+        }
 
         // Try to ping shard
         const shard = this.manager.shards.get(shardId);
         if (shard) {
           shard
             .eval("({ ping: this.ws.ping, uptime: this.uptime })")
-            .then((result) => {
+            .then((result: { ping: number; uptime: number }) => {
               this.updateShardHealth(shardId, {
                 ping: result.ping,
                 uptime: result.uptime,
@@ -683,7 +702,7 @@ class EnhancedShardManager extends EventEmitter {
             });
         }
       }
-    }
+    });
 
     if (unhealthyShards > 0) {
       logger.warn(
@@ -699,7 +718,7 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
-   * Aggregate global statistics with comprehensive metrics
+   * Aggregate global statistics with comprehensive metrics (memory-optimized)
    */
   private aggregateGlobalStats(): void {
     let totalGuilds = 0;
@@ -719,8 +738,13 @@ class EnhancedShardManager extends EventEmitter {
       totalRestarts += health.restarts;
       totalMemoryUsage += health.memory.heapUsed || 0;
 
-      if (health.status === "ready") {
+      // Count shards as healthy if they're not dead or disconnected
+      if (health.status !== "dead" && health.status !== "disconnected") {
         healthyShards++;
+      }
+
+      // Only collect detailed stats from ready shards
+      if (health.status === "ready") {
         totalUptime += health.uptime;
 
         if (health.ping > 0) {
@@ -745,12 +769,105 @@ class EnhancedShardManager extends EventEmitter {
 
     this.emit("globalStatsUpdate", this.globalStats);
 
-    // Log comprehensive stats every 10 minutes
-    if (Date.now() % 600000 < config.statsInterval) {
+    // Log comprehensive stats every 10 minutes (kept for backward compatibility)
+    if (Date.now() % CONSTANTS.DETAILED_STATS_LOG_MODULO < config.statsInterval) {
       logger.info(
         `📈 Global Stats: ${totalGuilds} guilds, ${totalUsers} users, ${totalChannels} channels across ${healthyShards}/${this.shardHealth.size} shards`,
       );
     }
+  }
+
+  /**
+   * Log detailed statistics every 15 minutes (memory-optimized)
+   */
+  private async logDetailedStats(): Promise<void> {
+    const uptime = Date.now() - this.startTime;
+    const uptimeMinutes = Math.floor(uptime / 60000);
+
+    logger.info("═══════════════════════════════════════");
+    logger.info("🤖 SMOKEY BOT SHARD MANAGER");
+    logger.info("═══════════════════════════════════════");
+
+    // Manager uptime and basic info
+    logger.info(`⏱️  Manager Uptime: ${Math.floor(uptimeMinutes / 60)}h ${uptimeMinutes % 60}m`);
+    logger.info(`🔧 Runtime: Bun ${Bun.version}`);
+    logger.info(`🌍 Environment: ${config.isDev ? "Development" : "Production"}`);
+
+    // Shard health overview
+    let healthyCount = 0;
+    let readyCount = 0;
+    let reconnectingCount = 0;
+    let deadCount = 0;
+
+    for (const health of this.shardHealth.values()) {
+      switch (health.status) {
+        case "ready":
+          readyCount++;
+          healthyCount++;
+          break;
+        case "reconnecting":
+          reconnectingCount++;
+          break;
+        case "dead":
+        case "disconnected":
+          deadCount++;
+          break;
+        default:
+          healthyCount++;
+      }
+    }
+
+    logger.info(`📊 Shard Status: ${readyCount} ready, ${reconnectingCount} reconnecting, ${deadCount} dead`);
+
+    // Global statistics
+    const stats = this.globalStats;
+    logger.info(`🏰 Total Guilds: ${stats.totalGuilds.toLocaleString()}`);
+    logger.info(`👥 Total Users: ${stats.totalUsers.toLocaleString()}`);
+    logger.info(`💬 Total Channels: ${stats.totalChannels.toLocaleString()}`);
+    logger.info(`🏥 Health: ${stats.healthyShards}/${stats.totalShards} shards healthy`);
+    logger.info(`🏓 Avg Ping: ${Math.round(stats.avgPing)}ms`);
+    logger.info(`🔄 Total Restarts: ${stats.totalRestarts}`);
+
+    // Memory usage
+    const memoryMB = Math.round(stats.totalMemoryUsage / 1024 / 1024);
+    logger.info(`🧠 Memory Usage: ${memoryMB}MB`);
+
+    // Fetch top guilds on-demand (lazy loading)
+    try {
+      const allGuilds = await this.broadcastEval((client) =>
+        Array.from(client.guilds.cache.values())
+          .map((guild: any) => ({
+            name: guild.name,
+            memberCount: guild.memberCount || 0,
+            shardId: client.shard?.ids[0] || 0,
+          }))
+          .sort((a, b) => b.memberCount - a.memberCount)
+          .slice(0, 10) // Pre-filter to reduce data transfer
+      );
+
+      const flatGuilds = allGuilds.flat()
+        .sort((a, b) => b.memberCount - a.memberCount)
+        .slice(0, 5);
+
+      if (flatGuilds.length > 0) {
+        logger.info("🏆 Top 5 Largest Guilds:");
+        flatGuilds.forEach((guild, index) => {
+          logger.info(`  ${index + 1}. ${guild.name} - ${guild.memberCount.toLocaleString()} members (Shard ${guild.shardId})`);
+        });
+      }
+    } catch (error) {
+      logger.debug("Could not fetch largest guilds:", error);
+    }
+
+    // Performance metrics per shard
+    logger.info("⚡ Shard Performance:");
+    this.shardHealth.forEach((health, shardId) => {
+      const uptimeHours = Math.floor((health.uptime || 0) / 3600000);
+      const memMB = Math.round((health.memory?.heapUsed || 0) / 1024 / 1024);
+      logger.info(`  Shard ${shardId}: ${health.guilds}g, ${health.users}u, ${memMB}MB, ${uptimeHours}h uptime, ${health.errors} errors`);
+    });
+
+    logger.info("═══════════════════════════════════════");
   }
 
   /**
@@ -775,62 +892,68 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
-   * Send message to specific shard via communication manager
+   * Send message to specific shard via manager routing
    */
   public async sendToShard(
     shardId: number,
     type: string,
     data: any,
   ): Promise<void> {
+    // Validate shard ID to prevent -1 messages
+    if (shardId < 0 || !this.manager.shards.has(shardId)) {
+      logger.warn(`Cannot send message to invalid shard ID ${shardId}`);
+      return;
+    }
+
     const message: InterShardMessage = {
       type,
+      fromShard: -1, // From manager (this is intentional for manager messages)
       toShard: shardId,
       data,
       timestamp: Date.now(),
-      id: `${Date.now()}-${Math.random().toString(36).substring(2)}`,
+      id: generateMessageId(),
     };
 
-    if (this.communicationManager) {
-      await this.communicationManager.sendToShard(shardId, message);
-    } else {
-      await this.sendInterShardMessage(shardId, message);
-    }
+    // Manager always routes directly to shards
+    await this.sendInterShardMessage(shardId, message);
   }
 
   /**
    * Broadcast message to all shards
    */
   public async broadcastToAllShards(type: string, data: any): Promise<void> {
+    if (this.manager.shards.size === 0) {
+      logger.warn('No shards available for broadcast');
+      return;
+    }
+
     const message: InterShardMessage = {
       type,
+      fromShard: -1, // From manager (this is intentional for manager messages)
       toShard: "all",
       data,
       timestamp: Date.now(),
-      id: `${Date.now()}-${Math.random().toString(36).substring(2)}`,
+      id: generateMessageId(),
     };
 
-    if (this.communicationManager) {
-      await this.communicationManager.broadcast(message);
-    } else {
-      await this.broadcastInterShardMessage(message);
-    }
+    // Manager always broadcasts directly to shards
+    await this.broadcastInterShardMessage(message);
   }
 
   /**
-   * Enhanced broadcast evaluation with timeout and error handling
+   * broadcast evaluation with timeout and error handling
    */
   public async broadcastEval<T>(
     script: (client: any) => T,
-    options: { timeout?: number; shard?: number } = {},
+    options: { shard?: number } = {},
   ): Promise<T[]> {
     try {
       const results = await this.manager.broadcastEval(script, {
-        timeout: options.timeout || config.timeout,
         shard: options.shard,
       });
 
-      logger.debug(`Broadcast eval completed: ${results.length} responses`);
-      return results;
+      logger.debug(`Broadcast eval completed: ${(results as T[]).length} responses`);
+      return results as T[];
     } catch (error) {
       logger.error("Broadcast eval failed:", error);
       throw error;
@@ -851,6 +974,17 @@ class EnhancedShardManager extends EventEmitter {
         memory: process.memoryUsage(),
         shardId: client.shard?.ids[0],
         readyAt: client.readyAt?.toISOString(),
+        guildDetails: Array.from(client.guilds.cache.values())
+          .slice(0, 100) // Limit guild details to prevent memory issues
+          .map((guild: any) => ({
+            id: guild.id,
+            name: guild.name,
+            memberCount: guild.memberCount || 0,
+            shardId: client.shard?.ids[0] || 0,
+            joinedAt: guild.joinedTimestamp || Date.now(),
+            channelCount: guild.channels.cache.size,
+            roleCount: guild.roles.cache.size
+          }))
       }));
 
       return {
@@ -866,6 +1000,44 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
+   * Dispose of all resources and intervals to prevent memory leaks
+   */
+  public dispose(): void {
+    // Clear all intervals
+    if (this.healthCheckInterval) {
+      clearInterval(this.healthCheckInterval);
+      this.healthCheckInterval = undefined;
+    }
+    if (this.statsInterval) {
+      clearInterval(this.statsInterval);
+      this.statsInterval = undefined;
+    }
+    if (this.detailedStatsInterval) {
+      clearInterval(this.detailedStatsInterval);
+      this.detailedStatsInterval = undefined;
+    }
+    if (this.guildStatsRefreshInterval) {
+      clearInterval(this.guildStatsRefreshInterval);
+      this.guildStatsRefreshInterval = undefined;
+    }
+    if (this.healthAlertInterval) {
+      clearInterval(this.healthAlertInterval);
+      this.healthAlertInterval = undefined;
+    }
+
+    // Clear all maps and collections
+    this.shardHealth.clear();
+    
+    // Reset message ID counter
+    messageIdCounter = 0;
+
+    // Remove all event listeners
+    this.removeAllListeners();
+
+    logger.info("✅ EnhancedShardManager resources disposed");
+  }
+
+  /**
    * Graceful shutdown of all components
    */
   public async shutdown(): Promise<void> {
@@ -873,9 +1045,8 @@ class EnhancedShardManager extends EventEmitter {
     this.isShuttingDown = true;
 
     try {
-      // Clear intervals
-      if (this.healthCheckInterval) clearInterval(this.healthCheckInterval);
-      if (this.statsInterval) clearInterval(this.statsInterval);
+      // Dispose of all resources
+      this.dispose();
 
       // Close communication manager
       if (this.communicationManager) {
@@ -887,7 +1058,7 @@ class EnhancedShardManager extends EventEmitter {
       await this.broadcastToAllShards("shutdown", { graceful: true });
 
       // Wait for shards to shutdown gracefully
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, CONSTANTS.SHUTDOWN_GRACE_PERIOD));
 
       // Force destroy all shards
       const destroyPromises = Array.from(this.manager.shards.values()).map(
@@ -906,7 +1077,44 @@ class EnhancedShardManager extends EventEmitter {
   }
 
   /**
-   * Start the enhanced shard manager
+   * Handle guild stats received from shards
+   */
+  private handleGuildStatsReceived(data: any): void {
+    const health = this.shardHealth.get(data.shardId);
+    if (health) {
+      health.guildDetails = data.guilds;
+      logger.trace(`Updated guild details for shard ${data.shardId}: ${data.guilds.length} guilds`);
+    }
+  }
+
+  /**
+   * Update guild tracking for add/remove events (lightweight)
+   */
+  private updateGuildTracking(type: string, data: any): void {
+    const shardId = data.shardId !== undefined ? data.shardId : 0;
+    logger.debug(`Guild ${type}: ${data.guildName} (${data.guildId}) on shard ${shardId}`);
+    // Just log the event - no need to store in memory
+    // Stats will be updated on next aggregation cycle
+  }
+
+  /**
+   * Request guild stats from a specific shard
+   */
+  public async requestGuildStatsFromShard(shardId: number): Promise<void> {
+    const requestId = generateMessageId();
+    await this.sendToShard(shardId, "guildStatsRequest", { requestId });
+  }
+
+  /**
+   * Request guild stats from all shards
+   */
+  public async requestGuildStatsFromAllShards(): Promise<void> {
+    const requestId = generateMessageId();
+    await this.broadcastToAllShards("guildStatsRequest", { requestId });
+  }
+
+  /**
+   * Start the shard manager
    */
   public async start(): Promise<void> {
     try {
@@ -914,16 +1122,32 @@ class EnhancedShardManager extends EventEmitter {
       logger.info(`Environment: ${config.isDev ? "Development" : "Production"}`);
       logger.info(`Runtime: Bun ${Bun.version}`);
       logger.info(`Respawn: ${config.respawn ? "Enabled" : "Disabled"}`);
-      logger.info(`Communication: ${config.useRedis ? "Redis" : config.useWebSocket ? "WebSocket" : "Direct"}`);
+      logger.info(`Communication: ${config.useRedis ? `Redis (${config.redisUrl})` : config.useWebSocket ? `WebSocket (port ${config.wsPort})` : "Direct"}`);
 
-      // Initialize communication manager if configured
+      // Initialize cross-server communication manager if configured
       if (this.communicationManager) {
-        await this.communicationManager.initialize();
+        try {
+          await this.communicationManager.initialize();
+          logger.info("✅ Cross-server communication initialized");
+        } catch (error) {
+          if (config.isDev && config.useWebSocket) {
+            logger.warn("⚠️ Cross-server communication failed to initialize in development mode, falling back to single-server mode");
+            logger.info("💡 This is normal for local development - the bot will still function with limited inter-shard communication");
+            this.communicationManager = undefined;
+          } else {
+            logger.error("❌ Failed to initialize cross-server communication:", error);
+            throw error;
+          }
+        }
+      }
+
+      if (!this.communicationManager) {
+        logger.info("💻 Single-server mode - no cross-server communication");
       }
 
       const shards = await this.manager.spawn({
         amount: config.isDev ? 1 : "auto",
-        delay: 5000, // 5 second delay between spawns
+        delay: CONSTANTS.SPAWN_DELAY,
         timeout: config.timeout,
       });
 
@@ -932,10 +1156,36 @@ class EnhancedShardManager extends EventEmitter {
       // Start monitoring after all shards are spawned
       this.startHealthMonitoring();
 
+      // Start detailed stats logging every 15 minutes
+      this.detailedStatsInterval = setInterval(() => {
+        this.logDetailedStats();
+      }, CONSTANTS.DETAILED_STATS_INTERVAL);
+
       // Initial stats collection after 30 seconds
       setTimeout(() => {
         this.aggregateGlobalStats();
-      }, 30000);
+        // Request detailed guild stats from all shards
+        this.requestGuildStatsFromAllShards();
+        // Log first detailed stats after 60 seconds (allow time for data collection)
+        setTimeout(() => {
+          this.logDetailedStats();
+        }, CONSTANTS.INITIAL_STATS_DELAY);
+      }, CONSTANTS.INITIAL_STATS_DELAY);
+
+      // Periodic guild stats refresh every 5 minutes
+      this.guildStatsRefreshInterval = setInterval(() => {
+        this.requestGuildStatsFromAllShards();
+      }, CONSTANTS.GUILD_STATS_REFRESH_INTERVAL);
+
+      // Set up periodic health reporting
+      this.healthAlertInterval = setInterval(() => {
+        const stats = this.getGlobalStats();
+        if (stats.healthyShards < stats.totalShards) {
+          logger.warn(
+            `⚠️  Health Alert: ${stats.healthyShards}/${stats.totalShards} shards healthy`,
+          );
+        }
+      }, CONSTANTS.HEALTH_ALERT_INTERVAL);
 
       this.emit("managerReady", {
         totalShards: shards.size,
@@ -952,11 +1202,11 @@ class EnhancedShardManager extends EventEmitter {
   }
 }
 
-// Create and export enhanced shard manager instance
+// Create and export shard manager instance
 export const enhancedManager = new EnhancedShardManager();
 export const manager = enhancedManager.manager; // Backward compatibility
 
-// Graceful process handlers with enhanced logging
+// Graceful process handlers with logging
 const handleShutdown = async (signal: string) => {
   logger.info(`Received ${signal}, initiating graceful shutdown...`);
   try {
@@ -991,23 +1241,13 @@ process.on("uncaughtException", (error) => {
   process.exit(1);
 });
 
-// Enhanced startup with better error handling
+// startup with better error handling
 const startManager = async () => {
   try {
     await enhancedManager.start();
 
     // Log startup success
     logger.info("🎉 SmokeyBot Shard Manager started successfully!");
-
-    // Set up periodic health reporting
-    setInterval(() => {
-      const stats = enhancedManager.getGlobalStats();
-      if (stats.healthyShards < stats.totalShards) {
-        logger.warn(
-          `⚠️  Health Alert: ${stats.healthyShards}/${stats.totalShards} shards healthy`,
-        );
-      }
-    }, 300000); // Every 5 minutes
 
   } catch (error) {
     logger.error("💥 Fatal startup error:", error);
@@ -1031,3 +1271,4 @@ export { ShardManagerError };
 export type {
   CommunicationManager, GlobalStatistics, InterShardMessage, ShardHealthMetrics
 };
+

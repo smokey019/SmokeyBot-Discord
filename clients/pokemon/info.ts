@@ -1,22 +1,22 @@
-import { CommandInteraction, EmbedBuilder, type EmbedField } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder, type EmbedField } from "discord.js";
 import { databaseClient, getUser } from "../../clients/database";
 import { getLogger } from "../../clients/logger";
 import { MonsterTable, type IMonsterModel } from "../../models/Monster";
 import {
-  MonsterUserTable,
-  type IMonsterUserModel,
+    MonsterUserTable,
+    type IMonsterUserModel,
 } from "../../models/MonsterUser";
 import { format_number } from "../../utils";
 import { queueMessage } from "../message_queue";
 import {
-  findMonsterByID,
-  findMonsterByName,
-  getPokemonEvolutions,
-  getPokemonSpecies,
-  getPokemonWithEnglishName,
-  getUserMonster,
-  isPokemonLegendary,
-  type Pokemon
+    findMonsterByID,
+    findMonsterByName,
+    getPokemonEvolutions,
+    getPokemonSpecies,
+    getPokemonWithEnglishName,
+    getUserMonster,
+    isPokemonLegendary,
+    type Pokemon
 } from "./monsters";
 import { capitalizeFirstLetter, img_monster_ball } from "./utils";
 
@@ -35,7 +35,7 @@ const STAT_FORMULA_BASE = 2;
 const STAT_FORMULA_LEVEL_OFFSET = 10;
 const HP_STAT_FORMULA_OFFSET = 10;
 
-interface MonsterStats {
+export interface MonsterStats {
   hp: number;
   attack: number;
   defense: number;
@@ -47,7 +47,7 @@ interface MonsterStats {
 /**
  * Calculates Pokemon stats using the standard formula
  */
-function calculateStat(
+export function calculateStat(
   baseStat: number,
   iv: number,
   level: number,
@@ -73,7 +73,7 @@ function calculateStat(
 /**
  * Calculates all Pokemon stats from API data and IV values
  */
-function calculateAllStats(
+export function calculateAllStats(
   apiStats: Pokemon["stats"],
   monsterData: IMonsterModel,
 ): MonsterStats {
@@ -113,7 +113,7 @@ function calculateAllStats(
 /**
  * Formats Pokemon types for display from API format
  */
-function formatPokemonTypes(types: Pokemon["types"]): string[] {
+export function formatPokemonTypes(types: Pokemon["types"]): string[] {
   if (!Array.isArray(types)) {
     return [];
   }
@@ -127,7 +127,7 @@ function formatPokemonTypes(types: Pokemon["types"]): string[] {
 /**
  * Gets appropriate Pokemon images based on shiny status
  */
-function getPokemonImages(
+export function getPokemonImages(
   monster: Pokemon,
   isShiny: boolean,
 ): { normal?: string; thumbnail?: string } {
@@ -279,7 +279,7 @@ async function getPokemonEvolutionInfo(pokemonId: number): Promise<{
 /**
  * Get base stats from Pokemon API response
  */
-function extractBaseStats(pokemon: Pokemon): MonsterStats {
+export function extractBaseStats(pokemon: Pokemon): MonsterStats {
   const stats: MonsterStats = {
     hp: 0,
     attack: 0,
@@ -309,7 +309,7 @@ function extractBaseStats(pokemon: Pokemon): MonsterStats {
 }
 
 export async function checkUniqueMonsters(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
 ): Promise<void> {
   try {
     const tempdex = await userDex(interaction.user.id);
@@ -330,7 +330,7 @@ export async function checkUniqueMonsters(
 
 export async function monsterEmbed(
   monster_db: IMonsterModel,
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
 ): Promise<void> {
   if (!monster_db) {
     logger.warn("No monster data provided to monsterEmbed");
@@ -353,7 +353,7 @@ export async function monsterEmbed(
       return;
     }
 
-    // Get enhanced Pokemon data with English name
+    // Get Pokemon data with English name
     const pokemonWithName = await getPokemonWithEnglishName(monster);
     const displayName = pokemonWithName.englishName || capitalizeFirstLetter(monster.name);
 
@@ -522,7 +522,7 @@ export async function monsterEmbed(
  * @param interaction
  */
 export async function monsterInfoLatest(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
 ): Promise<void> {
   try {
     const user = await databaseClient<IMonsterUserModel>(MonsterUserTable)
@@ -577,7 +577,7 @@ export async function monsterInfoLatest(
  * @param monster_id
  */
 export async function monsterInfo(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   monster_id: string,
 ): Promise<void> {
   if (!monster_id || typeof monster_id !== "string") {
@@ -618,7 +618,7 @@ export async function monsterInfo(
  * @param interaction
  */
 export async function currentMonsterInfo(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
 ): Promise<void> {
   try {
     const user: IMonsterUserModel = await getUser(interaction.user.id);
@@ -669,7 +669,7 @@ export async function currentMonsterInfo(
  * @param interaction
  */
 export async function monsterDex(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
 ): Promise<void> {
   try {
     const pokemonOption = interaction.options.get("pokemon")?.value?.toString();
@@ -698,7 +698,7 @@ export async function monsterDex(
       return;
     }
 
-    // Get enhanced Pokemon data
+    // Get Pokemon data
     const [pokemonWithName, isLegendary, evolutionInfo] = await Promise.all([
       getPokemonWithEnglishName(tempMonster),
       isPokemonLegendary(tempMonster),

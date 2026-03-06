@@ -1,8 +1,9 @@
-import { CommandInteraction, TextChannel } from 'discord.js';
 import { loadCache, type ICache } from '../../clients/cache';
 import { getLogger } from '../../clients/logger';
 import { getRndInteger } from '../../utils';
 import Weather from './data/weather.json';
+import type { GuildContext } from './types';
+import { resolveSpawnChannel } from './utils';
 
 export type IWeather = typeof Weather[0];
 
@@ -21,7 +22,7 @@ const WEATHER_DURATION_MS = 60 * 1000;
  * @returns Current weather boost
  */
 export async function getBoostedWeatherSpawns(
-  interaction: CommandInteraction,
+  interaction: GuildContext,
   cache: ICache,
 ): Promise<IWeather> {
   if (!interaction.guild?.id) {
@@ -52,7 +53,7 @@ export async function getBoostedWeatherSpawns(
  * @returns New weather boost
  */
 async function changeWeather(
-  interaction: CommandInteraction,
+  interaction: GuildContext,
   cache: ICache,
 ): Promise<IWeather> {
   const newWeather = getRandomWeather();
@@ -78,23 +79,21 @@ async function changeWeather(
  * @param weather - New weather
  */
 async function announceWeatherChange(
-  interaction: CommandInteraction,
+  interaction: GuildContext,
   cache: ICache,
   weather: IWeather,
 ): Promise<void> {
   try {
-    const channelName = cache?.settings?.specific_channel;
-    if (!channelName || !interaction.guild) {
-      logger.warn('No channel name or guild found for weather announcement');
+    const specificChannel = cache?.settings?.specific_channel;
+    if (!specificChannel || !interaction.guild) {
+      logger.warn('No spawn channel configured for weather announcement');
       return;
     }
 
-    const monsterChannel = interaction.guild.channels.cache.find(
-      (ch) => ch.name === channelName,
-    ) as TextChannel;
+    const monsterChannel = resolveSpawnChannel(interaction.guild, specificChannel);
 
     if (!monsterChannel) {
-      logger.warn(`Weather channel '${channelName}' not found`);
+      logger.warn(`Weather channel '${specificChannel}' not found`);
       return;
     }
 
@@ -124,7 +123,7 @@ function getRandomWeather(): IWeather {
  * @returns Boolean indicating if Pokemon is weather boosted
  */
 export async function isPokemonBoostedByWeather(
-  interaction: CommandInteraction,
+  interaction: GuildContext,
   pokemonTypes: string[],
 ): Promise<boolean> {
   try {
@@ -173,7 +172,7 @@ export async function getCurrentWeather(guildId: string): Promise<IWeather | nul
  * @returns New weather
  */
 export async function forceWeatherChange(
-  interaction: CommandInteraction,
+  interaction: GuildContext,
   cache: ICache,
   weatherType?: string,
 ): Promise<IWeather> {
