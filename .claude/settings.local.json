@@ -10,7 +10,9 @@
       "Bash(timeout:*)",
       "Bash(pkill:*)",
       "Bash(taskkill:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Skill(humanizer)",
+      "Skill(humanizer:*)"
     ],
     "deny": []
   }
