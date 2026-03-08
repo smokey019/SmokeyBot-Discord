@@ -220,11 +220,11 @@ async function attemptReconnection(): Promise<void> {
   }, delay);
 }
 
-// Health check function
+// Health check function - bypasses executeQuery to avoid the isConnected guard
 async function performHealthCheck(): Promise<boolean> {
   try {
     const startTime = Date.now();
-    await executeQuery(() => databaseClient.raw('SELECT 1 as health_check'));
+    await databaseClient.raw('SELECT 1 as health_check');
     const responseTime = Date.now() - startTime;
 
     if (responseTime > RECONNECT_CONFIG.slowQueryThreshold) {
@@ -233,6 +233,7 @@ async function performHealthCheck(): Promise<boolean> {
 
     if (!dbState.isConnected) {
       dbState.isConnected = true;
+      dbState.reconnectAttempts = 0;
       logger.info('✅ Database connection restored');
     }
 
@@ -244,12 +245,11 @@ async function performHealthCheck(): Promise<boolean> {
     return true;
   } catch (error) {
     logger.error('❌ Database health check failed:', error);
-
-    if (dbState.isConnected) {
-      dbState.isConnected = false;
-      logger.warn('🔌 Database connection lost, attempting reconnection...');
-      await attemptReconnection();
-    }
+    dbState.isConnected = false;
+    // Reset attempts so periodic health checks always get fresh reconnection tries
+    dbState.reconnectAttempts = 0;
+    logger.warn('🔌 Database connection lost, attempting reconnection...');
+    await attemptReconnection();
 
     return false;
   }
@@ -319,7 +319,8 @@ async function executeQuery<T = any>(
       const isConnectionError = error.code === 'PROTOCOL_CONNECTION_LOST' ||
                                error.code === 'ECONNRESET' ||
                                error.code === 'ETIMEDOUT' ||
-                               error.message?.includes('Connection lost');
+                               error.message?.includes('Connection lost') ||
+                               error.message?.includes('Database not connected');
 
       if (isConnectionError && attempt < retryCount) {
         logger.warn(`🔄 Connection error, retrying query (attempt ${attempt}/${retryCount})`);
